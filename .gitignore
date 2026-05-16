@@ -1,15 +1,46 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ─────────────────────────────────────────────────
+# GeekBid Mobile — .gitignore
+# Covers: Expo/React-Native, Next.js (web), Node.js (backend)
+# ─────────────────────────────────────────────────
 
-# dependencies
+# ──── Dependencies ────
 node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Expo
+# ──── Environment Files (NEVER commit secrets) ────
+# Root-level
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env*.local
+
+# All nested .env files (backend/, web/, etc.)
+**/.env
+**/.env.local
+**/.env*.local
+
+# ✅ EXCEPTION: .env.example templates ARE committed
+!.env.example
+!**/.env.example
+
+# ──── Expo / React-Native ────
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+.metro-health-check*
 
-# Native
+# Native build outputs
+/ios/
+/android/
 .kotlin/
 *.orig.*
 *.jks
@@ -18,24 +49,35 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# ──── Next.js (web/) ────
+.next/
+out/
+build/
+.vercel
 
-# debug
+# ──── Testing / Coverage ────
+coverage/
+__snapshots__/
+
+# ──── TypeScript ────
+*.tsbuildinfo
+next-env.d.ts
+
+# ──── OS Files ────
+.DS_Store
+Thumbs.db
+*.pem
+
+# ──── Debug Logs ────
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+.pnpm-debug.log*
+*.log
 
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-# generated native folders
-/ios
-/android
+# ──── IDE / Editor ────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
