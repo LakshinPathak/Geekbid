@@ -1,142 +1,189 @@
-# GeekBidMobile (Full Modular Build)
+# GeekBid — Reverse-Auction Freelance Platform
 
-React Native (Expo + TypeScript) mobile app for GeekBid, built from `GeekBid_Complete_Plan.docx.md`.
+A full-stack reverse-auction marketplace where clients post jobs and freelancers bid prices **down** — the best value wins.
 
-## Modules Implemented
+Built with **Next.js 16** (web) + **Node.js microservices** (backend) + **MongoDB Atlas**.
 
-- Auth & role onboarding (`client`, `freelancer`, `admin`)
-- Profiles + Geek Score + role switching
-- Live job feed with reverse price decay
-- Job detail with accept, counter-bid, and watch
-- Client job posting with floor validation
-- Workspace hub module
-- My Jobs module
-- My Bids module
-- Notifications module (read/unread + mark all)
-- Inbox module
-- Chat room module
-- Earnings module
-- Payments & Escrow module
-- Admin dashboard module
-- Dispute queue module
+---
 
-## Data & Integration Layers
+## 🏗️ Architecture
 
-- Shared app state in `src/context/AppContext.tsx`
-- API integration layer in `src/services/`
-- Socket.IO event integration (`price_update`, `job_accepted`)
-- Mock seed data for all modules in `src/data/mockData.ts`
-
-## Environment
-
-Create `.env` from `.env.example`:
-
-```bash
-EXPO_PUBLIC_USE_MOCK=true
-EXPO_PUBLIC_API_BASE_URL=http://localhost:3000/v1
-EXPO_PUBLIC_SOCKET_URL=http://localhost:3004
-EXPO_PUBLIC_AUTH_TOKEN=
+```
+GeekBid/
+├── web/                  # Next.js 16 — Frontend + API routes
+│   ├── src/app/          # App Router pages
+│   ├── src/app/api/      # REST API routes
+│   ├── src/components/   # UI components (Radix + Tailwind)
+│   └── src/lib/          # Auth, DB, utilities
+├── backend/              # Node.js microservices
+│   ├── services/         # 7 independent services
+│   └── common/           # Shared middleware & utilities
+└── docs/                 # Production & store readiness docs
 ```
 
-Set `EXPO_PUBLIC_USE_MOCK=false` for live backend mode.
+## ✨ Features
 
-## Run
+### Web App (Next.js)
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Landing | `/` | Hero + feature showcase |
+| Login | `/login` | Email/password + Google OAuth |
+| Job Feed | `/feed` | Browse all open jobs with live pricing |
+| Job Detail | `/jobs/[id]` | View job, place bids, watch price decay |
+| Post Job | `/post-job` | Client job creation with floor validation |
+| My Jobs | `/my-jobs` | Track posted/accepted jobs |
+| Inbox | `/inbox` | Chat rooms & messaging |
+| Payments | `/payments` | Razorpay-powered escrow & transactions |
+| Earnings | `/earnings` | Freelancer earnings dashboard |
+| Notifications | `/notifications` | Read/unread notification center |
+| Profile | `/profile` | User profile & role management |
+| Admin | `/admin` | Admin dashboard & dispute queue |
+
+### API Routes (Next.js)
+
+- **Auth**: Register, login, Google OAuth, JWT refresh, session management
+- **Jobs**: CRUD, search, filtering
+- **Bids**: Place, counter, accept bids
+- **Payments**: Razorpay order creation & verification
+- **Chat**: Room creation, message history
+- **Notifications**: List, mark as read
+- **Disputes**: Raise & manage disputes
+
+### Backend Microservices (Node.js)
+
+| Service | Port | Stack |
+|---------|------|-------|
+| API Gateway | `:3000` | Express, routing |
+| Auth Service | `:3001` | Express, JWT, bcrypt |
+| Job Service | `:3003` | Express, MongoDB |
+| Bidding Service | `:3004` | Express, Socket.IO |
+| Payment Service | `:3005` | Express, Razorpay |
+| Notification Service | `:3006` | Express, MongoDB |
+| Chat Service | `:3007` | Express, Socket.IO |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Node.js** ≥ 18
+- **MongoDB Atlas** account ([cloud.mongodb.com](https://cloud.mongodb.com))
+- **Razorpay** test keys ([dashboard.razorpay.com](https://dashboard.razorpay.com/app/keys))
+- **Google OAuth** credentials (optional — [console.cloud.google.com](https://console.cloud.google.com/apis/credentials))
+
+### 1. Clone & Install
 
 ```bash
-npm install
-npm run android
-# or
-npm run ios
-# or
-npm run web
+git clone https://github.com/LakshinPathak/Geekbid.git
+cd Geekbid
 ```
 
-## Backend Microservices Scaffold
+### 2. Configure Environment
+
+```bash
+# Backend
+cp backend/.env.example backend/.env
+# Fill in: MONGODB_URI, JWT_SECRET, RAZORPAY keys
+
+# Web
+cp web/.env.example web/.env.local
+# Fill in: MONGODB_URI, NEXTAUTH_SECRET, Google OAuth, RAZORPAY keys
+```
+
+### 3. Start Backend Services
 
 ```bash
 cd backend
 npm install
-npm start
+npm start          # Starts all 7 services concurrently
 ```
 
-Available local services:
-
-- Gateway: `http://localhost:3000/v1/info`
-- Auth Service: `http://localhost:3001/v1`
-- Job Service: `http://localhost:3003/v1`
-- Bidding Service (+ Socket.IO): `http://localhost:3004/v1`
-- Payment Service: `http://localhost:3005/v1`
-- Notification Service: `http://localhost:3006/v1`
-- Chat Service (+ Socket.IO): `http://localhost:3007/v1`
-
-## Test
+### 4. Start Web App
 
 ```bash
+cd web
+npm install
+npm run dev        # → http://localhost:3000
+```
+
+---
+
+## 🔧 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| UI Components | Radix UI, Lucide Icons, Sonner (toasts) |
+| Auth | JWT (jose), bcrypt, Google OAuth 2.0 |
+| Database | MongoDB Atlas (native driver) |
+| Payments | Razorpay (test mode) |
+| Real-time | Socket.IO (bidding + chat) |
+| Backend | Express.js, Helmet, CORS, Rate Limiting |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit & integration tests
 npm test
-npx tsc --noEmit
-npx expo-doctor
+
+# Type checking
+cd web && npx tsc --noEmit
+
+# Test coverage
 npm test -- --coverage
 ```
 
-Current automated coverage includes:
+---
 
-- Pricing engine utility tests
-- Core AppContext module flow tests:
-  - Post job
-  - Accept job
-  - Chat send
-  - Escrow release
-  - Dispute raise
-  - Invalid action validation
-- Module UI interaction tests:
-  - Feed render in navigation context
-  - Profile role cycling
-  - Payments escrow release action
-  - Chat room send message flow
-- Service layer tests:
-  - API client request behavior (headers, URL building, envelope/error handling, 204)
-  - GeekBid API endpoint mapping + snake_case normalization
-  - Socket lifecycle behavior (singleton connect + safe disconnect)
+## 📁 Environment Variables
 
-## E2E (Detox Scaffold)
+### `backend/.env`
 
-- Config: `.detoxrc.js`
-- Tests: `e2e/smoke.e2e.js`
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MONGODB_URI` | ✅ | MongoDB Atlas connection string |
+| `JWT_SECRET` | ✅ | Secret for signing JWT tokens |
+| `RAZORPAY_KEY_ID` | ✅ | Razorpay test key ID |
+| `RAZORPAY_KEY_SECRET` | ✅ | Razorpay test key secret |
+| `RAZORPAY_WEBHOOK_SECRET` | ❌ | Razorpay webhook verification |
+| `GATEWAY_PORT` | ❌ | Default: `3000` |
+| `AUTH_PORT` | ❌ | Default: `3001` |
+| `JOB_PORT` | ❌ | Default: `3003` |
+| `BIDDING_PORT` | ❌ | Default: `3004` |
+| `PAYMENT_PORT` | ❌ | Default: `3005` |
+| `NOTIFICATION_PORT` | ❌ | Default: `3006` |
+| `CHAT_PORT` | ❌ | Default: `3007` |
 
-Commands:
+### `web/.env.local`
 
-```bash
-npm run e2e:detox:build:android
-npm run e2e:detox:test:android
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MONGODB_URI` | ✅ | MongoDB Atlas connection string |
+| `NEXTAUTH_SECRET` | ✅ | Secret for NextAuth sessions |
+| `NEXTAUTH_URL` | ✅ | App URL (default: `http://localhost:3000`) |
+| `GOOGLE_CLIENT_ID` | ❌ | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | ❌ | Google OAuth client secret |
+| `RAZORPAY_KEY_ID` | ❌ | Razorpay test key ID |
+| `RAZORPAY_KEY_SECRET` | ❌ | Razorpay test key secret |
 
-npm run e2e:detox:build:ios
-npm run e2e:detox:test:ios
-```
+---
 
-Note: Detox tests are scaffolded and require local native `android/` / `ios/` projects and emulator/simulator setup.
+## 🔒 Security
 
-## Production Hardening Included
+- JWT-based authentication with access + refresh tokens
+- bcrypt password hashing (12 rounds)
+- Helmet security headers on all backend services
+- Rate limiting on API endpoints
+- CORS protection
+- Input validation middleware
+- HTTP-only secure cookies for sessions
 
-- Error boundary: `src/components/ErrorBoundary.tsx`
-- Structured logger: `src/utils/logger.ts`
-- API timeout + network error logging in `src/services/apiClient.ts`
-- Environment split files:
-  - `.env.development`
-  - `.env.staging`
-  - `.env.production`
-- CI workflow: `.github/workflows/ci.yml` (typecheck + tests + expo-doctor)
+---
 
-## Release Readiness
+## 📄 License
 
-- App config updated in `app.json`:
-  - iOS bundle id + build number
-  - Android package + versionCode + permissions
-  - deep-link scheme
-- EAS build profiles in `eas.json`
-- Store + production docs:
-  - `docs/AppStoreReadiness.md`
-  - `docs/ProductionRunbook.md`
-
-## Validation
-
-- TypeScript compile check passes: `npx tsc --noEmit`
+Private — All rights reserved.
