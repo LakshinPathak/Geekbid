@@ -1,8 +1,8 @@
 "use client";
-import { use, useMemo, useState } from "react";
+import { use, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier } from "@/lib/utils";
+import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier, getCategoryLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Clock, TrendingDown, DollarSign, Zap, ArrowLeft, Eye, Shield, Send,
@@ -11,12 +11,15 @@ import {
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: jobId } = use(params);
-  const { jobs, bids, users, now, currentUser, acceptJob, counterBid } = useApp();
+  const { jobs, bids, users, now, currentUser, acceptJob, counterBid, milestones, fetchMilestones, updateMilestone } = useApp();
   const [counterPrice, setCounterPrice] = useState("");
   const [counterMsg, setCounterMsg] = useState("");
   const [counterError, setCounterError] = useState("");
 
   const job = useMemo(() => jobs.find(j => (j.id === jobId) || (j._id === jobId)), [jobs, jobId]);
+  const jobMilestones = useMemo(() => milestones.filter(m => m.jobId === jobId).sort((a, b) => a.order - b.order), [milestones, jobId]);
+
+  useEffect(() => { fetchMilestones(jobId); }, [jobId, fetchMilestones]);
   const jobBids = useMemo(() => bids.filter(b => b.jobId === jobId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [bids, jobId]);
 
   if (!job) return (
@@ -186,6 +189,61 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               )}
             </div>
+
+            {/* Milestones */}
+            {jobMilestones.length > 0 && (
+              <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle2 className="h-4 w-4 text-[#00FF88]" />
+                  <p className="text-[#E8E8EC] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
+                </div>
+                <div className="h-2 bg-[#1E1E2A] rounded-full mb-4 overflow-hidden">
+                  <div className="h-2 bg-[#00FF88] rounded-full transition-all" style={{ width: `${(jobMilestones.filter(m => m.status === "approved").length / jobMilestones.length) * 100}%` }} />
+                </div>
+                <div className="space-y-3">
+                  {jobMilestones.map(ms => {
+                    const statusColors: Record<string, string> = {
+                      pending: "text-[#55556A] bg-[#55556A]/10 border-[#55556A]/20",
+                      in_progress: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+                      submitted: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
+                      approved: "text-[#00FF88] bg-[#00FF88]/10 border-[#00FF88]/20",
+                      disputed: "text-red-400 bg-red-500/10 border-red-500/20",
+                    };
+                    return (
+                      <div key={ms.id} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#55556A] text-xs font-mono">#{ms.order}</span>
+                            <span className="text-[#E8E8EC] text-sm font-medium">{ms.title}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
+                              {ms.status.replace("_", " ")}
+                            </span>
+                            <span className="text-[#00FF88] text-sm font-semibold">{formatMoney(ms.amount)}</span>
+                          </div>
+                        </div>
+                        {ms.description && <p className="text-[#8A8A9A] text-xs mt-1">{ms.description}</p>}
+                        <div className="flex gap-2 mt-2">
+                          {isFreelancer && ms.status === "in_progress" && (
+                            <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
+                              className="text-xs bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 px-3 py-1 rounded-lg hover:bg-[#00FF88]/20 transition-colors">
+                              Submit
+                            </button>
+                          )}
+                          {isClient && ms.status === "submitted" && (
+                            <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
+                              className="text-xs bg-[#00FF88] text-[#0A0A0F] font-semibold px-3 py-1 rounded-lg hover:bg-[#00CC6A] transition-colors">
+                              Approve & Release
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ─── Right Column ─── */}

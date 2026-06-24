@@ -7,8 +7,25 @@ import { hashSync } from "bcryptjs";
  *
  * Populates all MongoDB collections with production-quality test data.
  * Clears existing data first. Creates proper indexes.
+ *
+ * ⚠️ SECURITY: This endpoint is disabled in production by default.
+ * Set ALLOW_SEED=true in environment variables to enable it.
  */
 export async function POST() {
+  // Block seed in production unless explicitly allowed
+  const isProduction = process.env.NODE_ENV === "production";
+  const seedAllowed = process.env.ALLOW_SEED === "true";
+
+  if (isProduction && !seedAllowed) {
+    return NextResponse.json(
+      {
+        error: "Seed endpoint is disabled in production",
+        hint: "Set ALLOW_SEED=true in environment variables to enable (not recommended)",
+      },
+      { status: 403 }
+    );
+  }
+
   try {
     const db = await getDb();
     const now = Date.now();
@@ -26,6 +43,13 @@ export async function POST() {
       db.collection("chat_rooms").deleteMany({}),
       db.collection("chat_messages").deleteMany({}),
       db.collection("refresh_tokens").deleteMany({}),
+      db.collection("reviews").deleteMany({}),
+      db.collection("milestones").deleteMany({}),
+      db.collection("referrals").deleteMany({}),
+      db.collection("teams").deleteMany({}),
+      db.collection("api_keys").deleteMany({}),
+      db.collection("assessments").deleteMany({}),
+      db.collection("assessment_results").deleteMany({}),
     ]);
 
     // ── Users ───────────────────────────────────────────────
@@ -232,6 +256,9 @@ export async function POST() {
         postedAt: new Date(now - 8 * h).toISOString(),
         deadlineAt: new Date(now + 36 * h).toISOString(),
         status: "open",
+        category: "ai_ml",
+        featured: true,
+        featuredAt: new Date(now - 7 * h).toISOString(),
       },
       {
         clientId: userIds[0],
@@ -251,6 +278,8 @@ export async function POST() {
         postedAt: new Date(now - 3 * h).toISOString(),
         deadlineAt: new Date(now + 48 * h).toISOString(),
         status: "open",
+        category: "security",
+        featured: false,
       },
       {
         clientId: userIds[0],
@@ -268,6 +297,8 @@ export async function POST() {
         acceptedBy: userIds[3],
         acceptedAt: new Date(now - 16 * h).toISOString(),
         finalPrice: 458,
+        category: "mobile",
+        featured: false,
       },
       {
         clientId: userIds[1],
@@ -282,6 +313,9 @@ export async function POST() {
         postedAt: new Date(now - 5 * h).toISOString(),
         deadlineAt: new Date(now + 72 * h).toISOString(),
         status: "open",
+        category: "blockchain",
+        featured: true,
+        featuredAt: new Date(now - 4 * h).toISOString(),
       },
       {
         clientId: userIds[1],
@@ -296,6 +330,8 @@ export async function POST() {
         postedAt: new Date(now - 12 * h).toISOString(),
         deadlineAt: new Date(now + 60 * h).toISOString(),
         status: "open",
+        category: "data_eng",
+        featured: false,
       },
       {
         clientId: userIds[0],
@@ -310,6 +346,8 @@ export async function POST() {
         postedAt: new Date(now - 1 * h).toISOString(),
         deadlineAt: new Date(now + 96 * h).toISOString(),
         status: "open",
+        category: "devops",
+        featured: false,
       },
       {
         clientId: userIds[2],
@@ -324,6 +362,8 @@ export async function POST() {
         postedAt: new Date(now - 6 * h).toISOString(),
         deadlineAt: new Date(now + 84 * h).toISOString(),
         status: "open",
+        category: "ai_ml",
+        featured: false,
       },
       {
         clientId: userIds[2],
@@ -343,6 +383,8 @@ export async function POST() {
         postedAt: new Date(now - 2 * h).toISOString(),
         deadlineAt: new Date(now + 120 * h).toISOString(),
         status: "open",
+        category: "mobile",
+        featured: false,
       },
       {
         clientId: userIds[1],
@@ -357,6 +399,8 @@ export async function POST() {
         postedAt: new Date(now - 18 * h).toISOString(),
         deadlineAt: new Date(now + 54 * h).toISOString(),
         status: "open",
+        category: "web_dev",
+        featured: false,
       },
       {
         clientId: userIds[0],
@@ -375,6 +419,8 @@ export async function POST() {
         postedAt: new Date(now - 10 * h).toISOString(),
         deadlineAt: new Date(now + 42 * h).toISOString(),
         status: "open",
+        category: "security",
+        featured: false,
       },
     ];
 
@@ -647,6 +693,147 @@ export async function POST() {
 
     await db.collection("chat_messages").insertMany(chatMessages);
 
+    // ── Reviews ─────────────────────────────────────────────
+    const reviews = [
+      {
+        jobId: jobIds[2],
+        reviewerId: userIds[0],
+        revieweeId: userIds[3],
+        rating: 5,
+        comment: "Exceptional work on the React Native optimization. Arjun reduced startup time by 60% and memory usage by 40%. Highly recommended!",
+        reviewerRole: "client",
+        createdAt: new Date(now - 3 * h).toISOString(),
+      },
+      {
+        jobId: jobIds[2],
+        reviewerId: userIds[3],
+        revieweeId: userIds[0],
+        rating: 5,
+        comment: "Great client to work with. Clear requirements, fast feedback, and prompt escrow release. Would love to work together again.",
+        reviewerRole: "freelancer",
+        createdAt: new Date(now - 2.5 * h).toISOString(),
+      },
+    ];
+
+    await db.collection("reviews").insertMany(reviews);
+
+    // Set referral codes on users
+    const refCodes = ["MAYA2026", "DEREK26", "SARAH26", "ARJUN26", "PRIYA26", "LEOCHEN", "MIRAPAT", "JAKEWIL", "ADMIN26"];
+    await Promise.all(
+      refCodes.map((code, i) =>
+        db.collection("users").updateOne(
+          { _id: userResult.insertedIds[i] },
+          { $set: { referralCode: code, referralCredits: 0, plan: "free", planLimits: { jobsPostedThisMonth: 0, bidsPlacedThisMonth: 0, monthResetAt: new Date(now + 30 * 24 * h).toISOString() } } }
+        )
+      )
+    );
+
+    // Update user average ratings
+    await db.collection("users").updateOne(
+      { _id: userResult.insertedIds[3] },
+      { $set: { averageRating: 5.0, totalReviews: 1 } }
+    );
+    await db.collection("users").updateOne(
+      { _id: userResult.insertedIds[0] },
+      { $set: { averageRating: 5.0, totalReviews: 1 } }
+    );
+
+    // ── Milestones ──────────────────────────────────────────
+    const milestones = [
+      {
+        jobId: jobIds[2],
+        title: "Startup profiling & analysis",
+        description: "Profile app startup, identify bottlenecks, document findings",
+        amount: 150,
+        order: 1,
+        status: "approved",
+        submittedAt: new Date(now - 10 * h).toISOString(),
+        approvedAt: new Date(now - 8 * h).toISOString(),
+        createdAt: new Date(now - 16 * h).toISOString(),
+      },
+      {
+        jobId: jobIds[2],
+        title: "FlatList optimization & image caching",
+        description: "Fix FlatList re-renders, implement image caching, enable Hermes",
+        amount: 200,
+        order: 2,
+        status: "approved",
+        submittedAt: new Date(now - 6 * h).toISOString(),
+        approvedAt: new Date(now - 4 * h).toISOString(),
+        createdAt: new Date(now - 16 * h).toISOString(),
+      },
+      {
+        jobId: jobIds[2],
+        title: "Final benchmark & documentation",
+        description: "Before/after metrics, documentation of changes",
+        amount: 108,
+        order: 3,
+        status: "approved",
+        submittedAt: new Date(now - 3 * h).toISOString(),
+        approvedAt: new Date(now - 2 * h).toISOString(),
+        createdAt: new Date(now - 16 * h).toISOString(),
+      },
+    ];
+
+    await db.collection("milestones").insertMany(milestones);
+
+    // ── Assessments ─────────────────────────────────────────
+    const assessments = [
+      {
+        skill: "React",
+        timeLimit: 900,
+        passingScore: 70,
+        questions: [
+          { question: "What hook is used to manage state in functional components?", options: ["useEffect", "useState", "useContext", "useReducer"], correctIndex: 1 },
+          { question: "What does the useEffect hook do?", options: ["Manages state", "Handles side effects", "Creates context", "Memoizes values"], correctIndex: 1 },
+          { question: "What is the virtual DOM?", options: ["A direct copy of the real DOM", "A lightweight JS representation of the DOM", "A browser API", "A CSS framework"], correctIndex: 1 },
+          { question: "How do you pass data from parent to child?", options: ["Context", "Props", "State", "Refs"], correctIndex: 1 },
+          { question: "What is JSX?", options: ["A database", "A syntax extension for JS", "A CSS preprocessor", "A build tool"], correctIndex: 1 },
+          { question: "Which method is used to render a React element?", options: ["React.render", "ReactDOM.render", "React.create", "React.mount"], correctIndex: 1 },
+          { question: "What is the purpose of keys in React lists?", options: ["Styling", "Unique identification of elements", "Event handling", "State management"], correctIndex: 1 },
+          { question: "What does React.memo do?", options: ["Creates memos", "Memoizes component to prevent re-renders", "Manages memory", "Creates refs"], correctIndex: 1 },
+          { question: "What is a controlled component?", options: ["Component with no state", "Component where form data is handled by React state", "Component with refs", "Server component"], correctIndex: 1 },
+          { question: "What is the Context API used for?", options: ["Routing", "Sharing state without prop drilling", "HTTP requests", "Animation"], correctIndex: 1 },
+        ],
+      },
+      {
+        skill: "Node.js",
+        timeLimit: 900,
+        passingScore: 70,
+        questions: [
+          { question: "What is Node.js built on?", options: ["SpiderMonkey", "V8 engine", "Chakra", "Rhino"], correctIndex: 1 },
+          { question: "What is the event loop?", options: ["A for loop", "A mechanism to handle async operations", "A UI framework", "A database query"], correctIndex: 1 },
+          { question: "Which module is used for file operations?", options: ["http", "fs", "path", "url"], correctIndex: 1 },
+          { question: "What does npm stand for?", options: ["Node Package Manager", "New Package Manager", "Node Project Manager", "Network Package Manager"], correctIndex: 0 },
+          { question: "How do you import a module in Node.js?", options: ["import()", "require()", "include()", "load()"], correctIndex: 1 },
+          { question: "What is middleware in Express?", options: ["A database", "Functions that access req/res objects", "A template engine", "A CSS framework"], correctIndex: 1 },
+          { question: "What is the purpose of package.json?", options: ["CSS styling", "Project metadata and dependencies", "Database config", "Server config"], correctIndex: 1 },
+          { question: "Which method starts an Express server?", options: ["app.start()", "app.listen()", "app.run()", "app.begin()"], correctIndex: 1 },
+          { question: "What are streams in Node.js?", options: ["CSS animations", "Objects for reading/writing data continuously", "Database connections", "HTTP headers"], correctIndex: 1 },
+          { question: "What is the purpose of process.env?", options: ["CPU info", "Environment variables", "Memory management", "File paths"], correctIndex: 1 },
+        ],
+      },
+      {
+        skill: "TypeScript",
+        timeLimit: 900,
+        passingScore: 70,
+        questions: [
+          { question: "What is TypeScript?", options: ["A database", "A typed superset of JavaScript", "A CSS framework", "A build tool"], correctIndex: 1 },
+          { question: "What keyword declares a variable type?", options: ["var", "let", "type", "interface"], correctIndex: 2 },
+          { question: "What is an interface in TypeScript?", options: ["A class", "A contract for object shape", "A function", "A module"], correctIndex: 1 },
+          { question: "What does the 'any' type do?", options: ["Throws error", "Opts out of type checking", "Creates array", "Defines number"], correctIndex: 1 },
+          { question: "How do you make a property optional?", options: ["Add !", "Add ?", "Add *", "Add &"], correctIndex: 1 },
+          { question: "What are generics?", options: ["Generic functions", "Reusable type-safe components", "Global variables", "Default exports"], correctIndex: 1 },
+          { question: "What is a union type?", options: ["A + B", "A | B", "A & B", "A * B"], correctIndex: 1 },
+          { question: "What does 'readonly' do?", options: ["Makes mutable", "Prevents reassignment", "Creates copy", "Deletes property"], correctIndex: 1 },
+          { question: "What is type narrowing?", options: ["Making types smaller", "Refining types within conditional blocks", "Removing types", "Type casting"], correctIndex: 1 },
+          { question: "What file configures TypeScript?", options: ["package.json", "tsconfig.json", "config.ts", "types.json"], correctIndex: 1 },
+        ],
+      },
+    ];
+
+    await db.collection("assessments").insertMany(assessments);
+
     // ── Disputes ────────────────────────────────────────────
     // (No open disputes initially — will be created through app interactions)
 
@@ -656,6 +843,7 @@ export async function POST() {
       db.collection("users").createIndex({ googleId: 1 }, { sparse: true }),
       db.collection("users").createIndex({ role: 1 }),
       db.collection("jobs").createIndex({ status: 1, postedAt: -1 }),
+      db.collection("jobs").createIndex({ category: 1, status: 1, postedAt: -1 }),
       db.collection("jobs").createIndex({ clientId: 1 }),
       db.collection("jobs").createIndex({ acceptedBy: 1 }),
       db.collection("bids").createIndex({ jobId: 1 }),
@@ -676,6 +864,17 @@ export async function POST() {
       db
         .collection("refresh_tokens")
         .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+      db.collection("reviews").createIndex({ jobId: 1, reviewerId: 1 }, { unique: true }),
+      db.collection("reviews").createIndex({ revieweeId: 1, createdAt: -1 }),
+      db.collection("milestones").createIndex({ jobId: 1, order: 1 }),
+      db.collection("referrals").createIndex({ referrerUserId: 1 }),
+      db.collection("referrals").createIndex({ referralCode: 1 }),
+      db.collection("assessments").createIndex({ skill: 1 }),
+      db.collection("assessment_results").createIndex({ userId: 1, assessmentId: 1 }),
+      db.collection("assessment_results").createIndex({ userId: 1, skill: 1 }),
+      db.collection("teams").createIndex({ ownerId: 1 }),
+      db.collection("teams").createIndex({ memberIds: 1 }),
+      db.collection("api_keys").createIndex({ userId: 1 }),
     ]);
 
     return NextResponse.json({
@@ -688,6 +887,9 @@ export async function POST() {
         notifications: notifications.length,
         chatRooms: chatRooms.length,
         chatMessages: chatMessages.length,
+        reviews: reviews.length,
+        milestones: milestones.length,
+        assessments: assessments.length,
       },
       credentials: {
         clients: [

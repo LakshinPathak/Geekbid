@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
 
 // GET /api/bids?jobId=xxx (public)
 export async function GET(req: NextRequest) {
@@ -47,6 +48,23 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb();
+
+    // Plan limit enforcement for freelancers
+    const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+    if (user) {
+      const plan = user.plan ?? "free";
+      if (plan === "free") {
+        const limits = user.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+        if (new Date(limits.monthResetAt) < new Date()) {
+          await db.collection("users").updateOne({ _id: user._id }, {
+            $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
+          });
+        } else if (limits.bidsPlacedThisMonth >= 10) {
+          return NextResponse.json({ error: "Free plan limit: 10 bids/month. Upgrade to Pro for unlimited." }, { status: 403 });
+        }
+      }
+    }
+
     const bid = {
       jobId,
       freelancerId: auth.payload.userId,
@@ -57,6 +75,10 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await db.collection("bids").insertOne(bid);
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(auth.payload.userId) },
+      { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
+    );
     return NextResponse.json(
       { ...bid, _id: result.insertedId.toString(), id: result.insertedId.toString() },
       { status: 201 }

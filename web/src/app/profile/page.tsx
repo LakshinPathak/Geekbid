@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import {
   User, Star, Briefcase, Clock, DollarSign, MessageSquare,
   CheckCircle2, Code, Shield, Pencil, GitBranch, Trash2, ChevronDown,
-  X, Save, Loader2, AlertTriangle,
+  X, Save, Loader2, AlertTriangle, Share2, Copy, Users,
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { currentUser, jobs, bids, mounted, updateProfile } = useApp();
+  const { currentUser, jobs, bids, mounted, updateProfile, reviews, users, verifyGithub, referralStats } = useApp();
   const router = useRouter();
 
   const [fullName, setFullName] = useState("");
@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [verifyingGithub, setVerifyingGithub] = useState(false);
 
   useEffect(() => {
     if (mounted && !currentUser) router.replace("/login");
@@ -128,6 +129,11 @@ export default function ProfilePage() {
                 <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-3 py-1 text-xs font-medium capitalize">
                   {currentUser.role}
                 </span>
+                {currentUser.averageRating != null && currentUser.averageRating > 0 && (
+                  <span className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full px-3 py-1 text-xs font-medium">
+                    <Star className="h-3 w-3 fill-yellow-500" /> {currentUser.averageRating.toFixed(1)} ({currentUser.totalReviews})
+                  </span>
+                )}
                 {currentUser.availability && (
                   <span className={`rounded-full px-3 py-1 text-xs font-medium border ${
                     currentUser.availability === "available" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" :
@@ -160,6 +166,98 @@ export default function ProfilePage() {
             ))}
           </div>
         </div>
+
+        {/* ── Reviews Section ── */}
+        {(() => {
+          const uid = currentUser.id ?? currentUser._id ?? "";
+          const myReviews = reviews.filter(r => r.revieweeId === uid);
+          if (myReviews.length === 0) return null;
+          return (
+            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8 mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">
+                  Reviews ({myReviews.length})
+                </h2>
+                {currentUser.averageRating && (
+                  <span className="ml-auto flex items-center gap-1 text-yellow-500 text-sm font-semibold">
+                    <Star className="h-4 w-4 fill-yellow-500" /> {currentUser.averageRating.toFixed(1)}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-4">
+                {myReviews.map(review => {
+                  const reviewer = users.find(u => u.id === review.reviewerId || u._id === review.reviewerId);
+                  return (
+                    <div key={review.id} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-[#00FF88]/10 text-[#00FF88] text-xs font-semibold rounded-full flex items-center justify-center">
+                            {reviewer?.avatarInitial ?? "?"}
+                          </div>
+                          <div>
+                            <p className="text-[#E8E8EC] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
+                            <p className="text-[#55556A] text-xs capitalize">{review.reviewerRole}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? "text-yellow-500 fill-yellow-500" : "text-[#55556A]"}`} />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && <p className="text-[#8A8A9A] text-sm">{review.comment}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Referral Section ── */}
+        {referralStats && (
+          <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8 mt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Share2 className="h-4 w-4 text-[#00FF88]" />
+              <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">Referral Program</h2>
+            </div>
+            <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4 mb-4">
+              <p className="text-[#55556A] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/login?ref=${referralStats.referralCode}`}
+                  className="flex-1 h-10 px-3 bg-[#12121A] border border-[#1E1E2A] rounded-lg text-[#E8E8EC] text-sm"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/login?ref=${referralStats.referralCode}`);
+                    toast.success("Link copied!");
+                  }}
+                  className="h-10 px-4 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-lg text-sm hover:bg-[#00CC6A] transition-all flex items-center gap-1"
+                >
+                  <Copy className="h-3.5 w-3.5" /> Copy
+                </button>
+              </div>
+              <p className="text-[#55556A] text-xs mt-2">Code: <span className="text-[#00FF88] font-mono">{referralStats.referralCode}</span></p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Invites", value: String(referralStats.totalInvites), icon: Users },
+                { label: "Signed Up", value: String(referralStats.signedUp), icon: CheckCircle2 },
+                { label: "Completed", value: String(referralStats.completed), icon: Star },
+                { label: "Credits", value: `$${referralStats.totalCredits}`, icon: DollarSign },
+              ].map(s => (
+                <div key={s.label} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-3 text-center">
+                  <s.icon className="h-4 w-4 text-[#55556A] mx-auto mb-1.5" />
+                  <p className="font-heading text-lg font-bold text-[#E8E8EC]">{s.value}</p>
+                  <p className="text-[10px] text-[#55556A]">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Edit Profile Form ── */}
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8 mt-6">
@@ -285,14 +383,38 @@ export default function ProfilePage() {
                 {/* GitHub */}
                 <div>
                   <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">GitHub Username</label>
-                  <div className="relative">
-                    <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
-                    <input
-                      value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
-                      className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
-                      placeholder="your-github-handle"
-                    />
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                      <input
+                        value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
+                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                        placeholder="your-github-handle"
+                      />
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!githubUsername.trim()) return;
+                        setVerifyingGithub(true);
+                        const r = await verifyGithub(githubUsername.trim());
+                        setVerifyingGithub(false);
+                        r.ok ? toast.success(r.message) : toast.error(r.message);
+                      }}
+                      disabled={verifyingGithub || !githubUsername.trim()}
+                      className="h-11 px-4 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40 shrink-0"
+                    >
+                      {verifyingGithub ? "Verifying..." : currentUser?.githubVerified ? "Re-verify" : "Verify"}
+                    </button>
                   </div>
+                  {currentUser?.githubVerified && (
+                    <div className="flex items-center gap-3 mt-2 p-3 bg-[#00FF88]/5 border border-[#00FF88]/20 rounded-xl">
+                      <CheckCircle2 className="h-4 w-4 text-[#00FF88]" />
+                      <span className="text-[#00FF88] text-xs font-medium">Verified</span>
+                      <span className="text-[#8A8A9A] text-xs">
+                        {currentUser.githubData?.publicRepos ?? 0} repos · {currentUser.githubData?.followers ?? 0} followers
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </>

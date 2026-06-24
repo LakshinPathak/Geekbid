@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { getCurrentPrice, getHoursToFloor, formatHoursToFloor, formatMoney, SKILL_TAXONOMY, timeAgo } from "@/lib/utils";
+import { getCurrentPrice, getHoursToFloor, formatHoursToFloor, formatMoney, SKILL_TAXONOMY, timeAgo, JOB_CATEGORIES, getCategoryLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Search, Plus, X, TrendingDown, Clock, Sparkles,
@@ -22,11 +22,12 @@ const SORT_OPTIONS: { value: SortOption; label: string; icon: typeof Sparkles }[
 ];
 
 export default function FeedPage() {
-  const { jobs, now, users, currentUser, acceptJob, toggleWatch, watchedJobIds, mounted } = useApp();
+  const { jobs, now, users, currentUser, acceptJob, toggleWatch, watchedJobIds, mounted, recommendedJobs } = useApp();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
+  const [filterCategory, setFilterCategory] = useState<string>("all");
   const [showSkillPicker, setShowSkillPicker] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,8 @@ export default function FeedPage() {
     const filtered = jobs
       .filter(j => j.status === "open")
       .filter(j => q ? `${j.title} ${j.skillsRequired.join(" ")}`.toLowerCase().includes(q) : true)
-      .filter(j => filterSkills.length > 0 ? filterSkills.some(s => j.skillsRequired.includes(s)) : true);
+      .filter(j => filterSkills.length > 0 ? filterSkills.some(s => j.skillsRequired.includes(s)) : true)
+      .filter(j => filterCategory !== "all" ? j.category === filterCategory : true);
 
     switch (sortBy) {
       case "highest_price": filtered.sort((a, b) => getCurrentPrice(b, now) - getCurrentPrice(a, now)); break;
@@ -51,7 +53,7 @@ export default function FeedPage() {
       default: filtered.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
     }
     return filtered;
-  }, [jobs, search, sortBy, filterSkills, now, currentUser?.skills]);
+  }, [jobs, search, sortBy, filterSkills, filterCategory, now, currentUser?.skills]);
 
   const totalValue = useMemo(() => openJobs.reduce((s, j) => s + getCurrentPrice(j, now), 0), [openJobs, now]);
   const avgDecay = useMemo(() => {
@@ -162,6 +164,66 @@ export default function FeedPage() {
         )}
       </div>
 
+      {/* ── Category Tabs ── */}
+      <div className="max-w-7xl mx-auto px-6 mt-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilterCategory("all")}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${
+              filterCategory === "all"
+                ? "bg-[#00FF88] text-[#0A0A0F] border-[#00FF88]"
+                : "bg-[#12121A] border-[#1E1E2A] text-[#8A8A9A] hover:text-[#E8E8EC] hover:border-[#00FF88]/30"
+            }`}
+          >
+            All
+          </button>
+          {JOB_CATEGORIES.map(cat => (
+            <button
+              key={cat.value}
+              onClick={() => setFilterCategory(cat.value)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                filterCategory === cat.value
+                  ? "bg-[#00FF88] text-[#0A0A0F] border-[#00FF88]"
+                  : "bg-[#12121A] border-[#1E1E2A] text-[#8A8A9A] hover:text-[#E8E8EC] hover:border-[#00FF88]/30"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Recommended for You ── */}
+      {currentUser?.role === "freelancer" && recommendedJobs.length > 0 && filterCategory === "all" && !search && filterSkills.length === 0 && (
+        <div className="max-w-7xl mx-auto px-6 mt-6">
+          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-3 flex items-center gap-2">
+            <Target className="h-5 w-5 text-[#00FF88]" /> Recommended for You
+          </h2>
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {recommendedJobs.slice(0, 5).map(job => {
+              const current = getCurrentPrice(job, now);
+              const jid = job.id ?? job._id ?? "";
+              return (
+                <Link key={jid} href={`/jobs/${jid}`} className="shrink-0 w-72">
+                  <div className="bg-[#12121A] border border-[#00FF88]/20 rounded-2xl p-4 hover:border-[#00FF88]/40 transition-all">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[10px] font-bold">
+                        {job.matchScore}% Match
+                      </span>
+                      {job.category && (
+                        <span className="text-[#55556A] text-[10px]">{getCategoryLabel(job.category)}</span>
+                      )}
+                    </div>
+                    <h3 className="font-heading text-sm font-semibold text-[#E8E8EC] line-clamp-2">{job.title}</h3>
+                    <p className="font-heading text-lg font-bold text-[#00FF88] mt-2">{formatMoney(current)}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Job Grid ── */}
       <div className="max-w-7xl mx-auto px-6 mt-6 pb-12">
         {openJobs.length === 0 ? (
@@ -171,7 +233,7 @@ export default function FeedPage() {
             </div>
             <h3 className="text-lg font-bold text-[#E8E8EC]">No jobs match your filters</h3>
             <p className="text-sm text-[#8A8A9A] mt-1">Try broadening your search</p>
-            <button onClick={() => { setSearch(""); setFilterSkills([]); }}
+            <button onClick={() => { setSearch(""); setFilterSkills([]); setFilterCategory("all"); }}
               className="mt-4 px-6 py-2 border border-[#1E1E2A] text-[#E8E8EC] rounded-xl text-sm hover:bg-[#12121A] transition-colors">
               Clear filters
             </button>
@@ -186,11 +248,16 @@ export default function FeedPage() {
               const deadlineMs = new Date(job.deadlineAt).getTime() - now.getTime();
               const deadlineHrs = Math.max(0, Math.floor(deadlineMs / 3600000));
               const jobId = job.id ?? job._id ?? "";
+              const matchScore = currentUser?.role === "freelancer" && currentUser.skills?.length > 0 && job.skillsRequired.length > 0
+                ? Math.round((job.skillsRequired.filter(s => currentUser.skills.includes(s)).length / job.skillsRequired.length) * 100)
+                : 0;
 
               return (
                 <div key={jobId} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
                   <Link href={`/jobs/${jobId}`}>
-                    <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5 hover:border-[#00FF88]/20 transition-all duration-300 group cursor-pointer">
+                    <div className={`bg-[#12121A] border rounded-2xl p-5 hover:border-[#00FF88]/20 transition-all duration-300 group cursor-pointer ${
+                      job.featured ? "border-yellow-500/40 ring-1 ring-yellow-500/10" : "border-[#1E1E2A]"
+                    }`}>
                       {/* Top row */}
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2">
@@ -199,9 +266,25 @@ export default function FeedPage() {
                           </div>
                           <span className="text-[#8A8A9A] text-xs">{client?.fullName ?? "Client"}</span>
                         </div>
-                        <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[10px] font-medium">
-                          Open
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {matchScore > 0 && (
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                              matchScore >= 70 ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            }`}>
+                              {matchScore}% Match
+                            </span>
+                          )}
+                          {job.featured && (
+                            <span className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-bold">
+                              Featured
+                            </span>
+                          )}
+                          {job.category && (
+                            <span className="bg-[#1A1A24] text-[#8A8A9A] border border-[#1E1E2A] rounded-full px-2.5 py-0.5 text-[10px] font-medium">
+                              {getCategoryLabel(job.category)}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Title */}

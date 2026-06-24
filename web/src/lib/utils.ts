@@ -46,7 +46,30 @@ export type User = {
   geekScore: number; skills: string[]; bio: string; isVerified: boolean;
   company?: string; githubUsername?: string; availability?: string;
   hourlyRateMin?: number; hourlyRateMax?: number;
+  averageRating?: number; totalReviews?: number;
+  githubVerified?: boolean; githubData?: { publicRepos: number; followers: number; profileUrl: string; verifiedAt: string };
+  referralCode?: string; referredBy?: string; referralCredits?: number;
+  plan?: 'free' | 'pro' | 'enterprise'; planLimits?: { jobsPostedThisMonth: number; bidsPlacedThisMonth: number; monthResetAt: string };
+  teamId?: string; teamRole?: 'owner' | 'member';
+  verifiedSkills?: string[];
 };
+
+export type JobCategory = 'ai_ml' | 'web_dev' | 'mobile' | 'devops' | 'security' | 'data_eng' | 'blockchain' | 'design' | 'qa' | 'other';
+
+export const JOB_CATEGORIES: { value: JobCategory; label: string }[] = [
+  { value: 'ai_ml', label: 'AI/ML' },
+  { value: 'web_dev', label: 'Web Development' },
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'devops', label: 'DevOps/Cloud' },
+  { value: 'security', label: 'Security' },
+  { value: 'data_eng', label: 'Data Engineering' },
+  { value: 'blockchain', label: 'Blockchain/Web3' },
+  { value: 'design', label: 'Design' },
+  { value: 'qa', label: 'QA/Testing' },
+  { value: 'other', label: 'Other' },
+];
+
+export const getCategoryLabel = (value: string) => JOB_CATEGORIES.find(c => c.value === value)?.label ?? value;
 
 export type Job = {
   id: string; _id?: string; clientId: string; title: string; description: string;
@@ -54,7 +77,10 @@ export type Job = {
   decayRatePerHour: number; postedAt: string; deadlineAt: string;
   estimatedHours: number; status: 'open' | 'accepted' | 'expired';
   acceptedBy?: string; acceptedAt?: string; finalPrice?: number;
-  currentPrice?: number;
+  currentPrice?: number; category?: JobCategory;
+  visibility?: 'public' | 'invite_only';
+  featured?: boolean; featuredAt?: string;
+  type?: 'auction' | 'direct_offer'; offeredTo?: string; offerStatus?: 'pending' | 'accepted' | 'declined';
 };
 
 export type Bid = {
@@ -81,6 +107,46 @@ export type Dispute = {
 
 export type ChatMessage = { id: string; roomId: string; senderId: string; text: string; createdAt: string; };
 export type ChatRoom = { id: string; jobId: string; participantIds: string[]; updatedAt: string; };
+
+export type Review = {
+  id: string; _id?: string; jobId: string; reviewerId: string; revieweeId: string;
+  rating: number; comment: string; reviewerRole: 'client' | 'freelancer'; createdAt: string;
+};
+
+export type Milestone = {
+  id: string; _id?: string; jobId: string; title: string; description: string;
+  amount: number; order: number; status: 'pending' | 'in_progress' | 'submitted' | 'approved' | 'disputed';
+  submittedAt?: string; approvedAt?: string; createdAt: string;
+};
+
+export type Referral = {
+  id: string; _id?: string; referrerUserId: string; referredUserId: string;
+  referralCode: string; status: 'signed_up' | 'first_job_completed' | 'credited';
+  creditAmount: number; createdAt: string; completedAt?: string;
+};
+
+export type Team = {
+  id: string; _id?: string; name: string; ownerId: string;
+  memberIds: string[]; invites: { email: string; status: string; invitedAt: string }[];
+  createdAt: string;
+};
+
+export type ApiKey = {
+  id: string; _id?: string; userId: string; key: string; name: string;
+  lastUsedAt?: string; createdAt: string; revokedAt?: string;
+};
+
+export type Assessment = {
+  id: string; _id?: string; skill: string;
+  questions: { question: string; options: string[]; correctIndex: number }[];
+  timeLimit: number; passingScore: number;
+};
+
+export type AssessmentResult = {
+  id: string; _id?: string; userId: string; assessmentId: string; skill: string;
+  score: number; passed: boolean; answers: number[];
+  startedAt: string; completedAt: string;
+};
 
 // Geek Score
 export const GEEK_TIERS = [

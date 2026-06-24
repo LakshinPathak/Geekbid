@@ -18,6 +18,8 @@ import {
   type Dispute,
   type ChatRoom,
   type ChatMessage,
+  type Review,
+  type Milestone,
   type Role,
   getCurrentPrice,
 } from "@/lib/utils";
@@ -42,6 +44,9 @@ type AppState = {
   disputes: Dispute[];
   chatRooms: ChatRoom[];
   chatMessages: ChatMessage[];
+  reviews: Review[];
+  recommendedJobs: (Job & { matchScore: number })[];
+  milestones: Milestone[];
   watchedJobIds: string[];
   now: Date;
   mounted: boolean;
@@ -69,6 +74,18 @@ type AppState = {
   markNotificationRead: (nId: string) => void;
   markAllRead: () => void;
   sendMessage: (roomId: string, text: string) => Promise<ActionResult>;
+  submitReview: (jobId: string, revieweeId: string, rating: number, comment: string) => Promise<ActionResult>;
+  fetchReviews: (userId?: string) => Promise<void>;
+  referralStats: { referralCode: string; totalInvites: number; signedUp: number; completed: number; totalCredits: number } | null;
+  fetchReferralStats: () => Promise<void>;
+  fetchMilestones: (jobId: string) => Promise<void>;
+  createMilestones: (jobId: string, milestones: { title: string; description?: string; amount: number }[]) => Promise<ActionResult>;
+  updateMilestone: (milestoneId: string, action: string) => Promise<ActionResult>;
+  createDirectOffer: (data: { title: string; description?: string; skillsRequired?: string[]; price: number; freelancerId: string; estimatedHours?: number; category?: string }) => Promise<ActionResult>;
+  respondToOffer: (jobId: string, response: "accepted" | "declined") => Promise<ActionResult>;
+  verifyGithub: (githubUsername: string) => Promise<ActionResult>;
+  toggleFeatured: (jobId: string, featured: boolean) => Promise<ActionResult>;
+  fetchRecommendedJobs: () => Promise<void>;
   fetchJobs: () => Promise<void>;
   fetchBids: () => Promise<void>;
   fetchTransactions: () => Promise<void>;
@@ -132,6 +149,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<(Job & { matchScore: number })[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [referralStats, setReferralStats] = useState<{ referralCode: string; totalInvites: number; signedUp: number; completed: number; totalCredits: number } | null>(null);
   const [watchedJobIds, setWatchedJobIds] = useState<string[]>([]);
   const [now, setNow] = useState<Date>(() => new Date());
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -344,11 +365,216 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [getValidToken]);
 
+  const fetchReviews = useCallback(async (userId?: string) => {
+    try {
+      const url = userId ? `/api/reviews?userId=${userId}` : "/api/reviews";
+      const res = await apiRequest(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setReviews(data);
+      }
+    } catch (err) {
+      console.error("[fetchReviews]", err);
+    }
+  }, []);
+
+  const submitReview = useCallback(
+    async (jobId: string, revieweeId: string, rating: number, comment: string): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+
+      try {
+        const res = await apiRequest("/api/reviews", {
+          method: "POST",
+          body: JSON.stringify({ jobId, revieweeId, rating, comment }),
+          accessToken: token,
+        });
+        const data = await res.json();
+        if (data.error) return { ok: false, message: data.error };
+        await fetchReviews();
+        return { ok: true, message: "Review submitted!" };
+      } catch {
+        return { ok: false, message: "Failed to submit review" };
+      }
+    },
+    [getValidToken, fetchReviews]
+  );
+
+  const fetchRecommendedJobs = useCallback(async () => {
+    try {
+      const token = await getValidToken();
+      if (!token) return;
+      const res = await apiRequest("/api/jobs/recommended", { accessToken: token });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setRecommendedJobs(data);
+      }
+    } catch (err) {
+      console.error("[fetchRecommendedJobs]", err);
+    }
+  }, [getValidToken]);
+
+  const fetchReferralStats = useCallback(async () => {
+    try {
+      const token = await getValidToken();
+      if (!token) return;
+      const res = await apiRequest("/api/referrals", { accessToken: token });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.error) setReferralStats(data);
+      }
+    } catch (err) {
+      console.error("[fetchReferralStats]", err);
+    }
+  }, [getValidToken]);
+
+  const fetchMilestones = useCallback(async (jobId: string) => {
+    try {
+      const res = await apiRequest(`/api/milestones?jobId=${jobId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setMilestones(data);
+      }
+    } catch (err) {
+      console.error("[fetchMilestones]", err);
+    }
+  }, []);
+
+  const createMilestones = useCallback(
+    async (jobId: string, ms: { title: string; description?: string; amount: number }[]): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/milestones", {
+          method: "POST",
+          body: JSON.stringify({ jobId, milestones: ms }),
+          accessToken: token,
+        });
+        const data = await res.json();
+        if (data.error) return { ok: false, message: data.error };
+        await fetchMilestones(jobId);
+        return { ok: true, message: "Milestones created!" };
+      } catch {
+        return { ok: false, message: "Failed to create milestones" };
+      }
+    },
+    [getValidToken, fetchMilestones]
+  );
+
+  const updateMilestone = useCallback(
+    async (milestoneId: string, action: string): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/milestones", {
+          method: "PATCH",
+          body: JSON.stringify({ milestoneId, action }),
+          accessToken: token,
+        });
+        const data = await res.json();
+        if (data.error) return { ok: false, message: data.error };
+        const milestone = milestones.find(m => m.id === milestoneId || m._id === milestoneId);
+        if (milestone) await fetchMilestones(milestone.jobId);
+        return { ok: true, message: `Milestone ${action}d!` };
+      } catch {
+        return { ok: false, message: "Failed to update milestone" };
+      }
+    },
+    [getValidToken, milestones, fetchMilestones]
+  );
+
+  const createDirectOffer = useCallback(
+    async (data: { title: string; description?: string; skillsRequired?: string[]; price: number; freelancerId: string; estimatedHours?: number; category?: string }): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/jobs/direct-offer", {
+          method: "POST",
+          body: JSON.stringify(data),
+          accessToken: token,
+        });
+        const d = await res.json();
+        if (d.error) return { ok: false, message: d.error };
+        await fetchJobs();
+        return { ok: true, message: "Direct offer sent!" };
+      } catch {
+        return { ok: false, message: "Failed to create offer" };
+      }
+    },
+    [getValidToken, fetchJobs]
+  );
+
+  const respondToOffer = useCallback(
+    async (jobId: string, response: "accepted" | "declined"): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/jobs/offer-response", {
+          method: "PATCH",
+          body: JSON.stringify({ jobId, response }),
+          accessToken: token,
+        });
+        const d = await res.json();
+        if (d.error) return { ok: false, message: d.error };
+        await Promise.all([fetchJobs(), fetchTransactions()]);
+        return { ok: true, message: response === "accepted" ? "Offer accepted!" : "Offer declined" };
+      } catch {
+        return { ok: false, message: "Failed to respond" };
+      }
+    },
+    [getValidToken, fetchJobs, fetchTransactions]
+  );
+
+  const verifyGithub = useCallback(
+    async (githubUsername: string): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/user/verify-github", {
+          method: "POST",
+          body: JSON.stringify({ githubUsername }),
+          accessToken: token,
+        });
+        const data = await res.json();
+        if (data.error) return { ok: false, message: data.error };
+        if (currentUser) {
+          const updated = { ...currentUser, githubVerified: true, githubData: data.githubData, githubUsername };
+          setCurrentUser(updated as User);
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updated));
+        }
+        return { ok: true, message: "GitHub verified!" };
+      } catch {
+        return { ok: false, message: "Failed to verify GitHub" };
+      }
+    },
+    [getValidToken, currentUser]
+  );
+
+  const toggleFeatured = useCallback(
+    async (jobId: string, featured: boolean): Promise<ActionResult> => {
+      const token = await getValidToken();
+      if (!token) return { ok: false, message: "Not authenticated" };
+      try {
+        const res = await apiRequest("/api/jobs/feature", {
+          method: "PATCH",
+          body: JSON.stringify({ jobId, featured }),
+          accessToken: token,
+        });
+        const data = await res.json();
+        if (data.error) return { ok: false, message: data.error };
+        await fetchJobs();
+        return { ok: true, message: featured ? "Job featured!" : "Unfeatured" };
+      } catch {
+        return { ok: false, message: "Failed to toggle featured" };
+      }
+    },
+    [getValidToken, fetchJobs]
+  );
+
   // ── Load all data after auth ──────────────────────────────
   const loadAllData = useCallback(async () => {
     await fetchJobs();
     await fetchBids();
-    // Protected routes — only fetch if logged in
     if (auth.isLoggedIn) {
       await Promise.all([
         fetchUsers(),
@@ -356,6 +582,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         fetchNotifications(),
         fetchChatRooms(),
         fetchDisputes(),
+        fetchReviews(),
+        fetchRecommendedJobs(),
+        fetchReferralStats(),
       ]);
     }
   }, [
@@ -367,6 +596,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchNotifications,
     fetchChatRooms,
     fetchDisputes,
+    fetchReviews,
+    fetchRecommendedJobs,
+    fetchReferralStats,
   ]);
 
   // ── Hydration: restore session on mount ───────────────────
@@ -517,6 +749,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDisputes([]);
     setChatRooms([]);
     setChatMessages([]);
+    setReviews([]);
+    setRecommendedJobs([]);
   }, [clearAuth]);
 
   // ── Switch Role (dev/demo helper — logs in as different user) ──
@@ -840,6 +1074,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       disputes,
       chatRooms,
       chatMessages,
+      reviews,
+      recommendedJobs,
       watchedJobIds,
       now,
       mounted,
@@ -849,6 +1085,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       switchRole,
+      submitReview,
+      fetchReviews,
+      referralStats,
+      fetchReferralStats,
+      milestones,
+      fetchMilestones,
+      createMilestones,
+      updateMilestone,
+      createDirectOffer,
+      respondToOffer,
+      verifyGithub,
+      toggleFeatured,
+      fetchRecommendedJobs,
       acceptJob,
       counterBid,
       postJob,
@@ -880,6 +1129,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       disputes,
       chatRooms,
       chatMessages,
+      reviews,
+      recommendedJobs,
       watchedJobIds,
       now,
       mounted,
@@ -889,6 +1140,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       switchRole,
+      submitReview,
+      fetchReviews,
+      referralStats,
+      fetchReferralStats,
+      milestones,
+      fetchMilestones,
+      createMilestones,
+      updateMilestone,
+      createDirectOffer,
+      respondToOffer,
+      verifyGithub,
+      toggleFeatured,
+      fetchRecommendedJobs,
       acceptJob,
       counterBid,
       postJob,

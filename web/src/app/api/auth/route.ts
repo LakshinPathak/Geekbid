@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerUser, loginUser, setRefreshCookie } from "@/lib/auth";
+import { getDb } from "@/lib/mongodb";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, name, email, password, role } = body;
+    const { action, name, email, password, role, referralCode } = body;
 
     // ─── REGISTER ────────────────────────────────────────────
     if (action === "register") {
@@ -29,11 +30,31 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Set refresh token as HttpOnly cookie + return access token in body
+      // Track referral if code provided
+      if (referralCode && result.user) {
+        const db = await getDb();
+        const referrer = await db.collection("users").findOne({ referralCode });
+        if (referrer) {
+          const userId = (result.user as Record<string, unknown>).id as string;
+          await db.collection("referrals").insertOne({
+            referrerUserId: referrer._id.toString(),
+            referredUserId: userId,
+            referralCode,
+            status: "signed_up",
+            creditAmount: 0,
+            createdAt: new Date().toISOString(),
+          });
+          await db.collection("users").updateOne(
+            { _id: (await import("mongodb")).ObjectId.createFromHexString(userId) },
+            { $set: { referredBy: referralCode } }
+          );
+        }
+      }
+
       const response = NextResponse.json({
         accessToken: result.accessToken,
         user: result.user,
-        expiresIn: 900, // 15 minutes in seconds
+        expiresIn: 900,
       });
 
       return setRefreshCookie(response, result.refreshToken);

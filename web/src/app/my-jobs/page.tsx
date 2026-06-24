@@ -2,17 +2,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
-import { formatMoney, getCurrentPrice, timeAgo } from "@/lib/utils";
+import { formatMoney, getCurrentPrice, timeAgo, getCategoryLabel } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Briefcase, Clock, TrendingDown, CheckCircle2, PlusCircle,
-  Calendar, MessageSquare, ArrowRight, Inbox,
+  Calendar, MessageSquare, ArrowRight, Inbox, Star, X, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function MyJobsPage() {
-  const { jobs, bids, now, currentUser, mounted } = useApp();
+  const { jobs, bids, now, currentUser, mounted, transactions, reviews, users, submitReview, toggleFeatured } = useApp();
   const router = useRouter();
   const [filter, setFilter] = useState("all");
+  const [reviewModal, setReviewModal] = useState<{ jobId: string; revieweeId: string; revieweeName: string } | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     if (mounted && !currentUser) router.replace("/login");
@@ -168,12 +173,43 @@ export default function MyJobsPage() {
                       </button>
                     </Link>
                     {isOpen && isClient && (
-                      <Link href="/inbox">
-                        <button className="border border-[#1E1E2A] text-[#8A8A9A] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#1A1A24] transition-all">
-                          Chat
+                      <>
+                        <button
+                          onClick={async () => {
+                            const r = await toggleFeatured(jid, !job.featured);
+                            r.ok ? toast.success(r.message) : toast.error(r.message);
+                          }}
+                          className={`flex items-center gap-1 border text-xs font-medium px-3 py-2 rounded-lg transition-all ${
+                            job.featured ? "border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10" : "border-[#1E1E2A] text-[#8A8A9A] hover:bg-[#1A1A24]"
+                          }`}
+                        >
+                          <Sparkles className="h-3 w-3" /> {job.featured ? "Featured" : "Feature"}
                         </button>
-                      </Link>
+                        <Link href="/inbox">
+                          <button className="border border-[#1E1E2A] text-[#8A8A9A] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#1A1A24] transition-all">
+                            Chat
+                          </button>
+                        </Link>
+                      </>
                     )}
+                    {!isOpen && (() => {
+                      const tx = transactions.find(t => t.jobId === jid && t.escrowStatus === "released");
+                      const uid = currentUser?.id ?? currentUser?._id ?? "";
+                      const alreadyReviewed = reviews.some(r => r.jobId === jid && r.reviewerId === uid);
+                      if (tx && !alreadyReviewed) {
+                        const revieweeId = isClient ? (job.acceptedBy ?? "") : job.clientId;
+                        const reviewee = users.find(u => u.id === revieweeId || u._id === revieweeId);
+                        return (
+                          <button
+                            onClick={() => { setReviewModal({ jobId: jid, revieweeId, revieweeName: reviewee?.fullName ?? "User" }); setReviewRating(5); setReviewComment(""); }}
+                            className="flex items-center gap-1 border border-yellow-500/30 text-yellow-500 text-xs font-medium px-4 py-2 rounded-lg hover:bg-yellow-500/10 transition-all"
+                          >
+                            <Star className="h-3 w-3" /> Review
+                          </button>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               );
@@ -181,6 +217,61 @@ export default function MyJobsPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {reviewModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg font-semibold text-[#E8E8EC]">Review {reviewModal.revieweeName}</h3>
+              <button onClick={() => setReviewModal(null)} className="text-[#55556A] hover:text-[#E8E8EC]"><X className="h-5 w-5" /></button>
+            </div>
+
+            <div className="mb-4">
+              <label className="text-[#8A8A9A] text-xs font-medium block mb-2">Rating</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110">
+                    <Star className={`h-8 w-8 ${star <= reviewRating ? "text-yellow-500 fill-yellow-500" : "text-[#55556A]"}`} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="text-[#8A8A9A] text-xs font-medium block mb-1.5">Comment (optional)</label>
+              <textarea
+                value={reviewComment}
+                onChange={e => setReviewComment(e.target.value)}
+                maxLength={1000}
+                rows={4}
+                placeholder="Share your experience..."
+                className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all resize-none"
+              />
+              <p className="text-[#55556A] text-xs mt-1">{reviewComment.length}/1000</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setReviewModal(null)} className="flex-1 h-10 border border-[#1E1E2A] text-[#E8E8EC] font-medium rounded-xl text-sm hover:bg-[#1A1A24] transition-all">
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setReviewSubmitting(true);
+                  const r = await submitReview(reviewModal.jobId, reviewModal.revieweeId, reviewRating, reviewComment);
+                  setReviewSubmitting(false);
+                  if (r.ok) { toast.success("Review submitted!"); setReviewModal(null); }
+                  else toast.error(r.message);
+                }}
+                disabled={reviewSubmitting}
+                className="flex-1 h-10 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-50"
+              >
+                {reviewSubmitting ? "Submitting..." : "Submit Review"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

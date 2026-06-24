@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { formatMoney, SKILL_TAXONOMY } from "@/lib/utils";
+import { formatMoney, SKILL_TAXONOMY, JOB_CATEGORIES, type JobCategory } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   ArrowLeft, ArrowRight, Check, Zap, DollarSign, Clock, Target,
@@ -31,14 +31,26 @@ export default function PostJobPage() {
   const [estimatedHours, setEstimatedHours] = useState(20);
   const [deadline, setDeadline] = useState(48);
   const [visibility, setVisibility] = useState<"public" | "invite_only">("public");
+  const [category, setCategory] = useState<JobCategory>("other");
   const [skillSearch, setSkillSearch] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pricingHint, setPricingHint] = useState<{ available: boolean; avgFinalPrice?: number; minPrice?: number; maxPrice?: number; avgDecayRate?: number; sampleSize?: number } | null>(null);
 
   useEffect(() => {
     if (mounted && !currentUser) router.replace("/login");
   }, [mounted, currentUser, router]);
 
   const toggleSkill = (s: string) => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+
+  useEffect(() => {
+    if (skills.length === 0) { setPricingHint(null); return; }
+    const controller = new AbortController();
+    fetch(`/api/jobs/pricing-hint?skills=${encodeURIComponent(skills.join(","))}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => setPricingHint(d))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [skills]);
 
   const filteredSkills = useMemo(() => {
     if (!skillSearch.trim()) return SKILL_TAXONOMY;
@@ -81,7 +93,7 @@ export default function PostJobPage() {
       startingPrice, minimumPrice, decayRatePerHour: decayRate,
       estimatedHours,
       deadlineAt: new Date(Date.now() + deadline * 3600000).toISOString(),
-      visibility,
+      visibility, category,
     });
     if (r.ok) {
       toast.success("Job posted!", { description: r.message });
@@ -146,6 +158,19 @@ export default function PostJobPage() {
                   className="w-full h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
                 />
                 {errors.title && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.title}</p>}
+              </div>
+
+              <div>
+                <label className="text-[#8A8A9A] text-xs font-medium block mb-1.5">Category *</label>
+                <select
+                  value={category}
+                  onChange={e => setCategory(e.target.value as JobCategory)}
+                  className="w-full h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  {JOB_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -280,6 +305,29 @@ export default function PostJobPage() {
                 </div>
               </div>
 
+              {/* Pricing Hint */}
+              {pricingHint?.available && (
+                <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+                  <p className="text-blue-400 text-xs font-semibold mb-2 flex items-center gap-1.5">
+                    <TrendingDown className="h-3.5 w-3.5" /> Based on {pricingHint.sampleSize} similar job{pricingHint.sampleSize !== 1 ? "s" : ""}
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <p className="text-[#55556A] text-[10px]">Avg Final Price</p>
+                      <p className="font-heading text-lg font-bold text-[#E8E8EC]">${pricingHint.avgFinalPrice}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#55556A] text-[10px]">Price Range</p>
+                      <p className="font-heading text-lg font-bold text-[#E8E8EC]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#55556A] text-[10px]">Avg Decay Rate</p>
+                      <p className="font-heading text-lg font-bold text-[#E8E8EC]">${pricingHint.avgDecayRate}/hr</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Price Preview */}
               <div className="bg-[#0A0A0F] rounded-xl p-5 border border-[#1E1E2A]">
                 <div className="flex items-center gap-2 mb-4">
@@ -365,6 +413,13 @@ export default function PostJobPage() {
                       <span className="text-[#55556A] text-xs">None selected</span>
                     )}
                   </div>
+                </div>
+                <div className="h-px bg-[#1E1E2A]" />
+                <div>
+                  <p className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Category</p>
+                  <span className="inline-block mt-1 bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-3 py-1 text-xs font-medium">
+                    {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
+                  </span>
                 </div>
                 <div className="h-px bg-[#1E1E2A]" />
 
