@@ -1,0 +1,29 @@
+{
+  "name": "geekbid-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeekBid microservice scaffold",
+  "scripts": {
+    "start": "node scripts/dev.js",
+    "start:auth": "node services/auth-service/index.js",
+    "start:jobs": "node services/job-service/index.js",
+    "start:bidding": "node services/bidding-service/index.js",
+    "start:payments": "node services/payment-service/index.js",
+    "start:chat": "node services/chat-service/index.js",
+    "start:notifications": "node services/notification-service/index.js",
+    "start:gateway": "node services/gateway/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.2.0",
+    "razorpay": "^2.9.6",
+    "socket.io": "^4.8.1"
+  }
+}
