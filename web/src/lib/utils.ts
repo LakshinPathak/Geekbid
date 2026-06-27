@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { getAdaptivePrice } from "./pricing";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -11,6 +12,13 @@ export function formatMoney(amount: number): string {
 
 export function getCurrentPrice(job: Job, now: Date): number {
   if (job.status !== 'open') return job.finalPrice ?? job.minimumPrice;
+
+  // Adaptive pricing: use demand-responsive engine
+  if (job.pricingMode !== 'fixed') {
+    return getAdaptivePrice(job, now);
+  }
+
+  // Fixed pricing: original linear decay
   const elapsedMs = Math.max(now.getTime() - new Date(job.postedAt).getTime(), 0);
   const elapsedHours = elapsedMs / (1000 * 60 * 60);
   return Math.max(job.startingPrice - job.decayRatePerHour * elapsedHours, job.minimumPrice);
@@ -81,6 +89,12 @@ export type Job = {
   visibility?: 'public' | 'invite_only';
   featured?: boolean; featuredAt?: string;
   type?: 'auction' | 'direct_offer'; offeredTo?: string; offerStatus?: 'pending' | 'accepted' | 'declined';
+  pricingMode?: 'fixed' | 'adaptive';
+  bidCount?: number;
+  uniqueBidderCount?: number;
+  lastBidAt?: string | null;
+  lowestCounterBid?: number | null;
+  priceHistory?: { price: number; at: string; event: string }[];
 };
 
 export type Bid = {

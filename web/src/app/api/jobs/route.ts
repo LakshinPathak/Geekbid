@@ -91,6 +91,8 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+    const now = new Date().toISOString();
+    const validVisibility = ["public", "invite_only"];
     const job = {
       clientId: auth.payload.userId,
       title,
@@ -100,12 +102,22 @@ export async function POST(req: NextRequest) {
       minimumPrice: Number(minimumPrice),
       decayRatePerHour: Number(decayRatePerHour),
       estimatedHours: Number(estimatedHours),
-      postedAt: new Date().toISOString(),
+      postedAt: now,
       deadlineAt:
         deadlineAt ?? new Date(Date.now() + 48 * 3600000).toISOString(),
       status: "open",
       category: jobCategory,
       featured: false,
+      visibility: validVisibility.includes(body.visibility) ? body.visibility : "public",
+      // Adaptive pricing fields
+      pricingMode: body.pricingMode === "fixed" ? "fixed" : "adaptive",
+      bidCount: 0,
+      uniqueBidderCount: 0,
+      lastBidAt: null,
+      lowestCounterBid: null,
+      priceHistory: [
+        { price: Number(startingPrice), at: now, event: "posted" },
+      ],
     };
 
     const result = await db.collection("jobs").insertOne(job);

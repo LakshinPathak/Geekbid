@@ -424,7 +424,21 @@ export async function POST() {
       },
     ];
 
-    const jobResult = await db.collection("jobs").insertMany(jobs);
+    // Add adaptive pricing fields to all seed jobs
+    const jobsWithPricing = jobs.map((job, i) => ({
+      ...job,
+      // Mix of pricing modes: jobs at index 2 (accepted), 8 are fixed; rest adaptive
+      pricingMode: i === 2 || i === 8 ? ("fixed" as const) : ("adaptive" as const),
+      bidCount: 0,
+      uniqueBidderCount: 0,
+      lastBidAt: null as string | null,
+      lowestCounterBid: null as number | null,
+      priceHistory: [
+        { price: job.startingPrice, at: job.postedAt, event: "posted" },
+      ],
+    }));
+
+    const jobResult = await db.collection("jobs").insertMany(jobsWithPricing);
     const jobIds = Object.values(jobResult.insertedIds).map((id) =>
       id.toString()
     );
@@ -521,6 +535,44 @@ export async function POST() {
     ];
 
     await db.collection("bids").insertMany(bids);
+
+    // ── Update job demand signals from seeded bids ───────────
+    const bidsByJob = new Map<string, typeof bids>();
+    for (const bid of bids) {
+      const arr = bidsByJob.get(bid.jobId) ?? [];
+      arr.push(bid);
+      bidsByJob.set(bid.jobId, arr);
+    }
+    for (const [jid, jbids] of bidsByJob) {
+      const uniqueBidders = new Set(jbids.map((b) => b.freelancerId));
+      const counterBids = jbids.filter((b) => b.bidType === "counter");
+      const lowestCounter = counterBids.length
+        ? Math.min(...counterBids.map((b) => b.bidPrice))
+        : null;
+      const lastBid = jbids.reduce((latest, b) =>
+        b.createdAt > latest.createdAt ? b : latest
+      );
+      await db.collection("jobs").updateOne(
+        { _id: jobResult.insertedIds[jobIds.indexOf(jid)] },
+        {
+          $set: {
+            bidCount: jbids.length,
+            uniqueBidderCount: uniqueBidders.size,
+            lastBidAt: lastBid.createdAt,
+            lowestCounterBid: lowestCounter,
+          },
+          $push: {
+            priceHistory: {
+              $each: counterBids.map((b) => ({
+                price: b.bidPrice,
+                at: b.createdAt,
+                event: "counter_bid",
+              })),
+            },
+          } as any,
+        }
+      );
+    }
 
     // ── Transactions ────────────────────────────────────────
     const transactions = [

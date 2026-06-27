@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────
+# GeekBid — Docker Compose (Development)
+# Starts all services with hot reload + MongoDB local
+# ─────────────────────────────────────────────────
+# Usage:
+#   docker-compose up              → Start all services
+#   docker-compose up -d           → Start in background
+#   docker-compose down            → Stop all services
+#   docker-compose down -v         → Stop + delete volumes (wipes DB)
+# ─────────────────────────────────────────────────
+
+services:
+  # ── MongoDB (local development) ──────────────────
+  mongodb:
+    image: mongo:7
+    container_name: geekbid-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: geekbid
+    healthcheck:
+      test: mongosh --eval 'db.adminCommand("ping")' --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (all 7 microservices) ────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geekbid-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # Gateway
+      - "3001:3001"   # Auth
+      - "3003:3003"   # Jobs
+      - "3004:3004"   # Bidding
+      - "3005:3005"   # Payments
+      - "3006:3006"   # Notifications
+      - "3007:3007"   # Chat
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongodb:27017/geekbid
+      JWT_SECRET: ${JWT_SECRET:-geekbid-dev-secret-change-in-production}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+      GATEWAY_PORT: 3000
+      AUTH_PORT: 3001
+      JOB_PORT: 3003
+      BIDDING_PORT: 3004
+      PAYMENT_PORT: 3005
+      NOTIFICATION_PORT: 3006
+      CHAT_PORT: 3007
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: wget -q --spider http://localhost:3000/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Web App (Next.js) ───────────────────────────
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        MONGODB_URI: mongodb://mongodb:27017/geekbid
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
+    container_name: geekbid-web
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongodb:27017/geekbid
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3100}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: wget -q --spider http://localhost:3000/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local

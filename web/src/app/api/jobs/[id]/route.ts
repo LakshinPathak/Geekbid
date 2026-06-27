@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { getAdaptivePrice } from "@/lib/pricing";
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -68,16 +69,81 @@ export async function PATCH(
     if (job.status !== "open")
       return NextResponse.json({ error: "Job not open" }, { status: 400 });
 
-    const finalPrice = Number(body.finalPrice);
+    // ── Server-side price computation — NEVER trust client price ──
+    const now = new Date();
+    let finalPrice: number;
+
+    if (job.pricingMode === "fixed") {
+      // Fixed decay: simple formula
+      const elapsedMs = Math.max(
+        now.getTime() - new Date(job.postedAt).getTime(),
+        0
+      );
+      const elapsedHours = elapsedMs / (1000 * 60 * 60);
+      finalPrice = Math.max(
+        job.startingPrice - job.decayRatePerHour * elapsedHours,
+        job.minimumPrice
+      );
+    } else {
+      // Adaptive: recompute from real bid data in DB
+      const bidCount = await db
+        .collection("bids")
+        .countDocuments({ jobId: id });
+      const uniqueBidders = await db
+        .collection("bids")
+        .distinct("freelancerId", { jobId: id });
+      const lastBid = await db.collection("bids").findOne(
+        { jobId: id },
+        { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
+      );
+      const lowestCounter = await db.collection("bids").findOne(
+        { jobId: id, bidType: "counter" },
+        { sort: { bidPrice: 1 }, projection: { bidPrice: 1 } }
+      );
+
+      finalPrice = getAdaptivePrice(
+        {
+          startingPrice: job.startingPrice,
+          minimumPrice: job.minimumPrice,
+          decayRatePerHour: job.decayRatePerHour,
+          postedAt: job.postedAt,
+          pricingMode: "adaptive",
+          bidCount,
+          uniqueBidderCount: uniqueBidders.length,
+          lastBidAt: lastBid?.createdAt ?? null,
+          lowestCounterBid: lowestCounter?.bidPrice ?? null,
+        },
+        now
+      );
+    }
+
+    finalPrice = Number(finalPrice.toFixed(2));
+
+    // Log divergence if client sent a different price (diagnostic only)
+    const clientPrice = Number(body.finalPrice);
+    if (Math.abs(clientPrice - finalPrice) > 1) {
+      console.warn(
+        `[Price Divergence] job=${id} client=$${clientPrice} server=$${finalPrice}`
+      );
+    }
+
     const filter = job._id ? { _id: job._id } : { id };
+    const acceptedAt = now.toISOString();
 
     await db.collection("jobs").updateOne(filter, {
       $set: {
         status: "accepted",
         acceptedBy: auth.payload.userId,
         finalPrice,
-        acceptedAt: new Date().toISOString(),
+        acceptedAt,
       },
+      $push: {
+        priceHistory: {
+          price: finalPrice,
+          at: acceptedAt,
+          event: "accepted",
+        },
+      } as any,
     });
 
     // Create bid record
@@ -86,7 +152,7 @@ export async function PATCH(
       freelancerId: auth.payload.userId,
       bidType: "accept",
       bidPrice: finalPrice,
-      createdAt: new Date().toISOString(),
+      createdAt: acceptedAt,
     });
 
     // Create escrow transaction
@@ -99,7 +165,7 @@ export async function PATCH(
       platformFee: fee,
       netAmount: Number((finalPrice - fee).toFixed(2)),
       escrowStatus: "held",
-      createdAt: new Date().toISOString(),
+      createdAt: acceptedAt,
     });
 
     return NextResponse.json({ ok: true, finalPrice });

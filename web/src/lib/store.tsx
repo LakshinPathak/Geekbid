@@ -60,6 +60,7 @@ type AppState = {
     role: string
   ) => Promise<ActionResult>;
   logout: () => void;
+  googleAuth: (token: string, expiresIn: number, user: User) => void;
   switchRole: (role: Role) => void;
   acceptJob: (jobId: string) => Promise<ActionResult>;
   counterBid: (
@@ -753,6 +754,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRecommendedJobs([]);
   }, [clearAuth]);
 
+  // ── Google OAuth (set auth from callback tokens) ───────────
+  const googleAuth = useCallback(
+    (token: string, expiresIn: number, user: User) => {
+      persistAuth(token, expiresIn, user);
+      scheduleRefresh(Date.now() + expiresIn * 1000);
+    },
+    [persistAuth, scheduleRefresh]
+  );
+
   // ── Switch Role (dev/demo helper — logs in as different user) ──
   const switchRole = useCallback(
     (role: Role) => {
@@ -1084,6 +1094,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      googleAuth,
       switchRole,
       submitReview,
       fetchReviews,
@@ -1139,6 +1150,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      googleAuth,
       switchRole,
       submitReview,
       fetchReviews,

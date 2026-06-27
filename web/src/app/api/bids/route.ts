@@ -65,6 +65,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 30-minute per-user bid cooldown (anti-spam / anti-freeze)
+    const lastBidByUser = await db.collection("bids").findOne(
+      { jobId, freelancerId: auth.payload.userId },
+      { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
+    );
+    if (lastBidByUser) {
+      const minutesSinceLast =
+        (Date.now() - new Date(lastBidByUser.createdAt).getTime()) / 60000;
+      if (minutesSinceLast < 30) {
+        return NextResponse.json(
+          {
+            error: `Wait ${Math.ceil(30 - minutesSinceLast)} min before bidding again on this job`,
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     const bid = {
       jobId,
       freelancerId: auth.payload.userId,
@@ -75,6 +93,53 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await db.collection("bids").insertOne(bid);
+
+    // ── Update job demand signals ──
+    const updateOps: Record<string, unknown> = {
+      $set: { lastBidAt: bid.createdAt },
+      $inc: { bidCount: 1 },
+      $push: {
+        priceHistory: {
+          $each: [
+            {
+              price: Number(bidPrice),
+              at: bid.createdAt,
+              event: "counter_bid",
+            },
+          ],
+          $slice: -50, // keep last 50 entries max
+        },
+      },
+    };
+
+    // Track lowest counter-bid for price pull effect
+    const jobDoc = await db
+      .collection("jobs")
+      .findOne(
+        { _id: new ObjectId(jobId) },
+        { projection: { lowestCounterBid: 1 } }
+      );
+    if (
+      jobDoc &&
+      (jobDoc.lowestCounterBid === null ||
+        jobDoc.lowestCounterBid === undefined ||
+        Number(bidPrice) < jobDoc.lowestCounterBid)
+    ) {
+      (updateOps.$set as Record<string, unknown>).lowestCounterBid =
+        Number(bidPrice);
+    }
+
+    // Count unique bidders (anti-gaming: one person can't inflate demand)
+    const uniqueBidders = await db
+      .collection("bids")
+      .distinct("freelancerId", { jobId });
+    (updateOps.$set as Record<string, unknown>).uniqueBidderCount =
+      uniqueBidders.length;
+
+    await db
+      .collection("jobs")
+      .updateOne({ _id: new ObjectId(jobId) }, updateOps);
+
     await db.collection("users").updateOne(
       { _id: new ObjectId(auth.payload.userId) },
       { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }

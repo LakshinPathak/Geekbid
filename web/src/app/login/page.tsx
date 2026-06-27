@@ -25,7 +25,7 @@ function PasswordStrength({ password }: { password: string }) {
 function LoginPageContent() {
   const params = useSearchParams();
   const router = useRouter();
-  const { login, register, currentUser, mounted, loading } = useApp();
+  const { login, register, currentUser, mounted, loading, googleAuth } = useApp();
 
   const initialRole = (params.get("role") as "freelancer" | "client") || "freelancer";
   const initialTab = params.get("tab") === "register" ? "register" : "login";
@@ -53,17 +53,14 @@ function LoginPageContent() {
     if (googleToken && googleUser && expiresIn) {
       try {
         const user = JSON.parse(decodeURIComponent(googleUser));
-        const expiresAt = Date.now() + Number(expiresIn) * 1000;
-        localStorage.setItem("gb_access_token", googleToken);
-        localStorage.setItem("gb_token_expires", String(expiresAt));
-        localStorage.setItem("gb_user", JSON.stringify(user));
+        googleAuth(googleToken, Number(expiresIn), user);
         setSuccess("Signed in with Google!");
         setTimeout(() => router.replace("/feed"), 300);
       } catch {
         setError("Failed to process Google login");
       }
     }
-  }, [params, router]);
+  }, [params, router, googleAuth]);
 
   useEffect(() => {
     if (mounted && currentUser) router.replace("/feed");

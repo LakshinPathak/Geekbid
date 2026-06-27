@@ -68,6 +68,9 @@ next-env.d.ts
 Thumbs.db
 *.pem
 
+# ──── Google OAuth credentials (NEVER commit) ────
+client_secret*.json
+
 # ──── Debug Logs ────
 npm-debug.*
 yarn-debug.*
@@ -81,3 +84,9 @@ yarn-error.*
 *.swp
 *.swo
 *~
+
+# ──── Docker ────
+docker-compose.override.yml
+
+# ──── Production env examples (committed for reference) ────
+!.env.production.example
