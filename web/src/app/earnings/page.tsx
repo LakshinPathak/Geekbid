@@ -45,7 +45,7 @@ export default function EarningsPage() {
 
   if (!mounted) return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
-      <div className="h-8 w-8 border-2 border-[#55556A] border-t-transparent rounded-full animate-spin" />
+      <div className="h-8 w-8 border-2 border-[#6E6E85] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -66,10 +66,10 @@ export default function EarningsPage() {
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="h-4 w-4 text-[#00FF88]" />
-                <span className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Total Earned</span>
+                <span className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">Total Earned</span>
               </div>
               <p className="font-heading text-3xl font-bold text-[#00FF88]">{formatMoney(totalEarned)}</p>
-              <p className="text-[#55556A] text-xs mt-1">All time</p>
+              <p className="text-[#6E6E85] text-xs mt-1">All time</p>
             </div>
           </div>
 
@@ -77,32 +77,32 @@ export default function EarningsPage() {
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <DollarSign className="h-4 w-4 text-[#8A8A9A]" />
-              <span className="text-[#55556A] text-xs uppercase tracking-wider font-medium">This Month</span>
+              <span className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">This Month</span>
             </div>
             <p className="font-heading text-2xl font-bold text-[#E8E8EC]">
               {formatMoney(chartData[chartData.length - 1]?.value ?? 0)}
             </p>
-            <p className="text-[#55556A] text-xs mt-1">Jun 2026</p>
+            <p className="text-[#6E6E85] text-xs mt-1">Jun 2026</p>
           </div>
 
           {/* Pending */}
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-4 w-4 text-yellow-500" />
-              <span className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Pending</span>
+              <span className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">Pending</span>
             </div>
             <p className="font-heading text-2xl font-bold text-yellow-500">{formatMoney(pending)}</p>
-            <p className="text-[#55556A] text-xs mt-1">In escrow</p>
+            <p className="text-[#6E6E85] text-xs mt-1">In escrow</p>
           </div>
 
           {/* Avg Job Value */}
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <Wallet className="h-4 w-4 text-[#8A8A9A]" />
-              <span className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Avg. Job Value</span>
+              <span className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">Avg. Job Value</span>
             </div>
             <p className="font-heading text-2xl font-bold text-[#E8E8EC]">{formatMoney(avgJobValue)}</p>
-            <p className="text-[#55556A] text-xs mt-1">{myTxns.length} jobs</p>
+            <p className="text-[#6E6E85] text-xs mt-1">{myTxns.length} jobs</p>
           </div>
         </div>
 
@@ -114,7 +114,7 @@ export default function EarningsPage() {
               const pct = maxChart > 0 ? (d.value / maxChart) * 100 : 0;
               return (
                 <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
-                  <p className="text-[10px] text-[#8A8A9A] font-medium">{formatMoney(d.value)}</p>
+                  <p className="text-[11px] text-[#8A8A9A] font-medium">{formatMoney(d.value)}</p>
                   <div className="w-full flex justify-center" style={{ height: "140px" }}>
                     <div
                       className="w-full max-w-[48px] rounded-t-lg bg-gradient-to-t from-[#00FF88]/60 to-[#00FF88]/20 relative overflow-hidden transition-all duration-700"
@@ -123,7 +123,7 @@ export default function EarningsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#00FF88]/30 to-transparent" />
                     </div>
                   </div>
-                  <p className="text-xs text-[#55556A] font-medium">{d.month}</p>
+                  <p className="text-xs text-[#6E6E85] font-medium">{d.month}</p>
                 </div>
               );
             })}
@@ -140,10 +140,10 @@ export default function EarningsPage() {
           {myTxns.length === 0 ? (
             <div className="text-center py-16 px-4">
               <div className="mx-auto h-14 w-14 rounded-2xl bg-[#1A1A24] flex items-center justify-center mb-3">
-                <DollarSign className="h-6 w-6 text-[#55556A]" />
+                <DollarSign className="h-6 w-6 text-[#6E6E85]" />
               </div>
               <h3 className="text-sm font-semibold text-[#8A8A9A]">No transactions yet</h3>
-              <p className="text-xs text-[#55556A] mt-1">Transactions will appear here after you accept or post jobs.</p>
+              <p className="text-xs text-[#6E6E85] mt-1">Transactions will appear here after you accept or post jobs.</p>
             </div>
           ) : (
             <div className="divide-y divide-[#1E1E2A]">
@@ -163,25 +163,25 @@ export default function EarningsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[#E8E8EC] truncate">{jobTitle || `Job #${(t.jobId || "").slice(-6)}`}</p>
-                          <p className="text-xs text-[#55556A]">{timeAgo(t.createdAt)}</p>
+                          <p className="text-xs text-[#6E6E85]">{timeAgo(t.createdAt)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="hidden sm:flex gap-3">
                           <div className="text-right">
-                            <p className="text-[10px] text-[#55556A]">Gross</p>
+                            <p className="text-[11px] text-[#6E6E85]">Gross</p>
                             <p className="text-xs font-bold text-[#E8E8EC]">{formatMoney(t.grossAmount)}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] text-[#55556A]">Fee (10%)</p>
+                            <p className="text-[11px] text-[#6E6E85]">Fee (10%)</p>
                             <p className="text-xs font-bold text-red-400">-{formatMoney(t.platformFee)}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] text-[#55556A]">Net</p>
+                            <p className="text-[11px] text-[#6E6E85]">Net</p>
                             <p className="text-xs font-bold text-[#00FF88]">{formatMoney(t.netAmount)}</p>
                           </div>
                         </div>
-                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-medium ${
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
                           t.escrowStatus === "released" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" :
                           t.escrowStatus === "held" ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
                           "bg-red-500/10 text-red-400 border-red-500/20"

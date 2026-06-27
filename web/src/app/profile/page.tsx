@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="font-heading text-2xl font-bold text-[#E8E8EC] flex items-center justify-center sm:justify-start gap-2">
+              <h1 className="font-heading text-3xl font-bold text-[#E8E8EC] flex items-center justify-center sm:justify-start gap-2">
                 {currentUser.fullName}
                 {currentUser.isVerified && (
                   <CheckCircle2 className="h-5 w-5 text-[#00FF88]" />
@@ -150,7 +150,7 @@ export default function ProfilePage() {
             {isFreelancer && currentUser.geekScore > 0 && (
               <div className="text-center sm:text-right shrink-0">
                 <p className="font-heading text-3xl font-bold text-[#00FF88]">{currentUser.geekScore}</p>
-                <p className="text-[#55556A] text-xs font-medium">GeekScore™ · <span style={{ color: tier.color }}>{tier.label}</span></p>
+                <p className="text-[#6E6E85] text-xs font-medium">GeekScore™ · <span style={{ color: tier.color }}>{tier.label}</span></p>
               </div>
             )}
           </div>
@@ -159,9 +159,9 @@ export default function ProfilePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
             {stats.map(s => (
               <div key={s.label} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-3 text-center">
-                <s.icon className="h-4 w-4 text-[#55556A] mx-auto mb-1.5" />
+                <s.icon className="h-4 w-4 text-[#6E6E85] mx-auto mb-1.5" />
                 <p className="font-heading text-lg font-bold text-[#E8E8EC]">{s.value}</p>
-                <p className="text-[10px] text-[#55556A]">{s.label}</p>
+                <p className="text-[11px] text-[#6E6E85]">{s.label}</p>
               </div>
             ))}
           </div>
@@ -197,12 +197,12 @@ export default function ProfilePage() {
                           </div>
                           <div>
                             <p className="text-[#E8E8EC] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
-                            <p className="text-[#55556A] text-xs capitalize">{review.reviewerRole}</p>
+                            <p className="text-[#6E6E85] text-xs capitalize">{review.reviewerRole}</p>
                           </div>
                         </div>
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map(s => (
-                            <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? "text-yellow-500 fill-yellow-500" : "text-[#55556A]"}`} />
+                            <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? "text-yellow-500 fill-yellow-500" : "text-[#6E6E85]"}`} />
                           ))}
                         </div>
                       </div>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
               <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">Referral Program</h2>
             </div>
             <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4 mb-4">
-              <p className="text-[#55556A] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
+              <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
               <div className="flex gap-2">
                 <input
                   readOnly
@@ -240,7 +240,7 @@ export default function ProfilePage() {
                   <Copy className="h-3.5 w-3.5" /> Copy
                 </button>
               </div>
-              <p className="text-[#55556A] text-xs mt-2">Code: <span className="text-[#00FF88] font-mono">{referralStats.referralCode}</span></p>
+              <p className="text-[#6E6E85] text-xs mt-2">Code: <span className="text-[#00FF88] font-mono">{referralStats.referralCode}</span></p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
@@ -250,9 +250,9 @@ export default function ProfilePage() {
                 { label: "Credits", value: `$${referralStats.totalCredits}`, icon: DollarSign },
               ].map(s => (
                 <div key={s.label} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-3 text-center">
-                  <s.icon className="h-4 w-4 text-[#55556A] mx-auto mb-1.5" />
+                  <s.icon className="h-4 w-4 text-[#6E6E85] mx-auto mb-1.5" />
                   <p className="font-heading text-lg font-bold text-[#E8E8EC]">{s.value}</p>
-                  <p className="text-[10px] text-[#55556A]">{s.label}</p>
+                  <p className="text-[11px] text-[#6E6E85]">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -272,10 +272,10 @@ export default function ProfilePage() {
             <div>
               <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                 <input
                   value={fullName} onChange={e => setFullName(e.target.value)}
-                  className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                  className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all"
                   placeholder="Your full name"
                 />
               </div>
@@ -285,7 +285,7 @@ export default function ProfilePage() {
               <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">Bio</label>
               <textarea
                 value={bio} onChange={e => setBio(e.target.value)} rows={3}
-                className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all resize-none"
+                className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all resize-none"
                 placeholder="Tell us about yourself..."
               />
             </div>
@@ -294,10 +294,10 @@ export default function ProfilePage() {
               <div>
                 <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">Company</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                   <input
                     value={company} onChange={e => setCompany(e.target.value)}
-                    className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                    className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all"
                     placeholder="Company name"
                   />
                 </div>
@@ -341,18 +341,18 @@ export default function ProfilePage() {
                   <div>
                     <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                       <input type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
-                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all"
                       />
                     </div>
                   </div>
                   <div>
                     <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                       <input type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
-                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -385,10 +385,10 @@ export default function ProfilePage() {
                   <label className="text-[#8A8A9A] text-xs font-medium mb-1.5 block">GitHub Username</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                       <input
                         value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
-                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all"
+                        className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all"
                         placeholder="your-github-handle"
                       />
                     </div>
@@ -459,7 +459,7 @@ export default function ProfilePage() {
             className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all ${
               hasChanges && !saving
                 ? "bg-[#00FF88] text-[#0A0A0F] hover:bg-[#00CC6A] glow-green cursor-pointer"
-                : "bg-[#1E1E2A] text-[#55556A] cursor-not-allowed"
+                : "bg-[#1E1E2A] text-[#6E6E85] cursor-not-allowed"
             }`}
           >
             {saving ? (

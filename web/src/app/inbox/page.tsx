@@ -73,12 +73,12 @@ export default function InboxPage() {
           <div className="p-4 border-b border-[#1E1E2A]">
             <h2 className="font-heading text-xl font-bold text-[#E8E8EC] mb-3">Messages</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..."
-                className="w-full h-10 pl-10 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all"
+                className="w-full h-10 pl-10 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
               />
             </div>
           </div>
@@ -88,10 +88,10 @@ export default function InboxPage() {
             {filteredRooms.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <div className="mx-auto h-14 w-14 rounded-2xl bg-[#0A0A0F] border border-[#1E1E2A] flex items-center justify-center mb-3">
-                  <Users className="h-6 w-6 text-[#55556A]" />
+                  <Users className="h-6 w-6 text-[#6E6E85]" />
                 </div>
                 <p className="text-sm text-[#8A8A9A] font-medium">No conversations yet</p>
-                <p className="text-xs text-[#55556A] mt-1">Start chatting by accepting a job</p>
+                <p className="text-xs text-[#6E6E85] mt-1">Start chatting by accepting a job</p>
               </div>
             ) : (
               <div className="divide-y divide-[#1E1E2A]">
@@ -124,10 +124,10 @@ export default function InboxPage() {
                               {otherUser?.fullName ?? "Unknown"}
                             </p>
                             {lastMsg && (
-                              <span className="text-[10px] text-[#55556A] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
+                              <span className="text-[11px] text-[#6E6E85] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
                             )}
                           </div>
-                          <p className="text-[#55556A] text-[10px] truncate mt-0.5">{jobTitle}</p>
+                          <p className="text-[#6E6E85] text-[11px] truncate mt-0.5">{jobTitle}</p>
                           {lastMsg && (
                             <p className="text-[#8A8A9A] text-xs truncate mt-0.5">{lastMsg.text}</p>
                           )}
@@ -147,7 +147,7 @@ export default function InboxPage() {
             <div className="flex-1 flex items-center justify-center text-center px-4">
               <div>
                 <div className="h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-7 w-7 text-[#55556A]" />
+                  <MessageSquare className="h-7 w-7 text-[#6E6E85]" />
                 </div>
                 <h3 className="text-lg font-bold text-[#E8E8EC] mb-1">Select a conversation</h3>
                 <p className="text-sm text-[#8A8A9A] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
@@ -171,7 +171,7 @@ export default function InboxPage() {
                     <p className="font-heading text-base font-semibold text-[#E8E8EC]">
                       {getOtherUser(activeRoom!)?.fullName ?? "Unknown"}
                     </p>
-                    <p className="text-[#55556A] text-xs">
+                    <p className="text-[#6E6E85] text-xs">
                       {getJobTitle(activeRoom!.jobId)}
                     </p>
                   </div>
@@ -186,7 +186,7 @@ export default function InboxPage() {
                 <div className="space-y-4 max-w-2xl mx-auto">
                   {roomMessages.length === 0 ? (
                     <div className="text-center py-12">
-                      <p className="text-sm text-[#55556A]">No messages yet. Start the conversation!</p>
+                      <p className="text-sm text-[#6E6E85]">No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
                     roomMessages.map(msg => {
@@ -201,12 +201,12 @@ export default function InboxPage() {
                               : "bg-[#12121A] border border-[#1E1E2A] text-[#E8E8EC] rounded-2xl rounded-bl-md"
                           } px-4 py-2.5`}>
                             {!isMine && (
-                              <p className="text-[#00FF88] text-[10px] font-medium mb-0.5">
+                              <p className="text-[#00FF88] text-[11px] font-medium mb-0.5">
                                 {sender?.fullName ?? "Unknown"}
                               </p>
                             )}
                             <p className="text-sm leading-relaxed">{msg.text}</p>
-                            <p className={`text-[10px] mt-1 ${isMine ? "text-[#0A0A0F]/50" : "text-[#55556A]"} ${isMine ? "text-right" : ""}`}>
+                            <p className={`text-[11px] mt-1 ${isMine ? "text-[#0A0A0F]/50" : "text-[#6E6E85]"} ${isMine ? "text-right" : ""}`}>
                               {timeAgo(msg.createdAt)}
                             </p>
                           </div>
@@ -227,7 +227,7 @@ export default function InboxPage() {
                     value={text}
                     onChange={e => setText(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all"
+                    className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
                   />
                   <button
                     type="submit"

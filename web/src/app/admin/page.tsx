@@ -24,7 +24,7 @@ export default function AdminPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh] bg-[#0A0A0F]">
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-8 text-center max-w-md">
-          <Shield className="mx-auto h-12 w-12 text-[#55556A] mb-3" />
+          <Shield className="mx-auto h-12 w-12 text-[#6E6E85] mb-3" />
           <h2 className="font-heading text-xl font-bold text-[#E8E8EC] mb-2">Admin Access Required</h2>
           <p className="text-sm text-[#8A8A9A]">Switch to Admin role from the top menu to access this dashboard.</p>
         </div>
@@ -101,7 +101,7 @@ export default function AdminPage() {
                 <s.icon className={`h-5 w-5 ${s.color}`} />
               </div>
               <p className={`font-heading text-2xl font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-xs text-[#55556A] mt-0.5">{s.label}</p>
+              <p className="text-xs text-[#6E6E85] mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -116,8 +116,8 @@ export default function AdminPage() {
                   : "text-[#8A8A9A] hover:text-[#E8E8EC]"
               }`}>
               {t.label}
-              <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${
-                activeTab === t.key ? "bg-[#0A0A0F]/20 text-[#0A0A0F]" : "bg-[#1E1E2A] text-[#55556A]"
+              <span className={`text-[11px] font-bold rounded-full px-1.5 py-0.5 ${
+                activeTab === t.key ? "bg-[#0A0A0F]/20 text-[#0A0A0F]" : "bg-[#1E1E2A] text-[#6E6E85]"
               }`}>{t.count}</span>
             </button>
           ))}
@@ -145,12 +145,12 @@ export default function AdminPage() {
                         <h3 className="font-heading text-sm font-semibold text-[#E8E8EC]">
                           Dispute #{d.id.slice(-6)} — {jobTitle}
                         </h3>
-                        <p className="text-xs text-[#55556A] flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-[#6E6E85] flex items-center gap-1 mt-0.5">
                           <Clock className="h-3 w-3" /> {timeAgo(d.createdAt)} · Raised by{" "}
                           <span className="text-[#8A8A9A] font-medium">{raiser?.fullName ?? d.raisedBy}</span>
                         </p>
                       </div>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
                         d.status === "open" ? "bg-red-500/10 text-red-400 border-red-500/20" :
                         d.status === "in_review" ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
                         "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20"
@@ -160,7 +160,7 @@ export default function AdminPage() {
                     </div>
 
                     <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-4">
-                      <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">Reason</p>
+                      <p className="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-1">Reason</p>
                       <p className="text-sm text-[#8A8A9A] leading-relaxed">{d.reason}</p>
                     </div>
 
@@ -172,7 +172,7 @@ export default function AdminPage() {
                           { label: "Net", value: formatMoney(tx.netAmount) },
                         ].map(s => (
                           <div key={s.label} className="bg-[#0A0A0F] rounded-lg p-2.5 text-center border border-[#1E1E2A]">
-                            <p className="text-[10px] text-[#55556A]">{s.label}</p>
+                            <p className="text-[11px] text-[#6E6E85]">{s.label}</p>
                             <p className="text-sm font-bold text-[#E8E8EC]">{s.value}</p>
                           </div>
                         ))}
@@ -185,7 +185,7 @@ export default function AdminPage() {
                           <textarea
                             value={resolution} onChange={e => setResolution(e.target.value)}
                             rows={2} placeholder="Resolution notes..."
-                            className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none resize-none"
+                            className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none resize-none"
                           />
                           <div className="flex gap-2">
                             <button className="flex-1 bg-[#00FF88] text-[#0A0A0F] py-2 rounded-lg text-sm font-semibold hover:bg-[#00CC6A] transition-colors">
@@ -228,7 +228,7 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">
+              <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">
                 <span>Name</span><span>Email</span><span>Role</span><span>Score</span><span>Verified</span>
               </div>
               {filteredUsers.map(u => {
@@ -243,14 +243,14 @@ export default function AdminPage() {
                         <p className="text-sm font-medium text-[#E8E8EC] truncate">{u.fullName}</p>
                         <div className="flex gap-1 mt-0.5">
                           {u.skills.slice(0, 2).map(s => (
-                            <span key={s} className="text-[10px] text-[#55556A] bg-[#1E1E2A] px-1.5 py-0.5 rounded">{s}</span>
+                            <span key={s} className="text-[11px] text-[#6E6E85] bg-[#1E1E2A] px-1.5 py-0.5 rounded">{s}</span>
                           ))}
-                          {u.skills.length > 2 && <span className="text-[10px] text-[#55556A]">+{u.skills.length - 2}</span>}
+                          {u.skills.length > 2 && <span className="text-[11px] text-[#6E6E85]">+{u.skills.length - 2}</span>}
                         </div>
                       </div>
                     </div>
                     <p className="text-xs text-[#8A8A9A] truncate">{u.email}</p>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border capitalize ${
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border capitalize ${
                       u.role === "admin" ? "bg-purple-500/10 text-purple-400 border-purple-500/20" :
                       u.role === "freelancer" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" :
                       "bg-blue-500/10 text-blue-400 border-blue-500/20"
@@ -261,7 +261,7 @@ export default function AdminPage() {
                     <span className="text-center w-16">
                       {u.isVerified
                         ? <CheckCircle className="h-4 w-4 text-[#00FF88] mx-auto" />
-                        : <X className="h-4 w-4 text-[#55556A] mx-auto" />}
+                        : <X className="h-4 w-4 text-[#6E6E85] mx-auto" />}
                     </span>
                   </div>
                 );
@@ -287,7 +287,7 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-[2fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">
+              <div className="grid grid-cols-[2fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">
                 <span>Title</span><span>Status</span><span>Current</span><span>Decay</span><span>Bids</span>
               </div>
               {filteredJobs.map(job => {
@@ -298,11 +298,11 @@ export default function AdminPage() {
                       <p className="text-sm font-medium text-[#E8E8EC] truncate">{job.title}</p>
                       <div className="flex gap-1 mt-0.5">
                         {job.skillsRequired.slice(0, 3).map(s => (
-                          <span key={s} className="text-[10px] text-[#55556A] bg-[#1E1E2A] px-1.5 py-0.5 rounded">{s}</span>
+                          <span key={s} className="text-[11px] text-[#6E6E85] bg-[#1E1E2A] px-1.5 py-0.5 rounded">{s}</span>
                         ))}
                       </div>
                     </div>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border ${
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${
                       job.status === "open" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" :
                       "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
                     }`}>{job.status}</span>
@@ -332,7 +332,7 @@ export default function AdminPage() {
               ].map(s => (
                 <div key={s.label} className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-4 text-center">
                   <p className={`font-heading text-2xl font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-[10px] text-[#55556A] mt-1">{s.label}</p>
+                  <p className="text-[11px] text-[#6E6E85] mt-1">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -353,7 +353,7 @@ export default function AdminPage() {
 
             {/* Table */}
             <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">
                 <span>Job</span><span>Gross</span><span>Fee</span><span>Net</span><span>Status</span><span>Action</span>
               </div>
               {filteredTx.map(t => {
@@ -362,12 +362,12 @@ export default function AdminPage() {
                   <div key={t.id ?? t._id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 items-center px-5 py-3.5 border-b border-[#1E1E2A]/50 hover:bg-[#1A1A24] transition-colors">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#E8E8EC] truncate">{jobTitle}</p>
-                      <p className="text-[10px] text-[#55556A]">{timeAgo(t.createdAt)}</p>
+                      <p className="text-[11px] text-[#6E6E85]">{timeAgo(t.createdAt)}</p>
                     </div>
                     <span className="font-heading text-sm text-[#E8E8EC] w-20 text-right">{formatMoney(t.grossAmount)}</span>
-                    <span className="text-xs text-[#55556A] w-16 text-right">{formatMoney(t.platformFee)}</span>
+                    <span className="text-xs text-[#6E6E85] w-16 text-right">{formatMoney(t.platformFee)}</span>
                     <span className="text-sm font-medium text-[#00FF88] w-20 text-right">{formatMoney(t.netAmount)}</span>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border w-20 text-center ${
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border w-20 text-center ${
                       t.escrowStatus === "released" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" :
                       t.escrowStatus === "held" ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
                       "bg-red-500/10 text-red-400 border-red-500/20"
@@ -379,7 +379,7 @@ export default function AdminPage() {
                           Release
                         </button>
                       ) : (
-                        <span className="text-[#55556A] text-xs">—</span>
+                        <span className="text-[#6E6E85] text-xs">—</span>
                       )}
                     </div>
                   </div>
@@ -387,7 +387,7 @@ export default function AdminPage() {
               })}
               {filteredTx.length === 0 && (
                 <div className="px-5 py-12 text-center">
-                  <DollarSign className="h-8 w-8 text-[#55556A] mx-auto mb-2" />
+                  <DollarSign className="h-8 w-8 text-[#6E6E85] mx-auto mb-2" />
                   <p className="text-sm text-[#8A8A9A]">No transactions match this filter</p>
                 </div>
               )}

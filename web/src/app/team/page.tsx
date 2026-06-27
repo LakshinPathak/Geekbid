@@ -88,13 +88,13 @@ export default function TeamPage() {
             <ArrowLeft className="h-4 w-4" /> Back to Profile
           </Link>
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-8 text-center">
-            <Users className="h-12 w-12 text-[#55556A] mx-auto mb-4" />
+            <Users className="h-12 w-12 text-[#6E6E85] mx-auto mb-4" />
             <h1 className="font-heading text-2xl font-bold text-[#E8E8EC] mb-2">Create a Team</h1>
             <p className="text-[#8A8A9A] text-sm mb-6">Group your organization under a shared billing and job management umbrella.</p>
             <input
               value={teamName} onChange={e => setTeamName(e.target.value)}
               placeholder="Team name"
-              className="w-full h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all mb-4"
+              className="w-full h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all mb-4"
             />
             <button onClick={createTeam} disabled={creating || !teamName.trim()}
               className="w-full py-3 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
@@ -126,9 +126,9 @@ export default function TeamPage() {
             { icon: DollarSign, label: "Total Spend", value: formatMoney(team.analytics.totalSpend) },
           ].map(s => (
             <div key={s.label} className="bg-[#12121A] border border-[#1E1E2A] rounded-xl p-4 text-center">
-              <s.icon className="h-5 w-5 text-[#55556A] mx-auto mb-2" />
+              <s.icon className="h-5 w-5 text-[#6E6E85] mx-auto mb-2" />
               <p className="font-heading text-xl font-bold text-[#E8E8EC]">{s.value}</p>
-              <p className="text-[10px] text-[#55556A]">{s.label}</p>
+              <p className="text-[11px] text-[#6E6E85]">{s.label}</p>
             </div>
           ))}
         </div>
@@ -146,7 +146,7 @@ export default function TeamPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[#E8E8EC] text-sm font-medium">{m.fullName}</p>
-                  <p className="text-[#55556A] text-xs">{m.email}</p>
+                  <p className="text-[#6E6E85] text-xs">{m.email}</p>
                 </div>
                 <span className="text-[#8A8A9A] text-xs capitalize">{m.id === team.ownerId ? "Owner" : "Member"}</span>
               </div>
@@ -164,7 +164,7 @@ export default function TeamPage() {
               <input
                 value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                 placeholder="colleague@company.com"
-                className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all"
+                className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
               />
               <button onClick={inviteMember}
                 className="h-11 px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all flex items-center gap-1">

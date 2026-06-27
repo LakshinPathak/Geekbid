@@ -250,7 +250,7 @@ export default function PaymentsPage() {
   if (!mounted || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#55556A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#6E6E85]" />
       </div>
     );
   }
@@ -287,15 +287,15 @@ export default function PaymentsPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
-            <p className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Total Spent / Earned</p>
+            <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">Total Spent / Earned</p>
             <p className="font-heading text-2xl font-bold text-[#E8E8EC] mt-1">{formatMoney(totalAmount)}</p>
           </div>
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
-            <p className="text-[#55556A] text-xs uppercase tracking-wider font-medium">In Escrow</p>
+            <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">In Escrow</p>
             <p className="font-heading text-2xl font-bold text-yellow-500 mt-1">{formatMoney(heldAmount)}</p>
           </div>
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
-            <p className="text-[#55556A] text-xs uppercase tracking-wider font-medium">Available</p>
+            <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-medium">Available</p>
             <p className="font-heading text-2xl font-bold text-[#00FF88] mt-1">{formatMoney(releasedAmount)}</p>
           </div>
         </div>
@@ -316,7 +316,7 @@ export default function PaymentsPage() {
                 Amount ({config?.currency || "INR"})
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                 <input
                   type="number"
                   min="1"
@@ -324,7 +324,7 @@ export default function PaymentsPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="500.00"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#1E1E2A] bg-[#0A0A0F] text-[#E8E8EC] text-sm focus:outline-none focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 transition-all placeholder:text-[#55556A]"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#1E1E2A] bg-[#0A0A0F] text-[#E8E8EC] text-sm focus:outline-none focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 transition-all placeholder:text-[#6E6E85]"
                 />
               </div>
             </div>
@@ -338,7 +338,7 @@ export default function PaymentsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g. Payment for AI chatbot project"
-                className="w-full h-11 px-4 rounded-xl border border-[#1E1E2A] bg-[#0A0A0F] text-[#E8E8EC] text-sm focus:outline-none focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 transition-all placeholder:text-[#55556A]"
+                className="w-full h-11 px-4 rounded-xl border border-[#1E1E2A] bg-[#0A0A0F] text-[#E8E8EC] text-sm focus:outline-none focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 transition-all placeholder:text-[#6E6E85]"
               />
             </div>
 
@@ -379,7 +379,7 @@ export default function PaymentsPage() {
                     {paymentResult.message}
                   </p>
                   {paymentResult.transactionId && (
-                    <p className="text-xs text-[#55556A] mt-1 font-mono">
+                    <p className="text-xs text-[#6E6E85] mt-1 font-mono">
                       TXN: {paymentResult.transactionId}
                     </p>
                   )}
@@ -387,7 +387,7 @@ export default function PaymentsPage() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-xs text-[#55556A]">
+            <div className="flex items-center gap-2 text-xs text-[#6E6E85]">
               <Lock className="h-3 w-3" />
               <span>Secured by Razorpay • 256-bit SSL encryption • PCI DSS compliant</span>
             </div>
@@ -427,16 +427,16 @@ export default function PaymentsPage() {
 
           {filteredTxns.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <CreditCard className="h-10 w-10 text-[#55556A] mx-auto mb-3" />
+              <CreditCard className="h-10 w-10 text-[#6E6E85] mx-auto mb-3" />
               <p className="text-sm text-[#8A8A9A] font-medium">No transactions found</p>
-              <p className="text-xs text-[#55556A] mt-1">
+              <p className="text-xs text-[#6E6E85] mt-1">
                 {statusFilter !== "all" ? "Try a different filter" : "Make your first payment to see it here"}
               </p>
             </div>
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[#0A0A0F] text-[#55556A] text-xs uppercase tracking-wider font-semibold border-b border-[#1E1E2A]">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[#0A0A0F] text-[#6E6E85] text-xs uppercase tracking-wider font-semibold border-b border-[#1E1E2A]">
                 <span>Transaction</span>
                 <span className="text-right w-20">Amount</span>
                 <span className="text-right w-16">Fee</span>
@@ -465,7 +465,7 @@ export default function PaymentsPage() {
                           <p className="text-sm font-medium text-[#E8E8EC]">
                             {tx.description || (tx.paymentMethod === "razorpay" ? "Razorpay Payment" : `Job #${(tx.jobId || "").slice(-6)}`)}
                           </p>
-                          <p className="text-xs text-[#55556A]">{formatDate(tx.createdAt)}</p>
+                          <p className="text-xs text-[#6E6E85]">{formatDate(tx.createdAt)}</p>
                         </div>
                       </div>
 
@@ -475,7 +475,7 @@ export default function PaymentsPage() {
                       </p>
 
                       {/* Fee */}
-                      <p className="text-sm text-[#55556A] text-right w-16 hidden sm:block">
+                      <p className="text-sm text-[#6E6E85] text-right w-16 hidden sm:block">
                         {tx.platformFee > 0 ? formatCurrency(tx.platformFee) : "—"}
                       </p>
 
@@ -503,7 +503,7 @@ export default function PaymentsPage() {
                           {tx.escrowStatus}
                         </span>
                         {tx.mock && (
-                          <span className="ml-1.5 text-[10px] text-[#55556A] font-medium">TEST</span>
+                          <span className="ml-1.5 text-[11px] text-[#6E6E85] font-medium">TEST</span>
                         )}
                       </div>
 
@@ -517,7 +517,7 @@ export default function PaymentsPage() {
                             Release
                           </button>
                         ) : (
-                          <span className="text-[#55556A] text-xs">—</span>
+                          <span className="text-[#6E6E85] text-xs">—</span>
                         )}
                       </div>
                     </div>
@@ -538,7 +538,7 @@ export default function PaymentsPage() {
 
       {/* Release confirmation dialog */}
       {releaseConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setReleaseConfirm(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md" onClick={() => setReleaseConfirm(null)}>
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
             <h3 className="font-heading text-lg font-bold text-[#E8E8EC] mb-2">Release Escrow?</h3>
             <p className="text-sm text-[#8A8A9A] mb-1">

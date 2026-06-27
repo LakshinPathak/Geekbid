@@ -138,7 +138,7 @@ function LoginPageContent() {
               </div>
               <div>
                 <p className="text-sm font-medium text-[#E8E8EC]">AI Chatbot Build</p>
-                <p className="text-xs text-[#55556A]">Live auction</p>
+                <p className="text-xs text-[#6E6E85]">Live auction</p>
               </div>
             </div>
             <div className="text-right">
@@ -193,19 +193,19 @@ function LoginPageContent() {
               <>
                 {/* Full name */}
                 <div>
-                  <label className="text-xs font-medium text-[#55556A] mb-1.5 block uppercase tracking-wider">Full Name</label>
+                  <label className="text-xs font-medium text-[#6E6E85] mb-1.5 block uppercase tracking-wider">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                     <input
                       placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
-                      className="w-full h-12 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all text-sm"
+                      className="w-full h-12 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all text-sm"
                     />
                   </div>
                 </div>
 
                 {/* Role selector */}
                 <div>
-                  <label className="text-xs font-medium text-[#55556A] mb-1.5 block uppercase tracking-wider">I am a...</label>
+                  <label className="text-xs font-medium text-[#6E6E85] mb-1.5 block uppercase tracking-wider">I am a...</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setRole("client")}
                       className={`border rounded-xl p-4 text-center cursor-pointer transition-all ${
@@ -215,7 +215,7 @@ function LoginPageContent() {
                       }`}>
                       <Briefcase className={`h-5 w-5 mx-auto mb-1.5 ${role === "client" ? "text-[#00FF88]" : "text-[#8A8A9A]"}`} />
                       <p className={`text-sm font-medium ${role === "client" ? "text-[#E8E8EC]" : "text-[#8A8A9A]"}`}>I&apos;m a Client</p>
-                      <p className="text-[#55556A] text-xs mt-0.5">I need to hire</p>
+                      <p className="text-[#6E6E85] text-xs mt-0.5">I need to hire</p>
                     </button>
                     <button type="button" onClick={() => setRole("freelancer")}
                       className={`border rounded-xl p-4 text-center cursor-pointer transition-all ${
@@ -225,7 +225,7 @@ function LoginPageContent() {
                       }`}>
                       <Code className={`h-5 w-5 mx-auto mb-1.5 ${role === "freelancer" ? "text-[#00FF88]" : "text-[#8A8A9A]"}`} />
                       <p className={`text-sm font-medium ${role === "freelancer" ? "text-[#E8E8EC]" : "text-[#8A8A9A]"}`}>I&apos;m a Freelancer</p>
-                      <p className="text-[#55556A] text-xs mt-0.5">I want to work</p>
+                      <p className="text-[#6E6E85] text-xs mt-0.5">I want to work</p>
                     </button>
                   </div>
                 </div>
@@ -234,12 +234,12 @@ function LoginPageContent() {
 
             {/* Email */}
             <div>
-              <label className="text-xs font-medium text-[#55556A] mb-1.5 block uppercase tracking-wider">Email</label>
+              <label className="text-xs font-medium text-[#6E6E85] mb-1.5 block uppercase tracking-wider">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                 <input
                   type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
-                  className="w-full h-12 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all text-sm"
+                  className="w-full h-12 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all text-sm"
                 />
               </div>
             </div>
@@ -247,18 +247,18 @@ function LoginPageContent() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-[#55556A] uppercase tracking-wider">Password</label>
+                <label className="text-xs font-medium text-[#6E6E85] uppercase tracking-wider">Password</label>
                 {mode === "login" && (
                   <button type="button" className="text-[#00FF88] text-xs hover:text-[#00CC6A]">Forgot password?</button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
                 <input
                   type={showPwd ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
-                  className="w-full h-12 pl-11 pr-11 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all text-sm"
+                  className="w-full h-12 pl-11 pr-11 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all text-sm"
                 />
-                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#55556A] hover:text-[#8A8A9A] transition-colors">
+                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6E6E85] hover:text-[#8A8A9A] transition-colors">
                   {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
@@ -287,7 +287,7 @@ function LoginPageContent() {
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-[#1E1E2A]" />
-            <span className="text-xs text-[#55556A]">or</span>
+            <span className="text-xs text-[#6E6E85]">or</span>
             <div className="flex-1 h-px bg-[#1E1E2A]" />
           </div>
 
@@ -311,7 +311,7 @@ function LoginPageContent() {
           </p>
 
           {/* Terms */}
-          <p className="text-[#55556A] text-xs mt-6 text-center">
+          <p className="text-[#6E6E85] text-xs mt-6 text-center">
             By continuing, you agree to our{" "}
             <span className="text-[#00FF88] hover:underline cursor-pointer">Terms</span> and{" "}
             <span className="text-[#00FF88] hover:underline cursor-pointer">Privacy Policy</span>.

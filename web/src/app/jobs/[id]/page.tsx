@@ -139,7 +139,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (!job) return (
     <div className="flex items-center justify-center min-h-[60vh] bg-[#0A0A0F]">
-      <p className="text-[#55556A] text-lg">Job not found</p>
+      <p className="text-[#6E6E85] text-lg">Job not found</p>
     </div>
   );
 
@@ -220,7 +220,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   // P0: Countdown urgency class
   const countdownClass = deadlineHrs > 24
-    ? "text-[#55556A] text-sm"
+    ? "text-[#6E6E85] text-sm"
     : deadlineHrs > 6
     ? "text-yellow-400 font-mono text-sm tabular-nums"
     : deadlineHrs > 1
@@ -285,7 +285,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       </div>
                       <div>
                         <p className="text-sm text-[#8A8A9A]">Posted by <span className="text-[#E8E8EC] font-medium">{client.fullName}</span></p>
-                        <p className="text-xs text-[#55556A] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
+                        <p className="text-xs text-[#6E6E85] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
                       </div>
                     </div>
                   )}
@@ -301,7 +301,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   const isMatch = currentUser?.skills?.includes(s);
                   return (
                     <span key={s} className={`px-2.5 py-1 rounded-md text-xs border ${
-                      isMatch ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" : "bg-[#0A0A0F] border-[#1E1E2A] text-[#55556A]"
+                      isMatch ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" : "bg-[#0A0A0F] border-[#1E1E2A] text-[#6E6E85]"
                     }`}>{isMatch && "✓ "}{s}</span>
                   );
                 })}
@@ -310,7 +310,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Description */}
             <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8">
-              <p className="text-[#55556A] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
+              <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
               <p className="text-[#8A8A9A] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
             </div>
 
@@ -322,26 +322,26 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-[#55556A] text-xs">Starting Price</p>
+                  <p className="text-[#6E6E85] text-xs">Starting Price</p>
                   <p className="font-heading text-xl font-bold text-[#E8E8EC] mt-1">{formatMoney(job.startingPrice)}</p>
                 </div>
                 <div>
-                  <p className="text-[#55556A] text-xs">Current Price</p>
+                  <p className="text-[#6E6E85] text-xs">Current Price</p>
                   <p className="font-heading text-xl font-bold text-[#00FF88] mt-1 animate-price-pulse">{formatMoney(current)}</p>
                 </div>
                 <div>
-                  <p className="text-[#55556A] text-xs">Floor Price</p>
+                  <p className="text-[#6E6E85] text-xs">Floor Price</p>
                   <p className="font-heading text-xl font-bold text-[#E8E8EC] mt-1">{formatMoney(job.minimumPrice)}</p>
                 </div>
                 <div>
-                  <p className="text-[#55556A] text-xs">Decay Rate</p>
+                  <p className="text-[#6E6E85] text-xs">Decay Rate</p>
                   <p className="font-heading text-xl font-bold text-red-400/70 mt-1">-${job.decayRatePerHour}/hr</p>
                 </div>
               </div>
               <div className="h-2 bg-[#1E1E2A] rounded-full mt-4 overflow-hidden">
                 <div className="h-2 bg-gradient-to-r from-[#00FF88] to-[#00CC6A] rounded-full transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
               </div>
-              <div className="flex justify-between mt-2 text-xs text-[#55556A]">
+              <div className="flex justify-between mt-2 text-xs text-[#6E6E85]">
                 <span>Floor: {formatMoney(job.minimumPrice)}</span>
                 <span>Start: {formatMoney(job.startingPrice)}</span>
               </div>
@@ -364,10 +364,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="h-4 w-4 text-[#00FF88]" />
                     <p className="text-[#E8E8EC] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
-                    {isHot && <span className="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+                    {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                   </div>
                   {jobBids.length === 0 ? (
-                    <p className="text-[#55556A] text-sm">No bids yet.</p>
+                    <p className="text-[#6E6E85] text-sm">No bids yet.</p>
                   ) : (
                     <>
                       <div className="overflow-x-auto -mx-1">
@@ -375,7 +375,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           <thead>
                             <tr className="border-b border-[#1E1E2A]">
                               {["Freelancer", "Price", "GeekScore", "Skills", "When", ""].map(h => (
-                                <th key={h} className={`py-2 px-2 text-[#55556A] font-semibold uppercase tracking-wider text-[10px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
+                                <th key={h} className={`py-2 px-2 text-[#6E6E85] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
                               ))}
                             </tr>
                           </thead>
@@ -390,7 +390,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                 <tr key={bid.id} className={`border-b border-[#1E1E2A]/40 transition-colors ${isBest ? "bg-[#00FF88]/[0.04]" : "hover:bg-[#00FF88]/[0.02]"}`}>
                                   <td className="py-3 px-2">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-7 h-7 bg-[#0A0A0F] border border-[#1E1E2A] text-[#8A8A9A] text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                                      <div className="w-7 h-7 bg-[#0A0A0F] border border-[#1E1E2A] text-[#8A8A9A] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
                                         {bidder?.avatarInitial ?? "?"}
                                       </div>
                                       <span className="text-[#E8E8EC] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
@@ -403,15 +403,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                     {bidder ? `${bidder.geekScore}${tier ? ` · ${tier.label}` : ""}` : "—"}
                                   </td>
                                   <td className="py-3 px-2 text-center">
-                                    <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#00FF88]" : skillMatches > 0 ? "text-yellow-400" : "text-[#55556A]"}`}>
+                                    <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#00FF88]" : skillMatches > 0 ? "text-yellow-400" : "text-[#6E6E85]"}`}>
                                       {skillMatches}/{job.skillsRequired.length} ✓
                                     </span>
                                   </td>
-                                  <td className="py-3 px-2 text-right text-[#55556A]">{timeAgo(bid.createdAt)}</td>
+                                  <td className="py-3 px-2 text-right text-[#6E6E85]">{timeAgo(bid.createdAt)}</td>
                                   <td className="py-3 px-2 text-right">
                                     {isOpen && (
                                       <button onClick={handleAccept}
-                                        className="text-[10px] font-semibold bg-[#00FF88] text-[#0A0A0F] px-2.5 py-1.5 rounded-lg hover:bg-[#00CC6A] transition-colors whitespace-nowrap">
+                                        className="text-[11px] font-semibold bg-[#00FF88] text-[#0A0A0F] px-2.5 py-1.5 rounded-lg hover:bg-[#00CC6A] transition-colors whitespace-nowrap">
                                         Accept
                                       </button>
                                     )}
@@ -448,20 +448,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     <div className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-[#00FF88]" />
                       <p className="text-[#E8E8EC] text-sm font-semibold">Live Bids ({jobBids.length})</p>
-                      {isHot && <span className="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+                      {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                     </div>
                     {isFreelancer && myRank !== null && (
-                      <span className="text-[10px] text-[#00FF88] bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-full px-2.5 py-0.5">
+                      <span className="text-[11px] text-[#00FF88] bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-full px-2.5 py-0.5">
                         Your bid #{myRank} of {jobBids.length}
                       </span>
                     )}
                     {isFreelancer && myRank === null && jobBids.length > 0 && (
-                      <span className="text-[10px] text-[#55556A]">You haven't bid yet</span>
+                      <span className="text-[11px] text-[#6E6E85]">You haven't bid yet</span>
                     )}
                   </div>
 
                   {jobBids.length === 0 ? (
-                    <p className="text-[#55556A] text-sm">No bids yet. Be the first!</p>
+                    <p className="text-[#6E6E85] text-sm">No bids yet. Be the first!</p>
                   ) : (
                     <>
                       <div className="space-y-3">
@@ -488,12 +488,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className="text-sm font-medium text-[#E8E8EC]">{bidder?.fullName ?? "Freelancer"}</span>
                                       {isNew && <span className="text-[9px] font-bold bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/30 rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
-                                      {tier && <span className="bg-[#00FF88]/10 text-[#00FF88] text-[10px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
+                                      {tier && <span className="bg-[#00FF88]/10 text-[#00FF88] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
                                       {isMyBid && <span className="text-[9px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-1.5 py-0.5">You</span>}
-                                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[#00FF88]/10 text-[#00FF88]" : "bg-blue-500/10 text-blue-400"}`}>{bid.bidType}</span>
+                                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[#00FF88]/10 text-[#00FF88]" : "bg-blue-500/10 text-blue-400"}`}>{bid.bidType}</span>
                                     </div>
                                     {bid.message && <p className="text-xs text-[#8A8A9A] italic mt-1">{bid.message}</p>}
-                                    <p className="text-[10px] text-[#55556A] mt-1">{timeAgo(bid.createdAt)}</p>
+                                    <p className="text-[11px] text-[#6E6E85] mt-1">{timeAgo(bid.createdAt)}</p>
                                   </div>
                                 </div>
                                 <p className="font-heading text-lg font-bold text-[#00FF88] shrink-0">{formatMoney(bid.bidPrice)}</p>
@@ -506,7 +506,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       {/* Bid statistics bar */}
                       {minBid !== null && maxBid !== null && avgBid !== null && (
                         <div className="mt-4 bg-[#0A0A0F] rounded-xl p-4 border border-[#1E1E2A]">
-                          <p className="text-[#55556A] text-[10px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
+                          <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
                           <div className="relative h-2 bg-[#1E1E2A] rounded-full mb-3">
                             <div
                               className="absolute h-2 bg-gradient-to-r from-[#00FF88]/40 to-[#00FF88]/80 rounded-full"
@@ -521,7 +521,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                               title={`Avg: ${formatMoney(avgBid)}`}
                             />
                           </div>
-                          <div className="flex justify-between text-[10px] text-[#55556A]">
+                          <div className="flex justify-between text-[11px] text-[#6E6E85]">
                             <span>Min: <span className="text-[#00FF88] font-medium">{formatMoney(minBid)}</span></span>
                             <span>Avg: <span className="text-[#8A8A9A] font-medium">{formatMoney(avgBid)}</span></span>
                             <span>Max: <span className="text-red-400/80 font-medium">{formatMoney(maxBid)}</span></span>
@@ -547,7 +547,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div className="space-y-3">
                   {jobMilestones.map(ms => {
                     const statusColors: Record<string, string> = {
-                      pending:     "text-[#55556A] bg-[#55556A]/10 border-[#55556A]/20",
+                      pending:     "text-[#6E6E85] bg-[#6E6E85]/10 border-[#6E6E85]/20",
                       in_progress: "text-blue-400 bg-blue-500/10 border-blue-500/20",
                       submitted:   "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
                       approved:    "text-[#00FF88] bg-[#00FF88]/10 border-[#00FF88]/20",
@@ -557,11 +557,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       <div key={ms.id} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-[#55556A] text-xs font-mono">#{ms.order}</span>
+                            <span className="text-[#6E6E85] text-xs font-mono">#{ms.order}</span>
                             <span className="text-[#E8E8EC] text-sm font-medium">{ms.title}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
+                            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
                               {ms.status.replace("_", " ")}
                             </span>
                             <span className="text-[#00FF88] text-sm font-semibold">{formatMoney(ms.amount)}</span>
@@ -598,36 +598,36 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div className="flex items-center gap-2 mb-4">
                   <Activity className="h-4 w-4 text-[#00FF88]" />
                   <p className="text-[#E8E8EC] text-sm font-semibold">Pricing Intelligence</p>
-                  <span className="text-[10px] bg-[#00FF88]/20 text-[#00FF88] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
+                  <span className="text-[11px] bg-[#00FF88]/20 text-[#00FF88] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
                 </div>
                 <div className="space-y-2.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#55556A] text-xs">Base Decay</span>
+                    <span className="text-[#6E6E85] text-xs">Base Decay</span>
                     <span className="text-[#8A8A9A] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#55556A] text-xs">Effective Decay</span>
+                    <span className="text-[#6E6E85] text-xs">Effective Decay</span>
                     <span className="text-[#00FF88] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#55556A] text-xs">Demand</span>
+                    <span className="text-[#6E6E85] text-xs">Demand</span>
                     {demand ? (
-                      <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[10px] font-bold`}>
+                      <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[11px] font-bold`}>
                         {demand.label} ({bidderCount} bidder{bidderCount !== 1 ? "s" : ""})
                       </span>
                     ) : (
-                      <span className="text-[#55556A] text-xs">No bids yet</span>
+                      <span className="text-[#6E6E85] text-xs">No bids yet</span>
                     )}
                   </div>
                   {job.lowestCounterBid && (
                     <div className="flex justify-between items-center">
-                      <span className="text-[#55556A] text-xs">Lowest Counter</span>
+                      <span className="text-[#6E6E85] text-xs">Lowest Counter</span>
                       <span className="text-blue-400 text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
                     </div>
                   )}
                   {job.lastBidAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-[#55556A] text-xs">Last Activity</span>
+                      <span className="text-[#6E6E85] text-xs">Last Activity</span>
                       <span className="text-[#8A8A9A] text-xs">{timeAgo(job.lastBidAt)}</span>
                     </div>
                   )}
@@ -636,7 +636,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 {/* Price Trajectory Chart (history + P2 projection) */}
                 <div className="mt-4 bg-[#0A0A0F] rounded-xl p-4 border border-[#1E1E2A]">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-[#55556A] text-[10px] uppercase tracking-wider">Price Trajectory</p>
+                    <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider">Price Trajectory</p>
                     <div className="flex items-center gap-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
                       <span className="text-[9px] text-[#00FF88]/60">LIVE</span>
@@ -708,20 +708,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     )}
                   </svg>
                   <div className="flex justify-between mt-1.5">
-                    <span className="text-[#55556A] text-[9px]">Posted</span>
+                    <span className="text-[#6E6E85] text-[9px]">Posted</span>
                     <span className="text-[#00FF88]/50 text-[9px]">Now ↑</span>
-                    {!isAtFloor && <span className="text-[#55556A] text-[9px]">Floor ETA →</span>}
+                    {!isAtFloor && <span className="text-[#6E6E85] text-[9px]">Floor ETA →</span>}
                   </div>
                   {/* P2: Scenario labels */}
                   {projectionData && (
                     <div className="mt-2 pt-2 border-t border-[#1E1E2A] space-y-1">
                       <div className="flex items-center gap-1.5">
                         <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#00FF88" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
-                        <span className="text-[9px] text-[#55556A]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
+                        <span className="text-[9px] text-[#6E6E85]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#00FF88" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
-                        <span className="text-[9px] text-[#55556A]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
+                        <span className="text-[9px] text-[#6E6E85]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
                       </div>
                     </div>
                   )}
@@ -750,7 +750,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <p className="text-red-400/80 text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
               )}
 
-              <p className="text-[#55556A] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
+              <p className="text-[#6E6E85] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
 
               {/* P0: Urgency countdown */}
               <div className="flex items-center gap-1.5 mt-2">
@@ -761,7 +761,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <span className={countdownClass}>{countdownDisplay || formatHoursToFloor(eta)}</span>
                 )}
               </div>
-              <p className="text-[#55556A] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
+              <p className="text-[#6E6E85] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
             </div>
 
             {/* ─── P0: Freelancer Actions / Cooldown ─── */}
@@ -790,7 +790,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </svg>
                   <div className="text-center">
                     <p className="text-[#8A8A9A] text-sm font-medium">⏳ Cooldown active</p>
-                    <p className="text-[#55556A] text-xs mt-1">
+                    <p className="text-[#6E6E85] text-xs mt-1">
                       Bid again at {new Date((myLastBid ? new Date(myLastBid.createdAt).getTime() : 0) + 30 * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -805,7 +805,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-px bg-[#1E1E2A]" />
-                    <span className="text-xs text-[#55556A]">or</span>
+                    <span className="text-xs text-[#6E6E85]">or</span>
                     <div className="flex-1 h-px bg-[#1E1E2A]" />
                   </div>
 
@@ -817,30 +817,30 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                     {/* P5: Smart bid suggestion chips */}
                     <div>
-                      <p className="text-[#55556A] text-[10px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
+                      <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => setCounterPrice(String(aggressiveBid))}
                           className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[#00FF88]/50 bg-[#00FF88]/5" : "border-[#1E1E2A] bg-[#0A0A0F] hover:border-[#00FF88]/30"}`}
                         >
-                          <p className="text-[10px] text-[#55556A] font-semibold">Aggressive</p>
+                          <p className="text-[11px] text-[#6E6E85] font-semibold">Aggressive</p>
                           <p className="font-heading text-base font-bold text-[#00FF88]">{formatMoney(aggressiveBid)}</p>
-                          <p className="text-[9px] text-[#55556A] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
+                          <p className="text-[9px] text-[#6E6E85] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
                         </button>
                         <button
                           onClick={() => setCounterPrice(String(competitiveBid))}
                           className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[#1E1E2A] bg-[#0A0A0F] hover:border-blue-500/20"}`}
                         >
-                          <p className="text-[10px] text-[#55556A] font-semibold">Competitive</p>
+                          <p className="text-[11px] text-[#6E6E85] font-semibold">Competitive</p>
                           <p className="font-heading text-base font-bold text-blue-400">{formatMoney(competitiveBid)}</p>
-                          <p className="text-[9px] text-[#55556A] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
+                          <p className="text-[9px] text-[#6E6E85] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
                         </button>
                       </div>
                     </div>
 
                     {/* P10: Price slider */}
                     <div>
-                      <div className="flex justify-between text-[10px] text-[#55556A] mb-1.5">
+                      <div className="flex justify-between text-[11px] text-[#6E6E85] mb-1.5">
                         <span>Floor {formatMoney(job.minimumPrice)}</span>
                         <span>Current {formatMoney(current)}</span>
                       </div>
@@ -854,9 +854,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         className="w-full h-2 bg-[#1E1E2A] rounded-full appearance-none cursor-pointer"
                       />
                       {sliderHourly > 0 && (
-                        <p className="text-[10px] text-[#8A8A9A] mt-1.5">
+                        <p className="text-[11px] text-[#8A8A9A] mt-1.5">
                           Effective rate: <span className="text-[#00FF88] font-medium">{formatMoney(sliderHourly)}/hr</span>
-                          {bidsBelow > 0 && <span className="text-[#55556A]"> · below {bidsBelow} of {jobBids.length} bids</span>}
+                          {bidsBelow > 0 && <span className="text-[#6E6E85]"> · below {bidsBelow} of {jobBids.length} bids</span>}
                         </p>
                       )}
                     </div>
@@ -864,7 +864,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     {/* P5: Position bar */}
                     {posMyBid !== null && (
                       <div>
-                        <p className="text-[#55556A] text-[10px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
+                        <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
                         <div className="relative h-2 bg-[#1E1E2A] rounded-full">
                           {/* Min bid marker */}
                           {posMinBid !== null && (
@@ -873,7 +873,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           {/* Your bid marker */}
                           <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#00FF88] rounded-full border-2 border-[#12121A] -ml-1.5 shadow-[0_0_8px_rgba(0,255,136,0.5)]" style={{ left: `${posMyBid}%` }} />
                         </div>
-                        <div className="flex justify-between text-[9px] text-[#55556A] mt-1">
+                        <div className="flex justify-between text-[9px] text-[#6E6E85] mt-1">
                           <span>Floor</span>
                           <span className="text-[#00FF88]">↑ you</span>
                           <span>Current</span>
@@ -883,13 +883,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                     {/* Price text input */}
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#55556A] text-sm">$</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6E6E85] text-sm">$</span>
                       <input
                         type="number"
                         placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
                         value={counterPrice}
                         onChange={e => { setCounterPrice(e.target.value); setCounterError(""); }}
-                        className="w-full h-11 pl-8 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] font-heading text-lg placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all"
+                        className="w-full h-11 pl-8 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] font-heading text-lg placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
                       />
                     </div>
                     <textarea
@@ -897,7 +897,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       value={counterMsg}
                       onChange={e => setCounterMsg(e.target.value)}
                       rows={3}
-                      className="w-full bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all px-4 py-2.5 resize-none"
+                      className="w-full bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all px-4 py-2.5 resize-none"
                     />
                     {counterError && <p className="text-red-400 text-xs">{counterError}</p>}
                     <button onClick={handleCounter}
@@ -943,7 +943,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-[#55556A]" />
+                    <item.icon className="h-4 w-4 text-[#6E6E85]" />
                     <span className="text-[#8A8A9A] text-sm">{item.label}</span>
                   </div>
                   <span className="text-[#E8E8EC] text-sm font-medium">{item.value}</span>

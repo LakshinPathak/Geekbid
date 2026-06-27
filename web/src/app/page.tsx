@@ -67,7 +67,7 @@ function PriceDecayDemo() {
   const pct = ((2400 - price) / (2400 - MIN)) * 100;
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 sm:p-8 backdrop-blur-sm">
+    <div className="rounded-2xl border border-[#1E1E2A] bg-[#12121A] p-6 sm:p-8 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
           <p className="text-xs text-white/30 uppercase tracking-wider font-semibold">Live Price Decay</p>
@@ -107,10 +107,10 @@ function PriceDecayDemo() {
           { label: "Watchers", value: "23", icon: Eye },
           { label: "Time Left", value: `${Math.max(64 - elapsed, 0)}h`, icon: Timer },
         ].map(s => (
-          <div key={s.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-center">
+          <div key={s.label} className="rounded-xl bg-[#12121A] border border-white/[0.06] px-3 py-2.5 text-center">
             <s.icon className="h-3.5 w-3.5 text-white/20 mx-auto mb-1" />
             <p className="text-sm font-bold text-white">{s.value}</p>
-            <p className="text-[10px] text-white/25">{s.label}</p>
+            <p className="text-[11px] text-white/25">{s.label}</p>
           </div>
         ))}
       </div>
@@ -261,14 +261,14 @@ export default function LandingPage() {
     <div className="bg-black text-white overflow-x-hidden">
       {/* ═══ NAVBAR ═══ */}
       <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
-        <div className="flex h-14 items-center justify-between px-6 rounded-2xl border border-white/[0.08] bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <div className="flex h-14 items-center justify-between px-6 rounded-2xl border border-[#1E1E2A] bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-black">
               <Zap className="h-4 w-4" />
             </div>
             <span className="text-base font-bold tracking-tight">GeekBid</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-white/40">
+          <div className="hidden md:flex items-center gap-8 text-sm text-[#8A8A9A]">
             <a href="#how-it-works" className="hover:text-white transition-colors duration-200">How it Works</a>
             <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
             <a href="#compare" className="hover:text-white transition-colors duration-200">Compare</a>
@@ -298,8 +298,8 @@ export default function LandingPage() {
           {/* Left: Copy */}
           <div className="text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/[0.08] bg-white/[0.04] mb-8 text-sm text-white/50 hover:bg-white/[0.06] transition-colors cursor-default">
-              <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[11px] font-bold uppercase tracking-wider">LIVE</span>
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#1E1E2A] bg-white/[0.04] mb-8 text-sm text-white/50 hover:bg-white/[0.06] transition-colors cursor-default">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[11px] font-bold uppercase tracking-wider"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>LIVE</span>
               <span>Reverse Auction Platform for Engineers</span>
               <ChevronRight className="h-3.5 w-3.5 text-white/30" />
             </div>
@@ -312,7 +312,7 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/40 mt-8 max-w-lg leading-relaxed mx-auto lg:mx-0">
+            <p className="text-lg sm:text-xl text-[#8A8A9A] mt-8 max-w-lg leading-relaxed mx-auto lg:mx-0">
               The world&apos;s first reverse-auction marketplace for tech talent. Post a job, watch prices automatically decay, and hire when it hits your sweet spot.
             </p>
 
@@ -348,7 +348,7 @@ export default function LandingPage() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/15 animate-bounce">
-          <span className="text-[10px] uppercase tracking-widest">Scroll</span>
+          <span className="text-[11px] uppercase tracking-widest">Scroll</span>
           <ChevronDown className="h-4 w-4" />
         </div>
       </section>
@@ -389,17 +389,17 @@ export default function LandingPage() {
                     { label: "Avg Decay", value: "$23/hr", sub: "Price reduction", color: "text-blue-400" },
                     { label: "Active Bids", value: "34", sub: "7 new today", color: "text-amber-400" },
                   ].map(s => (
-                    <div key={s.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
-                      <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">{s.label}</p>
+                    <div key={s.label} className="rounded-xl bg-[#12121A] border border-white/[0.06] p-4">
+                      <p className="text-[11px] text-white/30 uppercase tracking-wider mb-1">{s.label}</p>
                       <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
-                      <p className="text-[10px] text-white/20 mt-0.5">{s.sub}</p>
+                      <p className="text-[11px] text-white/20 mt-0.5">{s.sub}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Job rows */}
                 <div className="rounded-xl border border-white/[0.06] overflow-hidden">
-                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-white/[0.06] text-[10px] text-white/25 uppercase tracking-wider font-semibold">
+                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-white/[0.06] text-[11px] text-white/25 uppercase tracking-wider font-semibold">
                     <span>Project</span>
                     <span className="hidden sm:block text-right">Bids</span>
                     <span className="text-right">Time Left</span>
@@ -408,13 +408,13 @@ export default function LandingPage() {
                   {JOB_ROWS.map((job, i) => (
                     <div key={job.title} className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3.5 ${i < JOB_ROWS.length - 1 ? "border-b border-white/[0.04]" : ""} hover:bg-white/[0.02] transition-colors`}>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-lg bg-white/[0.05] flex items-center justify-center text-white/25 shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-[#1A1A24] flex items-center justify-center text-white/25 shrink-0">
                           <Code className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white/80 truncate">{job.title}</p>
                           <div className="flex gap-1.5 mt-0.5">
-                            {job.skills.map(s => <span key={s} className="text-[10px] text-white/20 bg-white/[0.04] px-1.5 py-0.5 rounded">{s}</span>)}
+                            {job.skills.map(s => <span key={s} className="text-[11px] text-white/20 bg-white/[0.04] px-1.5 py-0.5 rounded">{s}</span>)}
                           </div>
                         </div>
                       </div>
@@ -423,11 +423,11 @@ export default function LandingPage() {
                         <span className="text-xs text-white/35">{job.bids}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-white/40 font-mono">{job.time}</p>
+                        <p className="text-xs text-[#8A8A9A] font-mono">{job.time}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-white">{job.price}</p>
-                        <p className="text-[10px] text-emerald-400/60">{"↓"} {job.decay}</p>
+                        <p className="text-[11px] text-emerald-400/60">{"↓"} {job.decay}</p>
                       </div>
                     </div>
                   ))}
@@ -504,7 +504,7 @@ export default function LandingPage() {
                 </div>
                 <div className="relative z-10">
                   <div className="h-14 w-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-6 group-hover:border-white/[0.1] transition-colors">
-                    <f.icon className="h-6 w-6 text-white/40 group-hover:text-white/60 transition-colors" />
+                    <f.icon className="h-6 w-6 text-[#8A8A9A] group-hover:text-white/60 transition-colors" />
                   </div>
                   <h3 className="text-lg font-bold text-white/90 mb-2">{f.title}</h3>
                   <p className="text-sm text-white/30 leading-relaxed">{f.desc}</p>
@@ -644,7 +644,7 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-bold text-white/90 mb-3">For Clients</h3>
                 <ul className="space-y-3 mb-8">
                   {["Post jobs with custom decay rates", "Escrow protects every payment", "Browse verified freelancer profiles", "Real-time chat with candidates"].map(item => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-white/40">
+                    <li key={item} className="flex items-center gap-3 text-sm text-[#8A8A9A]">
                       <CheckCircle2 className="h-4 w-4 text-emerald-400/60 shrink-0" />
                       {item}
                     </li>
@@ -668,7 +668,7 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-bold text-white/90 mb-3">For Freelancers</h3>
                 <ul className="space-y-3 mb-8">
                   {["Watch job prices and bid at your target rate", "Build your GeekScore™ reputation", "Get matched to jobs by skills", "Guaranteed payment via escrow"].map(item => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-white/40">
+                    <li key={item} className="flex items-center gap-3 text-sm text-[#8A8A9A]">
                       <CheckCircle2 className="h-4 w-4 text-blue-400/60 shrink-0" />
                       {item}
                     </li>
@@ -731,7 +731,7 @@ export default function LandingPage() {
 
             {/* Links */}
             <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Platform</p>
+              <p className="text-xs font-semibold text-[#8A8A9A] uppercase tracking-wider mb-4">Platform</p>
               <ul className="space-y-2.5">
                 <li><Link href="/feed" className="text-sm text-white/20 hover:text-white/50 transition-colors">Browse Jobs</Link></li>
                 <li><Link href="/login?tab=register&role=client" className="text-sm text-white/20 hover:text-white/50 transition-colors">Post a Job</Link></li>
@@ -739,7 +739,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Resources</p>
+              <p className="text-xs font-semibold text-[#8A8A9A] uppercase tracking-wider mb-4">Resources</p>
               <ul className="space-y-2.5">
                 <li><a href="#how-it-works" className="text-sm text-white/20 hover:text-white/50 transition-colors">How it Works</a></li>
                 <li><a href="#features" className="text-sm text-white/20 hover:text-white/50 transition-colors">Features</a></li>
@@ -747,7 +747,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Account</p>
+              <p className="text-xs font-semibold text-[#8A8A9A] uppercase tracking-wider mb-4">Account</p>
               <ul className="space-y-2.5">
                 <li><Link href="/login" className="text-sm text-white/20 hover:text-white/50 transition-colors">Sign In</Link></li>
                 <li><Link href="/login?tab=register" className="text-sm text-white/20 hover:text-white/50 transition-colors">Create Account</Link></li>

@@ -107,7 +107,7 @@ export default function MyJobsPage() {
         {myJobs.length === 0 ? (
           <div className="text-center py-20">
             <div className="mx-auto h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mb-4">
-              <Briefcase className="h-7 w-7 text-[#55556A]" />
+              <Briefcase className="h-7 w-7 text-[#6E6E85]" />
             </div>
             <h3 className="text-lg font-bold text-[#E8E8EC] mb-1">No jobs found</h3>
             <p className="text-sm text-[#8A8A9A] mb-4">
@@ -142,7 +142,7 @@ export default function MyJobsPage() {
                         </h3>
                       </Link>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-[#55556A] text-xs mt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-[#6E6E85] text-xs mt-1">
                       <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {timeAgo(job.postedAt)}</span>
                       <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {bidCount} bids</span>
                       <span className="flex items-center gap-1"><TrendingDown className="h-3 w-3" /> ${job.decayRatePerHour}/hr</span>
@@ -155,12 +155,12 @@ export default function MyJobsPage() {
                   {/* Center: Price */}
                   <div className="text-right sm:text-center shrink-0">
                     <p className="font-heading text-xl font-bold text-[#00FF88]">{formatMoney(price)}</p>
-                    <p className="text-[#55556A] text-[10px]">{isOpen ? "Current price" : "Final price"}</p>
+                    <p className="text-[#6E6E85] text-[11px]">{isOpen ? "Current price" : "Final price"}</p>
                   </div>
 
                   {/* Right: Status + Action */}
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className={`rounded-full text-[10px] font-medium px-3 py-1 border ${
+                    <span className={`rounded-full text-[11px] font-medium px-3 py-1 border ${
                       isOpen
                         ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20"
                         : "bg-[#8A8A9A]/10 text-[#8A8A9A] border-[#8A8A9A]/20"
@@ -220,11 +220,11 @@ export default function MyJobsPage() {
 
       {/* Review Modal */}
       {reviewModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="animate-modal-enter bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-lg font-semibold text-[#E8E8EC]">Review {reviewModal.revieweeName}</h3>
-              <button onClick={() => setReviewModal(null)} className="text-[#55556A] hover:text-[#E8E8EC]"><X className="h-5 w-5" /></button>
+              <button onClick={() => setReviewModal(null)} className="text-[#6E6E85] hover:text-[#E8E8EC]"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="mb-4">
@@ -232,7 +232,7 @@ export default function MyJobsPage() {
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110">
-                    <Star className={`h-8 w-8 ${star <= reviewRating ? "text-yellow-500 fill-yellow-500" : "text-[#55556A]"}`} />
+                    <Star className={`h-8 w-8 ${star <= reviewRating ? "text-yellow-500 fill-yellow-500" : "text-[#6E6E85]"}`} />
                   </button>
                 ))}
               </div>
@@ -246,9 +246,9 @@ export default function MyJobsPage() {
                 maxLength={1000}
                 rows={4}
                 placeholder="Share your experience..."
-                className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all resize-none"
+                className="w-full p-3 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all resize-none"
               />
-              <p className="text-[#55556A] text-xs mt-1">{reviewComment.length}/1000</p>
+              <p className="text-[#6E6E85] text-xs mt-1">{reviewComment.length}/1000</p>
             </div>
 
             <div className="flex gap-3">

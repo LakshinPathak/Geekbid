@@ -35,7 +35,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
               <p className="text-[11px] text-neutral-400">{timeAgo(job.postedAt)}</p>
             </div>
           </div>
-          <Badge variant={isAtFloor ? "destructive" : "outline"} className={`text-[10px] ${!isAtFloor ? "border-neutral-300 text-neutral-500" : ""}`}>
+          <Badge variant={isAtFloor ? "destructive" : "outline"} className={`text-[11px] ${!isAtFloor ? "border-neutral-300 text-neutral-500" : ""}`}>
             {isAtFloor ? "AT FLOOR" : `⏱ ${formatHoursToFloor(eta)}`}
           </Badge>
         </div>
@@ -50,12 +50,12 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
         {/* Skills */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {job.skillsRequired.slice(0, 4).map(s => (
-            <Badge key={s} variant="secondary" className="text-[10px] font-medium bg-neutral-100 text-neutral-600 border-neutral-200">
+            <Badge key={s} variant="secondary" className="text-[11px] font-medium bg-neutral-100 text-neutral-600 border-neutral-200">
               {s}
             </Badge>
           ))}
           {job.skillsRequired.length > 4 && (
-            <Badge variant="secondary" className="text-[10px] bg-neutral-100">+{job.skillsRequired.length - 4}</Badge>
+            <Badge variant="secondary" className="text-[11px] bg-neutral-100">+{job.skillsRequired.length - 4}</Badge>
           )}
         </div>
 
@@ -69,7 +69,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
             </span>
           </div>
           <Progress value={pricePercent} className="h-1.5" />
-          <div className="flex justify-between text-[10px] text-neutral-400">
+          <div className="flex justify-between text-[11px] text-neutral-400">
             <span>Floor: {formatMoney(job.minimumPrice)}</span>
             <span>Start: {formatMoney(job.startingPrice)}</span>
           </div>

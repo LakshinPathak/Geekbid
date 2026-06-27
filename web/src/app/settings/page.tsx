@@ -85,7 +85,7 @@ export default function SettingsPage() {
             <input
               value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
               placeholder="Key name (e.g. Production, CI/CD)"
-              className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#55556A] focus:border-[#00FF88]/50 outline-none transition-all"
+              className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
             />
             <button onClick={createKey} disabled={creating || !newKeyName.trim()}
               className="h-11 px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
@@ -119,15 +119,15 @@ export default function SettingsPage() {
           </h2>
 
           {keys.length === 0 ? (
-            <p className="text-[#55556A] text-sm">No API keys yet. Generate one above.</p>
+            <p className="text-[#6E6E85] text-sm">No API keys yet. Generate one above.</p>
           ) : (
             <div className="space-y-3">
               {keys.map(k => (
                 <div key={k.id} className="flex items-center justify-between bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
                   <div>
                     <p className="text-[#E8E8EC] text-sm font-medium">{k.name}</p>
-                    <p className="text-[#55556A] text-xs font-mono mt-0.5">{k.prefix}</p>
-                    <div className="flex items-center gap-3 mt-1 text-[#55556A] text-xs">
+                    <p className="text-[#6E6E85] text-xs font-mono mt-0.5">{k.prefix}</p>
+                    <div className="flex items-center gap-3 mt-1 text-[#6E6E85] text-xs">
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}</span>
                       {k.lastUsedAt && <span>Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
                     </div>
@@ -151,14 +151,14 @@ export default function SettingsPage() {
             <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
               <p className="text-[#00FF88] text-xs font-mono mb-1">GET /api/v1/jobs</p>
               <p className="text-[#8A8A9A] text-sm">List jobs. Query params: status, category, page, limit</p>
-              <code className="block mt-2 text-[#55556A] text-xs font-mono">
+              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
                 curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&limit=10
               </code>
             </div>
             <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
               <p className="text-[#00FF88] text-xs font-mono mb-1">POST /api/v1/jobs</p>
               <p className="text-[#8A8A9A] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
-              <code className="block mt-2 text-[#55556A] text-xs font-mono">
+              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
                 curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
               </code>
             </div>

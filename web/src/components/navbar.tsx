@@ -40,7 +40,7 @@ export default function Navbar() {
           <span className="text-base font-extrabold text-[#E8E8EC] hidden sm:block">
             Geek<span className="text-[#8A8A9A]">Bid</span>
           </span>
-          <span className="hidden sm:flex text-[10px] px-1.5 py-0.5 rounded-md border border-[#1E1E2A] text-[#55556A] font-medium">
+          <span className="hidden sm:flex text-[11px] px-1.5 py-0.5 rounded-md border border-[#1E1E2A] text-[#6E6E85] font-medium">
             BETA
           </span>
         </Link>
@@ -54,13 +54,13 @@ export default function Navbar() {
                 <button
                   className={`relative flex items-center gap-1.5 text-sm font-medium h-9 px-3 rounded-lg transition-colors ${
                     isActive
-                      ? "text-[#00FF88] bg-[#00FF88]/10"
-                      : "text-[#55556A] hover:text-[#E8E8EC] hover:bg-[#12121A]"
+                      ? "text-[#00FF88] bg-[#00FF88]/10 border-b-2 border-[#00FF88]"
+                      : "text-[#6E6E85] hover:text-[#E8E8EC] hover:bg-[#12121A]"
                   }`}>
                   <item.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{item.label}</span>
                   {item.hasBadge && unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#00FF88] text-[10px] font-bold text-[#0A0A0F] px-1">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#00FF88] text-[11px] font-bold text-[#0A0A0F] px-1">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -79,33 +79,33 @@ export default function Navbar() {
               </div>
               <div className="hidden md:flex flex-col items-start">
                 <span className="text-sm font-semibold text-[#E8E8EC] leading-tight">{currentUser.fullName}</span>
-                <span className="text-[10px] text-[#55556A] capitalize">{currentUser.role}</span>
+                <span className="text-[11px] text-[#6E6E85] capitalize">{currentUser.role}</span>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-[#55556A]" />
+              <ChevronDown className="h-3.5 w-3.5 text-[#6E6E85]" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 z-[200] bg-[#12121A] border border-[#1E1E2A] shadow-xl shadow-black/50 rounded-xl p-1.5" sideOffset={8}>
             <div className="px-3 py-2.5">
               <p className="text-sm font-semibold text-[#E8E8EC]">{currentUser.fullName}</p>
-              <p className="text-xs text-[#55556A] mt-0.5">{currentUser.email}</p>
+              <p className="text-xs text-[#6E6E85] mt-0.5">{currentUser.email}</p>
             </div>
             <DropdownMenuSeparator className="bg-[#1E1E2A]" />
             <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-              <User className="h-4 w-4 mr-2.5 text-[#55556A]" /> Profile
+              <User className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> Profile
             </DropdownMenuItem>
             {currentUser.role === "client" && (
               <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-                <PlusCircle className="h-4 w-4 mr-2.5 text-[#55556A]" /> Post a Job
+                <PlusCircle className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> Post a Job
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-              <Briefcase className="h-4 w-4 mr-2.5 text-[#55556A]" /> My Jobs
+              <Briefcase className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> My Jobs
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-              <DollarSign className="h-4 w-4 mr-2.5 text-[#55556A]" /> Earnings
+              <DollarSign className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> Earnings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-              <CreditCard className="h-4 w-4 mr-2.5 text-[#55556A]" /> Payments
+              <CreditCard className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> Payments
             </DropdownMenuItem>
             {currentUser.role === "admin" && (
               <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
@@ -113,7 +113,7 @@ export default function Navbar() {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-lg cursor-pointer py-2.5 text-[#8A8A9A] hover:text-[#E8E8EC] focus:text-[#E8E8EC] focus:bg-[#1A1A24]">
-              <Settings className="h-4 w-4 mr-2.5 text-[#55556A]" /> Settings
+              <Settings className="h-4 w-4 mr-2.5 text-[#6E6E85]" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#1E1E2A]" />
             <DropdownMenuItem onClick={handleLogout} className="rounded-lg cursor-pointer py-2.5 text-red-400 focus:text-red-400 focus:bg-red-500/10">

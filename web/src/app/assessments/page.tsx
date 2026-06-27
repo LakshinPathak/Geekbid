@@ -165,7 +165,7 @@ export default function AssessmentsPage() {
                       ? "border-[#00FF88] bg-[#00FF88]/5 text-[#E8E8EC]"
                       : "border-[#1E1E2A] bg-[#0A0A0F] text-[#8A8A9A] hover:border-[#8A8A9A]/30"
                   }`}>
-                  <span className="font-mono text-xs text-[#55556A] mr-3">{String.fromCharCode(65 + i)}</span>
+                  <span className="font-mono text-xs text-[#6E6E85] mr-3">{String.fromCharCode(65 + i)}</span>
                   {opt}
                 </button>
               ))}
@@ -227,7 +227,7 @@ export default function AssessmentsPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-[#55556A] text-xs mb-4">
+                <div className="flex items-center gap-4 text-[#6E6E85] text-xs mb-4">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {a.timeLimit / 60} min</span>
                   <span>{a.questionCount} questions</span>
                   <span>Pass: {a.passingScore}%</span>

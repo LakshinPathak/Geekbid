@@ -70,7 +70,7 @@ function getJobHealth(job: Job, now: Date) {
 function getPriceTrajectory(effectiveRate: number) {
   if (effectiveRate > 20) return { label: "Dropping fast",  icon: "⚡", color: "text-red-400"    };
   if (effectiveRate > 10) return { label: "Steady decline", icon: "📉", color: "text-yellow-400" };
-  return                         { label: "Holding steady", icon: "🐢", color: "text-[#55556A]"  };
+  return                         { label: "Holding steady", icon: "🐢", color: "text-[#6E6E85]"  };
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -297,20 +297,20 @@ export default function FeedPage() {
             {isClient && clientKPIs && (
               <div className="flex gap-2">
                 <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">My Jobs</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">My Jobs</p>
                   <p className="font-heading text-lg font-bold text-[#E8E8EC]">{clientKPIs.myJobs}</p>
                 </div>
                 <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Savings</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Savings</p>
                   <p className="font-heading text-lg font-bold text-[#00FF88]">{formatMoney(clientKPIs.totalSavings)}</p>
                 </div>
                 <div className="hidden sm:block bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Total Bids</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Total Bids</p>
                   <p className="font-heading text-lg font-bold text-[#E8E8EC]">{clientKPIs.totalBids}</p>
                 </div>
                 <div className="hidden sm:block bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Avg Decay</p>
-                  <p className="font-heading text-lg font-bold text-[#E8E8EC]">${clientKPIs.avgDecay.toFixed(0)}<span className="text-[#55556A] text-sm">/hr</span></p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Avg Decay</p>
+                  <p className="font-heading text-lg font-bold text-[#E8E8EC]">${clientKPIs.avgDecay.toFixed(0)}<span className="text-[#6E6E85] text-sm">/hr</span></p>
                 </div>
               </div>
             )}
@@ -319,21 +319,21 @@ export default function FeedPage() {
             {isFreelancer && freelancerKPIs && (
               <div className="flex gap-2">
                 <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Matches</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Matches</p>
                   <p className="font-heading text-lg font-bold text-[#00FF88]">{freelancerKPIs.matches}</p>
                 </div>
                 <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Bids Used</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Bids Used</p>
                   <p className="font-heading text-lg font-bold text-[#E8E8EC]">
-                    {freelancerKPIs.bidsThisMonth}<span className="text-[#55556A] text-sm">/{freelancerKPIs.bidLimit}</span>
+                    {freelancerKPIs.bidsThisMonth}<span className="text-[#6E6E85] text-sm">/{freelancerKPIs.bidLimit}</span>
                   </p>
                 </div>
                 <div className="hidden sm:block bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Win Rate</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Win Rate</p>
                   <p className="font-heading text-lg font-bold text-[#E8E8EC]">{freelancerKPIs.winRate}%</p>
                 </div>
                 <div className="hidden sm:block bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl px-4 py-2.5 text-center min-w-[76px]">
-                  <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Potential</p>
+                  <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Potential</p>
                   <p className="font-heading text-lg font-bold text-[#00FF88]">{formatMoney(freelancerKPIs.earningPotential)}</p>
                 </div>
               </div>
@@ -376,12 +376,12 @@ export default function FeedPage() {
                   <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-4 hover:border-[#00FF88]/20 transition-all flex flex-col gap-3">
                     {/* Health + savings */}
                     <div className="flex items-center justify-between">
-                      <span className={`flex items-center gap-1.5 text-[10px] font-bold ${health.color}`}>
+                      <span className={`flex items-center gap-1.5 text-[11px] font-bold ${health.color}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${health.dot} animate-pulse`} />
                         {health.label}
                       </span>
                       {savings > 0 && (
-                        <span className="text-[10px] text-[#00FF88] font-semibold">Saving {formatMoney(savings)}</span>
+                        <span className="text-[11px] text-[#00FF88] font-semibold">Saving {formatMoney(savings)}</span>
                       )}
                     </div>
 
@@ -389,7 +389,7 @@ export default function FeedPage() {
                     <div>
                       <h3 className="font-heading text-sm font-semibold text-[#E8E8EC] line-clamp-1">{job.title}</h3>
                       <p className="font-heading text-lg font-bold text-[#00FF88] mt-0.5">{formatMoney(current)}</p>
-                      <p className="text-[#55556A] text-[10px]">Floor: {formatMoney(job.minimumPrice)}</p>
+                      <p className="text-[#6E6E85] text-[11px]">Floor: {formatMoney(job.minimumPrice)}</p>
                       <div className="h-1 bg-[#1E1E2A] rounded-full mt-1.5">
                         <div className="h-1 bg-[#00FF88] rounded-full transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
                       </div>
@@ -406,18 +406,18 @@ export default function FeedPage() {
                                 <div className="w-5 h-5 rounded-full bg-[#00FF88]/10 text-[#00FF88] text-[9px] font-bold flex items-center justify-center">
                                   {bidder?.avatarInitial ?? "?"}
                                 </div>
-                                <span className="text-[#8A8A9A] text-[10px]">
+                                <span className="text-[#8A8A9A] text-[11px]">
                                   {bidder?.fullName?.split(" ")[0] ?? "Freelancer"}
-                                  <span className="text-[#55556A]"> · GS {bidder?.geekScore ?? "—"}</span>
+                                  <span className="text-[#6E6E85]"> · GS {bidder?.geekScore ?? "—"}</span>
                                 </span>
                               </div>
-                              <span className="text-[#00FF88] text-[10px] font-bold">{formatMoney(bid.bidPrice)}</span>
+                              <span className="text-[#00FF88] text-[11px] font-bold">{formatMoney(bid.bidPrice)}</span>
                             </div>
                           );
                         })}
                       </div>
                     ) : (
-                      <p className="text-[#55556A] text-[10px] border-t border-[#1E1E2A] pt-2">
+                      <p className="text-[#6E6E85] text-[11px] border-t border-[#1E1E2A] pt-2">
                         {(job.bidCount ?? 0) > 0 ? `${job.bidCount} interest${(job.bidCount ?? 0) !== 1 ? "s" : ""}` : "No bids yet"}
                       </p>
                     )}
@@ -455,30 +455,30 @@ export default function FeedPage() {
               <h2 className="font-heading text-sm font-semibold text-[#E8E8EC]">
                 🔍 Market Activity — <span className="text-[#8A8A9A] font-normal">{marketIntel.catLabels}</span>
               </h2>
-              <span className="text-[#55556A] text-xs">{marketIntel.count} similar job{marketIntel.count !== 1 ? "s" : ""}</span>
+              <span className="text-[#6E6E85] text-xs">{marketIntel.count} similar job{marketIntel.count !== 1 ? "s" : ""}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Avg Starting</p>
+                <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Avg Starting</p>
                 <p className="font-heading text-base font-bold text-[#E8E8EC] mt-0.5">{formatMoney(marketIntel.avgStarting)}</p>
               </div>
               <div>
-                <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Avg Decay</p>
+                <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Avg Decay</p>
                 <p className="font-heading text-base font-bold text-[#E8E8EC] mt-0.5">${marketIntel.avgDecay.toFixed(0)}/hr</p>
               </div>
               <div>
-                <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Time to 1st Bid</p>
+                <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Time to 1st Bid</p>
                 <p className="font-heading text-base font-bold text-[#E8E8EC] mt-0.5">
                   {marketIntel.avgFirstBid != null ? `~${Math.round(marketIntel.avgFirstBid)}h` : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-[#55556A] uppercase tracking-wider font-semibold">Most Wanted</p>
+                <p className="text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">Most Wanted</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {marketIntel.topSkills.map(s => (
                     <span key={s} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded px-1.5 py-0.5 text-[9px] text-[#8A8A9A]">{s}</span>
                   ))}
-                  {marketIntel.topSkills.length === 0 && <span className="text-[#55556A] text-[10px]">—</span>}
+                  {marketIntel.topSkills.length === 0 && <span className="text-[#6E6E85] text-[11px]">—</span>}
                 </div>
               </div>
             </div>
@@ -490,10 +490,10 @@ export default function FeedPage() {
       <div className="max-w-7xl mx-auto px-6 mt-6">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#55556A]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search jobs..."
-              className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#55556A] focus:border-[#00FF88]/50 focus:ring-1 focus:ring-[#00FF88]/20 outline-none transition-all text-sm" />
+              className="w-full h-11 pl-11 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 focus:ring-2 focus:ring-[#00FF88]/30 outline-none transition-all text-sm" />
           </div>
 
           <div className="relative">
@@ -517,7 +517,7 @@ export default function FeedPage() {
                   ))}
                 </div>
                 <div className="flex justify-between mt-3 pt-3 border-t border-[#1E1E2A]">
-                  <button onClick={() => setFilterSkills([])} className="text-xs text-[#55556A] hover:text-[#E8E8EC]">Clear all</button>
+                  <button onClick={() => setFilterSkills([])} className="text-xs text-[#6E6E85] hover:text-[#E8E8EC]">Clear all</button>
                   <button onClick={() => setShowSkillPicker(false)} className="text-xs text-[#00FF88] hover:text-[#00CC6A] font-medium">Done</button>
                 </div>
               </div>
@@ -539,7 +539,7 @@ export default function FeedPage() {
                 <button onClick={() => toggleFilterSkill(s)} className="hover:text-white transition-colors"><X className="h-3 w-3" /></button>
               </span>
             ))}
-            <button onClick={() => setFilterSkills([])} className="text-xs text-[#55556A] hover:text-[#E8E8EC] ml-2">Clear all</button>
+            <button onClick={() => setFilterSkills([])} className="text-xs text-[#6E6E85] hover:text-[#E8E8EC] ml-2">Clear all</button>
           </div>
         )}
       </div>
@@ -548,7 +548,7 @@ export default function FeedPage() {
       {isFreelancer && (
         <div className="max-w-7xl mx-auto px-6 mt-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[#55556A] text-xs font-medium shrink-0">Filters:</span>
+            <span className="text-[#6E6E85] text-xs font-medium shrink-0">Filters:</span>
 
             <select value={filterBudget} onChange={e => setFilterBudget(e.target.value as BudgetFilter)}
               className={`h-9 px-3 border rounded-lg text-xs outline-none cursor-pointer appearance-none transition-colors ${
@@ -585,7 +585,7 @@ export default function FeedPage() {
             {hasFreelancerFiltersActive && (
               <button
                 onClick={() => { setFilterBudget(""); setFilterCompetition(""); setFilterHourlyRate(""); }}
-                className="flex items-center gap-1 text-xs text-[#55556A] hover:text-[#E8E8EC] transition-colors"
+                className="flex items-center gap-1 text-xs text-[#6E6E85] hover:text-[#E8E8EC] transition-colors"
               >
                 <X className="h-3 w-3" /> Clear
               </button>
@@ -640,14 +640,14 @@ export default function FeedPage() {
 
               return (
                 <div key={jid} className="shrink-0 w-72">
-                  <div className="bg-[#12121A] border border-[#00FF88]/20 rounded-2xl hover:border-[#00FF88]/40 transition-all overflow-hidden">
+                  <div className="job-card-hover bg-[#12121A] border border-[#00FF88]/20 rounded-2xl hover:border-[#00FF88]/40 overflow-hidden">
                     {/* Clickable content area */}
                     <Link href={`/jobs/${jid}`} className="block p-4 pb-3">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[10px] font-bold">
+                        <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[11px] font-bold">
                           {job.matchScore}% Match
                         </span>
-                        <span className={`${competition.bg} ${competition.color} border ${competition.border} rounded-full px-2.5 py-0.5 text-[10px] font-bold`}>
+                        <span className={`${competition.bg} ${competition.color} border ${competition.border} rounded-full px-2.5 py-0.5 text-[11px] font-bold`}>
                           {competition.label}
                         </span>
                       </div>
@@ -661,10 +661,10 @@ export default function FeedPage() {
 
                       {/* Time to floor + trajectory */}
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[#55556A] text-[10px]">
+                        <span className="text-[#6E6E85] text-[11px]">
                           ⏱ {hoursToFloor <= 0 ? "At floor" : `${formatHoursToFloor(hoursToFloor)} to floor`}
                         </span>
-                        <span className={`text-[10px] font-medium ${trajectory.color}`}>
+                        <span className={`text-[11px] font-medium ${trajectory.color}`}>
                           · {trajectory.icon} {trajectory.label}
                         </span>
                       </div>
@@ -672,10 +672,10 @@ export default function FeedPage() {
                       {/* Skill checklist */}
                       <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5">
                         {matched.slice(0, 3).map(s => (
-                          <span key={s} className="text-[10px] text-[#00FF88]">✓ {s}</span>
+                          <span key={s} className="text-[11px] text-[#00FF88]">✓ {s}</span>
                         ))}
                         {unmatched.slice(0, 2).map(s => (
-                          <span key={s} className="text-[10px] text-[#55556A]">✗ {s}</span>
+                          <span key={s} className="text-[11px] text-[#6E6E85]">✗ {s}</span>
                         ))}
                       </div>
                     </Link>
@@ -698,11 +698,11 @@ export default function FeedPage() {
       )}
 
       {/* ── Job Grid ──────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-6 pb-12">
+      <div className="max-w-7xl 2xl:max-w-screen-xl mx-auto px-6 mt-6 pb-12">
         {openJobs.length === 0 ? (
           <div className="text-center py-20">
             <div className="mx-auto h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mb-4">
-              <Inbox className="h-7 w-7 text-[#55556A]" />
+              <Inbox className="h-7 w-7 text-[#6E6E85]" />
             </div>
             <h3 className="text-lg font-bold text-[#E8E8EC]">No jobs match your filters</h3>
             <p className="text-sm text-[#8A8A9A] mt-1">Try broadening your search</p>
@@ -760,8 +760,8 @@ export default function FeedPage() {
               return (
                 <div key={jobId} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
                   {/* Card: outer div with border, NOT a Link — avoids nested <a> */}
-                  <div className={`bg-[#12121A] border rounded-2xl overflow-hidden transition-all duration-300 group ${
-                    job.featured ? "border-yellow-500/40 ring-1 ring-yellow-500/10" : "border-[#1E1E2A]"
+                  <div className={`job-card-hover bg-[#12121A] border rounded-2xl overflow-hidden transition-all duration-200 group ${
+                    job.featured ? "border-l-[3px] border-l-[#F59E0B] border-yellow-500/20" : "border-[#1E1E2A]"
                   } hover:border-[#00FF88]/20`}>
 
                     {/* Clickable content area */}
@@ -775,7 +775,7 @@ export default function FeedPage() {
                           <div>
                             <p className="text-[#8A8A9A] text-xs leading-tight">{client?.fullName ?? "Client"}</p>
                             {client?.averageRating ? (
-                              <p className="text-[10px] text-[#55556A] leading-tight">
+                              <p className="text-[11px] text-[#6E6E85] leading-tight">
                                 ⭐ {client.averageRating.toFixed(1)} ({client.totalReviews ?? 0})
                               </p>
                             ) : null}
@@ -783,32 +783,32 @@ export default function FeedPage() {
                         </div>
                         <div className="flex items-center gap-1.5 flex-wrap justify-end">
                           {isFreelancer && matchScore > 0 && (
-                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold border ${
                               matchScore >= 70
                                 ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20"
                                 : "bg-blue-500/10 text-blue-400 border-blue-500/20"
                             }`}>{matchScore}% Match</span>
                           )}
                           {competition && (
-                            <span className={`${competition.bg} ${competition.color} border ${competition.border} rounded-full px-2.5 py-0.5 text-[10px] font-bold`}>
+                            <span className={`${competition.bg} ${competition.color} border ${competition.border} rounded-full px-2.5 py-0.5 text-[11px] font-bold`}>
                               {competition.label}
                             </span>
                           )}
                           {demand && (
-                            <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2.5 py-0.5 text-[10px] font-bold`}>
+                            <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2.5 py-0.5 text-[11px] font-bold`}>
                               {demand.label}
                             </span>
                           )}
                           {job.featured && (
-                            <span className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-bold">Featured</span>
+                            <span className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full px-2.5 py-0.5 text-[11px] font-bold">Featured</span>
                           )}
                           {isMine && (
-                            <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[10px] font-bold">
+                            <span className="bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-2.5 py-0.5 text-[11px] font-bold">
                               {jobSavings > 0 ? `Saving ${formatMoney(jobSavings)}` : "My Job"}
                             </span>
                           )}
                           {job.category && (
-                            <span className="bg-[#1A1A24] text-[#8A8A9A] border border-[#1E1E2A] rounded-full px-2.5 py-0.5 text-[10px] font-medium">
+                            <span className="bg-[#1A1A24] text-[#8A8A9A] border border-[#1E1E2A] rounded-full px-2.5 py-0.5 text-[11px] font-medium">
                               {getCategoryLabel(job.category)}
                             </span>
                           )}
@@ -825,37 +825,37 @@ export default function FeedPage() {
                         {job.skillsRequired.slice(0, 4).map(s => {
                           const isMatched = mySkills.includes(s);
                           return isFreelancer ? (
-                            <span key={s} className={`flex items-center gap-0.5 rounded-md px-2 py-0.5 text-[10px] border ${
+                            <span key={s} className={`flex items-center gap-0.5 rounded-md px-2 py-0.5 text-[11px] border ${
                               isMatched
                                 ? "bg-[#00FF88]/5 border-[#00FF88]/20 text-[#00FF88]"
-                                : "bg-[#0A0A0F] border-[#1E1E2A] text-[#55556A]"
+                                : "bg-[#0A0A0F] border-[#1E1E2A] text-[#6E6E85]"
                             }`}>
                               <span>{isMatched ? "✓" : "✗"}</span>&nbsp;{s}
                             </span>
                           ) : (
-                            <span key={s} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-md px-2 py-0.5 text-[#55556A] text-[10px]">{s}</span>
+                            <span key={s} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-md px-2 py-0.5 text-[#6E6E85] text-[11px]">{s}</span>
                           );
                         })}
                         {job.skillsRequired.length > 4 && (
-                          <span className="text-[#55556A] text-[10px]">+{job.skillsRequired.length - 4}</span>
+                          <span className="text-[#6E6E85] text-[11px]">+{job.skillsRequired.length - 4}</span>
                         )}
                       </div>
 
                       {/* Price section */}
                       <div className="mt-4 bg-[#0A0A0F] rounded-xl p-3 border border-[#1E1E2A]">
-                        <p className="text-[#55556A] text-[10px] uppercase tracking-wider">Current Price</p>
+                        <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider">Current Price</p>
                         <p className="font-heading text-2xl font-bold text-[#00FF88] mt-0.5">{formatMoney(current)}</p>
                         <div className="flex justify-between mt-1">
-                          <span className="text-[#55556A] text-xs">Floor: {formatMoney(job.minimumPrice)}</span>
+                          <span className="text-[#6E6E85] text-xs">Floor: {formatMoney(job.minimumPrice)}</span>
                           <span className="text-red-400/70 text-xs">-${effectiveRate.toFixed(1)}/hr{job.pricingMode !== "fixed" ? " ⚡" : ""}</span>
                         </div>
                         {isFreelancer && effectiveHourly > 0 && (
-                          <p className="text-[#8A8A9A] text-[10px] mt-1">{formatMoney(effectiveHourly)}/hr effective · {job.estimatedHours}h est.</p>
+                          <p className="text-[#8A8A9A] text-[11px] mt-1">{formatMoney(effectiveHourly)}/hr effective · {job.estimatedHours}h est.</p>
                         )}
                         <div className="h-1 bg-[#1E1E2A] rounded-full mt-2">
                           <div className="h-1 bg-[#00FF88] rounded-full transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
                         </div>
-                        <p className={`text-[10px] mt-1.5 ${trajectory.color}`}>
+                        <p className={`text-[11px] mt-1.5 ${trajectory.color}`}>
                           {trajectory.icon} {trajectory.label}{trajectoryCtx}
                         </p>
                       </div>
@@ -863,27 +863,27 @@ export default function FeedPage() {
 
                     {/* Bottom action row — outside the Link to allow nested interactions */}
                     <div className="px-5 pb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-[#55556A] text-xs">
+                      <div className="flex items-center gap-3 text-[#6E6E85] text-xs">
                         <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {job.estimatedHours}h</span>
                         <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {bidCount} bids</span>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className={`flex items-center gap-1 text-xs ${deadlineHrs < 6 ? "text-red-400" : "text-[#55556A]"}`}>
+                        <span className={`flex items-center gap-1 text-xs ${deadlineHrs < 6 ? "text-red-400" : "text-[#6E6E85]"}`}>
                           <Timer className="h-3 w-3" /> {deadlineHrs}h left
                         </span>
 
                         {/* Cooldown status + CTA — freelancer only */}
                         {isFreelancer && (
                           isOnCooldown ? (
-                            <span className="flex items-center gap-1 text-[10px] text-[#55556A] bg-[#1A1A24] border border-[#1E1E2A] px-2.5 py-1 rounded-lg cursor-not-allowed">
+                            <span className="flex items-center gap-1 text-[11px] text-[#6E6E85] bg-[#1A1A24] border border-[#1E1E2A] px-2.5 py-1 rounded-lg cursor-not-allowed">
                               ⏳ {Math.ceil(cooldownMinsLeft)}m cooldown
                             </span>
                           ) : (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-[#00FF88]">✓ Bid available</span>
+                              <span className="text-[11px] text-[#00FF88]">✓ Bid available</span>
                               <Link href={`/jobs/${jobId}`}>
-                                <button className="text-[10px] font-semibold bg-[#00FF88]/10 border border-[#00FF88]/20 text-[#00FF88] px-2.5 py-1 rounded-lg hover:bg-[#00FF88]/20 transition-all whitespace-nowrap">
+                                <button className="text-[11px] font-semibold bg-[#00FF88]/10 border border-[#00FF88]/20 text-[#00FF88] px-2.5 py-1 rounded-lg hover:bg-[#00FF88]/20 transition-all whitespace-nowrap">
                                   Counter Bid →
                                 </button>
                               </Link>

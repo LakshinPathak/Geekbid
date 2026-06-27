@@ -77,7 +77,7 @@ export default function PricingPage() {
               }`}
             >
               {plan.highlight && (
-                <span className="bg-[#00FF88] text-[#0A0A0F] text-[10px] font-bold px-3 py-1 rounded-full self-start mb-4">
+                <span className="bg-[#00FF88] text-[#0A0A0F] text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
                   MOST POPULAR
                 </span>
               )}
@@ -87,7 +87,7 @@ export default function PricingPage() {
               </div>
               <div className="mb-6">
                 <span className="font-heading text-4xl font-bold text-[#E8E8EC]">{plan.price}</span>
-                <span className="text-[#55556A] text-sm ml-1">{plan.period}</span>
+                <span className="text-[#6E6E85] text-sm ml-1">{plan.period}</span>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map(f => (
@@ -100,7 +100,7 @@ export default function PricingPage() {
                 disabled={currentPlan === plan.value}
                 className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                   currentPlan === plan.value
-                    ? "bg-[#1E1E2A] text-[#55556A] cursor-not-allowed"
+                    ? "bg-[#1E1E2A] text-[#6E6E85] cursor-not-allowed"
                     : plan.highlight
                     ? "bg-[#00FF88] text-[#0A0A0F] hover:bg-[#00CC6A]"
                     : "border border-[#1E1E2A] text-[#E8E8EC] hover:bg-[#1A1A24]"

@@ -15,7 +15,7 @@ const ICON_CONFIG: Record<string, { icon: typeof Zap; bg: string; color: string 
   counter_bid: { icon: MessageSquare, bg: "bg-blue-500/10", color: "text-blue-400" },
   payment: { icon: DollarSign, bg: "bg-[#00FF88]/10", color: "text-[#00FF88]" },
   job_match: { icon: Zap, bg: "bg-purple-500/10", color: "text-purple-400" },
-  general: { icon: Bell, bg: "bg-[#1A1A24]", color: "text-[#55556A]" },
+  general: { icon: Bell, bg: "bg-[#1A1A24]", color: "text-[#6E6E85]" },
 };
 
 const FILTER_TABS: { key: FilterType; label: string }[] = [
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
 
   if (!mounted) return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
-      <div className="h-8 w-8 border-2 border-[#55556A] border-t-transparent rounded-full animate-spin" />
+      <div className="h-8 w-8 border-2 border-[#6E6E85] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -98,7 +98,7 @@ export default function NotificationsPage() {
         {displayNotifs.length === 0 ? (
           <div className="text-center py-20">
             <div className="mx-auto h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mb-4">
-              <Bell className="h-7 w-7 text-[#55556A]" />
+              <Bell className="h-7 w-7 text-[#6E6E85]" />
             </div>
             <h3 className="text-lg font-heading font-bold text-[#E8E8EC] mb-1">
               {filter !== "all" ? "No notifications in this category" : "You're all caught up!"}
@@ -140,7 +140,7 @@ export default function NotificationsPage() {
                     {n.body && (
                       <p className="text-xs text-[#8A8A9A] mt-0.5 line-clamp-2">{n.body}</p>
                     )}
-                    <p className="text-[10px] text-[#55556A] mt-1 flex items-center gap-1">
+                    <p className="text-[11px] text-[#6E6E85] mt-1 flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {timeAgo(n.createdAt)}
                     </p>
