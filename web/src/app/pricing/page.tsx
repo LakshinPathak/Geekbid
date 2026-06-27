@@ -62,7 +62,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#E8E8EC]">Simple, Transparent Pricing</h1>
           <p className="text-[#8A8A9A] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>

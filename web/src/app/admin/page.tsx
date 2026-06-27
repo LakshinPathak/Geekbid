@@ -107,7 +107,7 @@ export default function AdminPage() {
         </div>
 
         {/* ── Tab Bar ── */}
-        <div className="inline-flex bg-[#12121A] rounded-xl p-1 border border-[#1E1E2A]">
+        <div className="inline-flex overflow-x-auto scrollbar-hide bg-[#12121A] rounded-xl p-1 border border-[#1E1E2A]">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
               className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -227,7 +227,8 @@ export default function AdminPage() {
               ))}
             </div>
 
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden min-w-[600px]">
               <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">
                 <span>Name</span><span>Email</span><span>Role</span><span>Score</span><span>Verified</span>
               </div>
@@ -267,6 +268,7 @@ export default function AdminPage() {
                 );
               })}
             </div>
+            </div>
           </div>
         )}
 
@@ -286,7 +288,8 @@ export default function AdminPage() {
               ))}
             </div>
 
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden min-w-[550px]">
               <div className="grid grid-cols-[2fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#1E1E2A] text-[11px] text-[#6E6E85] uppercase tracking-wider font-semibold">
                 <span>Title</span><span>Status</span><span>Current</span><span>Decay</span><span>Bids</span>
               </div>
@@ -317,6 +320,7 @@ export default function AdminPage() {
                 );
               })}
             </div>
+            </div>
           </div>
         )}
 
@@ -324,7 +328,7 @@ export default function AdminPage() {
         {activeTab === "transactions" && (
           <div className="space-y-4">
             {/* Summary cards */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { label: "Held in Escrow", value: formatMoney(held.reduce((s, t) => s + t.grossAmount, 0)), color: "text-yellow-500" },
                 { label: "Released", value: formatMoney(released.reduce((s, t) => s + t.grossAmount, 0)), color: "text-[#00FF88]" },

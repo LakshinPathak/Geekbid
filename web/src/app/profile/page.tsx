@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-4 sm:px-6 py-8">
 
         {/* ── Profile Header Card ── */}
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8">
@@ -361,7 +361,7 @@ export default function ProfilePage() {
                 {/* Availability */}
                 <div>
                   <label className="text-[#8A8A9A] text-xs font-medium mb-2 block">Availability</label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {([
                       { value: "available", label: "Available", dot: "bg-[#00FF88]" },
                       { value: "part-time", label: "Part-time", dot: "bg-yellow-500" },

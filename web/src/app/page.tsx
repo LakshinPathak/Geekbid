@@ -528,7 +528,8 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
+          <div className="overflow-x-auto">
+          <div className="rounded-2xl border border-white/[0.06] overflow-hidden min-w-[500px]">
             {/* Header */}
             <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-white/[0.06]">
               <div className="p-4 sm:p-5 text-sm font-semibold text-white/30" />
@@ -561,6 +562,7 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>

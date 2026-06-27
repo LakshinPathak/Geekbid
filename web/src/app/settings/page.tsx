@@ -68,7 +68,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Profile
         </Link>
@@ -88,7 +88,7 @@ export default function SettingsPage() {
               className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
             />
             <button onClick={createKey} disabled={creating || !newKeyName.trim()}
-              className="h-11 px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
+              className="h-11 px-4 sm:px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
               {creating ? "Generating..." : "Generate"}
             </button>
           </div>

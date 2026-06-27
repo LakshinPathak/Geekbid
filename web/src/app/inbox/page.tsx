@@ -156,7 +156,7 @@ export default function InboxPage() {
           ) : (
             <>
               {/* Chat header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E1E2A] bg-[#12121A]">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-[#1E1E2A] bg-[#12121A]">
                 <div className="flex items-center gap-3">
                   <button
                     className="md:hidden h-8 w-8 rounded-lg border border-[#1E1E2A] flex items-center justify-center text-[#8A8A9A] hover:bg-[#1A1A24] transition-colors"
@@ -182,7 +182,7 @@ export default function InboxPage() {
               </div>
 
               {/* Messages area */}
-              <div className="flex-1 overflow-y-auto px-6 py-4" ref={scrollRef}>
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4" ref={scrollRef}>
                 <div className="space-y-4 max-w-2xl mx-auto">
                   {roomMessages.length === 0 ? (
                     <div className="text-center py-12">
@@ -218,7 +218,7 @@ export default function InboxPage() {
               </div>
 
               {/* Message input bar */}
-              <div className="px-6 py-4 border-t border-[#1E1E2A] bg-[#12121A]">
+              <div className="px-4 sm:px-6 py-4 pb-4 border-t border-[#1E1E2A] bg-[#12121A]">
                 <form
                   onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                   className="flex items-center gap-3 max-w-2xl mx-auto"

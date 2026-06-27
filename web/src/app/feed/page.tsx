@@ -279,7 +279,7 @@ export default function FeedPage() {
     <div className="min-h-screen bg-[#0A0A0F]">
 
       {/* ── Header Strip ─────────────────────────────────────────────────── */}
-      <div className="bg-[#12121A] border-b border-[#1E1E2A] py-6 px-6">
+      <div className="bg-[#12121A] border-b border-[#1E1E2A] py-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-heading text-2xl font-bold text-[#E8E8EC]">
@@ -352,7 +352,7 @@ export default function FeedPage() {
 
       {/* ── My Jobs at a Glance (client only) ─────────────────────────────── */}
       {isClient && clientKPIs && clientKPIs.myOpenJobs.length > 0 && (
-        <div className="max-w-7xl mx-auto px-6 mt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
           <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-3 flex items-center gap-2">
             <Briefcase className="h-5 w-5 text-[#00FF88]" /> Your Jobs — Live Status
           </h2>
@@ -372,7 +372,7 @@ export default function FeedPage() {
               const hasActiveBids = topBids.length > 0;
 
               return (
-                <div key={jid} className="shrink-0 w-72">
+                <div key={jid} className="shrink-0 min-w-[280px] max-w-[320px]">
                   <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-4 hover:border-[#00FF88]/20 transition-all flex flex-col gap-3">
                     {/* Health + savings */}
                     <div className="flex items-center justify-between">
@@ -449,7 +449,7 @@ export default function FeedPage() {
 
       {/* ── Market Intelligence (client only) ────────────────────────────────── */}
       {isClient && marketIntel && (
-        <div className="max-w-7xl mx-auto px-6 mt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
           <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-heading text-sm font-semibold text-[#E8E8EC]">
@@ -487,7 +487,7 @@ export default function FeedPage() {
       )}
 
       {/* ── Filter Bar ───────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
@@ -546,7 +546,7 @@ export default function FeedPage() {
 
       {/* ── Freelancer-specific filters ───────────────────────────────────────── */}
       {isFreelancer && (
-        <div className="max-w-7xl mx-auto px-6 mt-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[#6E6E85] text-xs font-medium shrink-0">Filters:</span>
 
@@ -595,8 +595,8 @@ export default function FeedPage() {
       )}
 
       {/* ── Category Tabs ─────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
+        <div className="flex overflow-x-auto scrollbar-hide gap-2 flex-nowrap pb-1">
           <button onClick={() => setFilterCategory("all")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${
               filterCategory === "all"
@@ -618,7 +618,7 @@ export default function FeedPage() {
 
       {/* ── Enhanced Recommended for You (freelancer only) ─────────────────────── */}
       {isFreelancer && recommendedJobs.length > 0 && filterCategory === "all" && !search && filterSkills.length === 0 && (
-        <div className="max-w-7xl mx-auto px-6 mt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
           <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-3 flex items-center gap-2">
             <Target className="h-5 w-5 text-[#00FF88]" /> Recommended for You
           </h2>
@@ -639,7 +639,7 @@ export default function FeedPage() {
               const suggestedPrice = Math.max(job.minimumPrice, Math.round(current * 0.80));
 
               return (
-                <div key={jid} className="shrink-0 w-72">
+                <div key={jid} className="shrink-0 min-w-[280px] max-w-[320px]">
                   <div className="job-card-hover bg-[#12121A] border border-[#00FF88]/20 rounded-2xl hover:border-[#00FF88]/40 overflow-hidden">
                     {/* Clickable content area */}
                     <Link href={`/jobs/${jid}`} className="block p-4 pb-3">
@@ -698,7 +698,7 @@ export default function FeedPage() {
       )}
 
       {/* ── Job Grid ──────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl 2xl:max-w-screen-xl mx-auto px-6 mt-6 pb-12">
+      <div className="max-w-7xl 2xl:max-w-screen-xl mx-auto px-4 sm:px-6 mt-6 pb-12">
         {openJobs.length === 0 ? (
           <div className="text-center py-20">
             <div className="mx-auto h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mb-4">
@@ -707,7 +707,7 @@ export default function FeedPage() {
             <h3 className="text-lg font-bold text-[#E8E8EC]">No jobs match your filters</h3>
             <p className="text-sm text-[#8A8A9A] mt-1">Try broadening your search</p>
             <button onClick={clearAllFilters}
-              className="mt-4 px-6 py-2 border border-[#1E1E2A] text-[#E8E8EC] rounded-xl text-sm hover:bg-[#12121A] transition-colors">
+              className="mt-4 px-4 sm:px-6 py-2 border border-[#1E1E2A] text-[#E8E8EC] rounded-xl text-sm hover:bg-[#12121A] transition-colors">
               Clear filters
             </button>
           </div>

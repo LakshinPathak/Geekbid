@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { ConditionalNavbar } from "@/components/conditional-navbar";
+import MobileBottomNav from "@/components/mobile-bottom-nav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +36,8 @@ export default function RootLayout({
         <AppProvider>
           <div className="min-h-screen flex flex-col">
             <ConditionalNavbar />
-            <main className="flex-1">{children}</main>
+            <MobileBottomNav />
+            <main className="flex-1 pb-16 md:pb-0">{children}</main>
           </div>
           <Toaster richColors position="top-right" />
         </AppProvider>

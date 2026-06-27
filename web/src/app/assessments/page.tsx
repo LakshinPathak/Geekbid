@@ -118,7 +118,7 @@ export default function AssessmentsPage() {
               : `You need ${quiz?.passingScore}% to pass. Try again in 30 days.`}
           </p>
           <button onClick={() => { setQuiz(null); setQuizResult(null); }}
-            className="bg-[#00FF88] text-[#0A0A0F] font-semibold px-6 py-3 rounded-xl hover:bg-[#00CC6A] transition-all">
+            className="bg-[#00FF88] text-[#0A0A0F] font-semibold px-4 sm:px-6 py-3 rounded-xl hover:bg-[#00CC6A] transition-all">
             Back to Assessments
           </button>
         </div>
@@ -134,7 +134,7 @@ export default function AssessmentsPage() {
 
     return (
       <div className="min-h-screen bg-[#0A0A0F]">
-        <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
           {/* Quiz header */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -200,7 +200,7 @@ export default function AssessmentsPage() {
   // Assessment list
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Profile
         </Link>

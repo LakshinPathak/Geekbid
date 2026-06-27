@@ -269,7 +269,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -302,7 +302,7 @@ export default function PaymentsPage() {
 
         {/* Make Payment Section */}
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden mb-8">
-          <div className="border-b border-[#1E1E2A] px-6 py-4">
+          <div className="border-b border-[#1E1E2A] px-4 sm:px-6 py-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-[#00FF88]" />
               <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">Fund Escrow</h2>
@@ -396,7 +396,7 @@ export default function PaymentsPage() {
 
         {/* Transaction History */}
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
-          <div className="border-b border-[#1E1E2A] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="border-b border-[#1E1E2A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">Transaction History</h2>
               <p className="text-sm text-[#8A8A9A] mt-0.5">{typedTransactions.length} transaction{typedTransactions.length !== 1 ? "s" : ""}</p>
@@ -426,7 +426,7 @@ export default function PaymentsPage() {
           </div>
 
           {filteredTxns.length === 0 ? (
-            <div className="px-6 py-16 text-center">
+            <div className="px-4 sm:px-6 py-16 text-center">
               <CreditCard className="h-10 w-10 text-[#6E6E85] mx-auto mb-3" />
               <p className="text-sm text-[#8A8A9A] font-medium">No transactions found</p>
               <p className="text-xs text-[#6E6E85] mt-1">
@@ -436,7 +436,7 @@ export default function PaymentsPage() {
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[#0A0A0F] text-[#6E6E85] text-xs uppercase tracking-wider font-semibold border-b border-[#1E1E2A]">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 sm:px-6 py-3 bg-[#0A0A0F] text-[#6E6E85] text-xs uppercase tracking-wider font-semibold border-b border-[#1E1E2A]">
                 <span>Transaction</span>
                 <span className="text-right w-20">Amount</span>
                 <span className="text-right w-16">Fee</span>
@@ -449,7 +449,7 @@ export default function PaymentsPage() {
                 {filteredTxns.map((tx) => (
                   <div
                     key={tx.id || tx._id}
-                    className="px-6 py-4 hover:bg-[#1A1A24] transition-colors"
+                    className="px-4 sm:px-6 py-4 hover:bg-[#1A1A24] transition-colors"
                   >
                     <div className="sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto_auto] sm:gap-4 sm:items-center">
                       {/* Transaction info */}

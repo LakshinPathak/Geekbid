@@ -68,7 +68,7 @@ export default function MyJobsPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -87,7 +87,7 @@ export default function MyJobsPage() {
         </div>
 
         {/* Tab switcher */}
-        <div className="inline-flex bg-[#12121A] rounded-xl p-1 border border-[#1E1E2A] mb-6">
+        <div className="inline-flex w-full overflow-x-auto scrollbar-hide bg-[#12121A] rounded-xl p-1 border border-[#1E1E2A] mb-6">
           {tabs.map(t => (
             <button
               key={t.key}
@@ -114,7 +114,7 @@ export default function MyJobsPage() {
               {isClient ? "Post your first job to get started!" : "Accept a job from the feed to see it here."}
             </p>
             <Link href={isClient ? "/post-job" : "/feed"}>
-              <button className="bg-[#00FF88] text-[#0A0A0F] font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-[#00CC6A] transition-all">
+              <button className="bg-[#00FF88] text-[#0A0A0F] font-semibold text-sm px-4 sm:px-6 py-2.5 rounded-xl hover:bg-[#00CC6A] transition-all">
                 {isClient ? "Post a Job" : "Browse Feed"} <ArrowRight className="inline h-4 w-4 ml-1" />
               </button>
             </Link>
@@ -159,7 +159,7 @@ export default function MyJobsPage() {
                   </div>
 
                   {/* Right: Status + Action */}
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                     <span className={`rounded-full text-[11px] font-medium px-3 py-1 border ${
                       isOpen
                         ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20"
@@ -168,7 +168,7 @@ export default function MyJobsPage() {
                       {isOpen ? "Live" : "Completed"}
                     </span>
                     <Link href={`/jobs/${jid}`}>
-                      <button className="border border-[#1E1E2A] text-[#E8E8EC] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#1A1A24] transition-all">
+                      <button className="border border-[#1E1E2A] text-[#E8E8EC] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#1A1A24] transition-all">
                         View
                       </button>
                     </Link>
@@ -186,7 +186,7 @@ export default function MyJobsPage() {
                           <Sparkles className="h-3 w-3" /> {job.featured ? "Featured" : "Feature"}
                         </button>
                         <Link href="/inbox">
-                          <button className="border border-[#1E1E2A] text-[#8A8A9A] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#1A1A24] transition-all">
+                          <button className="border border-[#1E1E2A] text-[#8A8A9A] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#1A1A24] transition-all">
                             Chat
                           </button>
                         </Link>

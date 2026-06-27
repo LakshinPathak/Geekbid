@@ -51,7 +51,7 @@ export default function EarningsPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#E8E8EC]">Earnings</h1>
@@ -132,7 +132,7 @@ export default function EarningsPage() {
 
         {/* Job Earnings List */}
         <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl overflow-hidden">
-          <div className="border-b border-[#1E1E2A] px-6 py-4">
+          <div className="border-b border-[#1E1E2A] px-4 sm:px-6 py-4">
             <h2 className="font-heading text-lg font-semibold text-[#E8E8EC]">Completed Jobs</h2>
             <p className="text-sm text-[#8A8A9A] mt-0.5">{completedTxns.length} completed</p>
           </div>
@@ -150,7 +150,7 @@ export default function EarningsPage() {
               {myTxns.map((t) => {
                 const jobTitle = jobs.find(j => (j.id ?? j._id) === t.jobId)?.title;
                 return (
-                  <div key={t.id ?? t._id} className="px-6 py-4 hover:bg-[#1A1A24] transition-colors">
+                  <div key={t.id ?? t._id} className="px-4 sm:px-6 py-4 hover:bg-[#1A1A24] transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${

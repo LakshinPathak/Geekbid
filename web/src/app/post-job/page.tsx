@@ -324,7 +324,7 @@ function DecayCurvePreview({
       )}
 
       {/* Key metrics row */}
-      <div className="grid grid-cols-4 gap-2 mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         <div className="bg-[#12121A] rounded-xl p-3 text-center border border-[#1E1E2A] hover:border-[#2A2A3A] transition-colors">
           <p className="text-[9px] text-[#6E6E85] uppercase tracking-wider">Time to Floor</p>
           <p className="text-sm font-bold text-[#E8E8EC] font-heading mt-1">
@@ -438,7 +438,7 @@ export default function PostJobPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Back link */}
         <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Feed
@@ -454,13 +454,14 @@ export default function PostJobPage() {
             <div key={s.num} className="flex items-center flex-1">
               <button
                 onClick={() => { if (s.num <= step) setStep(s.num as Step); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   step >= s.num
                     ? "bg-[#00FF88] text-[#0A0A0F]"
                     : "bg-[#12121A] border border-[#1E1E2A] text-[#6E6E85]"
                 }`}
               >
-                <s.icon className="h-3.5 w-3.5" /> {s.label}
+                <s.icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">{s.label}</span>
               </button>
               {i < 2 && (
                 <div className={`flex-1 h-px mx-2 ${step > s.num ? "bg-[#00FF88]/40" : "bg-[#1E1E2A]"}`} />
@@ -616,7 +617,7 @@ export default function PostJobPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[#8A8A9A] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
                   <div className="relative">
@@ -644,7 +645,7 @@ export default function PostJobPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[#8A8A9A] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
                   <div className="relative">
