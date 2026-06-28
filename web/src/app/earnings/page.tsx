@@ -182,7 +182,7 @@ export default function EarningsPage() {
                           </div>
                         </div>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
-                          t.escrowStatus === "released" ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30" :
+                          t.escrowStatus === "released" ? "bg-[#7A5218] text-white border-transparent" :
                           t.escrowStatus === "held" ? "bg-[rgba(122,82,24,0.12)] text-[#7A5218] border-[rgba(122,82,24,0.25)]" :
                           "bg-[rgba(176,32,32,0.08)] text-[#B02020] border-[rgba(176,32,32,0.20)]"
                         }`}>

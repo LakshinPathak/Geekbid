@@ -141,7 +141,7 @@ export default function TeamPage() {
           <div className="space-y-3">
             {team.members.map(m => (
               <div key={m.id} className="flex items-center gap-3 bg-[#EDE8DC] border border-[#BEB5A5] rounded-xl p-3 tx-row">
-                <div className="w-9 h-9 bg-[rgba(200,146,61,0.10)] text-[#C8923D] text-xs font-semibold rounded-full flex items-center justify-center border border-[#C8923D]/30">
+                <div className="w-9 h-9 bg-[rgba(122,82,24,0.12)] text-[#7A5218] text-xs font-semibold rounded-full flex items-center justify-center border border-[#C8923D]/30">
                   {m.avatarInitial}
                 </div>
                 <div className="flex-1">

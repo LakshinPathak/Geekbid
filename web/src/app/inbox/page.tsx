@@ -71,9 +71,9 @@ export default function InboxPage() {
         <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[#BEB5A5] glass-panel`} style={{ borderRadius: 0 }}>
           {/* Header */}
           <div className="glass-panel-sm p-4" style={{ borderRadius: 0, borderBottom: '1px solid rgba(59,75,61,0.3)' }}>
-            <h2 className="font-heading text-xl font-bold text-[#182739] mb-3">Messages</h2>
+            <h2 className="font-heading text-xl font-bold text-[#0F1924] mb-3">Messages</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3D4E5C]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#253444]" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -88,10 +88,10 @@ export default function InboxPage() {
             {filteredRooms.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <div className="mx-auto h-14 w-14 rounded-2xl glass-panel-sm flex items-center justify-center mb-3">
-                  <Users className="h-6 w-6 text-[#3D4E5C]" />
+                  <Users className="h-6 w-6 text-[#253444]" />
                 </div>
-                <p className="text-sm text-[#3D4E5C] font-medium">No conversations yet</p>
-                <p className="text-xs text-[#3D4E5C] mt-1">Start chatting by accepting a job</p>
+                <p className="text-sm text-[#253444] font-medium">No conversations yet</p>
+                <p className="text-xs text-[#253444] mt-1">Start chatting by accepting a job</p>
               </div>
             ) : (
               <div className="divide-y divide-[#BEB5A5]">
@@ -116,22 +116,22 @@ export default function InboxPage() {
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold ${
                           isSelected
                             ? "bg-[#7A5218] text-white"
-                            : "bg-[#EDE8DC] text-[#3D4E5C] border border-[#BEB5A5]"
+                            : "bg-[#EDE8DC] text-[#253444] border border-[#BEB5A5]"
                         }`}>
                           {otherUser?.avatarInitial ?? "?"}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium truncate text-[#182739]">
+                            <p className="text-sm font-medium truncate text-[#0F1924]">
                               {otherUser?.fullName ?? "Unknown"}
                             </p>
                             {lastMsg && (
-                              <span className="text-[11px] text-[#3D4E5C] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
+                              <span className="text-[11px] text-[#253444] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
                             )}
                           </div>
-                          <p className="text-[#3D4E5C] text-[11px] truncate mt-0.5">{jobTitle}</p>
+                          <p className="text-[#253444] text-[11px] truncate mt-0.5">{jobTitle}</p>
                           {lastMsg && (
-                            <p className="text-[#3D4E5C] text-xs truncate mt-0.5">{lastMsg.text}</p>
+                            <p className="text-[#253444] text-xs truncate mt-0.5">{lastMsg.text}</p>
                           )}
                         </div>
                       </div>
@@ -149,10 +149,10 @@ export default function InboxPage() {
             <div className="flex-1 flex items-center justify-center text-center px-4">
               <div>
                 <div className="h-16 w-16 rounded-2xl glass-panel-sm flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-7 w-7 text-[#3D4E5C]" />
+                  <MessageSquare className="h-7 w-7 text-[#253444]" />
                 </div>
-                <h3 className="text-lg font-heading font-bold text-[#182739] mb-1">Select a conversation</h3>
-                <p className="text-sm text-[#3D4E5C] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
+                <h3 className="text-lg font-heading font-bold text-[#0F1924] mb-1">Select a conversation</h3>
+                <p className="text-sm text-[#253444] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
               </div>
             </div>
           ) : (
@@ -170,10 +170,10 @@ export default function InboxPage() {
                     {getOtherUser(activeRoom!)?.avatarInitial ?? "?"}
                   </div>
                   <div>
-                    <p className="font-heading text-base font-semibold text-[#182739]">
+                    <p className="font-heading text-base font-semibold text-[#0F1924]">
                       {getOtherUser(activeRoom!)?.fullName ?? "Unknown"}
                     </p>
-                    <p className="text-[#3D4E5C] text-xs">
+                    <p className="text-[#253444] text-xs">
                       {getJobTitle(activeRoom!.jobId)}
                     </p>
                   </div>
@@ -188,7 +188,7 @@ export default function InboxPage() {
                 <div className="space-y-4 max-w-2xl mx-auto">
                   {roomMessages.length === 0 ? (
                     <div className="text-center py-12">
-                      <p className="text-sm text-[#3D4E5C]">No messages yet. Start the conversation!</p>
+                      <p className="text-sm text-[#253444]">No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
                     roomMessages.map(msg => {
@@ -199,8 +199,8 @@ export default function InboxPage() {
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[70%] ${
                             isMine
-                              ? "chat-bubble-self text-[#182739]"
-                              : "chat-bubble-other text-[#182739]"
+                              ? "chat-bubble-self text-[#0F1924]"
+                              : "chat-bubble-other text-[#0F1924]"
                           } px-4 py-2.5`}>
                             {!isMine && (
                               <p className="text-[#7A5218] text-[11px] font-medium mb-0.5">
@@ -208,7 +208,7 @@ export default function InboxPage() {
                               </p>
                             )}
                             <p className="text-sm leading-relaxed">{msg.text}</p>
-                            <p className={`text-[11px] mt-1 text-[#3D4E5C] ${isMine ? "text-right" : ""}`}>
+                            <p className={`text-[11px] mt-1 text-[#253444] ${isMine ? "text-right" : ""}`}>
                               {timeAgo(msg.createdAt)}
                             </p>
                           </div>

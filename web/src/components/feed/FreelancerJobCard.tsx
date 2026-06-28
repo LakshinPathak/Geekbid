@@ -89,7 +89,7 @@ export default function FreelancerJobCard({
                 </span>
               )}
             </div>
-            <ChevronRight className="h-4 w-4 text-[#3D4E5C] group-hover:text-[#7A5218] transition-colors shrink-0 mt-0.5" />
+            <ChevronRight className="h-4 w-4 text-[#253444] group-hover:text-[#7A5218] transition-colors shrink-0 mt-0.5" />
           </div>
 
           <h3 className="font-serif text-[15px] font-semibold text-[#0F1924] leading-snug group-hover:text-[#7A5218] transition-colors line-clamp-2">
@@ -152,7 +152,7 @@ export default function FreelancerJobCard({
         {/* ── Client info ─────────────────────────────────────────────────── */}
         {clientName && (
           <div className="flex items-center gap-2">
-            <User className="h-3 w-3 text-[#3D4E5C] shrink-0" />
+            <User className="h-3 w-3 text-[#253444] shrink-0" />
             <span className="text-[10px] text-[#253444] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-[9px] font-bold text-white shrink-0">
               {clientName[0]}

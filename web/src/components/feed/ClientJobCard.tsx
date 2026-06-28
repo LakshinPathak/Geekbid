@@ -7,10 +7,10 @@ import { Clock, CheckCircle, Users, TrendingDown, ChevronRight } from "lucide-re
 
 // ── Demand badge ──────────────────────────────────────────────────────────────
 function getDemandBadge(bidCount: number) {
-  if (bidCount === 0) return { label: "No Bids",   color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/20"    };
+  if (bidCount === 0) return { label: "No Bids",   color: "text-[#B02020]",    bg: "bg-[rgba(176,32,32,0.08)]",    border: "border-[rgba(176,32,32,0.20)]"    };
   if (bidCount <= 2)  return { label: "Interested", color: "text-[#C8923D]",  bg: "bg-[rgba(200,146,61,0.10)]",  border: "border-[#C8923D]/30"  };
-  if (bidCount <= 4)  return { label: "In Demand",  color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" };
-  return                     { label: "Hot",        color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" };
+  if (bidCount <= 4)  return { label: "In Demand",  color: "text-[#7A5218]", bg: "bg-[rgba(122,82,24,0.12)]", border: "border-[rgba(122,82,24,0.25)]" };
+  return                     { label: "Hot",        color: "text-[#C05B00]", bg: "bg-[rgba(192,91,0,0.10)]", border: "border-[rgba(192,91,0,0.20)]" };
 }
 
 export interface TopBidder {
@@ -48,7 +48,7 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
 
   return (
     <Link href={`/jobs/${jobId}`} className="block group">
-      <div className="glass-panel rounded-2xl p-5 border border-[#E4DDD0] hover:border-[#C8923D]/40 transition-all duration-200 hover:shadow-[var(--shadow-md)] h-full flex flex-col gap-4">
+      <div className="glass-panel rounded-2xl p-5 border border-[#BEB5A5] hover:border-[#C8923D]/40 transition-all duration-200 hover:shadow-[var(--shadow-md)] h-full flex flex-col gap-4">
 
         {/* ── Header: badges + title ─────────────────────────────────────── */}
         <div>
@@ -56,10 +56,10 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
             <div className="flex flex-wrap gap-1.5">
               {/* Health badge */}
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                health.label === "Urgent"          ? "text-red-400 bg-red-500/10 border-red-500/20" :
-                health.label === "Needs Attention" ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" :
+                health.label === "Urgent"          ? "text-[#B02020] bg-[rgba(176,32,32,0.08)] border-[rgba(176,32,32,0.20)]" :
+                health.label === "Needs Attention" ? "text-[#7A5218] bg-[rgba(122,82,24,0.12)] border-[rgba(122,82,24,0.25)]" :
                 health.label === "Healthy"         ? "text-[#C8923D] bg-[rgba(200,146,61,0.10)] border-[#C8923D]/30" :
-                                                    "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"
+                                                    "text-[#7A5218] bg-[rgba(122,82,24,0.12)] border-[rgba(122,82,24,0.25)]"
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
                 {health.label}
@@ -69,25 +69,25 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
                 {demand.label}
               </span>
               {isOwn && (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border text-purple-400 bg-purple-500/10 border-purple-500/20">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border text-[#253444] bg-[#D8D0C0] border-[#BEB5A5]">
                   My Job
                 </span>
               )}
             </div>
-            <ChevronRight className="h-4 w-4 text-[#7B8694] group-hover:text-[#C8923D] transition-colors shrink-0 mt-0.5" />
+            <ChevronRight className="h-4 w-4 text-[#4A5568] group-hover:text-[#C8923D] transition-colors shrink-0 mt-0.5" />
           </div>
 
-          <h3 className="font-heading text-[15px] font-semibold text-[#182739] leading-snug group-hover:text-[#C8923D] transition-colors line-clamp-2">
+          <h3 className="font-heading text-[15px] font-semibold text-[#0F1924] leading-snug group-hover:text-[#C8923D] transition-colors line-clamp-2">
             {job.title}
           </h3>
 
           {/* Skills */}
           <div className="flex flex-wrap gap-1 mt-2">
             {job.skillsRequired.slice(0, 3).map(s => (
-              <span key={s} className="px-2 py-0.5 rounded-md text-[11px] bg-[#F5F2EA] text-[#3D4E5C] border border-[#E4DDD0]">{s}</span>
+              <span key={s} className="px-2 py-0.5 rounded-md text-[11px] bg-[#D8D0C0] text-[#253444] border border-[#BEB5A5]">{s}</span>
             ))}
             {job.skillsRequired.length > 3 && (
-              <span className="px-2 py-0.5 rounded-md text-[11px] bg-[#F5F2EA] text-[#7B8694] border border-[#E4DDD0]">+{job.skillsRequired.length - 3}</span>
+              <span className="px-2 py-0.5 rounded-md text-[11px] bg-[#D8D0C0] text-[#4A5568] border border-[#BEB5A5]">+{job.skillsRequired.length - 3}</span>
             )}
           </div>
         </div>
@@ -96,12 +96,12 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
         <div>
           <div className="flex items-baseline justify-between mb-2">
             <div>
-              <span className="text-[11px] text-[#7B8694] uppercase tracking-wider">Current Price</span>
-              <p className="font-heading text-2xl font-bold text-[#182739]">{formatMoney(current)}</p>
+              <span className="text-[11px] text-[#4A5568] uppercase tracking-wider">Current Price</span>
+              <p className="font-heading text-2xl font-bold text-[#0F1924]">{formatMoney(current)}</p>
             </div>
             {savings > 0 && (
               <div className="text-right">
-                <span className="text-[11px] text-[#7B8694] uppercase tracking-wider">Savings</span>
+                <span className="text-[11px] text-[#4A5568] uppercase tracking-wider">Savings</span>
                 <p className="font-heading text-lg font-semibold text-[#C8923D]">-{formatMoney(savings)}</p>
               </div>
             )}
@@ -109,13 +109,13 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
 
           {/* Decay bar */}
           <div className="space-y-1">
-            <div className="h-1.5 w-full bg-[#F5F2EA] rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-[#D8D0C0] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-[#C8923D] transition-all duration-500"
                 style={{ width: `${decayPct}%` }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-[#7B8694]">
+            <div className="flex justify-between text-[10px] text-[#4A5568]">
               <span>Floor {formatMoney(job.minimumPrice)}</span>
               <span>Start {formatMoney(job.startingPrice)}</span>
             </div>
@@ -125,31 +125,31 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
         {/* ── Top Bidders Preview ─────────────────────────────────────────── */}
         {topBidders.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-[10px] text-[#7B8694] uppercase tracking-wider font-semibold">Top Bidders</p>
+            <p className="text-[10px] text-[#4A5568] uppercase tracking-wider font-semibold">Top Bidders</p>
             {topBidders.slice(0, 2).map((b, i) => (
               <div key={b.freelancerId} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? "bg-[#C8923D]/20 text-[#C8923D]" : "bg-[#F5F2EA] text-[#3D4E5C]"}`}>
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? "bg-[#C8923D]/20 text-[#C8923D]" : "bg-[#D8D0C0] text-[#253444]"}`}>
                     {i + 1}
                   </span>
-                  <span className="text-xs text-[#3D4E5C]">{b.name}</span>
-                  <span className="text-[10px] text-[#7B8694]">GS {b.geekScore}</span>
+                  <span className="text-xs text-[#253444]">{b.name}</span>
+                  <span className="text-[10px] text-[#4A5568]">GS {b.geekScore}</span>
                 </div>
-                <span className="font-heading text-sm font-semibold text-[#182739]">{formatMoney(b.price)}</span>
+                <span className="font-heading text-sm font-semibold text-[#0F1924]">{formatMoney(b.price)}</span>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex items-center gap-2 py-2">
-            <Users className="h-3.5 w-3.5 text-[#7B8694]" />
-            <span className="text-xs text-[#7B8694]">No bids yet — be the first</span>
+            <Users className="h-3.5 w-3.5 text-[#4A5568]" />
+            <span className="text-xs text-[#4A5568]">No bids yet — be the first</span>
           </div>
         )}
 
         {/* ── Footer: stats + CTA ─────────────────────────────────────────── */}
-        <div className="mt-auto pt-3 border-t border-[#E4DDD0]">
+        <div className="mt-auto pt-3 border-t border-[#BEB5A5]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-[11px] text-[#7B8694]">
+            <div className="flex items-center gap-3 text-[11px] text-[#4A5568]">
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
               </span>
@@ -168,13 +168,13 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
             {isOwn && bidCount > 0 && onAcceptBest ? (
               <button
                 onClick={handleAcceptBest}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/40 hover:bg-[rgba(200,146,61,0.10)] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#7A5218] text-white border border-transparent hover:bg-[rgba(200,146,61,0.10)] transition-colors"
               >
                 <CheckCircle className="h-3 w-3" />
                 Accept Best
               </button>
             ) : (
-              <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#F5F2EA] text-[#3D4E5C] border border-[#E4DDD0] hover:border-[#C8923D]/30 hover:text-[#C8923D] transition-colors">
+              <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#D8D0C0] text-[#253444] border border-[#BEB5A5] hover:border-[#C8923D]/30 hover:text-[#C8923D] transition-colors">
                 View Bids →
               </button>
             )}

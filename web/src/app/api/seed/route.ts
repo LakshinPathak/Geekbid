@@ -475,7 +475,7 @@ export async function POST() {
         bidType: "counter",
         bidPrice: 950,
         message:
-          "OSCP certified with 5+ years K8s security audits. Can start immediately.",
+          "I can complete the security audit within 2 weeks. Will cover OWASP Top 10 and K8s-specific threats.",
         createdAt: new Date(now - 2 * h).toISOString(),
       },
       {
@@ -484,7 +484,7 @@ export async function POST() {
         bidType: "counter",
         bidPrice: 1800,
         message:
-          "Audited 20+ smart contracts on mainnet. Contributor to OpenZeppelin.",
+          "I'll deliver a production-ready yield aggregator with full test coverage and gas optimization.",
         createdAt: new Date(now - 4 * h).toISOString(),
       },
       {
@@ -493,7 +493,7 @@ export async function POST() {
         bidType: "counter",
         bidPrice: 1200,
         message:
-          "Former Netflix data platform. Expert in Kafka Streams and real-time pipelines.",
+          "Can build the real-time pipeline with Kafka Streams. Will include monitoring dashboards.",
         createdAt: new Date(now - 10 * h).toISOString(),
       },
       {

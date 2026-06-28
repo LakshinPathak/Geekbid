@@ -171,7 +171,7 @@ const STEPS = [
     title: "Watch Prices Drop",
     desc: "Our engine decreases the price every hour. Freelancers monitor and bid when the price hits their sweet spot.",
     icon: TrendingDown,
-    accent: "bg-[rgba(200,146,61,0.10)] text-[#A67628] border-[#C8923D]/20",
+    accent: "bg-[rgba(200,146,61,0.10)] text-[#7A5218] border-[#C8923D]/20",
   },
   {
     num: "03",
@@ -386,7 +386,7 @@ export default function LandingPage() {
                   {[
                     { label: "Open Jobs", value: "12", sub: "+3 today", color: "text-emerald-400" },
                     { label: "Total Value", value: "$24.8K", sub: "Across all jobs", color: "text-white" },
-                    { label: "Avg Decay", value: "$23/hr", sub: "Price reduction", color: "text-[#A67628]" },
+                    { label: "Avg Decay", value: "$23/hr", sub: "Price reduction", color: "text-[#7A5218]" },
                     { label: "Active Bids", value: "34", sub: "7 new today", color: "text-amber-400" },
                   ].map(s => (
                     <div key={s.label} className="rounded-xl bg-[#EDE8DC] border border-white/[0.06] p-4">
@@ -474,7 +474,7 @@ export default function LandingPage() {
               {" = max("}
               <span className="text-[#0F1924]/50">startPrice</span>
               {" − "}
-              <span className="text-[#A67628]">decayRate</span>
+              <span className="text-[#7A5218]">decayRate</span>
               {" × "}
               <span className="text-[#7A5218]">hours</span>
               {", "}
@@ -665,7 +665,7 @@ export default function LandingPage() {
               <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/[0.05] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10">
                 <div className="h-12 w-12 rounded-2xl bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/20 flex items-center justify-center mb-6">
-                  <Code className="h-6 w-6 text-[#A67628]" />
+                  <Code className="h-6 w-6 text-[#7A5218]" />
                 </div>
                 <h3 className="text-2xl font-bold text-[#0F1924] mb-3 font-heading">For Freelancers</h3>
                 <ul className="space-y-3 mb-8">

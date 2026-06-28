@@ -249,7 +249,7 @@ export default function FreelancerFeed() {
               <Target className="h-5 w-5 text-[#7A5218]" />
               <h1 className="font-heading text-xl font-bold text-[#0F1924]">Mission Control</h1>
             </div>
-            <p className="text-[#3D4E5C] text-sm">
+            <p className="text-[#253444] text-sm">
               {kpis.matchedJobs} matches · {kpis.bidsUsed}/{kpis.bidLimit} bids used · {kpis.winRate}% win rate
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function FreelancerFeed() {
             <div className="flex flex-wrap gap-2">
               {/* Search */}
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3D4E5C]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#253444]" />
                 <input
                   type="text"
                   placeholder="Search jobs or skills..."
@@ -317,7 +317,7 @@ export default function FreelancerFeed() {
                 />
                 {search && (
                   <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <X className="h-3.5 w-3.5 text-[#3D4E5C]" />
+                    <X className="h-3.5 w-3.5 text-[#253444]" />
                   </button>
                 )}
               </div>
@@ -341,7 +341,7 @@ export default function FreelancerFeed() {
                   className="glass-input h-10 px-3 text-sm flex items-center gap-1.5"
                 >
                   {FREELANCER_SORTS.find(s => s.value === sortBy)?.label ?? "Sort"}
-                  <ChevronDown className="h-3.5 w-3.5 text-[#3D4E5C]" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#253444]" />
                 </button>
                 {showSortMenu && (
                   <div className="absolute right-0 top-12 z-50 glass-panel border border-[#BEB5A5] rounded-xl py-1 min-w-[160px] shadow-xl">
@@ -365,7 +365,7 @@ export default function FreelancerFeed() {
                   className={`glass-input h-10 px-3 text-sm flex items-center gap-1.5 ${filterSkills.length > 0 ? "border-[#7A5218] text-[#7A5218]" : ""}`}
                 >
                   Skills {filterSkills.length > 0 && `(${filterSkills.length})`}
-                  <ChevronDown className="h-3.5 w-3.5 text-[#3D4E5C]" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#253444]" />
                 </button>
                 {showSkillPicker && (
                   <div className="absolute right-0 top-12 z-50 glass-panel border border-[#BEB5A5] rounded-xl p-3 w-[260px] shadow-xl">
@@ -381,7 +381,7 @@ export default function FreelancerFeed() {
                       ))}
                     </div>
                     {filterSkills.length > 0 && (
-                      <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-red-400 hover:text-red-300">
+                      <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-[#B02020] hover:text-red-300">
                         Clear all
                       </button>
                     )}
@@ -395,7 +395,7 @@ export default function FreelancerFeed() {
                 className={`glass-input h-10 px-3 text-sm flex items-center gap-1.5 ${hasAdvancedFilters ? "border-[#7A5218] text-[#7A5218]" : ""}`}
               >
                 Advanced {hasAdvancedFilters && "•"}
-                <ChevronDown className={`h-3.5 w-3.5 text-[#3D4E5C] transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+                <ChevronDown className={`h-3.5 w-3.5 text-[#253444] transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
               </button>
             </div>
 
@@ -440,7 +440,7 @@ export default function FreelancerFeed() {
                 {hasAdvancedFilters && (
                   <button
                     onClick={() => { setFilterBudget(""); setFilterCompetition(""); setFilterHourlyRate(""); }}
-                    className="h-9 px-3 text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                    className="h-9 px-3 text-[11px] text-[#B02020] hover:text-red-300 transition-colors"
                   >
                     Clear
                   </button>

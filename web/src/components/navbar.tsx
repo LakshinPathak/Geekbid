@@ -228,7 +228,7 @@ export default function Navbar() {
                     <div
                       className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
+                          ? "bg-[#7A5218] text-white border border-transparent"
                           : "text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0]"
                       }`}
                     >

@@ -520,7 +520,7 @@ export default function PostJobPage() {
                 {skills.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {skills.map(s => (
-                      <span key={s} className="inline-flex items-center gap-1.5 bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-3 py-1 text-xs font-medium">
+                      <span key={s} className="inline-flex items-center gap-1.5 bg-[#7A5218] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">
                         {s}
                         <button onClick={() => toggleSkill(s)} className="hover:text-white transition-colors"><X className="h-3 w-3" /></button>
                       </span>
@@ -541,7 +541,7 @@ export default function PostJobPage() {
                       onClick={() => toggleSkill(s)}
                       className={`text-xs rounded-lg py-1.5 px-3 transition-all border ${
                         skills.includes(s)
-                          ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30"
+                          ? "bg-[#7A5218] text-white border-transparent"
                           : "bg-[#EDE8DC] border-[#BEB5A5] text-[#4A5568] hover:text-[#253444] hover:border-[#8A8A9A]/30"
                       }`}
                     >
@@ -679,7 +679,7 @@ export default function PostJobPage() {
               {/* Pricing Hint */}
               {pricingHint?.available && (
                 <div className="bg-blue-500/5 border border-[#C8923D]/20 rounded-xl p-4">
-                  <p className="text-[#A67628] text-xs font-semibold mb-2 flex items-center gap-1.5">
+                  <p className="text-[#7A5218] text-xs font-semibold mb-2 flex items-center gap-1.5">
                     <TrendingDown className="h-3.5 w-3.5" /> Based on {pricingHint.sampleSize} similar job{pricingHint.sampleSize !== 1 ? "s" : ""}
                   </p>
                   <div className="grid grid-cols-3 gap-3">
@@ -748,7 +748,7 @@ export default function PostJobPage() {
                   <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
                   <div className="flex flex-wrap gap-1.5">
                     {skills.length > 0 ? skills.map(s => (
-                      <span key={s} className="bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-3 py-1 text-xs font-medium">{s}</span>
+                      <span key={s} className="bg-[#7A5218] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">{s}</span>
                     )) : (
                       <span className="text-[#4A5568] text-xs">None selected</span>
                     )}
@@ -757,7 +757,7 @@ export default function PostJobPage() {
                 <div className="h-px bg-[#BEB5A5]" />
                 <div>
                   <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Category</p>
-                  <span className="inline-block mt-1 bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-3 py-1 text-xs font-medium">
+                  <span className="inline-block mt-1 bg-[#7A5218] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">
                     {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
                   </span>
                 </div>

@@ -73,7 +73,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-lg text-[#7B8694] hover:text-[#182739] hover:bg-[#F5F2EA] transition-colors"
+          className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-lg text-[#4A5568] hover:text-[#0F1924] hover:bg-[#D8D0C0] transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -89,25 +89,25 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
           >
             <CheckCircle2 className="h-10 w-10 text-[#C8923D]" />
           </div>
-          <h2 className="text-2xl font-bold text-[#182739] font-heading">Match Found!</h2>
-          <p className="text-[#3D4E5C] text-sm mt-1">Your auction has a winner</p>
+          <h2 className="text-2xl font-bold text-[#0F1924] font-heading">Match Found!</h2>
+          <p className="text-[#253444] text-sm mt-1">Your auction has a winner</p>
         </div>
 
         {/* Job title */}
         <div className="text-center mb-6">
-          <p className="text-xs text-[#7B8694] uppercase tracking-wider font-semibold mb-1">Project</p>
-          <p className="text-[#182739] font-medium font-heading">{data.jobTitle}</p>
+          <p className="text-xs text-[#4A5568] uppercase tracking-wider font-semibold mb-1">Project</p>
+          <p className="text-[#0F1924] font-medium font-heading">{data.jobTitle}</p>
         </div>
 
         {/* Match card: client ↔ freelancer */}
         <div className="glass-panel-sm p-4 mb-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 text-center">
-              <div className="h-10 w-10 rounded-full bg-[rgba(200,146,61,0.10)] border-2 border-blue-500/30 flex items-center justify-center text-sm font-bold text-[#A67628] mx-auto mb-1">
+              <div className="h-10 w-10 rounded-full bg-[rgba(200,146,61,0.10)] border-2 border-[#BEB5A5] flex items-center justify-center text-sm font-bold text-[#7A5218] mx-auto mb-1">
                 {data.clientName.slice(0, 2).toUpperCase()}
               </div>
-              <p className="text-xs text-[#182739] font-medium">{data.clientName}</p>
-              <p className="text-[10px] text-[#7B8694]">Client</p>
+              <p className="text-xs text-[#0F1924] font-medium">{data.clientName}</p>
+              <p className="text-[10px] text-[#4A5568]">Client</p>
             </div>
 
             <div className="flex flex-col items-center gap-1">
@@ -119,7 +119,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
               <div className="h-10 w-10 rounded-full bg-[rgba(200,146,61,0.10)] border-2 border-[#C8923D]/40 flex items-center justify-center text-sm font-bold text-[#C8923D] mx-auto mb-1">
                 {data.freelancerName.slice(0, 2).toUpperCase()}
               </div>
-              <p className="text-xs text-[#182739] font-medium">{data.freelancerName}</p>
+              <p className="text-xs text-[#0F1924] font-medium">{data.freelancerName}</p>
               {data.freelancerScore !== undefined && (
                 <p className="text-[10px] text-[#C8923D]">GS {data.freelancerScore}</p>
               )}
@@ -130,7 +130,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
         {/* Price display */}
         <div className="glass-panel-sm p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-[#7B8694] uppercase tracking-wider font-semibold">Final Price</span>
+            <span className="text-xs text-[#4A5568] uppercase tracking-wider font-semibold">Final Price</span>
             <span className="text-2xl font-black text-[#C8923D] font-heading terminal-amount">
               ${data.finalPrice.toLocaleString()}
             </span>
@@ -139,14 +139,14 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
           {/* Savings bar */}
           {savings > 0 && (
             <>
-              <div className="h-2 bg-[#F5F2EA] rounded-full overflow-hidden mb-2">
+              <div className="h-2 bg-[#D8D0C0] rounded-full overflow-hidden mb-2">
                 <div
                   className="h-2 decay-bar"
                   style={{ width: `${savingsPct}%` }}
                 />
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-[#7B8694]">Started at ${data.startingPrice.toLocaleString()}</span>
+                <span className="text-[#4A5568]">Started at ${data.startingPrice.toLocaleString()}</span>
                 <span className="flex items-center gap-1 text-[#C8923D] font-semibold">
                   <TrendingDown className="h-3 w-3" />
                   Saved ${savings.toLocaleString()} ({savingsPct}%)
@@ -173,7 +173,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
 
         <div className="mt-3 text-center">
           <Link href={`/jobs/${data.jobId}`}>
-            <button className="text-xs text-[#7B8694] hover:text-[#C8923D] transition-colors flex items-center gap-1 mx-auto">
+            <button className="text-xs text-[#4A5568] hover:text-[#C8923D] transition-colors flex items-center gap-1 mx-auto">
               <Star className="h-3 w-3" /> Leave a Review
             </button>
           </Link>

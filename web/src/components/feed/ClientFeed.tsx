@@ -178,23 +178,23 @@ export default function ClientFeed() {
   };
 
   if (!mounted) return (
-    <div className="flex items-center justify-center min-h-[60vh] bg-[#FCFAF4]">
+    <div className="flex items-center justify-center min-h-[60vh] bg-[#EDE8DC]">
       <div className="h-8 w-8 border-2 border-[#C8923D]/40 border-t-[#C8923D] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="glass-panel border-b border-[#E4DDD0] py-5 px-4 sm:px-6" style={{ borderRadius: 0 }}>
+      <div className="glass-panel border-b border-[#BEB5A5] py-5 px-4 sm:px-6" style={{ borderRadius: 0 }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
               <Settings className="h-5 w-5 text-[#C8923D]" />
-              <h1 className="font-heading text-xl font-bold text-[#182739]">Procurement Terminal</h1>
+              <h1 className="font-heading text-xl font-bold text-[#0F1924]">Procurement Terminal</h1>
             </div>
-            <p className="text-[#3D4E5C] text-sm">
+            <p className="text-[#253444] text-sm">
               {kpis.openJobs} active job{kpis.openJobs !== 1 ? "s" : ""}
               {kpis.totalSavings > 0 && ` · $${Math.round(kpis.totalSavings).toLocaleString()} saved from decay`}
             </p>
@@ -202,7 +202,7 @@ export default function ClientFeed() {
 
           <div className="flex items-center gap-3">
             <Link href="/post-job">
-              <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/40 hover:bg-[rgba(200,146,61,0.10)] transition-colors text-sm font-semibold">
+              <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#7A5218] text-white border border-transparent hover:bg-[rgba(200,146,61,0.10)] transition-colors text-sm font-semibold">
                 <Plus className="h-4 w-4" />
                 Post Job
               </button>
@@ -245,17 +245,17 @@ export default function ClientFeed() {
         {/* 4. Marketplace Browse ─────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-[#3D4E5C] uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-[#253444] uppercase tracking-wider">
               Marketplace Browse
             </h2>
-            <span className="text-[11px] text-[#7B8694]">{marketplaceJobs.length} jobs</span>
+            <span className="text-[11px] text-[#4A5568]">{marketplaceJobs.length} jobs</span>
           </div>
 
           {/* Search + Filters */}
           <div className="flex flex-wrap gap-2 mb-4">
             {/* Search */}
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
               <input
                 type="text"
                 placeholder="Search jobs or skills..."
@@ -265,7 +265,7 @@ export default function ClientFeed() {
               />
               {search && (
                 <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <X className="h-3.5 w-3.5 text-[#7B8694]" />
+                  <X className="h-3.5 w-3.5 text-[#4A5568]" />
                 </button>
               )}
             </div>
@@ -302,15 +302,15 @@ export default function ClientFeed() {
                 className="glass-input h-10 px-3 text-sm flex items-center gap-1.5"
               >
                 {CLIENT_SORTS.find(s => s.value === sortBy)?.label ?? "Sort"}
-                <ChevronDown className="h-3.5 w-3.5 text-[#7B8694]" />
+                <ChevronDown className="h-3.5 w-3.5 text-[#4A5568]" />
               </button>
               {showSortMenu && (
-                <div className="absolute right-0 top-12 z-50 glass-panel border border-[#E4DDD0] rounded-xl py-1 min-w-[160px] shadow-xl">
+                <div className="absolute right-0 top-12 z-50 glass-panel border border-[#BEB5A5] rounded-xl py-1 min-w-[160px] shadow-xl">
                   {CLIENT_SORTS.map(s => (
                     <button
                       key={s.value}
                       onClick={() => { setSortBy(s.value); setShowSortMenu(false); }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5F2EA] transition-colors ${sortBy === s.value ? "text-[#C8923D]" : "text-[#3D4E5C]"}`}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#D8D0C0] transition-colors ${sortBy === s.value ? "text-[#C8923D]" : "text-[#253444]"}`}
                     >
                       {s.label}
                     </button>
@@ -326,23 +326,23 @@ export default function ClientFeed() {
                 className={`glass-input h-10 px-3 text-sm flex items-center gap-1.5 ${filterSkills.length > 0 ? "border-[#C8923D]/50 text-[#C8923D]" : ""}`}
               >
                 Skills {filterSkills.length > 0 && `(${filterSkills.length})`}
-                <ChevronDown className="h-3.5 w-3.5 text-[#7B8694]" />
+                <ChevronDown className="h-3.5 w-3.5 text-[#4A5568]" />
               </button>
               {showSkillPicker && (
-                <div className="absolute right-0 top-12 z-50 glass-panel border border-[#E4DDD0] rounded-xl p-3 w-[260px] shadow-xl">
+                <div className="absolute right-0 top-12 z-50 glass-panel border border-[#BEB5A5] rounded-xl p-3 w-[260px] shadow-xl">
                   <div className="flex flex-wrap gap-1.5 max-h-[200px] overflow-y-auto">
                     {SKILL_TAXONOMY.slice(0, 24).map(s => (
                       <button
                         key={s}
                         onClick={() => setFilterSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
-                        className={`px-2 py-1 rounded-md text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/40" : "bg-[#F5F2EA] text-[#3D4E5C] border-[#E4DDD0] hover:border-[#3A3A4A]"}`}
+                        className={`px-2 py-1 rounded-md text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[rgba(122,82,24,0.12)] text-[#7A5218] border-[#C8923D]/40" : "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5] hover:border-[#3A3A4A]"}`}
                       >
                         {s}
                       </button>
                     ))}
                   </div>
                   {filterSkills.length > 0 && (
-                    <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-red-400 hover:text-red-300">
+                    <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-[#B02020] hover:text-red-300">
                       Clear all
                     </button>
                   )}
@@ -353,7 +353,7 @@ export default function ClientFeed() {
 
           {/* Job Grid */}
           {marketplaceJobs.length === 0 ? (
-            <div className="text-center py-16 text-[#7B8694]">
+            <div className="text-center py-16 text-[#4A5568]">
               <p className="text-lg mb-2">No jobs found</p>
               <p className="text-sm">Try adjusting your filters</p>
             </div>

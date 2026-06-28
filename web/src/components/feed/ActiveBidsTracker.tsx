@@ -71,11 +71,11 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`text-[10px] font-semibold ${statusConfig.color}`}>{statusConfig.label}</span>
-                  <span className="text-[10px] text-[#3D4E5C]">·</span>
+                  <span className="text-[10px] text-[#253444]">·</span>
                   <span className="text-[10px] text-[#253444] font-medium">Rank #{bid.rank}</span>
                   {cooldownMins > 0 && (
                     <>
-                      <span className="text-[10px] text-[#3D4E5C]">·</span>
+                      <span className="text-[10px] text-[#253444]">·</span>
                       <span className="flex items-center gap-0.5 text-[10px] text-[#7A5218] font-semibold">
                         <Clock className="h-2.5 w-2.5" />
                         {Math.ceil(cooldownMins)}m cooldown

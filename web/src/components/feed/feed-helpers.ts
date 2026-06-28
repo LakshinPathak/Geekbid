@@ -35,8 +35,8 @@ export const CLIENT_SORTS: { value: SortOption; label: string }[] = [
 export function getCompetitionBadge(bidCount: number) {
   if (bidCount === 0) return { label: "Be First", color: "text-[#C8923D]",  bg: "bg-[#C8923D]/10",  border: "border-[#C8923D]/30"  };
   if (bidCount <= 2)  return { label: "LOW",      color: "text-[#C8923D]",  bg: "bg-[#C8923D]/10",  border: "border-[#C8923D]/30"  };
-  if (bidCount <= 5)  return { label: "MEDIUM",   color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" };
-  return                     { label: "HIGH",     color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/20"    };
+  if (bidCount <= 5)  return { label: "MEDIUM",   color: "text-[#7A5218]", bg: "bg-[rgba(122,82,24,0.12)]", border: "border-[rgba(122,82,24,0.25)]" };
+  return                     { label: "HIGH",     color: "text-[#B02020]",    bg: "bg-[rgba(176,32,32,0.08)]",    border: "border-[rgba(176,32,32,0.20)]"    };
 }
 
 export function getJobHealth(job: Job, now: Date) {
@@ -45,18 +45,18 @@ export function getJobHealth(job: Job, now: Date) {
   const bidCount    = job.bidCount ?? 0;
 
   if (deadlineHrs < 6 && bidCount === 0)
-    return { label: "Urgent",          color: "text-red-400",    dot: "bg-red-400"    };
+    return { label: "Urgent",          color: "text-[#B02020]",    dot: "bg-red-400"    };
   if (bidCount === 0 && hoursPosted > 6)
-    return { label: "Needs Attention", color: "text-yellow-400", dot: "bg-yellow-400" };
+    return { label: "Needs Attention", color: "text-[#7A5218]", dot: "bg-yellow-400" };
   if (bidCount > 0 && deadlineHrs > 12)
     return { label: "Healthy",         color: "text-[#C8923D]",  dot: "bg-[#C8923D]"  };
-  return   { label: "Expiring",        color: "text-yellow-400", dot: "bg-yellow-400" };
+  return   { label: "Expiring",        color: "text-[#7A5218]", dot: "bg-yellow-400" };
 }
 
 export function getPriceTrajectory(effectiveRate: number) {
-  if (effectiveRate > 20) return { label: "Dropping fast",  icon: "⚡", color: "text-red-400"    };
-  if (effectiveRate > 10) return { label: "Steady decline", icon: "📉", color: "text-yellow-400" };
-  return                         { label: "Holding steady", icon: "🐢", color: "text-[#6E6E85]"  };
+  if (effectiveRate > 20) return { label: "Dropping fast",  icon: "⚡", color: "text-[#B02020]"    };
+  if (effectiveRate > 10) return { label: "Steady decline", icon: "📉", color: "text-[#7A5218]" };
+  return                         { label: "Holding steady", icon: "🐢", color: "text-[#4A5568]"  };
 }
 
 // ── Sort Logic ────────────────────────────────────────────────

@@ -16,10 +16,10 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-[#3D4E5C] uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-[#253444] uppercase tracking-wider">
           My Jobs — Health Matrix
         </h2>
-        <span className="text-[11px] text-[#7B8694]">{jobs.length} active</span>
+        <span className="text-[11px] text-[#4A5568]">{jobs.length} active</span>
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -36,10 +36,10 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
                                                 "border-yellow-500/30";
 
           const action =
-            health.label === "Urgent"          ? { label: "Boost",   cls: "bg-red-500/15 text-red-400 border-red-500/30" } :
-            health.label === "Needs Attention" ? { label: "Review",  cls: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" } :
-            bidCount > 0                       ? { label: "Accept",  cls: "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/40" } :
-                                                 { label: "View →",  cls: "bg-[#F5F2EA] text-[#3D4E5C] border-[#E4DDD0]" };
+            health.label === "Urgent"          ? { label: "Boost",   cls: "bg-red-500/15 text-[#B02020] border-[rgba(176,32,32,0.30)]" } :
+            health.label === "Needs Attention" ? { label: "Review",  cls: "bg-yellow-500/15 text-[#7A5218] border-yellow-500/30" } :
+            bidCount > 0                       ? { label: "Accept",  cls: "bg-[rgba(122,82,24,0.12)] text-[#7A5218] border-[#C8923D]/40" } :
+                                                 { label: "View →",  cls: "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]" };
 
           return (
             <Link key={jobId} href={`/jobs/${jobId}`} className="shrink-0 w-[140px] group">
@@ -53,15 +53,15 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
                 </div>
 
                 {/* Title */}
-                <p className="text-xs font-semibold text-[#182739] leading-tight line-clamp-2 group-hover:text-[#C8923D] transition-colors">
+                <p className="text-xs font-semibold text-[#0F1924] leading-tight line-clamp-2 group-hover:text-[#C8923D] transition-colors">
                   {job.title}
                 </p>
 
                 {/* Current price */}
-                <p className="font-heading text-base font-bold text-[#182739]">{formatMoney(current)}</p>
+                <p className="font-heading text-base font-bold text-[#0F1924]">{formatMoney(current)}</p>
 
                 {/* Bid count */}
-                <div className="flex items-center gap-1 text-[10px] text-[#7B8694]">
+                <div className="flex items-center gap-1 text-[10px] text-[#4A5568]">
                   <Users className="h-3 w-3" />
                   <span>{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
                 </div>
@@ -83,11 +83,11 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
 
         {/* Post new job CTA */}
         <Link href="/post-job" className="shrink-0 w-[140px]">
-          <div className="glass-panel rounded-xl p-3.5 border border-dashed border-[#E4DDD0] hover:border-[#C8923D]/40 transition-all flex flex-col items-center justify-center gap-2 h-full min-h-[140px]">
+          <div className="glass-panel rounded-xl p-3.5 border border-dashed border-[#BEB5A5] hover:border-[#C8923D]/40 transition-all flex flex-col items-center justify-center gap-2 h-full min-h-[140px]">
             <div className="w-8 h-8 rounded-full bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/30 flex items-center justify-center">
               <span className="text-[#C8923D] text-lg leading-none">+</span>
             </div>
-            <span className="text-[11px] text-[#7B8694] text-center">Post New Job</span>
+            <span className="text-[11px] text-[#4A5568] text-center">Post New Job</span>
           </div>
         </Link>
       </div>

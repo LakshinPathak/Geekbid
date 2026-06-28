@@ -112,7 +112,7 @@ export default function AdminPage() {
             <button key={t.key} onClick={() => setActiveTab(t.key)}
               className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === t.key
-                  ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
+                  ? "bg-[#7A5218] text-white border border-transparent"
                   : "text-[#253444] hover:text-[#0F1924]"
               }`}>
               {t.label}
@@ -222,7 +222,7 @@ export default function AdminPage() {
                 <button key={f} onClick={() => setUserRoleFilter(f)}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
                     userRoleFilter === f
-                      ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
+                      ? "bg-[#7A5218] text-white border border-transparent"
                       : "text-[#253444] hover:text-[#0F1924]"
                   }`}>
                   {f === "all" ? `All (${users.length})` : f}
@@ -257,7 +257,7 @@ export default function AdminPage() {
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border capitalize ${
                       u.role === "admin" ? "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]" :
                       u.role === "freelancer" ? "badge-active" :
-                      "bg-[rgba(200,146,61,0.10)] text-[#A67628] border-[#C8923D]/20"
+                      "bg-[rgba(200,146,61,0.10)] text-[#7A5218] border-[#C8923D]/20"
                     }`}>{u.role}</span>
                     <span className="text-xs font-bold text-[#0F1924] text-center w-12 terminal-amount" style={{ color: tier.color }}>
                       {u.geekScore}
@@ -283,7 +283,7 @@ export default function AdminPage() {
                 <button key={f} onClick={() => setJobStatusFilter(f)}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
                     jobStatusFilter === f
-                      ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
+                      ? "bg-[#7A5218] text-white border border-transparent"
                       : "text-[#253444] hover:text-[#0F1924]"
                   }`}>
                   {f === "all" ? `All (${jobs.length})` : f}
@@ -349,7 +349,7 @@ export default function AdminPage() {
                 <button key={f} onClick={() => setTxFilter(f)}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
                     txFilter === f
-                      ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
+                      ? "bg-[#7A5218] text-white border border-transparent"
                       : "text-[#253444] hover:text-[#0F1924]"
                   }`}>
                   {f}

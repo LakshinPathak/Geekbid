@@ -33,9 +33,9 @@ export default function FreelancerStats({
       label: "Bids Used",
       value: `${bidsUsed}/${bidLimit}`,
       icon: Zap,
-      color: bidPct >= 80 ? "text-red-400" : bidPct >= 50 ? "text-[#8B6220]" : "text-[#A67628]",
-      bg: bidPct >= 80 ? "bg-red-500/10" : bidPct >= 50 ? "bg-[rgba(200,146,61,0.10)]" : "bg-[rgba(200,146,61,0.10)]",
-      border: bidPct >= 80 ? "border-red-500/20" : bidPct >= 50 ? "border-[#C8923D]/30" : "border-[#C8923D]/20",
+      color: bidPct >= 80 ? "text-[#B02020]" : bidPct >= 50 ? "text-[#7A5218]" : "text-[#7A5218]",
+      bg: bidPct >= 80 ? "bg-[rgba(176,32,32,0.08)]" : bidPct >= 50 ? "bg-[rgba(200,146,61,0.10)]" : "bg-[rgba(200,146,61,0.10)]",
+      border: bidPct >= 80 ? "border-[rgba(176,32,32,0.20)]" : bidPct >= 50 ? "border-[#C8923D]/30" : "border-[#C8923D]/20",
       sub: `${bidPct}% used this month`,
       progress: bidPct,
     },
@@ -43,9 +43,9 @@ export default function FreelancerStats({
       label: "Win Rate",
       value: `${winRate}%`,
       icon: Trophy,
-      color: winRate >= 30 ? "text-[#C8923D]" : winRate >= 15 ? "text-[#8B6220]" : "text-[#7B8694]",
-      bg: winRate >= 30 ? "bg-[rgba(200,146,61,0.10)]" : winRate >= 15 ? "bg-[rgba(200,146,61,0.10)]" : "bg-[#F5F2EA]",
-      border: winRate >= 30 ? "border-[#C8923D]/30" : winRate >= 15 ? "border-[#C8923D]/30" : "border-[#E4DDD0]",
+      color: winRate >= 30 ? "text-[#C8923D]" : winRate >= 15 ? "text-[#7A5218]" : "text-[#4A5568]",
+      bg: winRate >= 30 ? "bg-[rgba(200,146,61,0.10)]" : winRate >= 15 ? "bg-[rgba(200,146,61,0.10)]" : "bg-[#D8D0C0]",
+      border: winRate >= 30 ? "border-[#C8923D]/30" : winRate >= 15 ? "border-[#C8923D]/30" : "border-[#BEB5A5]",
       sub: "accepted rate",
     },
     {
@@ -67,7 +67,7 @@ export default function FreelancerStats({
             <div className={`w-8 h-8 rounded-lg ${s.bg} border ${s.border} flex items-center justify-center shrink-0`}>
               <s.icon className={`h-4 w-4 ${s.color}`} />
             </div>
-            <p className="text-[10px] text-[#7B8694] uppercase tracking-wider font-semibold">{s.label}</p>
+            <p className="text-[10px] text-[#4A5568] uppercase tracking-wider font-semibold">{s.label}</p>
           </div>
           <p className={`font-heading text-xl font-bold ${s.color} leading-tight`}>{s.value}</p>
           {s.progress !== undefined && (
@@ -78,7 +78,7 @@ export default function FreelancerStats({
               />
             </div>
           )}
-          <p className="text-[10px] text-[#7B8694]">{s.sub}</p>
+          <p className="text-[10px] text-[#4A5568]">{s.sub}</p>
         </div>
       ))}
     </div>

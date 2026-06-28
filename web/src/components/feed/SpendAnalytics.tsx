@@ -22,7 +22,7 @@ export default function SpendAnalytics({
       label: "Budget Posted",
       value: formatMoney(totalBudgetPosted),
       icon: DollarSign,
-      color: "text-[#A67628]",
+      color: "text-[#7A5218]",
       bg: "bg-[rgba(200,146,61,0.10)]",
       border: "border-[#C8923D]/20",
     },
@@ -30,9 +30,9 @@ export default function SpendAnalytics({
       label: "Avg Bid Price",
       value: avgBidPrice > 0 ? formatMoney(avgBidPrice) : "—",
       icon: TrendingDown,
-      color: "text-yellow-400",
-      bg: "bg-yellow-500/10",
-      border: "border-yellow-500/20",
+      color: "text-[#7A5218]",
+      bg: "bg-[rgba(122,82,24,0.12)]",
+      border: "border-[rgba(122,82,24,0.25)]",
     },
     {
       label: "Total Savings",
@@ -46,9 +46,9 @@ export default function SpendAnalytics({
       label: "Avg Decay",
       value: openJobs > 0 ? `-${formatMoney(avgDecayRate)}/hr` : "—",
       icon: Zap,
-      color: "text-orange-400",
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/20",
+      color: "text-[#C05B00]",
+      bg: "bg-[rgba(192,91,0,0.10)]",
+      border: "border-[rgba(192,91,0,0.20)]",
     },
   ];
 
@@ -63,7 +63,7 @@ export default function SpendAnalytics({
             <s.icon className={`h-4 w-4 ${s.color}`} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] text-[#7B8694] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
+            <p className="text-[10px] text-[#4A5568] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
             <p className={`font-heading text-base font-bold ${s.color} leading-tight`}>{s.value}</p>
           </div>
         </div>

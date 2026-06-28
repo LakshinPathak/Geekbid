@@ -230,8 +230,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     : deadlineHrs > 1
     ? "text-[#C05B00] font-mono text-sm tabular-nums animate-pulse"
     : deadlineHrs > (10 / 60)
-    ? "text-red-400 font-mono text-sm tabular-nums animate-shake"
-    : "text-red-400 font-mono text-2xl font-bold tabular-nums animate-shake";
+    ? "text-[#B02020] font-mono text-sm tabular-nums animate-shake"
+    : "text-[#B02020] font-mono text-2xl font-bold tabular-nums animate-shake";
 
   // P8: Demand-scaled glow on price
   const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(200,146,61,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
@@ -303,7 +303,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#0F1924]">{job.title}</h1>
                   {client && (
                     <div className="flex items-center gap-2 mt-3">
-                      <div className="w-8 h-8 bg-[rgba(200,146,61,0.10)] text-[#C8923D] text-xs font-semibold rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-[rgba(122,82,24,0.12)] text-[#7A5218] text-xs font-semibold rounded-full flex items-center justify-center">
                         {client.avatarInitial}
                       </div>
                       <div>
@@ -325,7 +325,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   const isMatch = currentUser?.skills?.includes(s);
                   return (
                     <span key={s} className={`px-2.5 py-1 rounded-md text-xs border ${
-                      isMatch ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30" : "bg-[#EDE8DC] border-[#BEB5A5] text-[#4A5568]"
+                      isMatch ? "bg-[#7A5218] text-white border-transparent" : "bg-[#EDE8DC] border-[#BEB5A5] text-[#4A5568]"
                     }`}>{isMatch && "✓ "}{s}</span>
                   );
                 })}
@@ -376,9 +376,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               {/* P8: Ember particles for hot jobs */}
               {isHot && (
                 <div className="absolute top-3 right-16 flex gap-2 pointer-events-none">
-                  <span className="text-[8px] text-orange-400 animate-ember opacity-70">✦</span>
-                  <span className="text-[8px] text-yellow-400 animate-ember opacity-50 [animation-delay:0.4s]">✦</span>
-                  <span className="text-[8px] text-orange-400 animate-ember opacity-60 [animation-delay:0.9s]">✦</span>
+                  <span className="text-[8px] text-[#C05B00] animate-ember opacity-70">✦</span>
+                  <span className="text-[8px] text-[#7A5218] animate-ember opacity-50 [animation-delay:0.4s]">✦</span>
+                  <span className="text-[8px] text-[#C05B00] animate-ember opacity-60 [animation-delay:0.9s]">✦</span>
                 </div>
               )}
 
@@ -388,7 +388,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="h-4 w-4 text-[#C8923D]" />
                     <p className="text-[#0F1924] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
-                    {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+                    {isHot && <span className="text-[11px] bg-[rgba(192,91,0,0.10)] text-[#C05B00] border border-[rgba(192,91,0,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                   </div>
                   {jobBids.length === 0 ? (
                     <p className="text-[#4A5568] text-sm">No bids yet.</p>
@@ -418,8 +418,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                         {bidder?.avatarInitial ?? "?"}
                                       </div>
                                       <span className="text-[#0F1924] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
-                                      {isBest && <span className="text-[9px] bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-1 font-bold shrink-0">★</span>}
-                                      {isNew && <span className="text-[9px] bg-[rgba(200,146,61,0.10)] text-[#C8923D] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
+                                      {isBest && <span className="text-[9px] bg-[#7A5218] text-white border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
+                                      {isNew && <span className="text-[9px] bg-[rgba(122,82,24,0.12)] text-[#7A5218] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
                                     </div>
                                   </td>
                                   <td className="py-3 px-2 text-right font-heading font-bold text-[#C8923D]">{formatMoney(bid.bidPrice)}</td>
@@ -472,7 +472,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     <div className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-[#C8923D]" />
                       <p className="text-[#0F1924] text-sm font-semibold">Live Bids ({jobBids.length})</p>
-                      {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+                      {isHot && <span className="text-[11px] bg-[rgba(192,91,0,0.10)] text-[#C05B00] border border-[rgba(192,91,0,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                     </div>
                     {isFreelancer && myRank !== null && (
                       <span className="text-[11px] text-[#C8923D] bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/30 rounded-full px-2.5 py-0.5">
@@ -511,10 +511,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className="text-sm font-medium text-[#0F1924]">{bidder?.fullName ?? "Freelancer"}</span>
-                                      {isNew && <span className="text-[9px] font-bold bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/40 rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
-                                      {tier && <span className="bg-[rgba(200,146,61,0.10)] text-[#C8923D] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
-                                      {isMyBid && <span className="text-[9px] font-bold bg-[rgba(200,146,61,0.10)] text-[#A67628] border border-[#C8923D]/20 rounded-full px-1.5 py-0.5">You</span>}
-                                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D]" : "bg-[rgba(200,146,61,0.10)] text-[#A67628]"}`}>{bid.bidType}</span>
+                                      {isNew && <span className="text-[9px] font-bold bg-[#7A5218] text-white border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
+                                      {tier && <span className="bg-[rgba(122,82,24,0.12)] text-[#7A5218] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
+                                      {isMyBid && <span className="text-[9px] font-bold bg-[rgba(200,146,61,0.10)] text-[#7A5218] border border-[#C8923D]/20 rounded-full px-1.5 py-0.5">You</span>}
+                                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(122,82,24,0.12)] text-[#7A5218]" : "bg-[rgba(200,146,61,0.10)] text-[#7A5218]"}`}>{bid.bidType}</span>
                                     </div>
                                     
                                     <p className="text-[11px] text-[#4A5568] mt-1">{timeAgo(bid.createdAt)}</p>
@@ -572,10 +572,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   {jobMilestones.map(ms => {
                     const statusColors: Record<string, string> = {
                       pending:     "text-[#4A5568] bg-[#D8D0C0] border-[#BEB5A5]",
-                      in_progress: "text-[#A67628] bg-[rgba(200,146,61,0.10)] border-[#C8923D]/20",
+                      in_progress: "text-[#7A5218] bg-[rgba(122,82,24,0.12)] border-[rgba(122,82,24,0.25)]",
                       submitted:   "text-[#7A5218] bg-[rgba(122,82,24,0.12)] border-[rgba(122,82,24,0.25)]",
                       approved:    "text-[#7A5218] bg-[rgba(122,82,24,0.10)] border-[rgba(122,82,24,0.25)]",
-                      disputed:    "text-red-400 bg-red-500/10 border-red-500/20",
+                      disputed:    "text-[#B02020] bg-[rgba(176,32,32,0.08)] border-[rgba(176,32,32,0.20)]",
                     };
                     return (
                       <div key={ms.id} className="glass-panel-sm rounded-xl p-4">
@@ -595,7 +595,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         <div className="flex gap-2 mt-2">
                           {isFreelancer && ms.status === "in_progress" && (
                             <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
-                              className="text-xs bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 px-3 py-1 rounded-lg hover:bg-[#E0A33E]/20 transition-colors">
+                              className="text-xs bg-[#7A5218] text-white border border-transparent px-3 py-1 rounded-lg hover:bg-[#E0A33E]/20 transition-colors">
                               Submit
                             </button>
                           )}
@@ -646,7 +646,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   {job.lowestCounterBid && (
                     <div className="flex justify-between items-center">
                       <span className="text-[#4A5568] text-xs">Lowest Counter</span>
-                      <span className="text-[#A67628] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
+                      <span className="text-[#7A5218] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
                     </div>
                   )}
                   {job.lastBidAt && (
@@ -778,7 +778,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
               {/* P0: Urgency countdown */}
               <div className="flex items-center gap-1.5 mt-2">
-                <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-red-400" : deadlineHrs < 6 ? "text-orange-400" : "text-[#253444]"}`} />
+                <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-[#B02020]" : deadlineHrs < 6 ? "text-[#C05B00]" : "text-[#253444]"}`} />
                 {isAtFloor ? (
                   <span className="text-[#253444] text-sm">At floor price</span>
                 ) : (
@@ -856,7 +856,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#7A5218]/20"}`}
                         >
                           <p className="text-[11px] text-[#4A5568] font-semibold">Competitive</p>
-                          <p className="font-heading text-base font-bold text-[#A67628]">{formatMoney(competitiveBid)}</p>
+                          <p className="font-heading text-base font-bold text-[#7A5218]">{formatMoney(competitiveBid)}</p>
                           <p className="text-[9px] text-[#4A5568] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
                         </button>
                       </div>
@@ -917,7 +917,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       />
                     </div>
 
-                    {counterError && <p className="text-red-400 text-xs">{counterError}</p>}
+                    {counterError && <p className="text-[#B02020] text-xs">{counterError}</p>}
                     <button onClick={handleCounter}
                       className="btn-glass w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
                       <Send className="h-4 w-4" /> Submit Counter-Bid

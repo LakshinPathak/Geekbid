@@ -162,7 +162,7 @@ export default function MyJobsPage() {
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                     <span className={`rounded-full text-[11px] font-medium px-3 py-1 border ${
                       isOpen
-                        ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30"
+                        ? "bg-[#7A5218] text-white border-transparent"
                         : "bg-[#8A8A9A]/10 text-[#253444] border-[#8A8A9A]/20"
                     }`}>
                       {isOpen ? "Live" : "Completed"}
