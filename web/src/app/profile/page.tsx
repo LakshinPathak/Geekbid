@@ -40,7 +40,7 @@ function GeekScoreRing({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-heading text-lg font-bold" style={{ color: tierColor }}>{score}</span>
-        <span className="text-[10px] text-[#3D4E5C]">GS™</span>
+        <span className="text-[10px] text-[#253444]">GS™</span>
       </div>
     </div>
   );
@@ -155,13 +155,13 @@ export default function ProfilePage() {
 
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="font-heading text-3xl font-bold text-[#182739] flex items-center justify-center sm:justify-start gap-2">
+              <h1 className="font-heading text-3xl font-bold text-[#0F1924] flex items-center justify-center sm:justify-start gap-2">
                 {currentUser.fullName}
                 {currentUser.isVerified && (
                   <CheckCircle2 className="h-5 w-5 text-[#7A5218]" />
                 )}
               </h1>
-              <p className="text-[#3D4E5C] text-sm mt-0.5">{currentUser.email}</p>
+              <p className="text-[#253444] text-sm mt-0.5">{currentUser.email}</p>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
                 <span className="badge-active capitalize">
                   {currentUser.role}
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-medium border ${
                     currentUser.availability === "available" ? "bg-[#7A5218] text-white border-transparent" :
                     currentUser.availability === "part-time" ? "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]" :
-                    "bg-red-500/10 text-red-400 border-red-500/20"
+                    "bg-[rgba(176,32,32,0.08)] text-[#B02020] border-[rgba(176,32,32,0.20)]"
                   }`}>
                     {currentUser.availability}
                   </span>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
             {isFreelancer && (
               <div className="text-center shrink-0">
                 <GeekScoreRing score={currentUser.geekScore ?? 0} />
-                <p className="text-[#7B8694] text-xs font-medium mt-1">
+                <p className="text-[#4A5568] text-xs font-medium mt-1">
                   <span style={{ color: tier.color }}>{tier.label}</span>
                 </p>
               </div>
@@ -198,9 +198,9 @@ export default function ProfilePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
             {stats.map(s => (
               <div key={s.label} className="glass-panel-sm rounded-xl p-3 text-center">
-                <s.icon className="h-4 w-4 text-[#3D4E5C] mx-auto mb-1.5" />
-                <p className="font-heading text-lg font-bold text-[#182739]">{s.value}</p>
-                <p className="text-[11px] text-[#7B8694]">{s.label}</p>
+                <s.icon className="h-4 w-4 text-[#253444] mx-auto mb-1.5" />
+                <p className="font-heading text-lg font-bold text-[#0F1924]">{s.value}</p>
+                <p className="text-[11px] text-[#4A5568]">{s.label}</p>
               </div>
             ))}
           </div>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
             <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
               <div className="flex items-center gap-2 mb-4">
                 <Star className="h-4 w-4 text-[#7A5218]" />
-                <h2 className="font-heading text-lg font-semibold text-[#182739]">
+                <h2 className="font-heading text-lg font-semibold text-[#0F1924]">
                   Reviews ({myReviews.length})
                 </h2>
                 {currentUser.averageRating && (
@@ -235,8 +235,8 @@ export default function ProfilePage() {
                             {reviewer?.avatarInitial ?? "?"}
                           </div>
                           <div>
-                            <p className="text-[#182739] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
-                            <p className="text-[#3D4E5C] text-xs capitalize">{review.reviewerRole}</p>
+                            <p className="text-[#0F1924] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
+                            <p className="text-[#253444] text-xs capitalize">{review.reviewerRole}</p>
                           </div>
                         </div>
                         <div className="flex gap-0.5">
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                           ))}
                         </div>
                       </div>
-                      {review.comment && <p className="text-[#3D4E5C] text-sm">{review.comment}</p>}
+                      {review.comment && <p className="text-[#253444] text-sm">{review.comment}</p>}
                     </div>
                   );
                 })}
@@ -259,10 +259,10 @@ export default function ProfilePage() {
           <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
             <div className="flex items-center gap-2 mb-4">
               <Share2 className="h-4 w-4 text-[#7A5218]" />
-              <h2 className="font-heading text-lg font-semibold text-[#182739]">Referral Program</h2>
+              <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Referral Program</h2>
             </div>
             <div className="glass-panel-sm rounded-xl p-4 mb-4">
-              <p className="text-[#3D4E5C] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
+              <p className="text-[#253444] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
               <div className="flex gap-2">
                 <input
                   readOnly
@@ -279,7 +279,7 @@ export default function ProfilePage() {
                   <Copy className="h-3.5 w-3.5" /> Copy
                 </button>
               </div>
-              <p className="text-[#7B8694] text-xs mt-2">Code: <span className="text-[#7A5218] font-mono-il">{referralStats.referralCode}</span></p>
+              <p className="text-[#4A5568] text-xs mt-2">Code: <span className="text-[#7A5218] font-mono-il">{referralStats.referralCode}</span></p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
@@ -289,9 +289,9 @@ export default function ProfilePage() {
                 { label: "Credits", value: `$${referralStats.totalCredits}`, icon: DollarSign },
               ].map(s => (
                 <div key={s.label} className="glass-panel-sm rounded-xl p-3 text-center">
-                  <s.icon className="h-4 w-4 text-[#3D4E5C] mx-auto mb-1.5" />
-                  <p className="font-heading text-lg font-bold text-[#182739]">{s.value}</p>
-                  <p className="text-[11px] text-[#7B8694]">{s.label}</p>
+                  <s.icon className="h-4 w-4 text-[#253444] mx-auto mb-1.5" />
+                  <p className="font-heading text-lg font-bold text-[#0F1924]">{s.value}</p>
+                  <p className="text-[11px] text-[#4A5568]">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -302,16 +302,16 @@ export default function ProfilePage() {
         <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
           <div className="flex items-center gap-2 mb-6">
             <Pencil className="h-4 w-4 text-[#7A5218]" />
-            <h2 className="font-heading text-lg font-semibold text-[#182739]">Edit Profile</h2>
+            <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Edit Profile</h2>
           </div>
 
           {/* Section 1 — Personal Info */}
           <p className="text-[#7A5218] text-xs uppercase tracking-wider font-semibold mb-4">Personal Info</p>
           <div className="space-y-4">
             <div>
-              <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">Full Name</label>
+              <label className="text-[#253444] text-xs font-medium mb-1.5 block">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3D4E5C]" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#253444]" />
                 <input
                   value={fullName} onChange={e => setFullName(e.target.value)}
                   className="w-full h-11 glass-input rounded-xl text-sm"
@@ -322,7 +322,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">Bio</label>
+              <label className="text-[#253444] text-xs font-medium mb-1.5 block">Bio</label>
               <textarea
                 value={bio} onChange={e => setBio(e.target.value)} rows={3}
                 className="w-full p-3 glass-input rounded-xl text-sm resize-none"
@@ -332,9 +332,9 @@ export default function ProfilePage() {
 
             {currentUser.role === "client" && (
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">Company</label>
+                <label className="text-[#253444] text-xs font-medium mb-1.5 block">Company</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                   <input
                     value={company} onChange={e => setCompany(e.target.value)}
                     className="w-full h-11 glass-input rounded-xl text-sm"
@@ -354,7 +354,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 {/* Skills */}
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium mb-2 block">Skills</label>
+                  <label className="text-[#253444] text-xs font-medium mb-2 block">Skills</label>
                   {skills.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {skills.map(s => (
@@ -380,9 +380,9 @@ export default function ProfilePage() {
                 {/* Hourly Rate */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
+                    <label className="text-[#253444] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                       <input type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
                         className="w-full h-11 glass-input rounded-xl text-sm"
                         style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -390,9 +390,9 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
+                    <label className="text-[#253444] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                       <input type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
                         className="w-full h-11 glass-input rounded-xl text-sm"
                         style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -403,7 +403,7 @@ export default function ProfilePage() {
 
                 {/* Availability */}
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium mb-2 block">Availability</label>
+                  <label className="text-[#253444] text-xs font-medium mb-2 block">Availability</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {([
                       { value: "available", label: "Available", dot: "bg-[#C8923D]" },
@@ -413,8 +413,8 @@ export default function ProfilePage() {
                       <button key={opt.value} onClick={() => setAvailability(opt.value)}
                         className={`p-3 rounded-xl border text-center text-sm transition-all duration-300 ${
                           availability === opt.value
-                            ? "border-[#7A5218] bg-[rgba(122,82,24,0.10)] text-[#182739] shadow-[var(--shadow-accent)]"
-                            : "border-[#E4DDD0] bg-[#EDE8DC]/50 text-[#3D4E5C] hover:border-[#C8923D]/40"
+                            ? "border-[#7A5218] bg-[rgba(122,82,24,0.10)] text-[#0F1924] shadow-[var(--shadow-accent)]"
+                            : "border-[#BEB5A5] bg-[#EDE8DC]/50 text-[#253444] hover:border-[#C8923D]/40"
                         }`}>
                         <div className={`h-2 w-2 rounded-full ${opt.dot} mx-auto mb-1.5`} />
                         {opt.label}
@@ -425,10 +425,10 @@ export default function ProfilePage() {
 
                 {/* GitHub */}
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium mb-1.5 block">GitHub Username</label>
+                  <label className="text-[#253444] text-xs font-medium mb-1.5 block">GitHub Username</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                      <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                       <input
                         value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
                         className="w-full h-11 glass-input rounded-xl text-sm"
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-3 mt-2 p-3 bg-[rgba(122,82,24,0.08)] border border-[#7A5218]/30 rounded-xl">
                       <CheckCircle2 className="h-4 w-4 text-[#7A5218]" />
                       <span className="text-[#7A5218] text-xs font-medium">Verified</span>
-                      <span className="text-[#3D4E5C] text-xs">
+                      <span className="text-[#253444] text-xs">
                         {currentUser.githubData?.publicRepos ?? 0} repos · {currentUser.githubData?.followers ?? 0} followers
                       </span>
                     </div>
@@ -468,15 +468,15 @@ export default function ProfilePage() {
           <div className="h-px bg-[#BEB5A5] my-6" />
           <p className="text-[#7A5218] text-xs uppercase tracking-wider font-semibold mb-4">Account</p>
 
-          <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+          <div className="bg-red-500/5 border border-[rgba(176,32,32,0.20)] rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-[#B02020] shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-400">Delete Account</p>
-                <p className="text-xs text-[#3D4E5C] mt-0.5">This action is irreversible. All your data will be permanently removed.</p>
+                <p className="text-sm font-medium text-[#B02020]">Delete Account</p>
+                <p className="text-xs text-[#253444] mt-0.5">This action is irreversible. All your data will be permanently removed.</p>
                 {!showDeleteConfirm ? (
                   <button onClick={() => setShowDeleteConfirm(true)}
-                    className="mt-3 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-4 py-2 rounded-lg text-xs font-medium transition-colors">
+                    className="mt-3 bg-[rgba(176,32,32,0.08)] text-[#B02020] border border-[rgba(176,32,32,0.20)] hover:bg-red-500/20 px-4 py-2 rounded-lg text-xs font-medium transition-colors">
                     Delete Account
                   </button>
                 ) : (
@@ -485,7 +485,7 @@ export default function ProfilePage() {
                       Confirm Delete
                     </button>
                     <button onClick={() => setShowDeleteConfirm(false)}
-                      className="text-[#3D4E5C] text-xs hover:text-[#182739] transition-colors">
+                      className="text-[#253444] text-xs hover:text-[#0F1924] transition-colors">
                       Cancel
                     </button>
                   </div>

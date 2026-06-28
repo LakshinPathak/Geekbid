@@ -185,7 +185,7 @@ const STEPS = [
     title: "Escrow & Deliver",
     desc: "Payment locks in escrow automatically. Release funds when the work ships. Dispute resolution if needed.",
     icon: Lock,
-    accent: "bg-[#D8D0C0] text-[#253444] border-purple-500/20",
+    accent: "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]",
   },
 ];
 

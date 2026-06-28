@@ -105,7 +105,7 @@ export default function SettingsPage() {
           </div>
 
           {newKeyValue && (
-            <div className="mt-4 bg-yellow-500/5 border border-[rgba(122,82,24,0.25)] rounded-xl p-4 animate-fade-in-up">
+            <div className="mt-4 bg-[rgba(122,82,24,0.07)] border border-[rgba(122,82,24,0.25)] rounded-xl p-4 animate-fade-in-up">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-[#7A5218]" />
                 <p className="text-[#7A5218] text-xs font-semibold">Copy this key now — it won&apos;t be shown again</p>

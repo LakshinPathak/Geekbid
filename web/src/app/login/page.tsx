@@ -12,11 +12,11 @@ import {
 function PasswordStrength({ password }: { password: string }) {
   const len = password.length;
   const level = len === 0 ? 0 : len < 6 ? 1 : len < 10 ? 2 : 3;
-  const colors = ["bg-[#F5F2EA]", "bg-red-500", "bg-yellow-500", "bg-[#C8923D]"];
+  const colors = ["bg-[#D8D0C0]", "bg-red-500", "bg-yellow-500", "bg-[#C8923D]"];
   return (
     <div className="flex gap-1 mt-1.5">
       {[1, 2, 3].map(i => (
-        <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= level ? colors[level] : "bg-[#F5F2EA]"}`} />
+        <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= level ? colors[level] : "bg-[#D8D0C0]"}`} />
       ))}
     </div>
   );
@@ -102,21 +102,21 @@ function LoginPageContent() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#C8923D] text-white animate-pulse-glow">
               <Zap className="h-4 w-4" />
             </div>
-            <span className="font-heading text-2xl font-bold text-[#182739]">
+            <span className="font-heading text-2xl font-bold text-[#0F1924]">
               Geek<span className="text-[#C8923D]">.</span>Bid
             </span>
           </Link>
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col justify-center">
-          <h1 className="font-heading text-4xl xl:text-5xl font-bold text-[#182739] leading-tight mt-8">
+          <h1 className="font-heading text-4xl xl:text-5xl font-bold text-[#0F1924] leading-tight mt-8">
             The marketplace where{" "}
             <span className="text-gradient">prices go down.</span>
           </h1>
 
           <div className="flex flex-col gap-3 mt-8">
             {["Reverse auction pricing", "Escrow-protected payments", "Real-time price decay"].map(f => (
-              <div key={f} className="flex items-center gap-2.5 text-[#3D4E5C] text-sm">
+              <div key={f} className="flex items-center gap-2.5 text-[#253444] text-sm">
                 <span className="text-[#C8923D]">✦</span>
                 {f}
               </div>
@@ -132,13 +132,13 @@ function LoginPageContent() {
                 <TrendingDown className="h-4 w-4 text-[#C8923D]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-[#182739]">AI Chatbot Build</p>
-                <p className="text-xs text-[#7B8694]">Live auction</p>
+                <p className="text-sm font-medium text-[#0F1924]">AI Chatbot Build</p>
+                <p className="text-xs text-[#4A5568]">Live auction</p>
               </div>
             </div>
             <div className="text-right">
               <p className="font-heading text-lg font-bold text-[#C8923D]">$647</p>
-              <p className="text-xs text-red-400/70">-$15/hr</p>
+              <p className="text-xs text-[#B02020]/80">-$15/hr</p>
             </div>
           </div>
         </div>
@@ -153,7 +153,7 @@ function LoginPageContent() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#C8923D] text-white">
                 <Zap className="h-4 w-4" />
               </div>
-              <span className="font-heading text-xl font-bold text-[#182739]">
+              <span className="font-heading text-xl font-bold text-[#0F1924]">
                 Geek<span className="text-[#C8923D]">.</span>Bid
               </span>
             </Link>
@@ -176,10 +176,10 @@ function LoginPageContent() {
           </div>
 
           {/* Form heading */}
-          <h2 className="font-heading text-2xl font-bold text-[#182739]">
+          <h2 className="font-heading text-2xl font-bold text-[#0F1924]">
             {mode === "login" ? "Welcome back." : "Create your account."}
           </h2>
-          <p className="text-[#3D4E5C] text-sm mt-1">
+          <p className="text-[#253444] text-sm mt-1">
             {mode === "login" ? "Enter your credentials to continue" : "Get started with GeekBid today"}
           </p>
 
@@ -188,9 +188,9 @@ function LoginPageContent() {
               <>
                 {/* Full name */}
                 <div>
-                  <label className="text-xs font-medium text-[#7B8694] mb-1.5 block uppercase tracking-wider">Full Name</label>
+                  <label className="text-xs font-medium text-[#4A5568] mb-1.5 block uppercase tracking-wider">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                     <input
                       placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
                       className="w-full h-12 glass-input rounded-xl text-sm"
@@ -201,7 +201,7 @@ function LoginPageContent() {
 
                 {/* Role selector */}
                 <div>
-                  <label className="text-xs font-medium text-[#7B8694] mb-1.5 block uppercase tracking-wider">I am a...</label>
+                  <label className="text-xs font-medium text-[#4A5568] mb-1.5 block uppercase tracking-wider">I am a...</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setRole("client")}
                       className={`border rounded-xl p-4 text-center cursor-pointer transition-all duration-300 ${
@@ -209,9 +209,9 @@ function LoginPageContent() {
                           ? "border-[#C8923D] bg-[rgba(200,146,61,0.10)] shadow-[var(--shadow-accent)]"
                           : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#C8923D]"
                       }`}>
-                      <Briefcase className={`h-5 w-5 mx-auto mb-1.5 ${role === "client" ? "text-[#C8923D]" : "text-[#3D4E5C]"}`} />
-                      <p className={`text-sm font-medium ${role === "client" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>I&apos;m a Client</p>
-                      <p className="text-[#7B8694] text-xs mt-0.5">I need to hire</p>
+                      <Briefcase className={`h-5 w-5 mx-auto mb-1.5 ${role === "client" ? "text-[#C8923D]" : "text-[#253444]"}`} />
+                      <p className={`text-sm font-medium ${role === "client" ? "text-[#0F1924]" : "text-[#253444]"}`}>I&apos;m a Client</p>
+                      <p className="text-[#4A5568] text-xs mt-0.5">I need to hire</p>
                     </button>
                     <button type="button" onClick={() => setRole("freelancer")}
                       className={`border rounded-xl p-4 text-center cursor-pointer transition-all duration-300 ${
@@ -219,9 +219,9 @@ function LoginPageContent() {
                           ? "border-[#C8923D] bg-[rgba(200,146,61,0.10)] shadow-[var(--shadow-accent)]"
                           : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#C8923D]"
                       }`}>
-                      <Code className={`h-5 w-5 mx-auto mb-1.5 ${role === "freelancer" ? "text-[#C8923D]" : "text-[#3D4E5C]"}`} />
-                      <p className={`text-sm font-medium ${role === "freelancer" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>I&apos;m a Freelancer</p>
-                      <p className="text-[#7B8694] text-xs mt-0.5">I want to work</p>
+                      <Code className={`h-5 w-5 mx-auto mb-1.5 ${role === "freelancer" ? "text-[#C8923D]" : "text-[#253444]"}`} />
+                      <p className={`text-sm font-medium ${role === "freelancer" ? "text-[#0F1924]" : "text-[#253444]"}`}>I&apos;m a Freelancer</p>
+                      <p className="text-[#4A5568] text-xs mt-0.5">I want to work</p>
                     </button>
                   </div>
                 </div>
@@ -230,9 +230,9 @@ function LoginPageContent() {
 
             {/* Email */}
             <div>
-              <label className="text-xs font-medium text-[#7B8694] mb-1.5 block uppercase tracking-wider">Email</label>
+              <label className="text-xs font-medium text-[#4A5568] mb-1.5 block uppercase tracking-wider">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                 <input
                   type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
                   className="w-full h-12 glass-input rounded-xl text-sm"
@@ -244,19 +244,19 @@ function LoginPageContent() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-[#7B8694] uppercase tracking-wider">Password</label>
+                <label className="text-xs font-medium text-[#4A5568] uppercase tracking-wider">Password</label>
                 {mode === "login" && (
                   <button type="button" className="text-[#C8923D] text-xs hover:text-[#E0A33E] transition-colors">Forgot password?</button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                 <input
                   type={showPwd ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
                   className="w-full h-12 glass-input rounded-xl text-sm"
                   style={{ paddingLeft: '44px', paddingRight: '44px' }}
                 />
-                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#7B8694] hover:text-[#3D4E5C] transition-colors">
+                <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4A5568] hover:text-[#253444] transition-colors">
                   {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
@@ -265,7 +265,7 @@ function LoginPageContent() {
 
             {/* Error / Success */}
             {error && (
-              <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 animate-fade-in-up">
+              <div className="flex items-center gap-2 text-sm text-[#B02020] bg-[rgba(176,32,32,0.08)] border border-[rgba(176,32,32,0.20)] rounded-xl px-4 py-3 animate-fade-in-up">
                 <span>✗</span> {error}
               </div>
             )}
@@ -285,7 +285,7 @@ function LoginPageContent() {
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-[#BEB5A5]" />
-            <span className="text-xs text-[#7B8694]">or</span>
+            <span className="text-xs text-[#4A5568]">or</span>
             <div className="flex-1 h-px bg-[#BEB5A5]" />
           </div>
 
@@ -300,7 +300,7 @@ function LoginPageContent() {
           </button>
 
           {/* Switch mode */}
-          <p className="text-center text-sm text-[#3D4E5C] mt-6">
+          <p className="text-center text-sm text-[#253444] mt-6">
             {mode === "login" ? "New to GeekBid?" : "Already have an account?"}{" "}
             <button onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
               className="text-[#C8923D] font-semibold hover:text-[#E0A33E] transition-colors">
@@ -309,7 +309,7 @@ function LoginPageContent() {
           </p>
 
           {/* Terms */}
-          <p className="text-[#7B8694] text-xs mt-6 text-center">
+          <p className="text-[#4A5568] text-xs mt-6 text-center">
             By continuing, you agree to our{" "}
             <span className="text-[#C8923D] hover:underline cursor-pointer">Terms</span> and{" "}
             <span className="text-[#C8923D] hover:underline cursor-pointer">Privacy Policy</span>.

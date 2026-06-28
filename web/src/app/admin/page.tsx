@@ -255,7 +255,7 @@ export default function AdminPage() {
                     </div>
                     <p className="text-xs text-[#253444] truncate">{u.email}</p>
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border capitalize ${
-                      u.role === "admin" ? "bg-[#D8D0C0] text-[#253444] border-purple-500/20" :
+                      u.role === "admin" ? "bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]" :
                       u.role === "freelancer" ? "badge-active" :
                       "bg-[rgba(200,146,61,0.10)] text-[#A67628] border-[#C8923D]/20"
                     }`}>{u.role}</span>

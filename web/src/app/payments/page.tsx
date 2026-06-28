@@ -311,7 +311,7 @@ export default function PaymentsPage() {
 
         {/* Make Payment Section */}
         <div className="finance-card scanline overflow-hidden mb-8">
-          <div className="border-b border-[rgba(59,75,61,0.3)] px-4 sm:px-6 py-4">
+          <div className="border-b border-[#BEB5A5] px-4 sm:px-6 py-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-[#C8923D]" />
               <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Fund Escrow</h2>
@@ -405,7 +405,7 @@ export default function PaymentsPage() {
 
         {/* Transaction History */}
         <div className="glass-panel overflow-hidden">
-          <div className="border-b border-[rgba(59,75,61,0.3)] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="border-b border-[#BEB5A5] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Transaction History</h2>
               <p className="text-sm text-[#253444] mt-0.5">{typedTransactions.length} transaction{typedTransactions.length !== 1 ? "s" : ""}</p>
@@ -445,7 +445,7 @@ export default function PaymentsPage() {
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 sm:px-6 py-3 bg-[#EDE8DC]/60 text-[#4A5568] text-xs uppercase tracking-wider font-semibold border-b border-[rgba(59,75,61,0.3)]">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 sm:px-6 py-3 bg-[#EDE8DC]/60 text-[#4A5568] text-xs uppercase tracking-wider font-semibold border-b border-[#BEB5A5]">
                 <span>Transaction</span>
                 <span className="text-right w-20">Amount</span>
                 <span className="text-right w-16">Fee</span>
@@ -463,7 +463,7 @@ export default function PaymentsPage() {
                     <div className="sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto_auto] sm:gap-4 sm:items-center">
                       {/* Transaction info */}
                       <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D8D0C0] border border-[rgba(59,75,61,0.3)] shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D8D0C0] border border-[#BEB5A5] shrink-0">
                           {tx.paymentMethod === "razorpay" ? (
                             <CreditCard className="h-4 w-4 text-[#253444]" />
                           ) : (

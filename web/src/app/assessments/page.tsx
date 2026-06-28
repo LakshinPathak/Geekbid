@@ -142,7 +142,7 @@ export default function AssessmentsPage() {
               <p className="text-[#253444] text-sm">Question {currentQ + 1} of {quiz.questions.length}</p>
             </div>
             <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border glass-panel-sm ${
-              timeLeft < 60 ? "!border-red-500/30 text-[#B02020]" : "text-[#253444]"
+              timeLeft < 60 ? "!border-[rgba(176,32,32,0.30)] text-[#B02020]" : "text-[#253444]"
             }`}>
               <Timer className="h-4 w-4" />
               <span className="font-mono text-lg font-bold">{mins}:{secs.toString().padStart(2, "0")}</span>
