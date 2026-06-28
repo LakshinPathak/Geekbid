@@ -24,7 +24,7 @@ function GeekScoreRing({ score }: { score: number }) {
  "#fb923c";
 
  return (
- <div className="relative w-24 h-24 mx-auto">
+ <div className="bg-[#080b14] relative w-24 h-24 mx-auto">
  <svg width="96" height="96" viewBox="0 0 100 100" className="-rotate-90">
  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(59,75,61,0.3)" strokeWidth="6" />
  <circle

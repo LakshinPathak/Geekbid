@@ -30,7 +30,7 @@ function PopoverContent({
  align={align}
  sideOffset={sideOffset}
  className={cn(
- "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-[3px] border bg-popover p-4 text-popover-foreground outline-hidden data-[side=bottom]:slide-in--2 data-[side=left]:slide-in--2 data-[side=right]:slide-in--2 data-[side=top]:slide-in--2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+ "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-[3px] border bg-[#0d1120] p-4 text-[#f0e8d4] outline-hidden data-[side=bottom]:slide-in--2 data-[side=left]:slide-in--2 data-[side=right]:slide-in--2 data-[side=top]:slide-in--2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
  className
  )}
  {...props}
@@ -72,7 +72,7 @@ function PopoverDescription({
  return (
  <p
  data-slot="popover-description"
- className={cn("text-muted-foreground", className)}
+ className={cn("text-[#a8997e]", className)}
  {...props}
  />
  )

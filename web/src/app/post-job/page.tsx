@@ -141,7 +141,7 @@ function DecayCurvePreview({
  const savingsPercent = ((startingPrice - scrubPrice) / startingPrice * 100).toFixed(0);
 
  return (
- <div className="glass-card scanline">
+ <div className="bg-[#080b14] glass-card scanline">
  {/* Header */}
  <div className="flex items-center justify-between mb-4">
  <div className="flex items-center gap-2">

@@ -2,8 +2,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* ── Royal Dark — explicit hex, not hsl() strings ── */
+  --color-background: #080b14;
+  --color-foreground: #f0e8d4;
+  --color-card: #0d1120;
+  --color-card-foreground: #f0e8d4;
+  --color-popover: #0d1120;
+  --color-popover-foreground: #f0e8d4;
+  --color-primary: #c9a84c;
+  --color-primary-foreground: #050810;
+  --color-secondary: #111625;
+  --color-secondary-foreground: #f0e8d4;
+  --color-muted: #111625;
+  --color-muted-foreground: #a8997e;
+  --color-accent: #c9a84c;
+  --color-accent-foreground: #050810;
+  --color-destructive: #c0392b;
+  --color-border: rgba(201,168,76,0.22);
+  --color-input: #0a0e1a;
+  --color-ring: #c9a84c;
   --radius-sm: 2px;
   --radius-md: 3px;
   --radius-lg: 6px;

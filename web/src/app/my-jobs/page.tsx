@@ -62,7 +62,7 @@ export default function MyJobsPage() {
 
  if (!mounted) return (
  <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
- <div className="h-8 w-8 border-2 border-[#c9a84c]/40 border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="bg-[#080b14] h-8 w-8 border-2 border-[#c9a84c]/40 border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
 

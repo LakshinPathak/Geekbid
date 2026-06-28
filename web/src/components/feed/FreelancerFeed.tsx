@@ -234,7 +234,7 @@ export default function FreelancerFeed() {
  const hasAdvancedFilters = filterBudget || filterCompetition || filterHourlyRate;
 
  if (!mounted) return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120]">
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#080b14]">
  <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
