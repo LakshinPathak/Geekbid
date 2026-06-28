@@ -148,7 +148,7 @@ function DecayCurvePreview({
  <TrendingDown className="h-4 w-4 text-[#c9a84c]" />
  <p className="text-[#a8997e] text-xs font-semibold uppercase tracking-wider font-heading">Decay Curve Preview</p>
  </div>
- <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.30)]">
+ <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.30)]">
  <div className="h-1.5 w-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
  <span className="text-[11px] text-[#c9a84c] font-semibold">INTERACTIVE</span>
  </div>
@@ -318,7 +318,7 @@ function DecayCurvePreview({
  <span className="text-[11px] text-[#a8997e]">Fixed decay</span>
  </div>
  <div className="flex items-center gap-2">
- <div className="w-5 h-[2px] rounded-[3px]" style={{ }} />
+ <div className="w-5 h-[2px] rounded-[3px]" style={{ background: 'linear-gradient(90deg, #38BDF8, #818CF8)' }} />
  <span className="text-[11px] text-[#a8997e]">Adaptive (3 bidders)</span>
  </div>
  </div>
@@ -432,22 +432,22 @@ export default function PostJobPage() {
  };
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#0d1120] flex items-center justify-center">
+ <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
  <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
- <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-8">
  {/* Back link */}
  <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Feed
  </Link>
 
  {/* Header */}
- <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4]">Post a New Job</h1>
- <p className="text-[#a8997e] text-sm mt-1">Set your starting price and let the market find the true value.</p>
+ <h1 className="font-serif font-normal text-2xl sm:text-3xl text-[#f0e8d4]">Post a New Job</h1>
+ <p className="text-[#a8997e] text-sm mt-1 font-sans">Set your starting price and let the market find the true value.</p>
 
  {/* Progress bar */}
  <div className="mt-8 mb-2">
@@ -473,7 +473,7 @@ export default function PostJobPage() {
  </div>
 
  {/* Form card */}
- <div className="wizard-step p-6 sm:p-8">
+ <div className="wizard-step p-6 sm:p-8 scanline">
  {/* Step 1: Project Details */}
  {step === 1 && (
  <div className="space-y-6">
@@ -492,15 +492,18 @@ export default function PostJobPage() {
 
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Category *</label>
- <select
- value={category}
- onChange={e => setCategory(e.target.value as JobCategory)}
- className="glass-input w-full appearance-none cursor-pointer"
- >
- {JOB_CATEGORIES.map(c => (
- <option key={c.value} value={c.value}>{c.label}</option>
- ))}
- </select>
+  <div className="relative">
+  <select
+  value={category}
+  onChange={e => setCategory(e.target.value as JobCategory)}
+  className="glass-input w-full appearance-none cursor-pointer pr-10"
+  >
+  {JOB_CATEGORIES.map(c => (
+  <option key={c.value} value={c.value}>{c.label}</option>
+  ))}
+  </select>
+  <ArrowRight className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e] rotate-90 pointer-events-none" />
+  </div>
  </div>
 
  <div>
@@ -520,7 +523,7 @@ export default function PostJobPage() {
  {skills.length > 0 && (
  <div className="flex flex-wrap gap-1.5 mb-3">
  {skills.map(s => (
- <span key={s} className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">
+ <span key={s} className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#050810] border border-transparent rounded-[3px] px-3 py-0.5 text-xs font-sans font-semibold">
  {s}
  <button onClick={() => toggleSkill(s)} className="hover:text-[#f0e8d4] transition-colors"><X className="h-3 w-3" /></button>
  </span>
@@ -534,7 +537,7 @@ export default function PostJobPage() {
  placeholder="Search skills..."
  className="glass-input w-full h-9 px-3 mb-2 text-xs"
  />
- <div className="max-h-[160px] overflow-y-auto flex flex-wrap gap-1.5">
+ <div className="max-h-[180px] overflow-y-auto flex flex-wrap gap-1.5 pb-1">
  {filteredSkills.map(s => (
  <button
  key={s}
@@ -598,7 +601,7 @@ export default function PostJobPage() {
  <div className="flex items-center gap-2 mb-1">
  <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#c9a84c]" : "text-[#a8997e]"}`} />
  <p className={`text-sm font-semibold ${pricingMode === "adaptive" ? "text-[#f0e8d4]" : "text-[#a8997e]"}`}>Adaptive</p>
- <span className="text-[11px] bg-[#c9a84c]/20 text-[#c9a84c] px-1.5 py-0.5 rounded-full font-medium">Recommended</span>
+ <span className="text-[11px] bg-[#c9a84c]/20 text-[#c9a84c] px-1.5 py-0.5 rounded-[3px] font-sans font-medium">Recommended</span>
  </div>
  <p className="text-[#a8997e] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
  </button>
@@ -678,22 +681,22 @@ export default function PostJobPage() {
 
  {/* Pricing Hint */}
  {pricingHint?.available && (
- <div className="bg-blue-500/5 border border-[rgba(201,168,76,0.22)] rounded-[6px] p-4">
+ <div className="bg-[rgba(201,168,76,0.05)] border border-[rgba(201,168,76,0.22)] rounded-[6px] p-4">
  <p className="text-[#c9a84c] text-xs font-semibold mb-2 flex items-center gap-1.5">
  <TrendingDown className="h-3.5 w-3.5" /> Based on {pricingHint.sampleSize} similar job{pricingHint.sampleSize !== 1 ? "s" : ""}
  </p>
  <div className="grid grid-cols-3 gap-3">
  <div>
  <p className="text-[#a8997e] text-[11px]">Avg Final Price</p>
- <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.avgFinalPrice}</p>
+ <p className="font-serif font-normal text-lg text-[#f0e8d4]">${pricingHint.avgFinalPrice}</p>
  </div>
  <div>
  <p className="text-[#a8997e] text-[11px]">Price Range</p>
- <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
+ <p className="font-serif font-normal text-lg text-[#f0e8d4]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
  </div>
  <div>
  <p className="text-[#a8997e] text-[11px]">Avg Decay Rate</p>
- <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.avgDecayRate}/hr</p>
+ <p className="font-serif font-normal text-lg text-[#f0e8d4]">${pricingHint.avgDecayRate}/hr</p>
  </div>
  </div>
  </div>
@@ -748,7 +751,7 @@ export default function PostJobPage() {
  <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
  <div className="flex flex-wrap gap-1.5">
  {skills.length > 0 ? skills.map(s => (
- <span key={s} className="bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">{s}</span>
+ <span key={s} className="bg-[#c9a84c] text-[#050810] border border-transparent rounded-[3px] px-3 py-0.5 text-xs font-sans font-semibold">{s}</span>
  )) : (
  <span className="text-[#a8997e] text-xs">None selected</span>
  )}
@@ -757,7 +760,7 @@ export default function PostJobPage() {
  <div className="h-px bg-[rgba(201,168,76,0.15)]" />
  <div>
  <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Category</p>
- <span className="inline-block mt-1 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">
+ <span className="inline-block mt-1 bg-[#c9a84c] text-[#050810] border border-transparent rounded-[3px] px-3 py-0.5 text-xs font-sans font-semibold">
  {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
  </span>
  </div>
@@ -768,14 +771,14 @@ export default function PostJobPage() {
  {[
  { label: "Starting", value: formatMoney(startingPrice), color: "text-[#f0e8d4]" },
  { label: "Floor", value: formatMoney(minimumPrice), color: "text-[#f0e8d4]" },
- { label: "Decay Rate", value: `$${decayRate}/hr`, color: "text-[#B02020]/70" },
+ { label: "Decay Rate", value: `$${decayRate}/hr`, color: "text-[#B02020]" },
  { label: "Est. Hours", value: `${estimatedHours}h`, color: "text-[#f0e8d4]" },
  { label: "Pricing", value: pricingMode === "adaptive" ? "Adaptive" : "Fixed", color: pricingMode === "adaptive" ? "text-[#c9a84c]" : "text-[#a8997e]" },
  { label: "Deadline", value: `${deadline}h`, color: "text-[#f0e8d4]" },
  ].map(d => (
  <div key={d.label} className="glass-panel-sm rounded-[6px] p-3">
  <p className="text-[#a8997e] text-[11px] uppercase tracking-wider">{d.label}</p>
- <p className={`font-heading text-lg font-bold mt-0.5 ${d.color}`}>{d.value}</p>
+ <p className={`font-serif font-normal text-lg mt-0.5 ${d.color}`}>{d.value}</p>
  </div>
  ))}
  </div>

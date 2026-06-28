@@ -245,6 +245,14 @@ h1, h2, h3 {
   background-size: 24px 24px;
 }
 
+/* ── Hide native number spinners ───────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
 /* ── Range Slider ────────────────────────────────────────── */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -606,6 +614,25 @@ input:focus, textarea:focus, select:focus { outline: none; }
   background: #0d1120;
   border: 0.5px solid rgba(201,168,76,0.22);
   border-radius: 6px;
+}
+
+/* ── Scanline overlay ────────────────────────────────────── */
+.scanline {
+  position: relative;
+}
+.scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 /* ── Wizard Steps ────────────────────────────────────────── */
