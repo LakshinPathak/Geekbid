@@ -439,7 +439,7 @@ export default function PostJobPage() {
 
  return (
  <div className="min-h-screen bg-[#080b14] grid-bg">
- <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-8">
+ <div className="max-w-5xl mx-auto px-6 sm:px-10 pt-20 pb-8">
  {/* Back link */}
  <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Feed
@@ -479,6 +479,7 @@ export default function PostJobPage() {
  <div className="space-y-6">
  <p className="text-[#c9a84c] text-xs uppercase tracking-wider font-semibold">Project Details</p>
 
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Job Title *</label>
  <input
@@ -489,21 +490,21 @@ export default function PostJobPage() {
  />
  {errors.title && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.title}</p>}
  </div>
-
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Category *</label>
-  <div className="relative">
-  <select
-  value={category}
-  onChange={e => setCategory(e.target.value as JobCategory)}
-  className="glass-input w-full appearance-none cursor-pointer pr-10"
-  >
-  {JOB_CATEGORIES.map(c => (
-  <option key={c.value} value={c.value}>{c.label}</option>
-  ))}
-  </select>
-  <ArrowRight className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e] rotate-90 pointer-events-none" />
-  </div>
+ <div className="relative">
+ <select
+ value={category}
+ onChange={e => setCategory(e.target.value as JobCategory)}
+ className="glass-input w-full appearance-none cursor-pointer pr-10"
+ >
+ {JOB_CATEGORIES.map(c => (
+ <option key={c.value} value={c.value}>{c.label}</option>
+ ))}
+ </select>
+ <ArrowRight className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e] rotate-90 pointer-events-none" />
+ </div>
+ </div>
  </div>
 
  <div>
@@ -767,7 +768,7 @@ export default function PostJobPage() {
  <div className="h-px bg-[rgba(201,168,76,0.15)]" />
 
  {/* Price grid */}
- <div className="grid grid-cols-2 gap-3">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
  {[
  { label: "Starting", value: formatMoney(startingPrice), color: "text-[#f0e8d4]" },
  { label: "Floor", value: formatMoney(minimumPrice), color: "text-[#f0e8d4]" },
