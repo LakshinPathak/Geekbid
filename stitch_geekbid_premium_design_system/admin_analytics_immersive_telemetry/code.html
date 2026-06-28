@@ -1,0 +1,463 @@
+<html class="dark" lang="en"><head></head><body class="bg-surface text-on-surface">```html
+
+
+
+    <meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+        :root {
+            --neon-emerald: #00ff88;
+            --cyber-steel: #1e1e2a;
+        }
+        body {
+            background-color: #0e0e13;
+            color: #e4e1e9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(19, 19, 24, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+        .glow-priority {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.15), inset 0 0 10px rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--neon-emerald), transparent);
+            opacity: 0.15;
+            position: absolute;
+            animation: scan 4s linear infinite;
+            z-index: 1;
+        }
+        @keyframes scan {
+            from { top: -10%; }
+            to { top: 110%; }
+        }
+        @keyframes flicker {
+            0% { opacity: 0.1; }
+            2% { opacity: 0.8; }
+            4% { opacity: 0.3; }
+            6% { opacity: 0.9; }
+            8% { opacity: 0.2; }
+            10% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+        .flicker-reveal {
+            animation: flicker 0.6s ease-out forwards;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .graph-bar {
+            transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f1ffef",
+                        "primary-container": "#00ff88",
+                        "on-primary-container": "#007139",
+                        "surface": "#131318",
+                        "surface-container": "#1f1f25",
+                        "surface-container-low": "#1b1b20",
+                        "surface-container-lowest": "#0e0e13",
+                        "on-surface": "#e4e1e9",
+                        "on-surface-variant": "#b9cbb9",
+                        "outline-variant": "#3b4b3d",
+                        "secondary-container": "#0566d9",
+                    },
+                    spacing: {
+                        "unit": "4px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "xs": "8px",
+                    },
+                    fontFamily: {
+                        "price-display": ["Inter"],
+                        "headline-xl": ["Space Grotesk"],
+                        "headline-lg": ["Space Grotesk"],
+                        "headline-md": ["Space Grotesk"],
+                        "headline-sm": ["Space Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                    },
+                    fontSize: {
+                        "price-display": ["36px", {"lineHeight": "1", "fontWeight": "800"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    }
+                }
+            }
+        }
+    </script>
+<!-- Liquid Emerald Shader Background -->
+<canvas id="liquid-bg"></canvas>
+<!-- Navigation Shell: TopNavBar -->
+<header class="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-primary-container/10">
+<div class="flex justify-between items-center px-lg py-sm max-w-[1440px] mx-auto">
+<div class="flex items-center gap-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary-container tracking-tighter flex items-center gap-2">
+<span class="material-symbols-outlined">terminal</span> GeekBid
+                </h1>
+<nav class="hidden md:flex gap-lg">
+<a class="font-headline-sm text-headline-sm text-primary-container border-b-2 border-primary-container pb-1" href="#">Analytics</a>
+<a class="font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Market</a>
+<a class="font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Safety</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm mr-4">
+<span class="text-[10px] font-mono text-primary-container/60 uppercase tracking-widest hidden sm:block">Core Status:</span>
+<div class="w-10 h-10" id="three-node-container"></div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-xs rounded-lg transition-all duration-200">notifications</button>
+<button class="bg-primary-container text-on-primary-container px-md py-xs rounded-lg font-bold active:scale-95 transition-transform">Connect Wallet</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 z-40 bg-surface-container-low/40 backdrop-blur-2xl border-r border-primary-container/10 hidden lg:flex flex-col pt-20 pb-lg px-md">
+<div class="flex items-center gap-sm mb-xl p-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest border border-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<p class="font-headline-sm text-[14px] text-primary leading-tight">Dev_Terminal_01</p>
+<p class="text-[11px] text-on-surface-variant uppercase tracking-widest">Verified Engineer</p>
+</div>
+</div>
+<nav class="flex-1 space-y-unit">
+<a class="flex items-center gap-sm px-sm py-md text-primary bg-primary-container/10 border-r-2 border-primary-container transition-all" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-body-md text-body-md">Terminal</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md text-on-surface-variant hover:bg-primary-container/5 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body-md text-body-md">Contracts</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md text-on-surface-variant hover:bg-primary-container/5 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-body-md text-body-md">Vault</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md text-on-surface-variant hover:bg-primary-container/5 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md text-on-surface-variant hover:bg-primary-container/5 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto space-y-sm">
+<button class="w-full bg-surface-container-highest border border-primary-container/20 text-on-surface py-sm rounded-lg font-bold flex items-center justify-center gap-xs active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Contract
+            </button>
+<div class="pt-md border-t border-primary-container/10 space-y-xs">
+<a class="flex items-center gap-xs text-[12px] text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">sensors</span> System Status
+                </a>
+<a class="flex items-center gap-xs text-[12px] text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">menu_book</span> Docs
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 pt-24 px-lg pb-xl relative z-10">
+<div class="max-w-[1440px] mx-auto space-y-xl">
+<!-- Section 1: Protocol Health Overview -->
+<section>
+<div class="flex items-end justify-between mb-lg">
+<div>
+<span class="text-primary-container font-label-caps text-label-caps mb-xs block">SYSTEM MONITORING v2.4.0</span>
+<h2 class="font-headline-lg text-headline-lg">Protocol Health</h2>
+</div>
+<div class="flex items-center gap-xs text-primary-container bg-primary-container/10 px-md py-xs rounded-full border border-primary-container/20">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="text-[12px] font-bold">LIVE TELEMETRY</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- TVL Card (Priority Glow) -->
+<div class="glass-panel p-lg rounded-xl relative overflow-hidden group glow-priority">
+<div class="scanline"></div>
+<div class="flex justify-between items-start mb-md relative z-10">
+<span class="text-on-surface-variant font-label-caps">Total Value Locked</span>
+<span class="material-symbols-outlined text-primary-container/40">account_balance_wallet</span>
+</div>
+<div class="font-price-display text-price-display tabular-nums tracking-tighter mb-xs text-primary relative z-10">$412,894,002</div>
+<div class="flex items-center gap-xs text-[13px] relative z-10">
+<span class="text-primary-container font-bold">+12.4%</span>
+<span class="text-on-surface-variant">vs last epoch</span>
+</div>
+</div>
+<!-- Active Auctions -->
+<div class="glass-panel p-lg rounded-xl relative overflow-hidden group">
+<div class="scanline" style="animation-delay: 1.5s;"></div>
+<div class="flex justify-between items-start mb-md">
+<span class="text-on-surface-variant font-label-caps">Active Auctions</span>
+<span class="material-symbols-outlined text-primary-container/40">gavel</span>
+</div>
+<div class="font-price-display text-price-display tabular-nums tracking-tighter mb-xs text-primary">8,241</div>
+<div class="flex items-center gap-xs text-[13px]">
+<span class="text-primary-container font-bold">422</span>
+<span class="text-on-surface-variant">new in 24h</span>
+</div>
+</div>
+<!-- Revenue (Priority Glow) -->
+<div class="glass-panel p-lg rounded-xl relative overflow-hidden group glow-priority">
+<div class="scanline" style="animation-delay: 3s;"></div>
+<div class="flex justify-between items-start mb-md relative z-10">
+<span class="text-on-surface-variant font-label-caps">Protocol Revenue</span>
+<span class="material-symbols-outlined text-primary-container/40">payments</span>
+</div>
+<div class="font-price-display text-price-display tabular-nums tracking-tighter mb-xs text-primary" id="live-revenue">$84,102.55</div>
+<div class="flex items-center gap-xs text-[13px] relative z-10">
+<span class="text-primary-container font-bold">3.2%</span>
+<span class="text-on-surface-variant">fee efficiency</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2 & 3: Auction Telemetry & Market Liquidity -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-xl">
+<!-- Auction Telemetry (Real-time data viz) -->
+<div class="xl:col-span-2 glass-panel rounded-xl overflow-hidden flex flex-col">
+<div class="p-lg border-b border-primary-container/10 flex justify-between items-center bg-surface-container-low/30">
+<div class="flex items-center gap-md">
+<h3 class="font-headline-sm text-headline-sm text-primary">Bid Velocity</h3>
+<div class="flex gap-xs">
+<span class="px-xs py-1 rounded bg-primary-container/10 text-primary-container text-[10px] font-bold border border-primary-container/20">FRONTEND</span>
+<span class="px-xs py-1 rounded bg-secondary-container/10 text-secondary-container text-[10px] font-bold border border-secondary-container/20">SYSTEMS</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">fullscreen</button>
+</div>
+<div class="flex-1 min-h-[360px] p-lg relative overflow-hidden">
+<div class="relative h-full flex flex-col justify-between">
+<div class="flex justify-between text-[11px] text-on-surface-variant font-mono tabular-nums">
+<span>MAX_TPS: 142.4</span>
+<span>LATENCY: <span id="live-latency">14</span>ms</span>
+<span class="text-primary-container">NODE_HEALTH: 100%</span>
+</div>
+<!-- Bottom axis labels -->
+<div class="flex justify-between items-end h-64 gap-sm" id="bar-container">
+<div class="flex-1 bg-gradient-to-t from-primary-container/40 to-transparent rounded-t-sm graph-bar h-[60%]"></div>
+<div class="flex-1 bg-gradient-to-t from-secondary-container/40 to-transparent rounded-t-sm graph-bar h-[85%]"></div>
+<div class="flex-1 bg-gradient-to-t from-primary-container/40 to-transparent rounded-t-sm graph-bar h-[45%]"></div>
+<div class="flex-1 bg-gradient-to-t from-primary-container/20 to-transparent rounded-t-sm graph-bar h-[70%]"></div>
+<div class="flex-1 bg-gradient-to-t from-secondary-container/30 to-transparent rounded-t-sm graph-bar h-[30%]"></div>
+<div class="flex-1 bg-gradient-to-t from-primary-container/50 to-transparent rounded-t-sm graph-bar h-[95%]"></div>
+<div class="flex-1 bg-gradient-to-t from-primary-container/10 to-transparent rounded-t-sm graph-bar h-[20%]"></div>
+<div class="flex-1 bg-gradient-to-t from-primary-container/40 to-transparent rounded-t-sm graph-bar h-[55%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Market Liquidity Heatmap -->
+<div class="glass-panel rounded-xl flex flex-col">
+<div class="p-lg border-b border-primary-container/10 bg-surface-container-low/30">
+<h3 class="font-headline-sm text-headline-sm text-primary">Liquidity Clusters</h3>
+<p class="text-[12px] text-on-surface-variant mt-xs">Average Match Rates by Tier</p>
+</div>
+<div class="p-lg grid grid-cols-4 grid-rows-4 gap-xs flex-1">
+<!-- Heatmap Cells -->
+<div class="bg-primary-container/80 rounded-sm hover:scale-105 transition-transform cursor-help" title="Tier S - 98%"></div>
+<div class="bg-primary-container/60 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/90 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/40 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/30 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/50 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/20 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/70 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/10 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/40 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/30 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/60 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/20 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/10 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/5 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+<div class="bg-primary-container/30 rounded-sm hover:scale-105 transition-transform cursor-help"></div>
+</div>
+<div class="p-sm flex justify-between px-lg items-center text-[10px] text-on-surface-variant font-mono border-t border-primary-container/5">
+<span>LOW_DENSITY</span>
+<div class="flex-1 mx-sm h-1 bg-gradient-to-r from-primary-container/5 via-primary-container/40 to-primary-container rounded-full"></div>
+<span>HIGH_DENSITY</span>
+</div>
+</div>
+</div>
+<!-- Section 4: Recent Administrative Events (Terminal Log with Flicker) -->
+<section class="glass-panel rounded-xl overflow-hidden border-primary-container/20">
+<div class="p-lg border-b border-primary-container/10 bg-surface-container-low/30 flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">dns</span>
+<h3 class="font-headline-sm text-headline-sm text-primary uppercase tracking-tight">System Events Log</h3>
+</div>
+<div class="flex items-center gap-md">
+<div class="text-[11px] font-mono text-on-surface-variant">AUTO_REFRESH: 2S</div>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant cursor-pointer hover:text-primary">filter_list</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest/80 p-lg font-mono text-[13px] leading-relaxed overflow-y-auto max-h-[400px] no-scrollbar" id="event-log">
+<div class="space-y-sm">
+<div class="flex gap-md group flicker-reveal">
+<span class="text-on-surface-variant shrink-0">[14:22:01]</span>
+<span class="text-primary-container shrink-0">EXEC:ESCROW_DEPLOY</span>
+<span class="text-on-surface">Contract deployed for 0x82...FA1 | <span class="tabular-nums">54,000 USDC</span> locked in vault.</span>
+<span class="ml-auto opacity-0 group-hover:opacity-100 material-symbols-outlined text-[14px] cursor-pointer">open_in_new</span>
+</div>
+<div class="flex gap-md group flicker-reveal" style="animation-delay: 0.1s;">
+<span class="text-on-surface-variant shrink-0">[14:21:44]</span>
+<span class="text-secondary-container shrink-0">GEEKSCORE_ADJ</span>
+<span class="text-on-surface">User ID_9942 boosted to <span class="text-secondary-container">Level 9</span> after successful core security audit.</span>
+</div>
+<div class="flex gap-md group flicker-reveal" style="animation-delay: 0.2s;">
+<span class="text-on-surface-variant shrink-0">[14:18:22]</span>
+<span class="text-[#ffb4ab] shrink-0">DISPUTE_RAISED</span>
+<span class="text-on-surface">Ticket #4421: Client reports milestone mismatch in "Rust-Engine-V2". Admin assigned.</span>
+</div>
+<div class="flex gap-md group flicker-reveal" style="animation-delay: 0.3s;">
+<span class="text-on-surface-variant shrink-0">[14:15:10]</span>
+<span class="text-primary-container shrink-0">SETTLEMENT_OK</span>
+<span class="text-on-surface">Auction #2291 finalized. 12,500 USDC distributed to dev node 0x12...99B.</span>
+</div>
+<div class="flex gap-md group opacity-70 flicker-reveal" style="animation-delay: 0.4s;">
+<span class="text-on-surface-variant shrink-0">[14:10:05]</span>
+<span class="text-on-surface-variant shrink-0">SYSTEM_PING</span>
+<span class="text-on-surface">All node clusters operational. Latency 14ms across primary shard.</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Shell -->
+<footer class="w-full py-md mt-xl border-t border-primary-container/10 bg-surface-container-lowest/50 backdrop-blur-md">
+<div class="flex justify-between items-center px-lg max-w-[1440px] mx-auto">
+<div class="flex items-center gap-md">
+<span class="font-label-caps text-label-caps text-primary-container">GEEKBID PROTOCOL TELEMETRY</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-60">© 2024 GeekBid Protocol. Core Engine v2.4.0</p>
+</div>
+<div class="hidden sm:flex gap-lg">
+<span class="font-body-sm text-body-sm text-on-surface-variant tabular-nums">Uptime: 99.99%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant tabular-nums">Shard-01: OK</span>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">System Map</a>
+</div>
+</div>
+</footer>
+</main>
+<!-- Liquid Emerald Shader Initialization -->
+<script>
+        const canvas = document.getElementById('liquid-bg');
+        const gl = canvas.getContext('webgl');
+
+        const vertexSource = `
+            attribute vec2 a_position;
+            varying vec2 v_texCoord;
+            void main() {
+                v_texCoord = a_position * 0.5 + 0.5;
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        const fragmentSource = `
+            precision highp float;
+            uniform float u_time;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            varying vec2 v_texCoord;
+
+            void main() {
+                vec2 uv = v_texCoord;
+                vec2 m = u_mouse / u_resolution;
+                
+                float t = u_time * 0.3;
+                vec2 p = uv * 2.0 - 1.0;
+                p.x *= u_resolution.x / u_resolution.y;
+                
+                for(float i = 1.0; i < 4.0; i++){
+                    p.x += 0.3 / i * sin(i * 3.0 * p.y + t + m.x * 2.0);
+                    p.y += 0.3 / i * cos(i * 3.0 * p.x + t + m.y * 2.0);
+                }
+                
+                vec3 color1 = vec3(0.0, 0.03, 0.02);
+                vec3 color2 = vec3(0.0, 0.15, 0.08); 
+                vec3 color3 = vec3(0.0, 1.0, 0.53);
+                
+                float intensity = 0.5 + 0.5 * sin(p.x + p.y);
+                vec3 color = mix(color1, color2, intensity);
+                color = mix(color, color3, pow(intensity, 8.0) * 0.2);
+                
+                float grid = sin(uv.x * 60.0) * sin(uv.y * 60.0);
+                color += grid * 0.01;
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vertexSource));
+        gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fragmentSource));
+        gl.linkProgram(program);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, 'a_position');
+        const timeLocation = gl.getUniformLocation(program, 'u_time');
+        const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+        const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = window.innerHeight - e.clientY;
+        });
+
+        function render(time) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight</script></body></html>

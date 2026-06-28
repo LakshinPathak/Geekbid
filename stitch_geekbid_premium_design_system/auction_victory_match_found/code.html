@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Match Found | GeekBid Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Grotesk:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .glass-panel {
+            background: rgba(31, 31, 37, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1.5px solid #1E1E2A;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-emerald {
+            text-shadow: 0 0 20px rgba(0, 228, 121, 0.4), 0 0 40px rgba(0, 228, 121, 0.2);
+        }
+
+        .emerald-gradient-btn {
+            background: linear-gradient(135deg, #00e479 0%, #60ff99 100%);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .emerald-gradient-btn:hover {
+            transform: scale(1.08);
+        }
+        .emerald-gradient-btn:active {
+            transform: scale(0.96);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .grid-bg {
+            background-image: linear-gradient(rgba(30, 30, 42, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(30, 30, 42, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 228, 121, 0) 0%, rgba(0, 228, 121, 0.03) 50%, rgba(0, 228, 121, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: #00e479;
+            margin-left: 4px;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .ambient-glow {
+            filter: blur(120px);
+            opacity: 0.12;
+            pointer-events: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e9ddff",
+                      "secondary-fixed": "#d8e2ff",
+                      "outline": "#849585",
+                      "on-secondary-fixed": "#001a42",
+                      "on-surface-variant": "#b9cbb9",
+                      "surface-tint": "#00e479",
+                      "surface-container-low": "#1b1b20",
+                      "surface-dim": "#131318",
+                      "on-secondary-fixed-variant": "#004395",
+                      "on-error": "#690005",
+                      "inverse-on-surface": "#303036",
+                      "tertiary": "#fff9ff",
+                      "inverse-surface": "#e4e1e9",
+                      "background": "#131318",
+                      "tertiary-fixed-dim": "#d0bcff",
+                      "surface-bright": "#39383e",
+                      "surface-variant": "#35343a",
+                      "on-background": "#e4e1e9",
+                      "on-tertiary-fixed": "#23005c",
+                      "on-tertiary": "#3c0091",
+                      "error-container": "#93000a",
+                      "on-tertiary-container": "#713fda",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "on-primary-fixed": "#00210c",
+                      "on-surface": "#e4e1e9",
+                      "surface-container-high": "#2a292f",
+                      "primary": "#f1ffef",
+                      "surface": "#131318",
+                      "on-primary-container": "#007139",
+                      "surface-container": "#1f1f25",
+                      "on-secondary-container": "#e6ecff",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-lowest": "#0e0e13",
+                      "primary-fixed": "#60ff99",
+                      "secondary": "#adc6ff",
+                      "outline-variant": "#3b4b3d",
+                      "on-primary": "#003919",
+                      "primary-container": "#00ff88",
+                      "on-secondary": "#002e6a",
+                      "on-tertiary-fixed-variant": "#5516be",
+                      "surface-container-highest": "#35343a",
+                      "primary-fixed-dim": "#00e479",
+                      "inverse-primary": "#006d37",
+                      "tertiary-container": "#e5d8ff",
+                      "error": "#ffb4ab",
+                      "secondary-container": "#0566d9",
+                      "on-primary-fixed-variant": "#005228"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "12px",
+                      "gutter": "16px",
+                      "md": "16px",
+                      "lg": "24px",
+                      "container-padding": "24px",
+                      "xs": "8px",
+                      "xl": "40px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "price-display": ["Inter"],
+                      "headline-sm": ["Space Grotesk"],
+                      "headline-md": ["Space Grotesk"],
+                      "headline-lg": ["Space Grotesk"],
+                      "headline-xl": ["Space Grotesk"]
+              },
+              "fontSize": {
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "price-display": ["36px", {"lineHeight": "1", "fontWeight": "800"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-outline-variant/30 h-16">
+<nav class="flex justify-between items-center w-full px-lg max-w-[1440px] mx-auto h-full">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GeekBid</span>
+<div class="hidden md:flex gap-lg">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Market</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 transition-colors duration-200" href="#">Bids</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Vault</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Terminal</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2">terminal</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2">account_balance_wallet</button>
+<button class="emerald-gradient-btn text-on-primary px-md py-xs rounded-lg font-bold text-body-sm active:scale-95 transition-transform">Connect Wallet</button>
+</div>
+</nav>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-xl relative grid-bg">
+<!-- Background Effects -->
+<div class="scanline"></div>
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary ambient-glow rounded-full"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container ambient-glow rounded-full"></div>
+<div class="max-w-[1440px] mx-auto px-lg flex flex-col items-center justify-center relative z-20">
+<!-- Success Header -->
+<div class="text-center mb-xl">
+<div class="inline-flex items-center gap-sm px-md py-xs rounded-full bg-primary-container/10 border border-primary/20 mb-md">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-primary font-label-caps text-label-caps">DUTCH AUCTION FINALISED</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary glow-emerald mb-xs">MATCH FOUND</h1>
+<p class="text-on-surface-variant font-body-lg max-w-xl mx-auto">The algorithm has successfully calculated the optimal contract point. Your mission is ready for deployment.</p>
+</div>
+<!-- Central Match Card -->
+<div class="w-full max-w-3xl glass-panel rounded-xl overflow-hidden mb-xl relative">
+<!-- Inner Grid Decoration -->
+<div class="absolute inset-0 grid-bg opacity-[0.03] pointer-events-none"></div>
+<div class="p-lg md:p-xl flex flex-col md:flex-row gap-xl items-center justify-between">
+<!-- Engineer Side -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left gap-md">
+<div class="relative">
+<div class="w-24 h-24 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A futuristic professional portrait of a software engineer with short hair, wearing a sleek black high-tech turtleneck, set against a dark cyan and emerald circuit board background. The lighting is cinematic with cold blue and warm green highlights, capturing a high-end tech-elite aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDu4YQq8la02I1bbkUVprLUDIqkhmB6uccKogcFBCnj2rAEm9wgwE_bKFtiWAfOUAv7HM7SE6wdKkvI1y-5HUEItq5pFejffTZ6A-eYyvKytGS4XLZDx6xfnC7ppBhm9-Fe9JfyyHahCaHM1AT3LuYpYPO48CPHmNeAOKrdpe4BTi5B6Zbovg2uV6BARNX5L5emfO3P-JHv0eWyOe2PNTeIxDYqjrh0lj7gbaSirzHWqedu3QQKMiYfQ3DDNprtP1j-b23pq1Vud34D"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-on-primary px-2 py-0.5 rounded-full font-label-caps text-[10px]">VERIFIED</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Alex "Cipher" Chen</h3>
+<div class="flex items-center gap-sm mt-1">
+<div class="flex gap-px">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="text-on-surface-variant font-body-sm">GeekScore: 4.98</span>
+</div>
+</div>
+</div>
+<!-- Divider -->
+<div class="hidden md:block w-px h-32 bg-outline-variant/30"></div>
+<!-- Details Side -->
+<div class="flex flex-col gap-lg w-full md:w-auto">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">FINAL BID PRICE</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-price-display text-price-display text-primary">$2,150</span>
+<span class="text-on-surface-variant font-body-sm">/ task</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-lg">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">MATCH TIME</span>
+<p class="text-on-surface font-body-md mt-1">14:23:09 UTC</p>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">ESCROW ID</span>
+<p class="text-on-surface font-body-md mt-1">#GB-8842-X</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Terminal Output Status Bar -->
+<div class="bg-surface-container-lowest border-t border-outline-variant/30 p-md font-mono text-[12px] flex items-center gap-md">
+<span class="text-primary-fixed-dim">[SYSTEM]</span>
+<div class="text-on-surface-variant flex-grow overflow-hidden whitespace-nowrap" id="terminal-text">
+                        Initializing mission parameters... Match validated... Secure tunnel established...
+                    </div>
+<span class="terminal-cursor"></span>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-col sm:flex-row gap-md w-full max-w-lg justify-center">
+<button class="emerald-gradient-btn h-14 flex-1 rounded-lg font-bold text-on-primary flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">rocket_launch</span>
+                    Enter Mission Control
+                </button>
+<button class="secondary-btn h-14 flex-1 rounded-lg font-bold text-on-surface flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">receipt_long</span>
+                    View Contract
+                </button>
+</div>
+<button class="mt-lg text-on-surface-variant hover:text-on-surface text-body-sm transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+                Funds are secured in Escrow Protocol v2
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 w-full py-xl">
+<div class="max-w-[1440px] mx-auto px-lg flex flex-col md:flex-row justify-between items-center gap-md">
+<div class="flex items-center gap-md">
+<span class="font-label-caps text-label-caps text-primary">GEEK BID</span>
+<span class="text-on-surface-variant font-body-sm">© 2024 GEEKBID TERMINAL. ALL SYSTEMS OPERATIONAL.</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors" href="#">Security</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors" href="#">Status</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors" href="#">API</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors" href="#">Legal</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple typewriter simulation for the terminal bar
+        const phrases = [
+            "Initializing mission parameters...",
+            "Match validated on-chain...",
+            "Secure tunnel established with Alex Chen...",
+            "Loading Mission Control workspace...",
+            "Escrow deposit confirmed...",
+            "All systems operational. Ready to start."
+        ];
+        let currentPhrase = 0;
+        const terminalEl = document.getElementById('terminal-text');
+
+        setInterval(() => {
+            currentPhrase = (currentPhrase + 1) % phrases.length;
+            terminalEl.style.opacity = '0';
+            setTimeout(() => {
+                terminalEl.innerText = phrases[currentPhrase];
+                terminalEl.style.opacity = '1';
+            }, 300);
+        }, 3000);
+
+        // Hover micro-interaction for the central card
+        const card = document.querySelector('.glass-panel');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            card.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(0, 228, 121, 0.05) 0%, rgba(31, 31, 37, 0.4) 50%)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.background = `rgba(31, 31, 37, 0.4)`;
+        });
+    </script>
+</body></html>

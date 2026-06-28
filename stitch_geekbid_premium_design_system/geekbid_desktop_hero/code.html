@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GeekBid | Hire engineers at the right price</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Grotesk:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --emerald-glow: rgba(96, 255, 153, 0.15);
+        }
+        body {
+            background-color: #000000;
+            color: #e4e1e9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .grid-overlay {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glow-blob {
+            filter: blur(120px);
+            z-index: 0;
+        }
+        .glass-card {
+            background: rgba(31, 31, 37, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(59, 75, 61, 0.3);
+        }
+        .reverse-auction-gradient {
+            background: linear-gradient(to right, #60ff99, #f1ffef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .pulse-emerald {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.1); }
+        }
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(2deg) rotateY(-2deg); }
+            50% { transform: translateY(-20px) rotateX(-2deg) rotateY(2deg); }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#d0bcff",
+                      "on-tertiary-container": "#713fda",
+                      "primary-fixed": "#60ff99",
+                      "primary": "#f1ffef",
+                      "outline": "#849585",
+                      "on-background": "#e4e1e9",
+                      "surface-dim": "#131318",
+                      "tertiary-container": "#e5d8ff",
+                      "on-primary-fixed": "#00210c",
+                      "secondary-container": "#0566d9",
+                      "on-secondary-container": "#e6ecff",
+                      "tertiary": "#fff9ff",
+                      "error": "#ffb4ab",
+                      "primary-container": "#00ff88",
+                      "surface-container-highest": "#35343a",
+                      "on-secondary-fixed": "#001a42",
+                      "on-primary-fixed-variant": "#005228",
+                      "on-primary-container": "#007139",
+                      "surface-variant": "#35343a",
+                      "surface-tint": "#00e479",
+                      "on-primary": "#003919",
+                      "inverse-surface": "#e4e1e9",
+                      "surface-container": "#1f1f25",
+                      "inverse-on-surface": "#303036",
+                      "on-surface": "#e4e1e9",
+                      "on-error": "#690005",
+                      "secondary": "#adc6ff",
+                      "outline-variant": "#3b4b3d",
+                      "tertiary-fixed": "#e9ddff",
+                      "surface-container-high": "#2a292f",
+                      "on-tertiary-fixed-variant": "#5516be",
+                      "primary-fixed-dim": "#00e479",
+                      "on-tertiary-fixed": "#23005c",
+                      "on-secondary-fixed-variant": "#004395",
+                      "background": "#131318",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "surface-container-low": "#1b1b20",
+                      "secondary-fixed": "#d8e2ff",
+                      "error-container": "#93000a",
+                      "on-secondary": "#002e6a",
+                      "surface-container-lowest": "#0e0e13",
+                      "on-tertiary": "#3c0091",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#131318",
+                      "surface-bright": "#39383e",
+                      "inverse-primary": "#006d37",
+                      "on-surface-variant": "#b9cbb9"
+              },
+              "spacing": {
+                      "xl": "40px",
+                      "unit": "4px",
+                      "lg": "24px",
+                      "container-padding": "24px",
+                      "xs": "8px",
+                      "sm": "12px",
+                      "md": "16px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Space Grotesk"],
+                      "body-lg": ["Inter"],
+                      "headline-sm": ["Space Grotesk"],
+                      "body-sm": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Space Grotesk"],
+                      "price-display": ["Inter"],
+                      "headline-xl": ["Space Grotesk"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "price-display": ["36px", {"lineHeight": "1", "fontWeight": "800"}],
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="dark selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Grid Overlay -->
+<div class="fixed inset-0 grid-overlay pointer-events-none z-10 opacity-30"></div>
+<!-- Decorative Glows -->
+<div class="glow-blob absolute top-[-100px] left-[-100px] w-[500px] h-[500px] bg-primary-fixed/5 rounded-full"></div>
+<div class="glow-blob absolute bottom-0 right-[10%] w-[600px] h-[600px] bg-secondary-container/5 rounded-full"></div>
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30">
+<div class="flex justify-between items-center px-lg py-sm max-w-[1440px] mx-auto">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">GeekBid</span>
+<div class="hidden md:flex gap-lg">
+<a class="font-body-md text-body-md text-primary-fixed border-b-2 border-primary-fixed pb-1" href="#">Market</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">Escrow</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">Post Job</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">History</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-xs rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-xs rounded-full transition-colors">terminal</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-xs"></div>
+<button class="bg-primary-fixed text-on-primary-fixed px-md py-xs rounded-lg font-label-caps text-label-caps active:scale-95 transition-transform">
+                    Connect Wallet
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Hero Section -->
+<main class="relative z-20 min-h-screen pt-32 pb-xl px-lg max-w-[1440px] mx-auto flex items-center">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-xl w-full">
+<!-- Left Side: Content -->
+<div class="flex flex-col justify-center space-y-lg">
+<div class="inline-flex items-center gap-xs px-md py-1 rounded-full bg-primary-fixed/10 border border-primary-fixed/20 w-fit">
+<span class="w-2 h-2 rounded-full bg-primary-fixed pulse-emerald"></span>
+<span class="text-label-caps font-label-caps text-primary-fixed uppercase tracking-[0.2em]">LIVE · Reverse Auction Platform for Engineers</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl reverse-auction-gradient max-w-[600px]">
+                    Hire engineers at the right price
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[520px]">
+                    The market-driven marketplace where prices decay every hour until a match is made. Pure efficiency for technical talent acquisition.
+                </p>
+<div class="flex flex-wrap gap-md pt-sm">
+<button class="px-xl py-md bg-primary-fixed text-on-primary-fixed rounded-lg font-headline-sm text-headline-sm hover:scale-[1.05] active:scale-[0.96] transition-all shadow-[0_0_20px_rgba(96,255,153,0.3)]">
+                        Start Hiring Free →
+                    </button>
+<button class="px-xl py-md bg-white/5 border border-outline-variant/30 text-on-surface rounded-lg font-headline-sm text-headline-sm hover:bg-white/10 active:scale-[0.96] transition-all backdrop-blur-sm">
+                        ⌘ Join as Freelancer
+                    </button>
+</div>
+<div class="flex flex-wrap items-center gap-lg pt-lg">
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">check_circle</span>
+                        No credit card
+                    </div>
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">verified_user</span>
+                        Escrow protected
+                    </div>
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">grade</span>
+                        Verified talent
+                    </div>
+</div>
+</div>
+<!-- Right Side: Live Product Demo -->
+<div class="relative flex items-center justify-center lg:justify-end perspective-1000">
+<div class="floating-card glass-card rounded-[24px] p-lg w-full max-w-[480px] shadow-2xl relative overflow-hidden">
+<!-- Card Background Pattern -->
+<div class="absolute inset-0 grid-overlay opacity-20 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-lg">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-xs">ACTIVE MISSION</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">AI Chatbot Development</h3>
+</div>
+<div class="px-sm py-xs rounded-full bg-primary-fixed/20 border border-primary-fixed/30 flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed pulse-emerald"></span>
+<span class="font-label-caps text-[10px] text-primary-fixed uppercase tracking-wider">LIVE</span>
+</div>
+</div>
+<div class="p-lg rounded-xl bg-surface-container-highest/40 border border-outline-variant/30 relative overflow-hidden">
+<div class="relative z-10 flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-xs">CURRENT PRICE</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-price-display text-price-display text-primary-fixed">$2,399</span>
+<span class="font-body-md text-body-md text-error/80">-$12/hr decay</span>
+</div>
+</div>
+<!-- Subtle price glow -->
+<div class="absolute inset-0 bg-primary-fixed/5 blur-xl pointer-events-none"></div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant">
+<span>MARKET SATURATION</span>
+<span>82%</span>
+</div>
+<div class="h-[6px] w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed shadow-[0_0_10px_rgba(96,255,153,0.5)] transition-all duration-1000" style="width: 82%"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-md pt-xs">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">BIDS</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">groups</span> 7
+                                </div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">WATCHERS</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">visibility</span> 23
+                                </div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">TIME LEFT</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 64h
+                                </div>
+</div>
+</div>
+<button class="w-full py-md rounded-xl bg-white/5 border border-outline-variant/30 font-headline-sm text-headline-sm text-on-surface hover:bg-white/10 active:scale-95 transition-all mt-xs">
+                            Inspect Contract
+                        </button>
+</div>
+<!-- Side Accent -->
+<div class="absolute left-0 top-0 bottom-0 w-[2px] bg-primary-fixed/30 shadow-[0_0_15px_rgba(96,255,153,0.5)]"></div>
+</div>
+<!-- Floating elements for depth -->
+<div class="absolute -z-10 top-1/4 -right-12 w-32 h-32 glass-card rounded-2xl rotate-12 opacity-40 blur-sm"></div>
+<div class="absolute -z-10 -bottom-8 left-0 w-48 h-48 glass-card rounded-full rotate-[-15deg] opacity-20 blur-md"></div>
+</div>
+</div>
+</main>
+<!-- Simple Footer Bar -->
+<footer class="fixed bottom-0 w-full z-20 px-lg py-sm border-t border-outline-variant/10 bg-black/80 backdrop-blur-md">
+<div class="max-w-[1440px] mx-auto flex justify-between items-center text-on-surface-variant/50 font-label-caps text-[10px] tracking-widest uppercase">
+<div>© 2024 GEEKBID PROTOCOL</div>
+<div class="flex gap-lg">
+<a class="hover:text-primary-fixed transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary-fixed transition-colors" href="#">Security</a>
+<a class="hover:text-primary-fixed transition-colors" href="#">Analytics</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple price decay simulation
+        let basePrice = 2399;
+        const priceDisplay = document.querySelector('.font-price-display');
+        
+        setInterval(() => {
+            basePrice -= 0.01;
+            if (priceDisplay) {
+                priceDisplay.textContent = `$${basePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+        }, 100);
+
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.classList.add('scale-95');
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.classList.remove('scale-95');
+            });
+        });
+    </script>
+</body></html>

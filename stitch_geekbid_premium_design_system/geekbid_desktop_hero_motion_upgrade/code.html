@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GeekBid | Hire engineers at the right price</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<style>
+        :root {
+            --emerald-glow: rgba(96, 255, 153, 0.15);
+        }
+        body {
+            background-color: #000000;
+            color: #e4e1e9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .grid-overlay {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glass-card {
+            background: rgba(19, 19, 24, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(96, 255, 153, 0.1);
+        }
+        .reverse-auction-gradient {
+            background: linear-gradient(to right, #60ff99, #f1ffef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .pulse-emerald {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.1); }
+        }
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(2deg) rotateY(-2deg); }
+            50% { transform: translateY(-20px) rotateX(-2deg) rotateY(2deg); }
+        }
+
+        /* Scanning Line Effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(96, 255, 153, 0) 0%,
+                rgba(96, 255, 153, 0.03) 50%,
+                rgba(96, 255, 153, 0) 100%
+            );
+            background-size: 100% 200%;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 15;
+        }
+        @keyframes scan {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        /* Staggered Fade-in Animations */
+        .reveal-1 { animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .reveal-2 { animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        .reveal-3 { animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards; opacity: 0; }
+        .reveal-4 { animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; opacity: 0; }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        #hero-shader-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#d0bcff",
+                      "on-tertiary-container": "#713fda",
+                      "primary-fixed": "#60ff99",
+                      "primary": "#f1ffef",
+                      "outline": "#849585",
+                      "on-background": "#e4e1e9",
+                      "surface-dim": "#131318",
+                      "tertiary-container": "#e5d8ff",
+                      "on-primary-fixed": "#00210c",
+                      "secondary-container": "#0566d9",
+                      "on-secondary-container": "#e6ecff",
+                      "tertiary": "#fff9ff",
+                      "error": "#ffb4ab",
+                      "primary-container": "#00ff88",
+                      "surface-container-highest": "#35343a",
+                      "on-secondary-fixed": "#001a42",
+                      "on-primary-fixed-variant": "#005228",
+                      "on-primary-container": "#007139",
+                      "surface-variant": "#35343a",
+                      "surface-tint": "#00e479",
+                      "on-primary": "#003919",
+                      "inverse-surface": "#e4e1e9",
+                      "surface-container": "#1f1f25",
+                      "inverse-on-surface": "#303036",
+                      "on-surface": "#e4e1e9",
+                      "on-error": "#690005",
+                      "secondary": "#adc6ff",
+                      "outline-variant": "#3b4b3d",
+                      "tertiary-fixed": "#e9ddff",
+                      "surface-container-high": "#2a292f",
+                      "on-tertiary-fixed-variant": "#5516be",
+                      "primary-fixed-dim": "#00e479",
+                      "on-tertiary-fixed": "#23005c",
+                      "on-secondary-fixed-variant": "#004395",
+                      "background": "#131318",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "surface-container-low": "#1b1b20",
+                      "secondary-fixed": "#d8e2ff",
+                      "error-container": "#93000a",
+                      "on-secondary": "#002e6a",
+                      "surface-container-lowest": "#0e0e13",
+                      "on-tertiary": "#3c0091",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#131318",
+                      "surface-bright": "#39383e",
+                      "inverse-primary": "#006d37",
+                      "on-surface-variant": "#b9cbb9"
+              },
+              "spacing": {
+                      "xl": "40px",
+                      "unit": "4px",
+                      "lg": "24px",
+                      "container-padding": "24px",
+                      "xs": "8px",
+                      "sm": "12px",
+                      "md": "16px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Space Grotesk"],
+                      "body-lg": ["Inter"],
+                      "headline-sm": ["Space Grotesk"],
+                      "body-sm": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Space Grotesk"],
+                      "price-display": ["Inter"],
+                      "headline-xl": ["Space Grotesk"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "price-display": ["36px", {"lineHeight": "1", "fontWeight": "800"}],
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="dark selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Background Effects -->
+<div class="fixed inset-0 z-0">
+<canvas id="hero-shader-canvas"></canvas>
+<div class="absolute inset-0 grid-overlay opacity-30"></div>
+<div class="scanline"></div>
+</div>
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/20">
+<div class="flex justify-between items-center px-lg py-sm max-w-[1440px] mx-auto">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">GeekBid</span>
+<div class="hidden md:flex gap-lg">
+<a class="font-body-md text-body-md text-primary-fixed border-b-2 border-primary-fixed pb-1" href="#">Market</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">Escrow</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">Post Job</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#">History</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-xs rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-xs rounded-full transition-colors">terminal</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-xs"></div>
+<button class="bg-primary-fixed text-on-primary-fixed px-md py-xs rounded-lg font-label-caps text-label-caps active:scale-95 transition-transform">
+                Connect Wallet
+            </button>
+</div>
+</div>
+</nav>
+<!-- Main Hero Section -->
+<main class="relative z-20 min-h-screen pt-32 pb-xl px-lg max-w-[1440px] mx-auto flex items-center">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-xl w-full items-center">
+<!-- Left Side: Content -->
+<div class="flex flex-col justify-center space-y-lg">
+<div class="reveal-1 inline-flex items-center gap-xs px-md py-1 rounded-full bg-primary-fixed/10 border border-primary-fixed/20 w-fit">
+<span class="w-2 h-2 rounded-full bg-primary-fixed pulse-emerald"></span>
+<span class="text-label-caps font-label-caps text-primary-fixed uppercase tracking-[0.2em]">LIVE · Reverse Auction Platform for Engineers</span>
+</div>
+<h1 class="reveal-2 font-headline-xl text-headline-xl reverse-auction-gradient max-w-[600px]">
+                Hire engineers at the right price
+            </h1>
+<p class="reveal-3 font-body-lg text-body-lg text-on-surface-variant max-w-[520px]">
+                The market-driven marketplace where prices decay every hour until a match is made. Pure efficiency for technical talent acquisition.
+            </p>
+<div class="reveal-4 flex flex-wrap gap-md pt-sm">
+<button class="px-xl py-md bg-primary-fixed text-on-primary-fixed rounded-lg font-headline-sm text-headline-sm hover:scale-[1.05] active:scale-[0.96] transition-all shadow-[0_0_20px_rgba(96,255,153,0.3)]">
+                    Start Hiring Free →
+                </button>
+<button class="px-xl py-md bg-white/5 border border-outline-variant/30 text-on-surface rounded-lg font-headline-sm text-headline-sm hover:bg-white/10 active:scale-[0.96] transition-all backdrop-blur-sm">
+                    ⌘ Join as Freelancer
+                </button>
+</div>
+<div class="reveal-4 flex flex-wrap items-center gap-lg pt-lg">
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">check_circle</span>
+                    No credit card
+                </div>
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">verified_user</span>
+                    Escrow protected
+                </div>
+<div class="flex items-center gap-xs text-on-surface-variant/80 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">grade</span>
+                    Verified talent
+                </div>
+</div>
+</div>
+<!-- Right Side: 3D Exchange Node & UI -->
+<div class="relative flex items-center justify-center lg:justify-end perspective-1000 reveal-2">
+<!-- 3D Exchange Node Container -->
+<div class="absolute -z-10 w-[600px] h-[600px] -right-24 top-1/2 -translate-y-1/2 pointer-events-none opacity-80" id="three-container"></div>
+<div class="floating-card glass-card rounded-[24px] p-lg w-full max-w-[440px] shadow-2xl relative overflow-hidden">
+<!-- Card Background Pattern -->
+<div class="absolute inset-0 grid-overlay opacity-20 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-lg">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-xs">ACTIVE MISSION</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">AI Chatbot Development</h3>
+</div>
+<div class="px-sm py-xs rounded-full bg-primary-fixed/20 border border-primary-fixed/30 flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed pulse-emerald"></span>
+<span class="font-label-caps text-[10px] text-primary-fixed uppercase tracking-wider">LIVE</span>
+</div>
+</div>
+<div class="p-lg rounded-xl bg-surface-container-highest/40 border border-outline-variant/30 relative overflow-hidden">
+<div class="relative z-10 flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-xs">CURRENT PRICE</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-price-display text-price-display text-primary-fixed">$2,399</span>
+<span class="font-body-md text-body-md text-error/80">-$12/hr decay</span>
+</div>
+</div>
+<!-- Subtle price glow -->
+<div class="absolute inset-0 bg-primary-fixed/5 blur-xl pointer-events-none"></div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant">
+<span>MARKET SATURATION</span>
+<span>82%</span>
+</div>
+<div class="h-[6px] w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed shadow-[0_0_10px_rgba(96,255,153,0.5)] transition-all duration-1000" style="width: 82%"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-md pt-xs">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">BIDS</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">groups</span> 7
+                            </div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">WATCHERS</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">visibility</span> 23
+                            </div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">TIME LEFT</span>
+<div class="flex items-center gap-xs font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 64h
+                            </div>
+</div>
+</div>
+<button class="w-full py-md rounded-xl bg-white/5 border border-outline-variant/30 font-headline-sm text-headline-sm text-on-surface hover:bg-white/10 active:scale-95 transition-all mt-xs">
+                        Inspect Contract
+                    </button>
+</div>
+<!-- Side Accent -->
+<div class="absolute left-0 top-0 bottom-0 w-[2px] bg-primary-fixed/30 shadow-[0_0_15px_rgba(96,255,153,0.5)]"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Simple Footer Bar -->
+<footer class="fixed bottom-0 w-full z-20 px-lg py-sm border-t border-outline-variant/10 bg-black/60 backdrop-blur-md">
+<div class="max-w-[1440px] mx-auto flex justify-between items-center text-on-surface-variant/50 font-label-caps text-[10px] tracking-widest uppercase">
+<div>© 2024 GEEKBID PROTOCOL</div>
+<div class="flex gap-lg">
+<a class="hover:text-primary-fixed transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary-fixed transition-colors" href="#">Security</a>
+<a class="hover:text-primary-fixed transition-colors" href="#">Analytics</a>
+</div>
+</div>
+</footer>
+<script>
+    // --- LIQUID EMERALD SHADER ---
+    (function initShader() {
+        const canvas = document.getElementById('hero-shader-canvas');
+        const gl = canvas.getContext('webgl');
+        if (!gl) return;
+
+        const vertexSource = `
+            attribute vec2 position;
+            varying vec2 v_texCoord;
+            void main() {
+                v_texCoord = position * 0.5 + 0.5;
+                v_texCoord.y = 1.0 - v_texCoord.y;
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+
+        const fragmentSource = `
+            precision highp float;
+            uniform float u_time;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            varying vec2 v_texCoord;
+
+            void main() {
+                vec2 uv = v_texCoord;
+                vec2 m = u_mouse / u_resolution;
+                
+                float t = u_time * 0.3;
+                vec2 p = uv * 2.0 - 1.0;
+                p.x *= u_resolution.x / u_resolution.y;
+                
+                for(float i = 1.0; i < 4.0; i++){
+                    p.x += 0.3 / i * sin(i * 3.0 * p.y + t + m.x * 2.0);
+                    p.y += 0.3 / i * cos(i * 3.0 * p.x + t + m.y * 2.0);
+                }
+                
+                vec3 color1 = vec3(0.0, 0.05, 0.03);
+                vec3 color2 = vec3(0.0, 0.2, 0.1); 
+                vec3 color3 = vec3(0.0, 1.0, 0.53);
+                
+                float intensity = 0.5 + 0.5 * sin(p.x + p.y);
+                vec3 color = mix(color1, color2, intensity);
+                color = mix(color, color3, pow(intensity, 12.0) * 0.3);
+                
+                float grid = sin(uv.x * 50.0) * sin(uv.y * 50.0);
+                color += grid * 0.01;
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vertexSource));
+        gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fragmentSource));
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+
+        const positionLoc = gl.getAttribLocation(program, 'position');
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+        const timeLoc = gl.getUniformLocation(program, 'u_time');
+        const resLoc = gl.getUniformLocation(program, 'u_resolution');
+        const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function render(time) {
+            gl.uniform1f(timeLoc, time * 0.001);
+            gl.uniform2f(resLoc, canvas.width, canvas.height);
+            gl.uniform2f(mouseLoc, mouseX, mouseY);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    })();
+
+    // --- THREE.JS EXCHANGE NODE ---
+    (function initThree() {
+        const container = document.getElementById('three-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const group = new THREE.Group();
+        scene.add(group);
+
+        const coreGeom = new THREE.IcosahedronGeometry(1.5, 1);
+        const coreMat = new THREE.MeshPhongMaterial({
+            color: 0x00ff88,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3,
+            emissive: 0x00ff88,
+            emissiveIntensity: 0.5
+        });
+        const core = new THREE.Mesh(coreGeom, coreMat);
+        group.add(core);
+
+        const innerGeom = new THREE.IcosahedronGeometry(0.8, 0);
+        const innerMat = new THREE.MeshStandardMaterial({
+            color: 0x00ff88,
+            metalness: 0.8,
+            roughness: 0.2,
+            emissive: 0x00ff88,
+            emissiveIntensity: 0.2
+        });
+        const inner = new THREE.Mesh(innerGeom, innerMat);
+        group.add(inner);
+
+        const pointsGeom = new THREE.BufferGeometry();
+        const pointsCount = 100;
+        const coords = new Float32Array(pointsCount * 3);
+        for(let i = 0; i < pointsCount * 3; i++) {
+            coords[i] = (Math.random() - 0.5) * 10;
+        }
+        pointsGeom.setAttribute('position', new THREE.BufferAttribute(coords, 3));
+        const pointsMat = new THREE.PointsMaterial({
+            color: 0x00ff88,
+            size: 0.05,
+            transparent: true,
+            opacity: 0.6
+        });
+        const points = new THREE.Points(pointsGeom, pointsMat);
+        scene.add(points);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00ff88, 2);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            group.rotation.y += 0.005;
+            group.rotation.z += 0.002;
+            core.rotation.y -= 0.01;
+            const pulse = Math.sin(Date.now() * 0.002) * 0.1 + 1.0;
+            group.scale.set(pulse, pulse, pulse);
+            points.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+        animate();
+    })();
+
+    // Price decay simulation
+    let basePrice = 2399;
+    const priceDisplay = document.querySelector('.font-price-display');
+    setInterval(() => {
+        basePrice -= 0.01;
+        if (priceDisplay) {
+            priceDisplay.textContent = `$${basePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+    }, 100);
+
+    // Micro-interactions
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+    });
+</script>
+</body></html>

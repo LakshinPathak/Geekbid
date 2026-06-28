@@ -129,37 +129,37 @@ const FEATURES = [
  icon: TrendingDown,
  title: "Reverse Price Decay",
  desc: "Prices start high and automatically decrease over time using our algorithmic pricing engine. The market finds the true rate — no negotiation needed.",
- gradient: "-500/10 ",
+ iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400", iconBorder: "border-emerald-500/20",
  },
  {
  icon: Shield,
  title: "Escrow Protection",
  desc: "Every payment is held in secure escrow until delivery is verified. 10% platform fee, full dispute resolution, and transparent fund release.",
- gradient: "-500/10 ",
+ iconBg: "bg-blue-500/10", iconColor: "text-blue-400", iconBorder: "border-blue-500/20",
  },
  {
  icon: BarChart3,
  title: "GeekScore™ Rating",
  desc: "Our proprietary reputation system scores freelancers across delivery, quality, and reliability. Make confident hiring decisions backed by data.",
- gradient: "-500/10 ",
+ iconBg: "bg-[rgba(201,168,76,0.12)]", iconColor: "text-[#c9a84c]", iconBorder: "border-[rgba(201,168,76,0.28)]",
  },
  {
  icon: MessageSquare,
  title: "Real-Time Chat",
  desc: "Built-in messaging with per-job chat rooms. Discuss scope, share updates, and collaborate — all inside the platform with Socket.IO live delivery.",
- gradient: "-500/10 ",
+ iconBg: "bg-purple-500/10", iconColor: "text-purple-400", iconBorder: "border-purple-500/20",
  },
  {
  icon: Bell,
  title: "Smart Notifications",
  desc: "Instant alerts for price drops, counter-bids, job matches, and payment events. Never miss an opportunity with targeted, actionable notifications.",
- gradient: "-500/10 ",
+ iconBg: "bg-amber-500/10", iconColor: "text-amber-400", iconBorder: "border-amber-500/20",
  },
  {
  icon: CreditCard,
  title: "Razorpay Payments",
  desc: "Integrated payment processing with Razorpay. Create orders, verify signatures, and manage the full escrow lifecycle from a single dashboard.",
- gradient: "-500/10 ",
+ iconBg: "bg-cyan-500/10", iconColor: "text-cyan-400", iconBorder: "border-cyan-500/20",
  },
 ];
 
@@ -214,22 +214,43 @@ const TESTIMONIALS = [
  {
  quote: "The escrow and dispute resolution gave us confidence to try GeekBid for our entire engineering pipeline. We've saved 40% on average.",
  name: "Derek Olsen",
- title: "VP Engineering, FinScale",
+ title: "VP Engineering",
+ company: "FinScale",
  avatar: "DO",
+ avatarGrad: "from-blue-500/40 to-blue-900/60",
+ ring: "shadow-[0_0_0_2px_rgba(96,165,250,0.4)]",
+ accent: "text-blue-400",
+ tag: "Client",
+ tagBg: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+ saved: "Saved 40%",
  rating: 5,
  },
  {
  quote: "I switched from Upwork after my first job on GeekBid. The price decay means I actually get fair market rates instead of racing to the bottom.",
  name: "Priya Sharma",
  title: "Senior Full-Stack Developer",
+ company: "Independent",
  avatar: "PS",
+ avatarGrad: "from-[#c9a84c]/40 to-[#8a6e2f]/60",
+ ring: "shadow-[0_0_0_2px_rgba(201,168,76,0.5)]",
+ accent: "text-[#c9a84c]",
+ tag: "Freelancer",
+ tagBg: "bg-[rgba(201,168,76,0.10)] border-[rgba(201,168,76,0.28)] text-[#c9a84c]",
+ saved: "Fair market rates",
  rating: 5,
  },
  {
  quote: "Posted a React Native project at $3,000. Three qualified engineers bid within 6 hours. Hired at $1,800. That's the power of reverse auctions.",
  name: "Marcus Chen",
- title: "CTO, LaunchPad AI",
+ title: "CTO",
+ company: "LaunchPad AI",
  avatar: "MC",
+ avatarGrad: "from-emerald-500/40 to-emerald-900/60",
+ ring: "shadow-[0_0_0_2px_rgba(52,211,153,0.4)]",
+ accent: "text-emerald-400",
+ tag: "Client",
+ tagBg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+ saved: "Hired at $1,800",
  rating: 5,
  },
 ];
@@ -245,9 +266,8 @@ const JOB_ROWS = [
 export default function LandingPage() {
  const { currentUser, mounted } = useApp();
  const router = useRouter();
- const [activeTestimonial, setActiveTestimonial] = useState(0);
-
  const statsSection = useInView(0.1);
+ const testimonialsSection = useInView(0.1);
  const stat0 = useCountUp(STATS[0].value, 2000, 0, statsSection.inView);
  const stat1 = useCountUp(12, 2000, 0, statsSection.inView);
  const stat2 = useCountUp(STATS[2].value, 2000, 0, statsSection.inView);
@@ -257,11 +277,6 @@ export default function LandingPage() {
  useEffect(() => {
  if (mounted && currentUser) router.replace("/feed");
  }, [mounted, currentUser, router]);
-
- useEffect(() => {
- const id = setInterval(() => setActiveTestimonial(p => (p + 1) % TESTIMONIALS.length), 6000);
- return () => clearInterval(id);
- }, []);
 
  if (!mounted || currentUser) return null;
 
@@ -296,9 +311,10 @@ export default function LandingPage() {
  {/* ═══ HERO ═══ */}
  <section className="relative min-h-[85vh] flex items-center justify-center px-6 lg:px-8 pt-12 pb-12">
  {/* Ambient glows */}
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[#c9a84c]/[0.04] rounded-full blur-[150px] pointer-events-none" />
- <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/[0.03] rounded-full blur-[120px] pointer-events-none" />
- <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-purple-500/[0.03] rounded-full blur-[100px] pointer-events-none" />
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#c9a84c]/[0.06] rounded-full blur-[160px] pointer-events-none" />
+ <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/[0.04] rounded-full blur-[130px] pointer-events-none" />
+ <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[110px] pointer-events-none" />
+ <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.3)] to-transparent pointer-events-none" />
 
  <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
  {/* Left: Copy */}
@@ -359,6 +375,33 @@ export default function LandingPage() {
 
 
  </section>
+
+ {/* ═══ SOCIAL PROOF STRIP ═══ */}
+ <div className="border-y border-[rgba(201,168,76,0.15)] bg-[#050810] py-3 overflow-hidden">
+ <div className="flex items-center gap-12 animate-marquee whitespace-nowrap" style={{ animation: "marquee 28s linear infinite" }}>
+ {[
+ { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
+ { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
+ { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
+ { icon: "✅", text: "React Dashboard · $1,650 · matched in 3h 20m" },
+ { icon: "⚡", text: "Mobile App · $3,000 · hired at $1,800" },
+ { icon: "🛡️", text: "Cloud Infra · $900 · dispute resolved in 24h" },
+ { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
+ { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
+ { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
+ { icon: "✅", text: "React Dashboard · $1,650 · matched in 3h 20m" },
+ { icon: "⚡", text: "Mobile App · $3,000 · hired at $1,800" },
+ { icon: "🛡️", text: "Cloud Infra · $900 · dispute resolved in 24h" },
+ ].map((item, i) => (
+ <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#a8997e] font-sans shrink-0">
+ <span>{item.icon}</span>
+ <span>{item.text}</span>
+ {i % 6 !== 5 && <span className="text-[rgba(201,168,76,0.3)] ml-4">·</span>}
+ </span>
+ ))}
+ </div>
+ <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
+ </div>
 
  {/* ═══ PRODUCT SHOWCASE ═══ */}
  <section className="relative py-16 sm:py-24 bg-[#050810]">
@@ -461,8 +504,8 @@ export default function LandingPage() {
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-start">
   {STEPS.map((s, idx) => (
    <>
-   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300">
-    <span className="text-8xl font-serif font-normal text-[rgba(201,168,76,0.06)] absolute -top-2 -left-2 group-hover:text-[rgba(201,168,76,0.14)] transition-colors leading-none select-none">{s.num}</span>
+   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden">
+    <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#c9a84c] border border-[rgba(201,168,76,0.28)] bg-[rgba(201,168,76,0.06)] px-1.5 py-0.5 rounded-[2px] tracking-wider">{s.num}</span>
     <div className="relative z-10">
      <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
       <s.icon className="h-5 w-5" />
@@ -512,10 +555,10 @@ export default function LandingPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {FEATURES.map(f => (
- <div key={f.title} className="group job-card p-8 relative">
+ <div key={f.title} className="group job-card p-8 relative hover:border-[rgba(201,168,76,0.32)] transition-all duration-300">
  <div className="relative z-10">
- <div className="h-14 w-14 rounded-[6px] bg-[rgba(201,168,76,0.07)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center mb-6 group-hover:border-[rgba(201,168,76,0.35)] transition-colors">
- <f.icon className="h-6 w-6 text-[#a8997e] group-hover:text-[#c9a84c] transition-colors" />
+ <div className={`h-14 w-14 rounded-[6px] ${f.iconBg} border ${f.iconBorder} flex items-center justify-center mb-6 transition-colors`}>
+ <f.icon className={`h-6 w-6 ${f.iconColor}`} />
  </div>
  <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{f.title}</h3>
  <p className="text-sm sm:text-base text-[#a8997e] leading-relaxed">{f.desc}</p>
@@ -573,35 +616,21 @@ export default function LandingPage() {
    </div>
   </div>
  ))}
- {COMPARISONS.map((c, i) => (
- <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] ${i < COMPARISONS.length - 1 ? "border-b border-[rgba(201,168,76,0.22)]" : ""}`}>
- <div className="p-4 sm:p-5 text-sm sm:text-base font-medium text-[#a8997e]">{c.feature}</div>
- <div className="p-4 sm:p-5 text-center border-x border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.03)]">
- <div className="flex items-start justify-center gap-2">
- <Check className="h-4 w-4 text-[#c9a84c] shrink-0 mt-0.5" />
- <span className="text-sm text-[#a8997e]">{c.geekbid}</span>
- </div>
- </div>
- <div className="p-4 sm:p-5 text-center">
- <div className="flex items-start justify-center gap-2">
- <X className="h-4 w-4 text-[#a8997e] shrink-0 mt-0.5" />
- <span className="text-sm text-[#a8997e]">{c.traditional}</span>
- </div>
- </div>
- </div>
- ))}
  </div>
  </div>
  </div>
  </section>
 
  {/* ═══ STATS ═══ */}
- <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
- <div className="mx-auto max-w-5xl px-5">
+ <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative overflow-hidden">
+ <div className="absolute inset-0 bg-[#050810] pointer-events-none" />
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#c9a84c]/[0.04] rounded-full blur-[100px] pointer-events-none" />
+ <div className="mx-auto max-w-5xl px-5 relative z-10">
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
  {STATS.map((s, i) => (
- <div key={s.label} className="text-center">
- <p className="text-5xl sm:text-6xl font-serif font-normal text-[#c9a84c] tabular-nums">
+ <div key={s.label} className="text-center group">
+ <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-[#c9a84c] to-transparent mx-auto mb-4 opacity-60" />
+ <p className="text-5xl sm:text-6xl font-serif font-normal text-[#c9a84c] tabular-nums group-hover:scale-105 transition-transform duration-300">
  {s.prefix}{i === 1 ? `${(statValues[i] / 10).toFixed(1)}` : statValues[i]}{s.suffix}
  </p>
  <p className="text-sm font-sans text-[#a8997e] mt-2 uppercase tracking-[0.08em]">{s.label}</p>
@@ -612,34 +641,74 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ TESTIMONIALS ═══ */}
- <section id="testimonials" className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
- <div className="mx-auto max-w-4xl px-5">
- <div className="text-center mb-16">
- <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Testimonials</p>
- <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
- Loved by engineers and clients alike
- </h2>
+ <section id="testimonials" ref={testimonialsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative overflow-hidden">
+ {/* Background decoration */}
+ <div className="absolute inset-0 pointer-events-none">
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#c9a84c]/[0.03] rounded-full blur-[120px]" />
+ <div className="absolute top-8 left-8 text-[200px] font-serif text-[rgba(201,168,76,0.03)] leading-none select-none hidden lg:block">&ldquo;</div>
+ <div className="absolute bottom-8 right-8 text-[200px] font-serif text-[rgba(201,168,76,0.03)] leading-none select-none hidden lg:block rotate-180">&ldquo;</div>
  </div>
 
- {/* Testimonial cards */}
- <div className="relative">
+ <div className="mx-auto max-w-6xl px-5 relative z-10">
+ <div className="text-center mb-16">
+ <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">What people say</p>
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
+ Loved by engineers<br className="hidden sm:block" /> and clients alike
+ </h2>
+ <p className="text-base text-[#a8997e] max-w-md mx-auto mt-4">Real results from real people using GeekBid to hire and get hired.</p>
+ </div>
+
+ {/* 3-col card grid */}
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
  {TESTIMONIALS.map((t, i) => (
  <div
  key={t.name}
- className={`transition-all duration-500 ${i === activeTestimonial ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 absolute inset-0 pointer-events-none"}`}
+ className="group relative rounded-[8px] p-px overflow-hidden"
+ style={{
+ background: "linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.04) 50%, rgba(201,168,76,0.12))",
+ opacity: testimonialsSection.inView ? 1 : 0,
+ transform: testimonialsSection.inView ? "translateY(0)" : "translateY(32px)",
+ transition: `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`,
+ }}
  >
- <div className="testimonial-card p-8 sm:p-12 text-center">
- <div className="flex gap-1 justify-center mb-8">
- {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-5 w-5 fill-[#c9a84c] text-[#c9a84c]" />)}
+ {/* inner card */}
+ <div className="rounded-[7px] bg-[#0a0d18] p-6 sm:p-7 h-full flex flex-col relative overflow-hidden group-hover:bg-[#0d1020] transition-colors duration-300">
+ {/* decorative quote */}
+ <span className="absolute top-4 right-5 text-6xl font-serif text-[rgba(201,168,76,0.08)] leading-none select-none group-hover:text-[rgba(201,168,76,0.14)] transition-colors duration-300">&rdquo;</span>
+
+ {/* Top row: role tag + stars */}
+ <div className="flex items-center justify-between mb-5">
+ <span className={`text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-[3px] border ${t.tagBg}`}>{t.tag}</span>
+ <div className="flex gap-0.5">
+ {[1,2,3,4,5].map(s => (
+ <Star key={s} className="h-3.5 w-3.5 fill-[#c9a84c] text-[#c9a84c]" />
+ ))}
  </div>
- <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif font-normal text-[#f0e8d4] leading-relaxed max-w-2xl mx-auto">
+ </div>
+
+ {/* Quote */}
+ <blockquote className="font-serif font-normal text-[#f0e8d4] text-base leading-relaxed flex-1 mb-6">
  &ldquo;{t.quote}&rdquo;
  </blockquote>
- <div className="mt-8 flex items-center justify-center gap-4">
- <div className="h-12 w-12 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.35)] flex items-center justify-center text-sm font-bold text-[#c9a84c]">{t.avatar}</div>
- <div className="text-left">
+
+ {/* Result pill */}
+ <div className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${t.accent} mb-5 self-start`}>
+ <CheckCircle2 className="h-3.5 w-3.5" />
+ {t.saved}
+ </div>
+
+ {/* Divider */}
+ <div className="h-px w-full bg-gradient-to-r from-[rgba(201,168,76,0.15)] via-[rgba(201,168,76,0.06)] to-transparent mb-5" />
+
+ {/* Attribution */}
+ <div className="flex items-center gap-3">
+ <div className={`relative h-11 w-11 rounded-full bg-gradient-to-br ${t.avatarGrad} ${t.ring} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
+ {t.avatar}
+ <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-[#0a0d18]" />
+ </div>
+ <div>
  <p className="text-sm font-semibold text-[#f0e8d4]">{t.name}</p>
- <p className="text-xs text-[#a8997e] mt-0.5">{t.title}</p>
+ <p className="text-[11px] text-[#a8997e] mt-0.5">{t.title} · <span className={t.accent}>{t.company}</span></p>
  </div>
  </div>
  </div>
@@ -647,14 +716,18 @@ export default function LandingPage() {
  ))}
  </div>
 
- {/* Dots */}
- <div className="flex justify-center gap-2 mt-8">
- {TESTIMONIALS.map((_, i) => (
- <button
- key={i}
- onClick={() => setActiveTestimonial(i)}
- className={`h-0.5 rounded-none transition-all duration-300 ${i === activeTestimonial ? "w-8 bg-[#c9a84c]" : "w-3 bg-[rgba(201,168,76,0.25)] hover:bg-[rgba(201,168,76,0.50)]"}`}
- />
+ {/* Bottom trust strip */}
+ <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+ {[
+ { val: "2,400+", label: "Active Freelancers" },
+ { val: "94%", label: "Client Satisfaction" },
+ { val: "$1.2M+", label: "Total Paid Out" },
+ { val: "< 4hr", label: "Avg Match Time" },
+ ].map(s => (
+ <div key={s.label} className="text-center">
+ <p className="text-xl font-serif text-[#c9a84c]">{s.val}</p>
+ <p className="text-[10px] uppercase tracking-wider text-[#a8997e] mt-0.5">{s.label}</p>
+ </div>
  ))}
  </div>
  </div>
@@ -716,11 +789,17 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ FINAL CTA ═══ */}
- <section className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative grid-bg">
+ <section className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative grid-bg overflow-hidden">
  <div className="absolute inset-0 overflow-hidden pointer-events-none">
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[#c9a84c]/[0.07] rounded-full blur-[160px]" />
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#c9a84c]/[0.09] rounded-full blur-[160px]" />
+ <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.4)] to-transparent" />
+ <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.2)] to-transparent" />
  </div>
  <div className="mx-auto max-w-4xl px-5 text-center relative z-10">
+ <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#c9a84c] border border-[rgba(201,168,76,0.22)] px-3 py-1.5 rounded-[2px] mb-8 font-sans">
+ <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse inline-block" />
+ Join 2,400+ engineers on GeekBid
+ </div>
  <h2 className="text-4xl sm:text-6xl md:text-7xl font-serif font-normal text-[#f0e8d4] leading-[1.05]">
  Ready to hire<br /><em className="text-[#c9a84c] not-italic">smarter?</em>
  </h2>
@@ -730,7 +809,7 @@ export default function LandingPage() {
  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
  <Link href="/login?tab=register&role=client">
  <button className="group btn-primary text-base px-12 py-4 rounded-[3px]">
- Get Started Free <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+ Get Started Free <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
  </button>
  </Link>
  <Link href="/login?tab=register&role=freelancer">
@@ -739,6 +818,7 @@ export default function LandingPage() {
  </button>
  </Link>
  </div>
+ <p className="text-xs text-[#a8997e] mt-6 opacity-60">No credit card required · Free to post · 10% success fee only</p>
  </div>
  </section>
 
@@ -793,14 +873,6 @@ export default function LandingPage() {
  {/* Bottom bar */}
  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[rgba(201,168,76,0.22)]">
  <p className="text-xs text-[#a8997e]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
- <div className="flex items-center gap-1 text-xs text-[#a8997e]">
- <span>Built with</span>
- <span className="text-[#a8997e]">Next.js</span>
- <span>&middot;</span>
- <span className="text-[#a8997e]">MongoDB</span>
- <span>&middot;</span>
- <span className="text-[#a8997e]">Socket.IO</span>
- </div>
  </div>
  </div>
  </footer>

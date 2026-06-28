@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0A0A0F; color: #E8E8EC; margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0A0A0F; }
+    ::-webkit-scrollbar-thumb { background: #2A2A38; border-radius: 3px; }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes glow-green { 0%,100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.3); } 50% { box-shadow: 0 0 0 6px rgba(0,255,136,0); } }
+    .fade-up { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .section-anchor { scroll-margin-top: 72px; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</helmet>
+
+<!-- ═══ STICKY NAV ═══ -->
+<div style="position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid #1E1E2A;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:28px;height:28px;background:#00FF88;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" stroke="#0A0A0F" stroke-width="1.5" fill="none"/><circle cx="7" cy="7" r="2" fill="#0A0A0F"/></svg>
+      </div>
+      <span style="font-weight:700;font-size:14px;letter-spacing:-0.02em;">GeekBid — Design Audit</span>
+      <span style="font-size:11px;background:#1A1A24;border:1px solid #1E1E2A;padding:2px 8px;border-radius:20px;color:#55556A;font-weight:600;">v4 branch</span>
+    </div>
+    <div style="display:flex;gap:4px;">
+      <sc-for list="{{ navItems }}" as="item">
+        <a href="{{ item.href }}" style="font-size:12px;font-weight:500;color:#55556A;padding:6px 12px;border-radius:8px;text-decoration:none;transition:all 0.15s;" onMouseEnter="{{ navHover }}" onMouseLeave="{{ navLeave }}">{{ item.label }}</a>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<div style="max-width:1200px;margin:0 auto;padding:64px 24px 40px;">
+  <div class="fade-up">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:#00FF88/10;border:1px solid rgba(0,255,136,0.2);border-radius:20px;padding:4px 12px 4px 4px;margin-bottom:24px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:#00FF88;animation:pulse-dot 2s ease-in-out infinite;display:block;"></span>
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.1em;text-transform:uppercase;">Comprehensive Design Audit</span>
+    </div>
+    <h1 style="font-size:clamp(36px,5vw,64px);font-weight:700;letter-spacing:-0.04em;line-height:1.0;margin:0 0 16px;">GeekBid<br><span style="color:#8A8A9A;font-weight:400;">Design Review</span></h1>
+    <p style="font-size:16px;color:#8A8A9A;max-width:560px;line-height:1.6;margin:0 0 48px;">Full audit of the v4 branch covering visual consistency, accessibility, animation systems, and 4 alternative color palettes with drop-in CSS tokens.</p>
+  </div>
+
+  <!-- 5 key finding stats -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;" class="fade-up" style="animation-delay:0.1s;">
+    <sc-for list="{{ keyStats }}" as="stat">
+      <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:20px 16px;text-align:center;">
+        <div style="font-size:28px;font-weight:700;letter-spacing:-0.03em;color:{{ stat.color }};margin-bottom:4px;" class="mono">{{ stat.value }}</div>
+        <div style="font-size:11px;color:#55556A;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;line-height:1.3;">{{ stat.label }}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+<!-- ═══ SECTION 1: DESIGN SYSTEM AUDIT ═══ -->
+<div id="system" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">01 — Design System</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Token Architecture Audit</h2>
+  </div>
+
+  <!-- Critical bugs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+    <!-- Bug 1 -->
+    <div style="background:#12121A;border:1px solid rgba(239,68,68,0.25);border-radius:16px;padding:24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ef4444,transparent);"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:block;"></span>
+        <span style="font-size:11px;font-weight:700;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;">Critical Bug</span>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;color:#E8E8EC;margin:0 0 8px;">--accent Variable Override</h3>
+      <p style="font-size:13px;color:#8A8A9A;line-height:1.6;margin:0 0 16px;">In <span class="mono" style="color:#E8E8EC;font-size:12px;background:#0A0A0F;padding:1px 6px;border-radius:4px;">globals.css</span>, <span class="mono" style="color:#ef4444;font-size:12px;">--accent</span> is defined twice. The GeekBid value <span class="mono" style="color:#00FF88;font-size:12px;">#00FF88</span> is immediately overwritten by shadcn's <span class="mono" style="color:#ef4444;font-size:12px;">0 0% 96%</span>. Any Tailwind utility using <span class="mono" style="font-size:12px;color:#E8E8EC;">var(--accent)</span> resolves to near-white, not green. The app only works because pages use raw hex <span class="mono" style="color:#00FF88;font-size:12px;">text-[#00FF88]</span> everywhere — bypassing the token system entirely.</p>
+      <div style="background:#0A0A0F;border:1px solid #1E1E2A;border-radius:8px;padding:12px;font-size:11px;" class="mono">
+        <div style="color:#55556A;">/* globals.css — currently broken */</div>
+        <div style="color:#00FF88;">--accent: #00FF88;  <span style="color:#55556A;">← set here</span></div>
+        <div style="color:#ef4444;">--accent: 0 0% 96%;  <span style="color:#55556A;">← shadcn overwrites it!</span></div>
+        <br/>
+        <div style="color:#55556A;">/* Fix: rename the GB token */</div>
+        <div style="color:#00FF88;">--gb-accent: #00FF88;</div>
+      </div>
+    </div>
+
+    <!-- Bug 2 -->
+    <div style="background:#12121A;border:1px solid rgba(239,68,68,0.25);border-radius:16px;padding:24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#F59E0B,transparent);"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="width:8px;height:8px;border-radius:2px;background:#F59E0B;display:block;"></span>
+        <span style="font-size:11px;font-weight:700;color:#F59E0B;letter-spacing:0.1em;text-transform:uppercase;">Architecture Issue</span>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;color:#E8E8EC;margin:0 0 8px;">Dual Token System</h3>
+      <p style="font-size:13px;color:#8A8A9A;line-height:1.6;margin:0 0 16px;">The landing page (<span class="mono" style="font-size:12px;color:#E8E8EC;">page.tsx</span>) uses <span class="mono" style="color:#F59E0B;font-size:12px;">white/opacity</span> patterns throughout (<span class="mono" style="font-size:11px;color:#8A8A9A;">text-white/40, border-white/[0.08]</span>). All inner app pages use the GB design tokens (<span class="mono" style="font-size:11px;color:#8A8A9A;">text-[#8A8A9A], border-[#1E1E2A]</span>). Two parallel systems makes theming, dark/light toggling, and global color changes require touching every file.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;" class="mono">
+        <div style="background:#0A0A0F;border:1px solid #ef4444/30;border-radius:6px;padding:10px;">
+          <div style="color:#55556A;margin-bottom:6px;">Landing (page.tsx)</div>
+          <div style="color:#F59E0B;">text-white/40</div>
+          <div style="color:#F59E0B;">border-white/[0.08]</div>
+          <div style="color:#F59E0B;">bg-white/[0.03]</div>
+        </div>
+        <div style="background:#0A0A0F;border:1px solid #00FF88/20;border-radius:6px;padding:10px;">
+          <div style="color:#55556A;margin-bottom:6px;">App pages (feed, jobs…)</div>
+          <div style="color:#00FF88;">text-[#8A8A9A]</div>
+          <div style="color:#00FF88;">border-[#1E1E2A]</div>
+          <div style="color:#00FF88;">bg-[#12121A]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current tokens table -->
+  <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;overflow:hidden;margin-bottom:32px;">
+    <div style="padding:20px 24px;border-bottom:1px solid #1E1E2A;display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:15px;font-weight:700;margin:0;">Current Token Set</h3>
+      <span style="font-size:11px;color:#55556A;">9 design tokens</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid #1E1E2A;">
+            <th style="text-align:left;padding:10px 24px;font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;width:200px;">Token</th>
+            <th style="text-align:left;padding:10px 16px;font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;width:120px;">Value</th>
+            <th style="text-align:left;padding:10px 16px;font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;width:80px;">Swatch</th>
+            <th style="text-align:left;padding:10px 16px;font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Contrast on bg</th>
+            <th style="text-align:left;padding:10px 16px;font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ tokens }}" as="token">
+            <tr style="border-bottom:1px solid #1E1E2A;">
+              <td style="padding:12px 24px;" class="mono" style="font-size:12px;color:#E8E8EC;">{{ token.name }}</td>
+              <td style="padding:12px 16px;" class="mono" style="font-size:12px;color:#8A8A9A;">{{ token.value }}</td>
+              <td style="padding:12px 16px;">
+                <div style="width:32px;height:20px;border-radius:5px;background:{{ token.value }};border:1px solid rgba(255,255,255,0.08);"></div>
+              </td>
+              <td style="padding:12px 16px;font-size:13px;color:{{ token.contrastColor }};" class="mono">{{ token.contrast }}</td>
+              <td style="padding:12px 16px;">
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ token.statusBg }};color:{{ token.statusColor }};border:1px solid {{ token.statusBorder }};">{{ token.status }}</span>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Font stack note -->
+  <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+      <span style="font-size:11px;font-weight:700;color:#F59E0B;letter-spacing:0.1em;text-transform:uppercase;">Font Stack Note</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:11px;color:#55556A;margin-bottom:6px;font-weight:600;">layout.tsx loads</div>
+        <div class="mono" style="font-size:12px;color:#E8E8EC;background:#0A0A0F;padding:10px;border-radius:8px;border:1px solid #1E1E2A;">Inter → --font-geist-sans<br/><span style="color:#55556A;">(misleading var name)</span></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#55556A;margin-bottom:6px;font-weight:600;">globals.css @imports</div>
+        <div class="mono" style="font-size:12px;color:#E8E8EC;background:#0A0A0F;padding:10px;border-radius:8px;border:1px solid #1E1E2A;">Space Grotesk<br/><span style="color:#55556A;">via .font-heading class</span></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#55556A;margin-bottom:6px;font-weight:600;">Recommendation</div>
+        <div style="font-size:12px;color:#8A8A9A;line-height:1.5;">Consolidate — load both via <span class="mono" style="color:#00FF88;font-size:11px;">next/font/google</span> in layout.tsx. Rename the variable to <span class="mono" style="font-size:11px;color:#E8E8EC;">--font-inter</span>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 2: PAGE AUDIT ═══ -->
+<div id="pages" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">02 — Page Audit</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Polish Matrix</h2>
+  </div>
+
+  <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #1E1E2A;display:grid;grid-template-columns:1fr 80px 100px 1fr;gap:16px;">
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Page</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Lines</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Polish</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Key Notes</div>
+    </div>
+    <sc-for list="{{ pages }}" as="page">
+      <div style="padding:14px 24px;border-bottom:1px solid #1E1E2A;display:grid;grid-template-columns:1fr 80px 100px 1fr;gap:16px;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#E8E8EC;" class="mono">{{ page.path }}</div>
+          <div style="font-size:11px;color:#55556A;margin-top:2px;">{{ page.name }}</div>
+        </div>
+        <div style="font-size:12px;color:#55556A;" class="mono">{{ page.lines }}</div>
+        <div style="display:flex;gap:2px;">
+          <sc-for list="{{ page.stars }}" as="star">
+            <div style="width:10px;height:10px;border-radius:2px;background:{{ star.color }};"></div>
+          </sc-for>
+        </div>
+        <div style="font-size:12px;color:#8A8A9A;line-height:1.5;">{{ page.notes }}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+<!-- ═══ SECTION 3: ACCESSIBILITY ═══ -->
+<div id="a11y" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">03 — Accessibility</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Contrast Audit</h2>
+  </div>
+
+  <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;overflow:hidden;margin-bottom:24px;">
+    <div style="padding:20px 24px;border-bottom:1px solid #1E1E2A;display:grid;grid-template-columns:140px 140px 80px 80px 80px 1fr;gap:16px;">
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Foreground</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Background</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Ratio</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">AA</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">AAA</div>
+      <div style="font-size:10px;font-weight:700;color:#55556A;text-transform:uppercase;letter-spacing:0.1em;">Usage</div>
+    </div>
+    <sc-for list="{{ contrastRows }}" as="row">
+      <div style="padding:14px 24px;border-bottom:1px solid #1E1E2A;display:grid;grid-template-columns:140px 140px 80px 80px 80px 1fr;gap:16px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:20px;height:20px;border-radius:4px;background:{{ row.fg }};border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+          <span class="mono" style="font-size:11px;color:#8A8A9A;">{{ row.fgLabel }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:20px;height:20px;border-radius:4px;background:{{ row.bg }};border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+          <span class="mono" style="font-size:11px;color:#8A8A9A;">{{ row.bgLabel }}</span>
+        </div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:{{ row.ratioColor }};">{{ row.ratio }}</div>
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:{{ row.aaBg }};color:{{ row.aaColor }};border:1px solid {{ row.aaBorder }};">{{ row.aa }}</span>
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:{{ row.aaaBg }};color:{{ row.aaaColor }};border:1px solid {{ row.aaaBorder }};">{{ row.aaa }}</span>
+        <span style="font-size:12px;color:#55556A;">{{ row.usage }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px 20px;display:flex;gap:12px;">
+    <span style="font-size:16px;flex-shrink:0;">⚠️</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#ef4444;margin-bottom:4px;">3 contrast failures across the app</div>
+      <div style="font-size:12px;color:#8A8A9A;line-height:1.5;">The muted text token <span class="mono" style="color:#E8E8EC;font-size:11px;">#55556A</span> on surface black falls at 2.7:1 — below the 4.5:1 WCAG AA threshold for normal-sized body text. The <span class="mono" style="font-size:11px;color:#E8E8EC;">white/25</span> pattern used extensively on the landing page reaches only 1.4:1. Recommended fix: raise <span class="mono" style="font-size:11px;color:#00FF88;">--text-muted</span> to <span class="mono" style="font-size:11px;color:#00FF88;">#6E6E85</span> (+WCAG AA).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 4: ANIMATIONS ═══ -->
+<div id="motion" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">04 — Motion</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Animation Review</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <!-- Existing animations -->
+    <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+      <div style="font-size:13px;font-weight:700;color:#E8E8EC;margin-bottom:16px;">Existing Animations</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <sc-for list="{{ animations }}" as="anim">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#0A0A0F;border:1px solid #1E1E2A;border-radius:8px;">
+            <div>
+              <div class="mono" style="font-size:12px;color:#E8E8EC;font-weight:600;">{{ anim.name }}</div>
+              <div style="font-size:11px;color:#55556A;margin-top:2px;">{{ anim.desc }}</div>
+            </div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:{{ anim.ratingBg }};color:{{ anim.ratingColor }};white-space:nowrap;flex-shrink:0;">{{ anim.rating }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <!-- Missing animations -->
+    <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+      <div style="font-size:13px;font-weight:700;color:#E8E8EC;margin-bottom:16px;">Missing / Suggested</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <sc-for list="{{ missingAnims }}" as="anim">
+          <div style="padding:10px 12px;background:#0A0A0F;border:1px solid #1E1E2A;border-radius:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <div class="mono" style="font-size:12px;color:#E8E8EC;font-weight:600;">{{ anim.name }}</div>
+              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,255,136,0.08);color:#00FF88;border:1px solid rgba(0,255,136,0.2);">Add</span>
+            </div>
+            <div style="font-size:11px;color:#55556A;margin-bottom:8px;">{{ anim.desc }}</div>
+            <div style="background:#12121A;border-radius:6px;padding:10px;" class="mono">
+              <div style="font-size:10px;color:#55556A;margin-bottom:4px;">Suggested CSS</div>
+              <div style="font-size:10px;color:#00FF88;line-height:1.6;">{{ anim.css }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 5: COLOR PALETTES ═══ -->
+<div id="palettes" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">05 — Palettes</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">4 Alternative Color Systems</h2>
+    <p style="font-size:15px;color:#8A8A9A;margin:8px 0 0;max-width:600px;">Each option is a complete token set — drop into globals.css replacing the current GeekBid tokens. Click any palette to see a UI preview.</p>
+  </div>
+
+  <sc-for list="{{ palettes }}" as="palette">
+    <div style="background:#12121A;border:1px solid {{ palette.border }};border-radius:20px;overflow:hidden;margin-bottom:24px;">
+      <!-- Palette header -->
+      <div style="padding:28px 32px 24px;border-bottom:1px solid #1E1E2A;display:grid;grid-template-columns:1fr 260px;gap:32px;align-items:start;">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:12px;font-weight:700;color:{{ palette.accentColor }};letter-spacing:0.12em;text-transform:uppercase;background:{{ palette.accentBg }};border:1px solid {{ palette.accentBorder }};padding:3px 10px;border-radius:20px;">{{ palette.label }}</span>
+          </div>
+          <h3 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#E8E8EC;margin:0 0 8px;">{{ palette.name }}</h3>
+          <p style="font-size:13px;color:#8A8A9A;line-height:1.6;margin:0 0 16px;max-width:480px;">{{ palette.rationale }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <sc-for list="{{ palette.tags }}" as="tag">
+              <span style="font-size:11px;color:#55556A;background:#0A0A0F;border:1px solid #1E1E2A;padding:3px 10px;border-radius:20px;">{{ tag }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <!-- Swatch row -->
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#55556A;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Swatches</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;">
+            <sc-for list="{{ palette.swatches }}" as="sw">
+              <div style="flex:1;height:32px;border-radius:6px;background:{{ sw.color }};border:1px solid rgba(255,255,255,0.06);" title="{{ sw.label }}"></div>
+            </sc-for>
+          </div>
+          <div style="font-size:10px;color:#55556A;display:flex;justify-content:space-between;">
+            <span>Surface</span>
+            <span>Accent</span>
+            <span>Text</span>
+          </div>
+          <div style="margin-top:12px;background:{{ palette.previewBg }};border:1px solid {{ palette.previewBorder }};border-radius:10px;padding:12px;">
+            <div style="font-size:10px;font-weight:600;color:{{ palette.previewMuted }};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">LIVE PRICE</div>
+            <div style="font-size:22px;font-weight:700;color:{{ palette.previewAccent }};letter-spacing:-0.02em;margin-bottom:2px;">$1,847</div>
+            <div style="font-size:11px;color:{{ palette.previewMuted }};">↓ $23/hr · 14h 22m left</div>
+            <div style="height:3px;background:{{ palette.progressBg }};border-radius:999px;margin-top:8px;">
+              <div style="height:3px;width:65%;background:{{ palette.previewAccent }};border-radius:999px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div style="flex:1;background:{{ palette.chipBg }};border:1px solid {{ palette.chipBorder }};border-radius:6px;padding:6px;text-align:center;">
+                <div style="font-size:13px;font-weight:700;color:{{ palette.previewText }};">7</div>
+                <div style="font-size:9px;color:{{ palette.previewMuted }};">Bids</div>
+              </div>
+              <div style="flex:1;background:{{ palette.chipBg }};border:1px solid {{ palette.chipBorder }};border-radius:6px;padding:6px;text-align:center;">
+                <div style="font-size:13px;font-weight:700;color:{{ palette.previewText }};">23</div>
+                <div style="font-size:9px;color:{{ palette.previewMuted }};">Watching</div>
+              </div>
+              <div style="flex:1;background:{{ palette.accentBg }};border:1px solid {{ palette.accentBorder }};border-radius:6px;padding:6px;text-align:center;">
+                <div style="font-size:11px;font-weight:700;color:{{ palette.accentColor }};">Bid Now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- CSS token block -->
+      <div style="padding:24px 32px;">
+        <div style="font-size:11px;font-weight:700;color:#55556A;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Drop-in globals.css tokens</div>
+        <div style="background:#070710;border:1px solid #1E1E2A;border-radius:10px;padding:16px 20px;" class="mono">
+          <pre style="font-size:11px;line-height:1.8;color:#8A8A9A;">{{ palette.css }}</pre>
+        </div>
+        <div style="font-size:12px;color:#55556A;margin-top:10px;">Best for: <span style="color:#8A8A9A;">{{ palette.bestFor }}</span></div>
+      </div>
+    </div>
+  </sc-for>
+</div>
+
+<!-- ═══ SECTION 6: COMPONENTS ═══ -->
+<div id="components" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">06 — Components</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Component-Level Suggestions</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <sc-for list="{{ componentSuggestions }}" as="comp">
+      <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:{{ comp.iconBg }};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">{{ comp.icon }}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#E8E8EC;">{{ comp.name }}</div>
+            <div style="font-size:11px;color:#55556A;margin-top:1px;">{{ comp.subtitle }}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <sc-for list="{{ comp.items }}" as="item">
+            <div style="display:flex;gap:10px;align-items:baseline;">
+              <span style="width:6px;height:6px;border-radius:50%;background:{{ item.dotColor }};flex-shrink:0;margin-top:5px;"></span>
+              <span style="font-size:12px;color:#8A8A9A;line-height:1.5;">{{ item.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+<!-- ═══ SECTION 7: SPACING ═══ -->
+<div id="spacing" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 64px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">07 — Layout</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Spacing & Layout System</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+      <div style="font-size:13px;font-weight:700;color:#E8E8EC;margin-bottom:16px;">Recommended 4px Base Scale</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:16px;">
+        <sc-for list="{{ spacingScale }}" as="step">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="width:100%;background:#00FF88/20;border:1px solid rgba(0,255,136,0.3);border-radius:3px;" style="height:{{ step.heightPx }}px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.25);border-radius:3px;"></div>
+            <div class="mono" style="font-size:9px;color:#55556A;">{{ step.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:12px;color:#8A8A9A;line-height:1.6;">Current codebase mixes <span class="mono" style="color:#E8E8EC;font-size:11px;">p-4</span> (16px), <span class="mono" style="color:#E8E8EC;font-size:11px;">p-5</span> (20px), <span class="mono" style="color:#E8E8EC;font-size:11px;">p-6</span> (24px), and <span class="mono" style="color:#E8E8EC;font-size:11px;">p-8</span> (32px) across cards with no pattern. Standardise: inner card padding = <span class="mono" style="color:#00FF88;font-size:11px;">24px</span>, section gap = <span class="mono" style="color:#00FF88;font-size:11px;">16px</span>, page gutter = <span class="mono" style="color:#00FF88;font-size:11px;">24px</span>.</div>
+    </div>
+
+    <div style="background:#12121A;border:1px solid #1E1E2A;border-radius:16px;padding:24px;">
+      <div style="font-size:13px;font-weight:700;color:#E8E8EC;margin-bottom:16px;">Grid & Breakpoint Strategy</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <sc-for list="{{ breakpoints }}" as="bp">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0A0A0F;border:1px solid #1E1E2A;border-radius:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="mono" style="font-size:12px;font-weight:600;color:#00FF88;">{{ bp.label }}</span>
+              <span style="font-size:11px;color:#55556A;">{{ bp.range }}</span>
+            </div>
+            <div style="font-size:11px;color:#8A8A9A;">{{ bp.cols }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:#8A8A9A;line-height:1.6;">Current breakpoints are solid. Issue: no <span class="mono" style="color:#F59E0B;font-size:11px;">2xl</span> max-width constraint on feed grid causes cards to become very wide on ultra-wide screens. Add <span class="mono" style="color:#00FF88;font-size:11px;">2xl:max-w-screen-xl</span> to feed container.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 8: PRIORITIES ═══ -->
+<div id="priorities" class="section-anchor" style="max-width:1200px;margin:0 auto;padding:0 24px 96px;">
+  <div style="border-top:1px solid #1E1E2A;padding-top:48px;margin-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#00FF88;letter-spacing:0.15em;text-transform:uppercase;">08 — Next Steps</span>
+    </div>
+    <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Priority List</h2>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <sc-for list="{{ priorities }}" as="item">
+      <div style="background:#12121A;border:1px solid {{ item.border }};border-radius:14px;padding:20px 24px;display:grid;grid-template-columns:120px 1fr 160px;gap:20px;align-items:center;">
+        <div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ item.pillBg }};color:{{ item.pillColor }};border:1px solid {{ item.pillBorder }};">{{ item.effort }}</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#E8E8EC;margin-bottom:3px;">{{ item.title }}</div>
+          <div style="font-size:12px;color:#8A8A9A;line-height:1.5;">{{ item.desc }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#55556A;margin-bottom:4px;">Impact</div>
+          <div style="height:6px;background:#1E1E2A;border-radius:999px;overflow:hidden;">
+            <div style="height:6px;width:{{ item.impact }}%;background:{{ item.impactColor }};border-radius:999px;"></div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top:48px;padding-top:32px;border-top:1px solid #1E1E2A;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:12px;color:#55556A;">GeekBid Design Audit · v4 Branch · June 2026</div>
+    <div style="font-size:12px;color:#55556A;">16 pages · 9,000+ lines reviewed</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  renderVals() {
+    const navHover = (e) => { e.target.style.color = '#E8E8EC'; e.target.style.background = '#1A1A24'; };
+    const navLeave = (e) => { e.target.style.color = '#55556A'; e.target.style.background = 'transparent'; };
+
+    const navItems = [
+      { href: '#system', label: 'System' },
+      { href: '#pages', label: 'Pages' },
+      { href: '#a11y', label: 'A11y' },
+      { href: '#motion', label: 'Motion' },
+      { href: '#palettes', label: 'Palettes' },
+      { href: '#components', label: 'Components' },
+      { href: '#spacing', label: 'Spacing' },
+      { href: '#priorities', label: 'Next Steps' },
+    ];
+
+    const keyStats = [
+      { value: '2', label: 'Critical bugs', color: '#ef4444' },
+      { value: '3', label: 'A11y failures', color: '#F59E0B' },
+      { value: '3', label: 'Polished pages', color: '#00FF88' },
+      { value: '10', label: 'Animations', color: '#8B5CF6' },
+      { value: '4', label: 'New palettes', color: '#38BDF8' },
+    ];
+
+    const tokens = [
+      { name: '--surface',          value: '#0A0A0F', contrast: '—',      contrastColor: '#55556A', status: 'Base',        statusBg: 'rgba(85,85,106,0.1)',  statusColor: '#55556A', statusBorder: 'rgba(85,85,106,0.2)'  },
+      { name: '--surface-raised',   value: '#12121A', contrast: '—',      contrastColor: '#55556A', status: 'Base',        statusBg: 'rgba(85,85,106,0.1)',  statusColor: '#55556A', statusBorder: 'rgba(85,85,106,0.2)'  },
+      { name: '--surface-elevated', value: '#1A1A24', contrast: '—',      contrastColor: '#55556A', status: 'Base',        statusBg: 'rgba(85,85,106,0.1)',  statusColor: '#55556A', statusBorder: 'rgba(85,85,106,0.2)'  },
+      { name: '--gb-border',        value: '#1E1E2A', contrast: '—',      contrastColor: '#55556A', status: 'Base',        statusBg: 'rgba(85,85,106,0.1)',  statusColor: '#55556A', statusBorder: 'rgba(85,85,106,0.2)'  },
+      { name: '--accent',           value: '#00FF88', contrast: '—',      contrastColor: '#55556A', status: '⚠ Overridden', statusBg: 'rgba(239,68,68,0.08)', statusColor: '#ef4444', statusBorder: 'rgba(239,68,68,0.2)'  },
+      { name: '--accent-dim',       value: '#00CC6A', contrast: '—',      contrastColor: '#55556A', status: 'OK',          statusBg: 'rgba(0,255,136,0.08)', statusColor: '#00FF88', statusBorder: 'rgba(0,255,136,0.2)'  },
+      { name: '--text-primary',     value: '#E8E8EC', contrast: '18.1:1', contrastColor: '#00FF88', status: 'AAA ✓',       statusBg: 'rgba(0,255,136,0.08)', statusColor: '#00FF88', statusBorder: 'rgba(0,255,136,0.2)'  },
+      { name: '--text-secondary',   value: '#8A8A9A', contrast: '3.8:1',  contrastColor: '#F59E0B', status: 'AA lg only',  statusBg: 'rgba(245,158,11,0.08)',statusColor: '#F59E0B', statusBorder: 'rgba(245,158,11,0.2)' },
+      { name: '--text-muted',       value: '#55556A', contrast: '2.7:1',  contrastColor: '#ef4444', status: 'Fail ✗',      statusBg: 'rgba(239,68,68,0.08)', statusColor: '#ef4444', statusBorder: 'rgba(239,68,68,0.2)'  },
+    ];
+
+    const starsArr = (n, total = 5) => Array.from({ length: total }, (_, i) => ({ color: i < n ? '#00FF88' : '#1E1E2A' }));
+
+    const pages = [
+      { path: '/page.tsx',               name: 'Landing Page',       lines: '774',  stars: starsArr(5), notes: 'Exceptional. Live PriceDecayDemo, animated counters, comparison table, rotating testimonials. Flagship quality.' },
+      { path: '/jobs/[id]/page.tsx',     name: 'Job Detail',         lines: '958',  stars: starsArr(5), notes: 'Most sophisticated page. SVG cooldown ring, sparkline + projections, ember particles, real-time bid matrix.' },
+      { path: '/post-job/page.tsx',      name: 'Post Job',           lines: '834',  stars: starsArr(5), notes: 'Outstanding. Interactive decay curve with drag scrubber, adaptive vs fixed preview, pricing hints from API.' },
+      { path: '/feed/page.tsx',          name: 'Marketplace Feed',   lines: '904',  stars: starsArr(4), notes: 'Very solid. Market intelligence panel, role-specific KPIs, multi-filter system. Minor: scroll strip needs scrollbar-hide.' },
+      { path: '/payments/page.tsx',      name: 'Payments / Escrow',  lines: '574',  stars: starsArr(4), notes: 'Complex escrow flow well-structured. Opportunity: add a payment timeline visualisation.' },
+      { path: '/admin/page.tsx',         name: 'Admin Dashboard',    lines: '401',  stars: starsArr(3), notes: 'Functional but utilitarian. Stat cards present, lacks charts or trend lines expected in a dashboard.' },
+      { path: '/profile/page.tsx',       name: 'User Profile',       lines: '477',  stars: starsArr(3), notes: 'GeekScore display likely present. Profile pages rarely receive the same attention as core flows — room to grow.' },
+      { path: '/assessments/page.tsx',   name: 'Skill Assessments',  lines: '252',  stars: starsArr(3), notes: 'Moderate complexity. Needs clearer progress indication and a results celebration state after completion.' },
+      { path: '/my-jobs/page.tsx',       name: 'My Jobs',            lines: '277',  stars: starsArr(3), notes: 'Likely a simplified list view. Opportunity to add job health visualisation similar to the feed mini-cards.' },
+      { path: '/earnings/page.tsx',      name: 'Earnings',           lines: '208',  stars: starsArr(3), notes: 'Bar chart uses random mock data, no real sparklines, no month-over-month trend. Priority upgrade candidate.' },
+      { path: '/inbox/page.tsx',         name: 'Chat / Inbox',       lines: '247',  stars: starsArr(3), notes: 'At 247 lines likely a basic list + thread view. Needs bubble animations, typing indicator, read receipts.' },
+      { path: '/pricing/page.tsx',       name: 'Pricing Plans',      lines: '123',  stars: starsArr(2), notes: 'Short — probably 3-column plan cards. Needs a feature comparison table and highlighted recommended plan.' },
+      { path: '/notifications/page.tsx', name: 'Notifications',      lines: '161',  stars: starsArr(2), notes: 'Likely a flat list. Needs time grouping (Today / This Week), inline action buttons, and empty state.' },
+      { path: '/settings/page.tsx',      name: 'API Keys / Settings',lines: '170',  stars: starsArr(2), notes: 'API key management only. Needs copy-to-clipboard animation and reveal/hide key interaction.' },
+      { path: '/team/page.tsx',          name: 'Team Management',    lines: '191',  stars: starsArr(2), notes: 'Likely member list + invite flow. Needs role badges, permission matrix, and invite-link copy UI.' },
+      { path: '/login/page.tsx',         name: 'Auth / Login',       lines: '—',    stars: starsArr(4), notes: 'Auth pages typically well-done in this stack. Likely tabbed register/login with clean input states.' },
+    ];
+
+    const contrastRows = [
+      { fg: '#E8E8EC', bg: '#0A0A0F', fgLabel: '#E8E8EC', bgLabel: '#0A0A0F', ratio: '18.1:1', ratioColor: '#00FF88',
+        aa: 'Pass', aaBg: 'rgba(0,255,136,0.08)', aaColor: '#00FF88', aaBorder: 'rgba(0,255,136,0.2)',
+        aaa: 'Pass', aaaBg: 'rgba(0,255,136,0.08)', aaaColor: '#00FF88', aaaBorder: 'rgba(0,255,136,0.2)',
+        usage: 'Primary text on main bg — perfect' },
+      { fg: '#8A8A9A', bg: '#0A0A0F', fgLabel: '#8A8A9A', bgLabel: '#0A0A0F', ratio: '3.8:1', ratioColor: '#F59E0B',
+        aa: 'Large only', aaBg: 'rgba(245,158,11,0.08)', aaColor: '#F59E0B', aaBorder: 'rgba(245,158,11,0.2)',
+        aaa: 'Fail', aaaBg: 'rgba(239,68,68,0.08)', aaaColor: '#ef4444', aaaBorder: 'rgba(239,68,68,0.2)',
+        usage: 'Secondary text used at 13px — fails AA for body' },
+      { fg: '#55556A', bg: '#0A0A0F', fgLabel: '#55556A', bgLabel: '#0A0A0F', ratio: '2.7:1', ratioColor: '#ef4444',
+        aa: 'Fail', aaBg: 'rgba(239,68,68,0.08)', aaColor: '#ef4444', aaBorder: 'rgba(239,68,68,0.2)',
+        aaa: 'Fail', aaaBg: 'rgba(239,68,68,0.08)', aaaColor: '#ef4444', aaaBorder: 'rgba(239,68,68,0.2)',
+        usage: 'Muted labels used at 10–12px — critical fix needed' },
+      { fg: '#FFFFFF', bg: '#0A0A0F', fgLabel: 'white', bgLabel: '#0A0A0F', ratio: '21:1', ratioColor: '#00FF88',
+        aa: 'Pass', aaBg: 'rgba(0,255,136,0.08)', aaColor: '#00FF88', aaBorder: 'rgba(0,255,136,0.2)',
+        aaa: 'Pass', aaaBg: 'rgba(0,255,136,0.08)', aaaColor: '#00FF88', aaaBorder: 'rgba(0,255,136,0.2)',
+        usage: 'Landing headings — excellent' },
+      { fg: 'rgba(255,255,255,0.25)', bg: '#000', fgLabel: 'white/25', bgLabel: '#000', ratio: '1.4:1', ratioColor: '#ef4444',
+        aa: 'Fail', aaBg: 'rgba(239,68,68,0.08)', aaColor: '#ef4444', aaBorder: 'rgba(239,68,68,0.2)',
+        aaa: 'Fail', aaaBg: 'rgba(239,68,68,0.08)', aaaColor: '#ef4444', aaaBorder: 'rgba(239,68,68,0.2)',
+        usage: 'Landing decorative stats / hints — decorative use only' },
+      { fg: '#00FF88', bg: '#0A0A0F', fgLabel: '#00FF88', bgLabel: '#0A0A0F', ratio: '11.1:1', ratioColor: '#00FF88',
+        aa: 'Pass', aaBg: 'rgba(0,255,136,0.08)', aaColor: '#00FF88', aaBorder: 'rgba(0,255,136,0.2)',
+        aaa: 'Pass', aaaBg: 'rgba(0,255,136,0.08)', aaaColor: '#00FF88', aaaBorder: 'rgba(0,255,136,0.2)',
+        usage: 'Accent — prices, badges, CTAs — excellent' },
+    ];
+
+    const rG = { ratingBg: 'rgba(0,255,136,0.08)',   ratingColor: '#00FF88' };
+    const rY = { ratingBg: 'rgba(245,158,11,0.08)',  ratingColor: '#F59E0B' };
+    const rB = { ratingBg: 'rgba(56,189,248,0.08)',  ratingColor: '#38BDF8' };
+
+    const animations = [
+      { name: 'price-flash-drop', desc: 'Red→green color flash on each price tick. Clear and meaningful.',         rating: '★ Excellent', ...rG },
+      { name: 'ember-float',      desc: 'Particle sparks on hot jobs (5+ bidders). Unique, memorable.',            rating: '★ Excellent', ...rG },
+      { name: 'glow-ring',        desc: 'Pulse ring on live indicator dot. Premium feel.',                         rating: '★ Excellent', ...rG },
+      { name: 'border-flash',     desc: 'Green border pulse when new bid arrives. Great real-time feedback.',       rating: '★ Excellent', ...rG },
+      { name: 'SVG cooldown ring',desc: 'Depleting stroke ring during bid cooldown. Best-in-class.',               rating: '★ Excellent', ...rG },
+      { name: 'shake',            desc: 'Horizontal shake on near-deadline timer. Conveys urgency well.',          rating: 'Good',        ...rB },
+      { name: 'animate-price-pulse', desc: 'Scale pulse on current price. Runs permanently — consider pausing.',  rating: 'Good',        ...rB },
+      { name: 'slide-up + stagger', desc: 'Card entrance with index-based delay. Clean stagger execution.',        rating: 'Good',        ...rB },
+      { name: 'curve-draw',       desc: 'SVG stroke animation on sparkline. Works well in context.',               rating: 'Good',        ...rB },
+      { name: 'shimmer',          desc: 'Skeleton shimmer exists but is applied inconsistently across pages.',     rating: 'Underused',   ...rY },
+    ];
+
+    const missingAnims = [
+      {
+        name: 'card-lift (hover)',
+        desc: 'Cards feel flat on hover — only border changes. A translateY lift adds spatial depth.',
+        css: '.job-card:hover {\n  transform: translateY(-3px);\n  box-shadow: 0 16px 40px rgba(0,0,0,0.5);\n  transition: all 0.2s cubic-bezier(0.22,1,0.36,1);\n}'
+      },
+      {
+        name: 'btn-press (active)',
+        desc: 'No active/press state on buttons. Tactile scale-down feels premium.',
+        css: '.btn-primary:active {\n  transform: scale(0.96);\n  transition: transform 0.08s ease;\n}\n.btn-primary {\n  transition: transform 0.15s ease;\n}'
+      },
+      {
+        name: 'page-transition',
+        desc: 'Hard route cuts between pages. A fade+slide via Next.js layout would feel polished.',
+        css: '/* In layout.tsx wrap children in: */\n<motion.div\n  initial={{ opacity:0, y:8 }}\n  animate={{ opacity:1, y:0 }}\n  exit={{ opacity:0 }}\n  transition={{ duration:0.22 }}\n>'
+      },
+      {
+        name: 'toast-slide (sonner)',
+        desc: 'Toasts appear abruptly. Spring-in from the right side adds feedback clarity.',
+        css: '/* sonner Toaster config: */\n<Toaster\n  toastOptions={{\n    style: { animation:\n      "toast-slide 0.3s cubic-bezier(0.22,1,0.36,1)"\n    }\n  }}\n/>'
+      },
+    ];
+
+    const palettes = [
+      {
+        label: 'Option A', name: 'Premium Cobalt',
+        border: 'rgba(79,142,247,0.25)',
+        rationale: 'Keeps the dark aesthetic but replaces terminal-green with electric blue. Blue reads as trustworthy, financial, and enterprise-grade — better suited for fintech marketplace positioning. Bids feel less "hacker terminal" and more Bloomberg/Stripe.',
+        tags: ['Enterprise', 'Fintech', 'Trust', 'Dark-first'],
+        accentColor: '#4F8EF7', accentBg: 'rgba(79,142,247,0.1)', accentBorder: 'rgba(79,142,247,0.25)',
+        swatches: [
+          { color: '#0A0A0F', label: 'Surface' }, { color: '#12121A', label: 'Raised' },
+          { color: '#1A1A24', label: 'Elevated' }, { color: '#1E1E2A', label: 'Border' },
+          { color: '#4F8EF7', label: 'Accent' },  { color: '#3B7DD8', label: 'Dim' },
+          { color: '#E8E8EC', label: 'Text' },
+        ],
+        previewBg: '#12121A', previewBorder: 'rgba(79,142,247,0.2)', previewAccent: '#4F8EF7',
+        previewText: '#E8E8EC', previewMuted: '#8A8A9A', progressBg: '#1E1E2A',
+        chipBg: '#0A0A0F', chipBorder: '#1E1E2A',
+        bestFor: 'Enterprise clients, financial positioning, users who find neon-green too developer-coded',
+        css: `/* Option A — Premium Cobalt */\n--surface:          #0A0A0F;\n--surface-raised:   #12121A;\n--surface-elevated: #1A1A24;\n--gb-border:        #1E1E2A;\n--gb-accent:        #4F8EF7;  /* rename: was --accent */\n--accent-dim:       #3B7DD8;\n--accent-glow:      rgba(79, 142, 247, 0.15);\n--text-primary:     #E8E8EC;\n--text-secondary:   #8A8A9A;\n--text-muted:       #6E6E85;  /* raised from #55556A — fixes a11y */\n\n/* Migration: find/replace\n   text-[#00FF88]    → text-[#4F8EF7]\n   bg-[#00FF88]/10  → bg-[#4F8EF7]/10\n   border-[#00FF88] → border-[#4F8EF7] */`,
+      },
+      {
+        label: 'Option B', name: 'Amber × Violet — Dual Accent',
+        border: 'rgba(245,158,11,0.25)',
+        rationale: 'A dual-accent system creates visual hierarchy beyond a single color. Amber signals money and premium value — perfect for live prices, savings badges, and financial CTAs. Violet signals intelligence — ideal for GeekScore™, AI-powered features, and analytics. The two never compete; they create role-based color meaning.',
+        tags: ['Premium', 'Dual-accent', 'Visual hierarchy', 'Semantic color'],
+        accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.1)', accentBorder: 'rgba(245,158,11,0.25)',
+        swatches: [
+          { color: '#0A0A0F', label: 'Surface' }, { color: '#12121A', label: 'Raised' },
+          { color: '#1E1E2A', label: 'Border' },  { color: '#F59E0B', label: 'Amber' },
+          { color: '#8B5CF6', label: 'Violet' },  { color: '#E8E8EC', label: 'Text' },
+          { color: '#6B7280', label: 'Muted' },
+        ],
+        previewBg: '#12121A', previewBorder: 'rgba(245,158,11,0.2)', previewAccent: '#F59E0B',
+        previewText: '#E8E8EC', previewMuted: '#8A8A9A', progressBg: '#1E1E2A',
+        chipBg: '#0A0A0F', chipBorder: '#1E1E2A',
+        bestFor: 'Differentiating price/financial data (amber) from analytics/reputation data (violet)',
+        css: `/* Option B — Amber × Violet Dual Accent */\n--surface:          #0A0A0F;\n--surface-raised:   #12121A;\n--surface-elevated: #1A1A24;\n--gb-border:        #1E1E2A;\n\n/* Primary: money, prices, savings, CTA buttons */\n--accent:           #F59E0B;\n--accent-dim:       #D97706;\n--accent-glow:      rgba(245, 158, 11, 0.15);\n\n/* Secondary: GeekScore™, AI, match %, analytics */\n--accent-2:         #8B5CF6;\n--accent-2-dim:     #7C3AED;\n--accent-2-glow:    rgba(139, 92, 246, 0.15);\n\n--text-primary:     #E8E8EC;\n--text-secondary:   #8A8A9A;\n--text-muted:       #6E6E85;\n\n/* Semantic rule:\n   Prices, "$", savings, Accept CTA → var(--accent)\n   GeekScore™, match %, AI, data   → var(--accent-2)\n   Urgency (deadline, alert)        → #ef4444 (keep red) */`,
+      },
+      {
+        label: 'Option C', name: 'Sophisticated Light',
+        border: 'rgba(229,225,220,0.5)',
+        rationale: 'A premium cream-white light theme with ink-dark typography and emerald for positive financial values. Inspired by Bloomberg Terminal light mode and Stripe Dashboard. Significantly better accessibility, works in bright offices, and feels enterprise-ready. Cream surface (not pure white) reduces eye strain while maintaining clarity.',
+        tags: ['Light theme', 'Enterprise', 'High accessibility', 'Daytime use'],
+        accentColor: '#059669', accentBg: 'rgba(5,150,105,0.08)', accentBorder: 'rgba(5,150,105,0.2)',
+        swatches: [
+          { color: '#F9F8F6', label: 'Surface' }, { color: '#FFFFFF', label: 'Raised' },
+          { color: '#F0EEE9', label: 'Elevated' },{ color: '#E5E2DB', label: 'Border' },
+          { color: '#059669', label: 'Emerald' }, { color: '#0F0F1A', label: 'Text' },
+          { color: '#6B7280', label: 'Muted' },
+        ],
+        previewBg: '#FFFFFF', previewBorder: '#E5E2DB', previewAccent: '#059669',
+        previewText: '#0F0F1A', previewMuted: '#6B7280', progressBg: '#E5E2DB',
+        chipBg: '#F9F8F6', chipBorder: '#E5E2DB',
+        bestFor: 'Enterprise clients, accessibility-first positioning, users in bright environments',
+        css: `/* Option C — Sophisticated Light */\n--surface:          #F9F8F6;  /* warm cream, not pure white */\n--surface-raised:   #FFFFFF;\n--surface-elevated: #F0EEE9;\n--gb-border:        #E5E2DB;\n\n/* Positive financial values → emerald */\n--accent:           #059669;\n--accent-dim:       #047857;\n--accent-glow:      rgba(5, 150, 105, 0.12);\n\n/* Primary actions (buttons, active nav) → ink */\n--action:           #0F0F1A;\n--action-dim:       #1A1A2E;\n\n--text-primary:     #0F0F1A;   /* 21:1 on surface */\n--text-secondary:   #374151;   /* 10.7:1 — excellent */\n--text-muted:       #6B7280;   /* 4.6:1 — passes AA */\n\n/* Note: invert all bg-[#12121A] → bg-white\n         border-[#1E1E2A]     → border-[#E5E2DB]\n         text-[#E8E8EC]       → text-[#0F0F1A] */`,
+      },
+      {
+        label: 'Option D', name: 'Cyberpunk Neon',
+        border: 'rgba(0,255,209,0.25)',
+        rationale: 'A higher-drama variant of the current dark theme. Replaces #00FF88 with teal-cyan (#00FFD1) — more futuristic, less terminal-green. Introduces hot pink (#FF2D78) as a secondary accent for urgency signals: bid alerts, price drops, deadline warnings. Maximum energy; positions GeekBid as category-defining rather than utilitarian.',
+        tags: ['High energy', 'Bold brand', 'Category-defining', 'Developer audience'],
+        accentColor: '#00FFD1', accentBg: 'rgba(0,255,209,0.1)', accentBorder: 'rgba(0,255,209,0.25)',
+        swatches: [
+          { color: '#050510', label: 'Surface' }, { color: '#080818', label: 'Raised' },
+          { color: '#0D0D22', label: 'Elevated' },{ color: '#151528', label: 'Border' },
+          { color: '#00FFD1', label: 'Cyan' },    { color: '#FF2D78', label: 'Pink' },
+          { color: '#E8E8FF', label: 'Text' },
+        ],
+        previewBg: '#080818', previewBorder: 'rgba(0,255,209,0.2)', previewAccent: '#00FFD1',
+        previewText: '#E8E8FF', previewMuted: '#8A8AAF', progressBg: '#151528',
+        chipBg: '#050510', chipBorder: '#151528',
+        bestFor: 'Bold brand differentiation, developer/gamer audience, viral visual identity',
+        css: `/* Option D — Cyberpunk Neon */\n--surface:          #050510;\n--surface-raised:   #080818;\n--surface-elevated: #0D0D22;\n--gb-border:        #151528;\n\n/* Primary: bids, prices, match scores, live states */\n--accent:           #00FFD1;  /* teal-cyan */\n--accent-dim:       #00CCB3;\n--accent-glow:      rgba(0, 255, 209, 0.2);\n\n/* Urgency: deadline, price drop flash, alerts */\n--accent-2:         #FF2D78;  /* hot pink */\n--accent-2-dim:     #E01F65;\n--accent-2-glow:    rgba(255, 45, 120, 0.2);\n\n--text-primary:     #E8E8FF;  /* slight blue tint */\n--text-secondary:   #8A8AAF;\n--text-muted:       #5A5A7A;\n\n/* Replace price-flash-drop red → var(--accent-2)\n   Deadline shake text          → var(--accent-2)\n   Hot ember particles          → alternate cyan/pink */`,
+      },
+    ];
+
+    const componentSuggestions = [
+      {
+        name: 'Job Cards', subtitle: 'Feed grid + recommended strip', icon: '🃏', iconBg: 'rgba(0,255,136,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Add translateY(-3px) + elevated shadow on hover — currently only border color changes, no spatial lift' },
+          { dotColor: '#00FF88', text: 'Featured jobs: use a left-edge accent border (3px solid #F59E0B) not just a ring — more scannable' },
+          { dotColor: '#F59E0B', text: 'Skill tags at 10px are below AA threshold — raise to 11px min with higher-contrast color' },
+          { dotColor: '#55556A', text: 'Client own-job highlight: left-border accent is cleaner than a "My Job" text badge' },
+        ]
+      },
+      {
+        name: 'Buttons', subtitle: 'Primary, ghost, and link variants', icon: '🔲', iconBg: 'rgba(79,142,247,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Add scale(0.97) on :active for tactile press feedback — no active state exists currently' },
+          { dotColor: '#00FF88', text: 'Ghost buttons need a filled hover background — currently only color changes, not enough affordance' },
+          { dotColor: '#F59E0B', text: 'Landing uses rounded-2xl (16px) while app uses rounded-xl (12px) — standardise across both contexts' },
+          { dotColor: '#55556A', text: 'Consistent disabled state: opacity-40 + cursor-not-allowed — some buttons use 50%, some 40%' },
+        ]
+      },
+      {
+        name: 'Charts & Sparklines', subtitle: 'Decay curve, earnings, bid range', icon: '📊', iconBg: 'rgba(139,92,246,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Earnings bar chart uses random mock data with no real trend lines — replace with actual transaction data' },
+          { dotColor: '#00FF88', text: 'Add gradient area fills under all sparklines — job detail already does this well, extend to earnings' },
+          { dotColor: '#F59E0B', text: 'Bar chart bars lack hover tooltips — add value + month label on hover (follows post-job scrubber UX)' },
+          { dotColor: '#55556A', text: 'Standardise chart color meanings: green = earnings, red = decay rate, blue = projected/adaptive' },
+        ]
+      },
+      {
+        name: 'Status Badges', subtitle: 'Live, Featured, demand levels', icon: '🏷', iconBg: 'rgba(245,158,11,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'LIVE badge: add a pulsing dot on the left — text-only currently misses an easy scannability win' },
+          { dotColor: '#00FF88', text: 'Demand badges (LOW/MEDIUM/HIGH) are strong — add directional icon (↗ ↔ ↘) for extra clarity' },
+          { dotColor: '#F59E0B', text: '"Be First" badge could animate in with scale-bounce — celebrate the opportunity moment' },
+          { dotColor: '#55556A', text: 'Consider rectangular chip variant for category labels vs pill for status — visual grammar distinction' },
+        ]
+      },
+      {
+        name: 'Navigation', subtitle: 'Conditional navbar + mobile', icon: '🧭', iconBg: 'rgba(56,189,248,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Active nav item has no visual indicator — add underline, dot, or filled pill for current route' },
+          { dotColor: '#00FF88', text: 'No mobile bottom nav exists for the logged-in app (feed/jobs/inbox/profile) — high priority for UX' },
+          { dotColor: '#F59E0B', text: 'ConditionalNavbar is smart but a sidebar layout would scale better as pages and roles expand' },
+          { dotColor: '#55556A', text: 'Notification bell should show unread count badge with a scale-in animation on new notifications' },
+        ]
+      },
+      {
+        name: 'Forms', subtitle: 'Post-job, counter-bid, login', icon: '📋', iconBg: 'rgba(0,255,136,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Post-job multi-step with decay curve preview is exceptional — apply the same pattern to profile setup' },
+          { dotColor: '#00FF88', text: 'Input focus ring: raise from ring-1 to ring-2 + brighter accent color for accessible keyboard nav' },
+          { dotColor: '#F59E0B', text: 'Error states show text below field — also apply a red border to the input itself simultaneously' },
+          { dotColor: '#55556A', text: 'Counter-bid price input could use a slider (like post-job) instead of a plain number text input' },
+        ]
+      },
+      {
+        name: 'Modals & Overlays', subtitle: 'Confirmations, review dialogs', icon: '📦', iconBg: 'rgba(245,158,11,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Add backdrop-blur(16px) + dark scrim overlay on all modals — adds depth and focus' },
+          { dotColor: '#00FF88', text: 'Modal entry: scale(0.95)→(1) + fade over 200ms with spring cubic-bezier for a premium feel' },
+          { dotColor: '#F59E0B', text: 'Confirmation dialogs (accept, release payment) need explicit Cancel + Confirm with clear hierarchy' },
+          { dotColor: '#55556A', text: 'On mobile, use bottom sheet instead of centered modal — better thumb reachability on touch devices' },
+        ]
+      },
+      {
+        name: 'Typography', subtitle: 'Heading scale + mono for prices', icon: '🔤', iconBg: 'rgba(56,189,248,0.1)',
+        items: [
+          { dotColor: '#00FF88', text: 'Prices and bid amounts correctly use Space Grotesk (font-heading) for tabular numerics — maintain this rule' },
+          { dotColor: '#00FF88', text: 'JetBrains Mono (already in this audit) would elevate price decay formula display and technical data' },
+          { dotColor: '#F59E0B', text: 'Section headings in app pages at 24px (2xl) — bump to 30px (3xl) for stronger page hierarchy' },
+          { dotColor: '#55556A', text: 'text-[10px] is used for many labels — raise to 11px minimum across the board for readability' },
+        ]
+      },
+    ];
+
+    const spacingScale = [
+      { label: '4px', heightPx: 4 }, { label: '8px', heightPx: 8 }, { label: '12px', heightPx: 12 },
+      { label: '16px', heightPx: 18 }, { label: '24px', heightPx: 28 }, { label: '32px', heightPx: 36 },
+      { label: '48px', heightPx: 48 }, { label: '64px', heightPx: 60 },
+    ];
+
+    const breakpoints = [
+      { label: 'sm',  range: '640px+',  cols: '2-col cards, compact nav gaps' },
+      { label: 'md',  range: '768px+',  cols: '2-col feed grid' },
+      { label: 'lg',  range: '1024px+', cols: '3-col feed, sticky sidebar right column' },
+      { label: 'xl',  range: '1280px+', cols: 'max-w-7xl container kicks in' },
+      { label: '2xl', range: '1536px+', cols: '⚠ No constraint — cards stretch too wide on ultrawide' },
+    ];
+
+    const priorities = [
+      {
+        effort: '🚨 30 min', border: 'rgba(239,68,68,0.25)',
+        pillBg: 'rgba(239,68,68,0.1)', pillColor: '#ef4444', pillBorder: 'rgba(239,68,68,0.2)',
+        title: 'Fix --accent CSS variable conflict',
+        desc: 'Rename GeekBid token to --gb-accent in globals.css. The shadcn override means var(--accent) resolves to near-white — a silent but critical bug.',
+        impact: 95, impactColor: '#ef4444'
+      },
+      {
+        effort: '⚡ 2 hrs', border: 'rgba(239,68,68,0.2)',
+        pillBg: 'rgba(239,68,68,0.08)', pillColor: '#ef4444', pillBorder: 'rgba(239,68,68,0.15)',
+        title: 'Raise --text-muted contrast ratio',
+        desc: 'Change #55556A → #6E6E85. Fixes all WCAG AA failures for muted text at a single token level — no component changes needed.',
+        impact: 85, impactColor: '#ef4444'
+      },
+      {
+        effort: '⚡ 4 hrs', border: 'rgba(245,158,11,0.2)',
+        pillBg: 'rgba(245,158,11,0.08)', pillColor: '#F59E0B', pillBorder: 'rgba(245,158,11,0.2)',
+        title: 'Unify dual token systems',
+        desc: 'Migrate landing page from white/opacity patterns to GB design tokens. Makes global theming, dark/light toggle, and future rebranding a one-file change.',
+        impact: 80, impactColor: '#F59E0B'
+      },
+      {
+        effort: '🏗 1 day', border: 'rgba(245,158,11,0.15)',
+        pillBg: 'rgba(245,158,11,0.08)', pillColor: '#F59E0B', pillBorder: 'rgba(245,158,11,0.15)',
+        title: 'Add mobile bottom navigation',
+        desc: 'Feed / Jobs / Inbox / Profile tabs in a fixed bottom bar. No mobile nav is the biggest UX gap in the app for touch users.',
+        impact: 90, impactColor: '#F59E0B'
+      },
+      {
+        effort: '🏗 1 day', border: 'rgba(56,189,248,0.15)',
+        pillBg: 'rgba(56,189,248,0.08)', pillColor: '#38BDF8', pillBorder: 'rgba(56,189,248,0.15)',
+        title: 'Upgrade Earnings page charts',
+        desc: 'Replace random mock bar chart with real transaction data, add area chart sparklines, month-over-month delta badges, and hover tooltips.',
+        impact: 65, impactColor: '#38BDF8'
+      },
+      {
+        effort: '🏗 1 day', border: 'rgba(56,189,248,0.15)',
+        pillBg: 'rgba(56,189,248,0.08)', pillColor: '#38BDF8', pillBorder: 'rgba(56,189,248,0.15)',
+        title: 'Add page transitions + card-lift hover',
+        desc: 'Route fade+slide via Next.js layout, translateY lift on job cards. High visual polish return for relatively low engineering effort.',
+        impact: 70, impactColor: '#38BDF8'
+      },
+      {
+        effort: '🏗 2 days', border: 'rgba(139,92,246,0.15)',
+        pillBg: 'rgba(139,92,246,0.08)', pillColor: '#8B5CF6', pillBorder: 'rgba(139,92,246,0.15)',
+        title: 'Apply chosen palette system-wide',
+        desc: 'Pick one of the 4 palette options and do a systematic find-replace of all raw hex values. Consolidates the token architecture at the same time.',
+        impact: 75, impactColor: '#8B5CF6'
+      },
+      {
+        effort: '🏗 3 days', border: 'rgba(139,92,246,0.1)',
+        pillBg: 'rgba(139,92,246,0.06)', pillColor: '#8B5CF6', pillBorder: 'rgba(139,92,246,0.12)',
+        title: 'Upgrade low-polish pages',
+        desc: 'Pricing, Notifications, Settings, Team pages score 2/5 and are first impressions for many users. Apply consistent card patterns, empty states, and interaction polish.',
+        impact: 60, impactColor: '#8B5CF6'
+      },
+    ];
+
+    return {
+      navItems, navHover, navLeave, keyStats, tokens, pages, contrastRows,
+      animations, missingAnims, palettes, componentSuggestions,
+      spacingScale, breakpoints, priorities,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AETHER | Terminal Inbox</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --glass-bg: rgba(19, 19, 24, 0.7);
+            --border-glow: rgba(0, 228, 121, 0.15);
+        }
+        body {
+            background-color: #131318;
+            color: #e4e1e9;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .cyber-grid {
+            background-image: linear-gradient(rgba(30, 30, 42, 0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(30, 30, 42, 0.2) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid #1E1E2A;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .status-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b4b3d;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e9ddff",
+                      "primary-fixed-dim": "#00e479",
+                      "on-secondary-fixed-variant": "#004395",
+                      "surface-container-high": "#2a292f",
+                      "on-tertiary-container": "#713fda",
+                      "primary-container": "#00ff88",
+                      "on-background": "#e4e1e9",
+                      "on-tertiary-fixed-variant": "#5516be",
+                      "on-secondary-container": "#e6ecff",
+                      "tertiary-fixed-dim": "#d0bcff",
+                      "secondary": "#adc6ff",
+                      "on-secondary": "#002e6a",
+                      "surface-bright": "#39383e",
+                      "secondary-container": "#0566d9",
+                      "inverse-primary": "#006d37",
+                      "error-container": "#93000a",
+                      "surface-tint": "#00e479",
+                      "surface-container-highest": "#35343a",
+                      "outline": "#849585",
+                      "surface-container": "#1f1f25",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary": "#3c0091",
+                      "inverse-surface": "#e4e1e9",
+                      "on-surface": "#e4e1e9",
+                      "surface-container-lowest": "#0e0e13",
+                      "error": "#ffb4ab",
+                      "primary": "#f1ffef",
+                      "tertiary": "#fff9ff",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "on-tertiary-fixed": "#23005c",
+                      "surface-variant": "#35343a",
+                      "primary-fixed": "#60ff99",
+                      "on-error": "#690005",
+                      "on-primary-container": "#007139",
+                      "on-primary": "#003919",
+                      "inverse-on-surface": "#303036",
+                      "background": "#131318",
+                      "on-secondary-fixed": "#001a42",
+                      "on-surface-variant": "#b9cbb9",
+                      "outline-variant": "#3b4b3d",
+                      "on-primary-fixed-variant": "#005228",
+                      "on-primary-fixed": "#00210c",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#131318",
+                      "tertiary-container": "#e5d8ff",
+                      "surface-dim": "#131318",
+                      "surface-container-low": "#1b1b20"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "md": "16px",
+                      "gutter": "16px",
+                      "xs": "8px",
+                      "container-padding": "24px",
+                      "xl": "40px",
+                      "sm": "12px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Space Grotesk"],
+                      "headline-sm": ["Space Grotesk"],
+                      "price-display": ["Inter"],
+                      "headline-lg": ["Space Grotesk"],
+                      "body-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "headline-xl": ["Space Grotesk"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "price-display": ["36px", {"lineHeight": "1", "fontWeight": "800"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="flex h-screen w-full cyber-grid">
+<!-- Left SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen w-64 glass-panel border-r border-outline-variant/20 flex flex-col py-lg space-y-md z-50">
+<div class="px-md mb-xl flex items-center gap-xs">
+<div class="w-8 h-8 bg-primary-fixed-dim rounded-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary font-bold">bolt</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary-fixed-dim tracking-tight">AETHER</span>
+</div>
+<div class="flex-1 px-md space-y-xs">
+<div class="flex items-center gap-md p-md rounded-lg transition-transform duration-150 active:scale-[0.98] bg-primary-fixed-dim/10 text-primary-fixed-dim border-r-2 border-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="font-label-caps text-label-caps">Terminal</span>
+</div>
+<div class="flex items-center gap-md p-md rounded-lg transition-transform duration-150 active:scale-[0.98] text-on-surface-variant hover:bg-white/5 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-caps text-label-caps">Contracts</span>
+</div>
+<div class="flex items-center gap-md p-md rounded-lg transition-transform duration-150 active:scale-[0.98] text-on-surface-variant hover:bg-white/5 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-caps text-label-caps">Vault</span>
+</div>
+<div class="flex items-center gap-md p-md rounded-lg transition-transform duration-150 active:scale-[0.98] text-on-surface-variant hover:bg-white/5 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-label-caps text-label-caps">Analytics</span>
+</div>
+<div class="flex items-center gap-md p-md rounded-lg transition-transform duration-150 active:scale-[0.98] text-on-surface-variant hover:bg-white/5 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</div>
+</div>
+<div class="px-md mt-auto pt-md border-t border-outline-variant/10">
+<div class="p-md bg-surface-container-high/50 rounded-xl border border-outline-variant/30 group hover:border-primary-fixed-dim/50 transition-colors cursor-pointer">
+<div class="flex items-center gap-sm">
+<div class="relative">
+<img class="w-10 h-10 rounded-full border border-primary-fixed-dim/30" data-alt="A professional headshot of a technical system operator in a minimalist futuristic setting, soft emerald ambient lighting, high-fidelity digital photography, clean sharp focus, tech-noir aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsl52PG37shHpwJu-nCxqfeT3LmyZZY2cpsL7bvyQAND3CV4ziWTLyI1g0gT9lOXcLo7gycz2owGakWwAODTiKdyirz00CjhaEHH52Ipc1LzZVnIZ2Hn0EIrFtCEppffBnwUVXwfXz4z6LDucNjKcVL3xsM7VxGDKGErRjM5ujnw4LXfbl23X7aW1z1sooBc0jnMgqSJ6Vxb9PcpTFuxVAK08FKHXtHbyZZtVBOPG3g7buk8bFnln78JM8IQ1bMVjGo-Kux60PVRUh"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary-fixed-dim rounded-full border-2 border-surface status-pulse"></div>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface">Operator</p>
+<p class="text-[10px] text-on-surface-variant">Verified L3</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-64 flex-1 flex">
+<!-- Chat List Sidebar -->
+<section class="w-80 h-screen glass-panel border-r border-outline-variant/10 flex flex-col">
+<div class="h-16 px-md flex items-center border-b border-outline-variant/10">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Missions</h2>
+<div class="ml-auto px-2 py-1 bg-surface-container-highest rounded border border-outline-variant/30 text-[10px] font-bold text-primary-fixed-dim">2 NEW</div>
+</div>
+<div class="p-md">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest border border-outline-variant/20 rounded-lg text-body-sm focus:outline-none focus:border-primary-fixed-dim/50 transition-colors" placeholder="Filter active mission..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar px-sm space-y-xs pb-xl">
+<!-- Chat Item Active -->
+<div class="p-md rounded-xl bg-primary-fixed-dim/5 border border-primary-fixed-dim/20 cursor-pointer transition-all duration-200">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-primary-fixed-dim">Project Orion-X</span>
+<span class="text-[9px] text-on-surface-variant">12:44</span>
+</div>
+<div class="flex items-center gap-sm">
+<div class="relative flex-shrink-0">
+<img class="w-10 h-10 rounded-lg" data-alt="Cyberpunk profile avatar, neon glowing accents, digital art style, deep purple and emerald green lighting, minimalist technical background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGO3lf8UhnjujbZ3K7Y_CjGaArj3_ivS5Ge3TnSKxeXOVSB0V8ttw02USMSvRnBqVq74YUVsJeM4rRCS3OY4Gh-DGLQPialr0gaxemAHWgq73ND97lxFOKHIZy-8ySHWiXbQX3pd8pvEkNb1pVcxgcDVfHCDo87LxojL9Rzia2KtlEgDiHUxxKRf9ZPk8qs54HkUr1DQglFhNY2bCtgOJnBUA8_dTbD6M3RN02wToJNgv_bJ8GdiuXPEo8G1Kt9GY9e0eucxP40vkv"/>
+<div class="absolute -bottom-1 -right-1 w-3 h-3 bg-primary-fixed-dim rounded-full border-2 border-surface"></div>
+</div>
+<div class="min-w-0">
+<p class="text-body-sm font-bold truncate">Nova Core Engineer</p>
+<p class="text-[11px] text-on-surface-variant truncate italic">typing...</p>
+</div>
+</div>
+</div>
+<!-- Chat Item -->
+<div class="p-md rounded-xl hover:bg-white/5 transition-all duration-200 cursor-pointer border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-on-surface-variant">Protocol Layer-9</span>
+<span class="text-[9px] text-on-surface-variant">Yesterday</span>
+</div>
+<div class="flex items-center gap-sm">
+<img class="w-10 h-10 rounded-lg opacity-80" data-alt="Minimalist abstract engineering icon, tech blueprint style, slate gray and cold blue aesthetic, professional vector graphic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8KENmLC9lwcG_4rUflp4m1qdhm4TBEyNg0MuOZZDPvzmd-Lz4b7mZPEcMghWMOJS4H-FwtWchJvzhtuHTqDMKlNXPT_1Xc23pt9erNL7JSwmIOkcnzKyh89D01Brl_7hpfzsMaKNlKr13-ntXxf_BEU7SmDQQVHUpZ5LePnqFAyd7pdIHRVkN_Nl3wSKTMtieZnp-c8vSzWR1yVDuvpFEEaBW7mK3BID61W89D_YBupD8-F_NWIy2NivUE0jfEQRYbJ5ff_SyfFcU"/>
+<div class="min-w-0">
+<p class="text-body-sm font-medium text-on-surface truncate">Lead Architect</p>
+<p class="text-[11px] text-on-surface-variant truncate">The smart contract is ready for audit...</p>
+</div>
+</div>
+</div>
+<!-- More Chat Items -->
+<div class="p-md rounded-xl hover:bg-white/5 transition-all duration-200 cursor-pointer border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-on-surface-variant">Web3 Indexer</span>
+<span class="text-[9px] text-on-surface-variant">Oct 24</span>
+</div>
+<div class="flex items-center gap-sm">
+<img class="w-10 h-10 rounded-lg opacity-80" data-alt="Futuristic technical avatar, monochrome with emerald highlights, sleek clean lines, developer profile aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLBNhw8eULLuBtufqThNmTgnQvTWdHHjJ8hvojD6eLKU_yrsqQBJGuRFH6HC9rgD_u-T-Camt67Gnc2AJnpszbph7VSBYFSCr8r-CdKQmQ_zAKEWztIWs_8T9KkXSy5UhoRoxPn-pmHnx8m7BiTMAIoid8lG4hmTM_AC-VYTCo19i-Ig1xkx9V_O6QBytNcV7NYrOLRPUV7xIzKzffB_NjsVb6v3WENdXiBT4BVp1lImPKSFNYNWbZEU-qbsMO0AGB2oEBQm6UXGIs"/>
+<div class="min-w-0">
+<p class="text-body-sm font-medium text-on-surface truncate">DevOps Specialist</p>
+<p class="text-[11px] text-on-surface-variant truncate">Deployment complete on Testnet.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Chat Area -->
+<section class="flex-1 flex flex-col bg-surface-container-lowest/30 relative">
+
+<!-- Chat Header -->
+<div class="h-16 px-lg flex items-center justify-between border-b border-outline-variant/10 glass-panel z-10">
+<div class="flex items-center gap-md">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Nova Core Engineer</h3>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Project: Orion-X Subsystem</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors text-on-surface-variant border border-outline-variant/30">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Messages Canvas -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-lg space-y-xl z-10">
+<!-- Date Separator -->
+<div class="flex items-center gap-md opacity-30">
+<div class="h-px flex-1 bg-outline-variant"></div>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Mission Day 14</span>
+<div class="h-px flex-1 bg-outline-variant"></div>
+</div>
+<!-- Received Message -->
+<div class="flex gap-md max-w-2xl">
+<img class="w-8 h-8 rounded-full flex-shrink-0 mt-1" data-alt="Detailed technical avatar profile picture, high contrast black and white with subtle neon accents, professional engineering aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBunDYbRwGHJd4zEcFtDr_ngc7j2GfT6ZNjL0qEX2voxtSBmpJGcnyUn4VYVhT_OUvGIaiHKcqbMcUK432dbuOQUSUabeMybHvhSxYCPtYRXNFWS5woh9SRn1xqLFISUrEDtF2LiTf4xPRzZdV63iSE09szlWU6j6kqUSMVvF0HWUCHegHzncTwZ0mAlL1p57_m82tOUp15od2tHo0mEqpcLx7R5dxonYWeKxQRcjFIaiVEs6Dg6eII9wcovDX26lN4TVTVe8i2E-2V"/>
+<div class="space-y-sm">
+<div class="glass-panel p-md rounded-2xl rounded-tl-none border-outline-variant/30 shadow-lg">
+<p class="text-body-md text-on-surface">The optimization for the zero-knowledge proof generation is nearly 80% complete. I've integrated the PLONK constraint system as discussed.</p>
+</div>
+<span class="text-[10px] text-on-surface-variant ml-1">12:30 PM • READ</span>
+</div>
+</div>
+<!-- Sent Message -->
+<div class="flex gap-md max-w-2xl ml-auto flex-row-reverse">
+<div class="w-8 h-8 bg-primary-fixed-dim/20 border border-primary-fixed-dim/40 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-sm">person</span>
+</div>
+<div class="space-y-sm text-right">
+<div class="bg-primary-fixed-dim/10 border border-primary-fixed-dim/30 p-md rounded-2xl rounded-tr-none shadow-[0_0_20px_rgba(0,228,121,0.05)]">
+<p class="text-body-md text-on-surface">Excellent. Did you manage to reduce the witness generation latency on mobile devices?</p>
+</div>
+<span class="text-[10px] text-on-surface-variant mr-1">12:35 PM • DELIVERED</span>
+</div>
+</div>
+<!-- Received Message + File -->
+<div class="flex gap-md max-w-2xl">
+<img class="w-8 h-8 rounded-full flex-shrink-0 mt-1" data-alt="Futuristic user icon, cybernetic profile, dark UI theme, high-end technical design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxrXPvElX2kewn9eg76RkE0Qc_Bv5nK3rb2IA-MzoP9Dg71NC4v6Bwcr-TVjRQZRnMiJMj0Ko_vPHlIJlLcN7UIHhHQ4BWfbdKkaNrsZoFNNR5NCM5xwwZjlgq0dvN6qnv1cTJqHpnQpg0Sas2NgCZerP6oD5UJwWDvkmvJEH-ACgKnfwVCwukp64BWqrX4juIxZq9Ao_JZ7YjBPiGvN0zeFr8t26TfrxWHXiSVsMngelCXiqG1Q8QB_D37CO9694YG2waynf-o0lu"/>
+<div class="space-y-sm">
+<div class="glass-panel p-md rounded-2xl rounded-tl-none border-outline-variant/30">
+<p class="text-body-md text-on-surface mb-md">Yes, managed to cut it by 40% by offloading the recursive proofs. Check the benchmark log below.</p>
+<div class="p-sm bg-surface-container-low rounded-lg border border-outline-variant/30 flex items-center gap-md group hover:border-primary-fixed-dim/50 cursor-pointer transition-all">
+<div class="w-10 h-10 bg-white/5 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed-dim">draft</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-[11px] font-bold truncate uppercase tracking-tight">benchmarks_v2.json</p>
+<p class="text-[9px] text-on-surface-variant">1.2 MB • Ready to verify</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-fixed-dim">download</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex gap-1">
+<div class="w-1 h-1 rounded-full bg-primary-fixed-dim status-pulse"></div>
+<div class="w-1 h-1 rounded-full bg-primary-fixed-dim status-pulse" style="animation-delay: 0.2s"></div>
+<div class="w-1 h-1 rounded-full bg-primary-fixed-dim status-pulse" style="animation-delay: 0.4s"></div>
+</div>
+<span class="text-[10px] text-primary-fixed-dim italic">Nova is typing...</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Message Input -->
+<div class="p-lg glass-panel border-t border-outline-variant/10 z-10">
+<div class="relative bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-xs flex items-end gap-xs group focus-within:border-primary-fixed-dim/50 transition-all">
+<button class="p-3 text-on-surface-variant hover:text-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<textarea class="w-full bg-transparent border-none focus:ring-0 text-body-md py-3 resize-none max-h-32 custom-scrollbar" placeholder="Transmit message to Nova Core..." rows="1"></textarea>
+<div class="flex items-center gap-xs pb-1 pr-1">
+<button class="p-2 text-on-surface-variant hover:text-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+<button class="w-10 h-10 bg-primary-fixed-dim rounded-lg flex items-center justify-center text-on-primary font-bold active:scale-95 transition-transform">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<div class="mt-sm flex items-center gap-xl px-2">
+<span class="text-[9px] text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">verified_user</span> END-TO-END ENCRYPTED</span>
+<span class="text-[9px] text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">history</span> LOG RETENTION: 90 DAYS</span>
+</div>
+</div>
+</section>
+<!-- Right Sidebar: Project Details -->
+<aside class="w-80 h-screen glass-panel border-l border-outline-variant/20 overflow-y-auto custom-scrollbar">
+<div class="p-lg border-b border-outline-variant/10">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-md">MISSION METRICS</p>
+<div class="space-y-lg">
+<div class="bg-surface-container-high/30 p-md rounded-xl border border-outline-variant/20">
+<h4 class="text-body-sm font-bold text-on-surface mb-xs">Orion-X Subsystem</h4>
+<div class="w-full bg-outline-variant/20 h-1 rounded-full mb-md overflow-hidden">
+<div class="bg-primary-fixed-dim h-full w-2/3"></div>
+</div>
+<div class="flex justify-between items-center text-[10px]">
+<span class="text-on-surface-variant">COMPLETION</span>
+<span class="text-primary-fixed-dim font-bold">67%</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-low border border-outline-variant/20 p-sm rounded-lg">
+<p class="text-[9px] text-on-surface-variant uppercase font-bold">Escrow</p>
+<p class="text-body-md font-bold text-primary-fixed-dim">$12,400</p>
+</div>
+<div class="bg-surface-container-low border border-outline-variant/20 p-sm rounded-lg">
+<p class="text-[9px] text-on-surface-variant uppercase font-bold">Deadline</p>
+<p class="text-body-md font-bold text-on-surface">14D</p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-lg border-b border-outline-variant/10">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-md">ENGINEER PROFILE</p>
+<div class="flex flex-col items-center text-center p-md bg-white/5 rounded-2xl border border-outline-variant/10">
+<img class="w-20 h-20 rounded-2xl mb-md border-2 border-primary-fixed-dim/20 p-1" data-alt="High-end developer profile picture, professional digital nomad setting, futuristic hardware in background, shallow depth of field, minimalist technical polish." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrCfOZBO0HFS5XEJkZrciL0uA--x6asGb2fK1R4WAS4eZDLdXhg39HKJ0XVTRaGRAWazKdzLq5hpm0tnudu3-L3vKk8ozmyfFHwecC23-ON3tgO1Z1IWS9Vt2yGKhyoLYPAjZrIcECbOF4V46yerw_4k5mykTo8YKuVB_y74aEWUBnByQ9cxXwooy59Is6cmxmk-QZii-tvcph-w_Rp55duirV4Igy3gchfQmf8tveJvtlo8ajOfLX1a11xMIxJ_iqjQScHGppAWCG"/>
+<h5 class="text-body-md font-bold text-on-surface">Nova Core</h5>
+<p class="text-[11px] text-on-surface-variant mb-md">Senior Cryptographer</p>
+<div class="inline-flex items-center gap-xs px-3 py-1 bg-primary-fixed-dim/10 border border-primary-fixed-dim/30 rounded-full">
+<span class="material-symbols-outlined text-[14px] text-primary-fixed-dim">verified</span>
+<span class="text-[10px] font-bold text-primary-fixed-dim">GEEKSCORE: 988</span>
+</div>
+</div>
+</div>
+<div class="p-lg space-y-md">
+<p class="font-label-caps text-label-caps text-on-surface-variant">QUICK PROTOCOLS</p>
+<button class="w-full flex items-center justify-between p-md bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/20 rounded-xl transition-all group">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-fixed-dim">description</span>
+<span class="text-body-sm text-on-surface">View Contract</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">open_in_new</span>
+</button>
+<button class="w-full flex items-center justify-between p-md bg-primary-fixed-dim border border-primary-fixed-dim/40 rounded-xl transition-all group active:scale-95 shadow-[0_0_15px_rgba(0,228,121,0.2)]">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="text-body-sm text-on-primary font-bold">Release Milestone</span>
+</div>
+<span class="material-symbols-outlined text-on-primary text-sm">arrow_forward</span>
+</button>
+<button class="w-full flex items-center justify-between p-md bg-surface-container-low hover:bg-error/10 border border-outline-variant/20 hover:border-error/30 rounded-xl transition-all group">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-error">flag</span>
+<span class="text-body-sm text-on-surface group-hover:text-error">Raise Dispute</span>
+</div>
+</button>
+</div>
+<div class="mt-auto p-lg opacity-40">
+<div class="flex items-center gap-xs">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></div>
+<span class="text-[9px] font-bold">SECURE CHANNEL ACTIVE</span>
+</div>
+</div>
+</aside>
+</main>
+<!-- Micro-interaction JS -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.querySelector('textarea');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Simulate typing indicator
+            const chatContainer = document.querySelector('.overflow-y-auto.custom-scrollbar');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+    </script>
+</body></html>

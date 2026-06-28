@@ -1,0 +1,525 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Georgia',serif;background:#050810;}
+
+/* ── TOKENS ── */
+:root{
+  --bg:#080b14;
+  --bg-card:#0d1120;
+  --bg-deep:#050810;
+  --bg-hover:#111625;
+  --gold:#c9a84c;
+  --gold-dim:#8a6e2f;
+  --gold-mute:rgba(201,168,76,0.12);
+  --gold-border:rgba(201,168,76,0.22);
+  --ivory:#f0e8d4;
+  --ivory-dim:#a8997e;
+  --ivory-mute:#6b5f45;
+  --ivory-ghost:#2a2218;
+  --red:#c0392b;
+  --green:#2e7d52;
+  --sans:'Inter','Helvetica Neue',sans-serif;
+}
+
+/* ── SHARED ── */
+.page{background:var(--bg);color:var(--ivory);min-height:200px;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:0.5px solid var(--gold-border);background:var(--bg-deep);}
+.logo{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:30px;height:30px;background:var(--gold);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#050810;font-family:var(--sans);}
+.logo-name{font-size:15px;font-weight:700;color:var(--ivory);letter-spacing:0.03em;font-family:var(--sans);}
+.nav-links{display:flex;gap:24px;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.btn-ghost{font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ivory-mute);cursor:pointer;padding:6px 14px;border:0.5px solid var(--gold-border);border-radius:3px;font-family:var(--sans);}
+.btn-gold{font-size:11px;letter-spacing:0.07em;text-transform:uppercase;background:var(--gold);color:#050810;cursor:pointer;padding:6px 16px;border-radius:3px;font-weight:700;border:none;font-family:var(--sans);}
+.btn-dark{font-size:11px;letter-spacing:0.06em;text-transform:uppercase;background:#0d1120;color:var(--ivory);cursor:pointer;padding:8px 18px;border-radius:3px;font-weight:600;border:0.5px solid var(--gold-border);font-family:var(--sans);}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;padding:3px 8px;border-radius:2px;font-family:var(--sans);}
+.badge-gold{background:var(--gold);color:#050810;}
+.badge-outline{background:transparent;color:var(--gold);border:0.5px solid var(--gold-border);}
+.badge-dark{background:#111625;color:var(--ivory-dim);border:0.5px solid rgba(255,255,255,0.08);}
+.badge-green{background:rgba(46,125,82,0.2);color:#4caf7d;}
+.badge-red{background:rgba(192,57,43,0.2);color:#e57373;}
+.section-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::before{content:'';display:inline-block;width:12px;height:0.5px;background:var(--gold);}
+.gold-text{color:var(--gold);}
+.dim-text{color:var(--ivory-mute);font-family:var(--sans);font-size:12px;}
+.card{background:var(--bg-card);border:0.5px solid var(--gold-border);border-radius:6px;}
+.divider-h{height:0.5px;background:var(--gold-border);margin:0;}
+.stat-num{font-size:22px;font-weight:400;color:var(--ivory);}
+.stat-lbl{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-top:3px;}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:2px;background:#111625;border:0.5px solid rgba(255,255,255,0.07);color:var(--ivory-mute);font-family:var(--sans);margin:2px 2px 2px 0;}
+.progress-track{height:2px;background:#1a1f30;border-radius:1px;}
+.progress-fill-gold{height:2px;background:var(--gold);border-radius:1px;}
+.progress-fill-red{height:2px;background:#c0392b;border-radius:1px;}
+.screen-title{font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);font-family:var(--sans);text-align:center;padding:10px 0 6px;opacity:0.7;}
+.screen-wrap{margin-bottom:28px;border:0.5px solid rgba(201,168,76,0.08);border-radius:8px;overflow:hidden;}
+
+/* ── NAV AVATAR ── */
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--gold-mute);border:0.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gold);font-family:var(--sans);}
+.avatar-lg{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--sans);}
+</style>
+
+<div style="padding:8px 0 4px;">
+
+<!-- ══════════════════════════════
+     SCREEN 1 · LANDING PAGE
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">01 · Landing page</div>
+<div class="page">
+  <nav class="nav">
+    <div class="logo"><div class="logo-icon">G</div><div class="logo-name">GeekBid</div></div>
+    <div class="nav-links"><span>How it works</span><span>Features</span><span>Compare</span></div>
+    <div class="nav-right"><div class="btn-ghost">Sign In</div><button class="btn-gold">Get Started</button></div>
+  </nav>
+  <div style="display:flex;gap:32px;padding:48px 28px 36px;align-items:flex-start;">
+    <div style="flex:1;">
+      <div style="display:inline-flex;align-items:center;gap:7px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);border:0.5px solid var(--gold-border);padding:4px 10px;border-radius:2px;margin-bottom:18px;font-family:var(--sans);">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--gold);display:inline-block;"></span>Live · Reverse Auction Platform
+      </div>
+      <h1 style="font-size:36px;font-weight:400;line-height:1.18;color:var(--ivory);margin-bottom:10px;letter-spacing:-0.01em;">Hire engineers<br><em style="color:var(--gold);">at the right price</em></h1>
+      <p style="font-size:12px;color:var(--ivory-mute);line-height:1.75;margin-bottom:22px;font-family:var(--sans);max-width:320px;">The world's first reverse-auction marketplace for tech talent. Post a job, watch prices decay, hire at your price.</p>
+      <div style="display:flex;gap:10px;margin-bottom:18px;">
+        <button class="btn-gold" style="padding:10px 20px;font-size:11px;">Start Hiring Free →</button>
+        <button class="btn-ghost" style="padding:10px 18px;">&lt;/&gt; Join as Freelancer</button>
+      </div>
+      <div style="display:flex;gap:18px;font-size:10px;color:var(--ivory-ghost);font-family:var(--sans);letter-spacing:0.04em;">
+        <span style="color:var(--gold-dim);">◈</span> No credit card &nbsp;<span style="color:var(--gold-dim);">◈</span> Escrow protected &nbsp;<span style="color:var(--gold-dim);">◈</span> Verified talent
+      </div>
+    </div>
+    <div style="flex:0 0 280px;" class="card">
+      <div style="padding:12px 14px;border-bottom:0.5px solid var(--gold-border);display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="dim-text" style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;">Live Price Decay</div><div style="font-size:12px;color:var(--ivory-dim);font-family:var(--sans);margin-top:2px;">AI Chatbot Development</div></div>
+        <span class="badge badge-gold">LIVE</span>
+      </div>
+      <div style="padding:14px;">
+        <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:28px;font-weight:400;color:var(--ivory);">$2,100</span><span style="font-size:11px;color:var(--gold);font-family:var(--sans);">↘ -$25/hr</span></div>
+        <div class="progress-track" style="margin:12px 0 5px;"><div class="progress-fill-gold" style="width:72%;"></div></div>
+        <div style="display:flex;justify-content:space-between;" class="dim-text">
+          <span>Floor: $800</span><span>Start: $2,400</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px;">
+          <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px;text-align:center;"><div style="font-size:15px;color:var(--ivory);">7</div><div style="font-size:9px;color:var(--ivory-mute);text-transform:uppercase;letter-spacing:0.09em;font-family:var(--sans);">Bids</div></div>
+          <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px;text-align:center;"><div style="font-size:15px;color:var(--ivory);">23</div><div style="font-size:9px;color:var(--ivory-mute);text-transform:uppercase;letter-spacing:0.09em;font-family:var(--sans);">Watching</div></div>
+          <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px;text-align:center;"><div style="font-size:15px;color:var(--ivory);">52h</div><div style="font-size:9px;color:var(--ivory-mute);text-transform:uppercase;letter-spacing:0.09em;font-family:var(--sans);">Left</div></div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;border-top:0.5px solid var(--gold-border);"><button class="btn-gold" style="width:100%;padding:9px;font-size:11px;">Accept at $2,100</button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 2 · SIGN UP
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">02 · Sign up / Auth</div>
+<div class="page" style="display:flex;min-height:320px;">
+  <div style="flex:1;padding:40px 32px;background:#050810;border-right:0.5px solid var(--gold-border);">
+    <div style="font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:12px;">Reverse Auction Marketplace</div>
+    <h2 style="font-size:26px;font-weight:400;color:var(--ivory);line-height:1.2;margin-bottom:20px;">The marketplace where<br><em style="color:var(--gold);">prices go down.</em></h2>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+      <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);display:flex;align-items:center;gap:8px;"><span style="color:var(--gold);font-size:10px;">◈</span> Reverse auction pricing</div>
+      <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);display:flex;align-items:center;gap:8px;"><span style="color:var(--gold);font-size:10px;">◈</span> Escrow-protected payments</div>
+      <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);display:flex;align-items:center;gap:8px;"><span style="color:var(--gold);font-size:10px;">◈</span> Real-time price decay</div>
+    </div>
+    <div class="card" style="padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--ivory-dim);font-family:var(--sans);">AI Chatbot Build <span style="font-size:9px;color:var(--ivory-mute);">· Live auction</span></div>
+        <span class="badge badge-gold" style="font-size:8px;">LIVE</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:20px;color:var(--ivory);">$647</span><span style="font-size:11px;color:var(--gold);font-family:var(--sans);">-$15/hr</span></div>
+      <div class="progress-track" style="margin:8px 0 4px;"><div class="progress-fill-gold" style="width:40%;"></div></div>
+      <div style="display:flex;justify-content:space-between;" class="dim-text"><span>Floor: $500</span><span>Start: $2,400</span></div>
+    </div>
+  </div>
+  <div style="flex:1;padding:36px 32px;background:var(--bg);">
+    <div style="display:flex;gap:8px;margin-bottom:24px;">
+      <button class="btn-ghost" style="flex:1;padding:8px;">Log in</button>
+      <button class="btn-gold" style="flex:1;padding:8px;">Sign up</button>
+    </div>
+    <div style="font-size:18px;font-weight:400;color:var(--ivory);margin-bottom:4px;">Create your account.</div>
+    <div style="font-size:12px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:20px;">Get started with GeekBid today</div>
+    <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Full name</div>
+    <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:9px 12px;font-size:12px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:12px;">John Doe</div>
+    <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">I am a…</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:13px;color:var(--ivory);margin-bottom:2px;">I'm a Client</div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">I need to hire</div>
+      </div>
+      <div style="background:var(--gold-mute);border:0.5px solid var(--gold);border-radius:3px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:13px;color:var(--gold);margin-bottom:2px;">I'm a Freelancer</div>
+        <div style="font-size:10px;color:var(--gold-dim);font-family:var(--sans);">I want to work</div>
+      </div>
+    </div>
+    <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:9px 12px;font-size:12px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">you@example.com</div>
+    <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:9px 12px;font-size:12px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:14px;">••••••••</div>
+    <button class="btn-gold" style="width:100%;padding:11px;font-size:12px;letter-spacing:0.07em;">Create account →</button>
+    <div style="text-align:center;margin-top:10px;font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">Already have an account? <span style="color:var(--gold);">Log in</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 3 · JOB FEED
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">03 · Job feed (freelancer)</div>
+<div class="page">
+  <nav class="nav">
+    <div class="logo"><div class="logo-icon">G</div><div class="logo-name">GeekBid</div></div>
+    <div class="nav-links"><span style="color:var(--gold);border-bottom:0.5px solid var(--gold);padding-bottom:2px;">Feed</span><span>Inbox</span><span>Notifications</span></div>
+    <div class="nav-right"><div class="avatar">EB</div><div style="font-family:var(--sans);font-size:11px;color:var(--ivory-dim);">Ethan Brooks <span style="color:var(--ivory-mute);">· Freelancer</span></div></div>
+  </nav>
+  <div style="padding:16px 28px;">
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;">
+      <div style="flex:1;background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px 12px;font-size:12px;color:var(--ivory-mute);font-family:var(--sans);">Search jobs or skills…</div>
+      <button class="btn-ghost" style="padding:8px 14px;">All Categories</button>
+      <button class="btn-ghost" style="padding:8px 14px;">Best Match</button>
+      <button class="btn-ghost" style="padding:8px 14px;">Filters</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+          <span class="badge badge-gold">100% Match</span>
+          <span class="badge badge-dark">LOW</span>
+          <span class="badge badge-dark">Rank #1</span>
+        </div>
+        <div style="font-size:13px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">Build AI chatbot for customer support</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">RAG Systems</span><span class="tag">FastAPI</span><span class="tag">React</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.09em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>Current price</span><span>Effective/hr</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--ivory);">$700.50</span><span style="font-size:14px;color:var(--gold);">$20/hr</span></div>
+        <div style="font-size:10px;color:var(--green);font-family:var(--sans);margin-bottom:6px;">● Holding steady · $15/hr decay</div>
+        <div class="progress-track" style="margin-bottom:4px;"><div class="progress-fill-gold" style="width:45%;"></div></div>
+        <div style="display:flex;justify-content:space-between;" class="dim-text"><span>Floor $350</span><span>Start $800</span></div>
+        <div style="border-top:0.5px solid var(--gold-border);margin-top:10px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">35h · 2 bids · 23h left</div>
+          <button class="btn-dark" style="padding:5px 12px;font-size:10px;">View Details</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+          <span class="badge badge-outline">60% Match</span>
+          <span class="badge badge-dark">Be First</span>
+          <span class="badge badge-dark">Rank #2</span>
+        </div>
+        <div style="font-size:13px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">React + GraphQL dashboard migration</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">GraphQL</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.09em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>Current price</span><span>Effective/hr</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--ivory);">$1,705.94</span><span style="font-size:14px;color:var(--gold);">$57/hr</span></div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">↘ Steady decline · $15/hr decay</div>
+        <div class="progress-track" style="margin-bottom:4px;"><div class="progress-fill-gold" style="width:68%;"></div></div>
+        <div style="display:flex;justify-content:space-between;" class="dim-text"><span>Floor $700</span><span>Start $1,800</span></div>
+        <div style="border-top:0.5px solid var(--gold-border);margin-top:10px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">30h · 0 bids · 67h left</div>
+          <button class="btn-dark" style="padding:5px 12px;font-size:10px;">View Details</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+          <span class="badge badge-outline">75% Match</span>
+          <span class="badge badge-dark">Be First</span>
+          <span class="badge badge-dark">Rank #3</span>
+        </div>
+        <div style="font-size:13px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">ML-powered recommendation engine</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">FastAPI</span><span class="tag">TypeScript</span><span class="tag">MLOps</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.09em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>Current price</span><span>Effective/hr</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--ivory);">$1,869.13</span><span style="font-size:14px;color:var(--gold);">$53/hr</span></div>
+        <div style="font-size:10px;color:var(--red);font-family:var(--sans);margin-bottom:6px;">↘ Dropping fast · $18/hr decay</div>
+        <div class="progress-track" style="margin-bottom:4px;"><div class="progress-fill-red" style="width:78%;"></div></div>
+        <div style="display:flex;justify-content:space-between;" class="dim-text"><span>Floor $800</span><span>Start $2,000</span></div>
+        <div style="border-top:0.5px solid var(--gold-border);margin-top:10px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">35h · 0 bids · 59h left</div>
+          <button class="btn-dark" style="padding:5px 12px;font-size:10px;">View Details</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 4 · JOB DETAIL
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">04 · Job detail</div>
+<div class="page">
+  <nav class="nav">
+    <div class="logo"><div class="logo-icon">G</div><div class="logo-name">GeekBid</div></div>
+    <div class="nav-links"><span style="color:var(--gold);border-bottom:0.5px solid var(--gold);padding-bottom:2px;">Feed</span><span>Inbox</span><span>Notifications</span></div>
+    <div class="nav-right"><div class="avatar">AD</div><div style="font-family:var(--sans);font-size:11px;color:var(--ivory-dim);">Arjun Dev <span style="color:var(--ivory-mute);">· Freelancer</span></div></div>
+  </nav>
+  <div style="display:flex;gap:20px;padding:20px 28px;">
+    <div style="flex:1;">
+      <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:14px;cursor:pointer;">← Back to Feed</div>
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-size:18px;color:var(--ivory);margin-bottom:6px;">GraphQL API gateway migration</div>
+            <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);">Posted by Derek Olsen · 1d ago</div>
+          </div>
+          <span class="badge badge-green">Open</span>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="tag">GraphQL</span><span class="tag" style="border-color:var(--gold-border);color:var(--gold);">✓ Node.js</span><span class="tag" style="border-color:var(--gold-border);color:var(--gold);">✓ TypeScript</span><span class="tag" style="border-color:var(--gold-border);color:var(--gold);">✓ Kubernetes</span></div>
+      </div>
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">Description</div>
+        <div style="font-size:12px;color:var(--ivory-dim);line-height:1.7;font-family:var(--sans);">Migrate existing REST microservices to a unified GraphQL gateway. Schema stitching, DataLoader patterns, rate limiting, auth integration, monitoring.</div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);font-family:var(--sans);margin-bottom:12px;">Price Analytics</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div><div class="dim-text" style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Starting</div><div style="font-size:15px;color:var(--ivory);">$1,600</div></div>
+          <div><div class="dim-text" style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Current</div><div style="font-size:15px;color:var(--gold);">$884.37</div></div>
+          <div><div class="dim-text" style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Floor</div><div style="font-size:15px;color:var(--ivory);">$750</div></div>
+          <div><div class="dim-text" style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Decay</div><div style="font-size:15px;color:var(--red);">-$22/hr</div></div>
+        </div>
+        <div class="progress-track"><div class="progress-fill-gold" style="width:36%;"></div></div>
+      </div>
+    </div>
+    <div style="flex:0 0 260px;display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="padding:16px;">
+        <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Live Price</div>
+        <div style="font-size:28px;color:var(--ivory);margin-bottom:2px;">$884.37</div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:12px;">Closes 6/30/2026 · 1d 15h remaining</div>
+        <button class="btn-gold" style="width:100%;padding:10px;font-size:11px;margin-bottom:8px;">Accept at $884.37</button>
+        <div style="text-align:center;font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:10px;">— or —</div>
+        <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">Counter-Bid</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+          <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px;">
+            <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Aggressive</div>
+            <div style="font-size:14px;color:var(--gold);">$790.00</div>
+          </div>
+          <div style="background:#050810;border:0.5px solid var(--gold-border);border-radius:3px;padding:8px;">
+            <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Competitive</div>
+            <div style="font-size:14px;color:var(--gold);">$831.00</div>
+          </div>
+        </div>
+        <button class="btn-dark" style="width:100%;padding:9px;font-size:11px;">Submit Counter-Bid</button>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;flex-direction:column;gap:8px;font-family:var(--sans);font-size:11px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--ivory-mute);">Estimated hours</span><span style="color:var(--ivory);">25h</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--ivory-mute);">Posted</span><span style="color:var(--ivory);">6/27/2026</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--ivory-mute);">Deadline</span><span style="color:var(--ivory);">6/30/2026</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 5 · PROCUREMENT TERMINAL (client)
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">05 · Procurement Terminal (client dashboard)</div>
+<div class="page">
+  <nav class="nav">
+    <div class="logo"><div class="logo-icon">G</div><div class="logo-name">GeekBid</div></div>
+    <div class="nav-links"><span style="color:var(--gold);border-bottom:0.5px solid var(--gold);padding-bottom:2px;">Feed</span><span>Inbox</span><span>Notifications</span></div>
+    <div class="nav-right"><div class="avatar">S</div><div style="font-family:var(--sans);font-size:11px;color:var(--ivory-dim);">Shruti <span style="color:var(--ivory-mute);">· Client</span></div></div>
+  </nav>
+  <div style="padding:20px 28px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-size:20px;color:var(--ivory);margin-bottom:4px;">Procurement Terminal</div>
+        <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);">0 active jobs</div>
+      </div>
+      <button class="btn-gold" style="padding:9px 18px;font-size:11px;">+ Post Job</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Budget Posted</div><div style="font-size:20px;color:var(--ivory);">$0.00</div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Avg Bid Price</div><div style="font-size:20px;color:var(--ivory);">—</div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Total Savings</div><div style="font-size:20px;color:var(--gold);">$0</div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Avg Decay</div><div style="font-size:20px;color:var(--ivory);">—</div></div>
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:16px;">
+      <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);font-family:var(--sans);margin-bottom:8px;">Market Intelligence</div>
+      <div style="display:flex;gap:24px;font-size:11px;font-family:var(--sans);color:var(--ivory-mute);">
+        <span>Avg Starting: <span style="color:var(--ivory);">$1,810</span></span>
+        <span>Avg Decay: <span style="color:var(--red);">-$19.40/hr</span></span>
+        <span>1st Bid ~ <span style="color:var(--ivory);">9.6h</span></span>
+        <span>Hot: <span class="tag" style="margin:0;">TypeScript</span><span class="tag" style="margin:0 0 0 4px;">Kubernetes</span><span class="tag" style="margin:0 0 0 4px;">AWS</span></span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:14px;color:var(--ivory);">Talent Pool <span style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);">· 15 freelancers</span></div>
+      <div style="display:flex;gap:12px;font-family:var(--sans);font-size:11px;">
+        <span style="color:var(--ivory-mute);">Freelancers <span style="color:var(--ivory);">15</span></span>
+        <span style="color:var(--ivory-mute);">Avg GeekScore <span style="color:var(--gold);">576</span></span>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="badge badge-gold">All (15)</span>
+      <span class="badge badge-dark">TypeScript (5)</span><span class="badge badge-dark">React (4)</span><span class="badge badge-dark">Node.js (4)</span><span class="badge badge-dark">Kubernetes (4)</span><span class="badge badge-dark">AWS (3)</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;"><span class="badge badge-gold" style="font-size:8px;">10x Engineer</span><span class="badge badge-green" style="font-size:8px;">Available</span><span class="badge badge-dark" style="font-size:8px;">✓ Verified</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="avatar-lg" style="background:rgba(201,168,76,0.15);color:var(--gold);">JH</div>
+          <div style="font-size:13px;color:var(--ivory);">Jessica Hart</div>
+        </div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">Cloud Security</span><span class="tag">Penetration Testing</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>GeekScore</span><span>Avg Bid</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--gold);">845</span><span style="font-size:13px;color:var(--ivory);">$1,166.67</span></div>
+        <div class="progress-track"><div class="progress-fill-gold" style="width:84%;"></div></div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:8px;">$80–$200/hr · 6 bids placed</div>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;"><span class="badge badge-outline" style="font-size:8px;">Senior Geek</span><span class="badge badge-green" style="font-size:8px;">Available</span><span class="badge badge-dark" style="font-size:8px;">Pro</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="avatar-lg" style="background:rgba(100,120,200,0.15);color:#8899dd;">MW</div>
+          <div style="font-size:13px;color:var(--ivory);">Marcus Webb</div>
+        </div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">LLM Fine-tuning</span><span class="tag">RAG Systems</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>GeekScore</span><span>Avg Bid</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--gold);">781</span><span style="font-size:13px;color:var(--ivory);">$2,000.00</span></div>
+        <div class="progress-track"><div class="progress-fill-gold" style="width:78%;"></div></div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:8px;">$90–$200/hr · 2 bids placed</div>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;"><span class="badge badge-outline" style="font-size:8px;">Senior Geek</span><span class="badge badge-green" style="font-size:8px;">Available</span><span class="badge badge-dark" style="font-size:8px;">Pro</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="avatar-lg" style="background:rgba(140,80,60,0.2);color:#cc8870;">VR</div>
+          <div style="font-size:13px;color:var(--ivory);">Victor Reyes</div>
+        </div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;"><span class="tag">Penetration Testing</span><span class="tag">Cloud Security</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:4px;"><span>GeekScore</span><span>Avg Bid</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:18px;color:var(--gold);">720</span><span style="font-size:13px;color:var(--ivory);">$750.00</span></div>
+        <div class="progress-track"><div class="progress-fill-gold" style="width:72%;"></div></div>
+        <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:8px;">$100–$220/hr · 1 bid placed</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 6 · MISSION CONTROL (freelancer)
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">06 · Mission Control (freelancer dashboard)</div>
+<div class="page">
+  <nav class="nav">
+    <div class="logo"><div class="logo-icon">G</div><div class="logo-name">GeekBid</div></div>
+    <div class="nav-links"><span style="color:var(--gold);border-bottom:0.5px solid var(--gold);padding-bottom:2px;">Feed</span><span>Inbox</span><span>Notifications <span style="background:var(--gold);color:#050810;font-size:8px;padding:1px 5px;border-radius:10px;font-family:var(--sans);font-weight:700;">2</span></span></div>
+    <div class="nav-right"><div class="avatar">EB</div><div style="font-family:var(--sans);font-size:11px;color:var(--ivory-dim);">Ethan Brooks <span style="color:var(--ivory-mute);">· Freelancer</span></div></div>
+  </nav>
+  <div style="padding:20px 28px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-size:20px;color:var(--ivory);margin-bottom:4px;">Mission Control</div>
+        <div style="font-size:11px;color:var(--ivory-mute);font-family:var(--sans);">15 matches · 0/10 bids used · 0% win rate</div>
+      </div>
+      <button class="btn-dark" style="padding:9px 18px;font-size:11px;">My Profile</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Matches</div><div style="font-size:20px;color:var(--gold);">15</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:3px;">skill-matched jobs</div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Bids Used</div><div style="font-size:20px;color:var(--ivory);">0/10</div><div class="progress-track" style="margin-top:8px;"><div class="progress-fill-gold" style="width:0%;"></div></div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Win Rate</div><div style="font-size:20px;color:var(--ivory);">0%</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:3px;">accepted rate</div></div>
+      <div class="card" style="padding:14px;"><div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:6px;">Earning Potential</div><div style="font-size:20px;color:var(--gold);">$20,083</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-top:3px;">sum of matched jobs</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:14px;color:var(--ivory);">Recommended for you</div>
+      <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">Top 5 matches</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+      <div class="card" style="padding:12px;"><span class="badge badge-gold" style="font-size:8px;margin-bottom:8px;display:inline-block;">100% Match</span><div style="font-size:12px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">Build AI chatbot for customer support</div><div style="font-size:16px;color:var(--ivory);margin-bottom:2px;">$700.51</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">$20/hr effective</div><button class="btn-gold" style="width:100%;padding:7px;font-size:10px;">QuickBid</button></div>
+      <div class="card" style="padding:12px;"><span class="badge badge-outline" style="font-size:8px;margin-bottom:8px;display:inline-block;">75% Match</span><div style="font-size:12px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">React + GraphQL dashboard</div><div style="font-size:16px;color:var(--ivory);margin-bottom:2px;">$1,869.15</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">$53/hr effective</div><button class="btn-dark" style="width:100%;padding:7px;font-size:10px;">QuickBid</button></div>
+      <div class="card" style="padding:12px;"><span class="badge badge-outline" style="font-size:8px;margin-bottom:8px;display:inline-block;">75% Match</span><div style="font-size:12px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">GraphQL API gateway migration</div><div style="font-size:16px;color:var(--ivory);margin-bottom:2px;">$1,197.84</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">$48/hr effective</div><button class="btn-dark" style="width:100%;padding:7px;font-size:10px;">QuickBid</button></div>
+      <div class="card" style="padding:12px;"><span class="badge badge-outline" style="font-size:8px;margin-bottom:8px;display:inline-block;">60% Match</span><div style="font-size:12px;color:var(--ivory);margin-bottom:6px;line-height:1.3;">ML recommendation engine</div><div style="font-size:16px;color:var(--ivory);margin-bottom:2px;">$1,705.96</div><div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);margin-bottom:8px;">$57/hr effective</div><button class="btn-dark" style="width:100%;padding:7px;font-size:10px;">QuickBid</button></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:14px;color:var(--ivory);">My Active Bids</div>
+      <div style="font-size:10px;color:var(--ivory-mute);font-family:var(--sans);">9 pending</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card);border:0.5px solid var(--gold-border);border-radius:4px 4px 0 0;">
+        <div style="display:flex;gap:10px;align-items:center;font-family:var(--sans);font-size:11px;">
+          <span class="badge badge-red" style="font-size:8px;">Outbid</span>
+          <span style="color:var(--ivory-mute);">Rank #3</span>
+          <span style="color:var(--ivory-mute);">· 264m cooldown</span>
+        </div>
+        <div style="text-align:right;font-family:var(--sans);font-size:12px;"><div style="color:var(--ivory);">$1,500.00</div><div style="font-size:10px;color:var(--ivory-mute);">mkt $1,869</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card);border:0.5px solid var(--gold-border);border-top:none;">
+        <div style="display:flex;gap:10px;align-items:center;font-family:var(--sans);font-size:11px;">
+          <span class="badge badge-red" style="font-size:8px;">Outbid</span>
+          <span style="color:var(--ivory-mute);">Rank #2</span>
+          <span style="color:var(--ivory-mute);">· 224m cooldown</span>
+        </div>
+        <div style="text-align:right;font-family:var(--sans);font-size:12px;"><div style="color:var(--ivory);">$1,400.00</div><div style="font-size:10px;color:var(--ivory-mute);">mkt $1,706</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card);border:0.5px solid var(--gold-border);border-top:none;border-radius:0 0 4px 4px;">
+        <div style="display:flex;gap:10px;align-items:center;font-family:var(--sans);font-size:11px;">
+          <span class="badge badge-green" style="font-size:8px;">Winning</span>
+          <span style="color:var(--ivory-mute);">Rank #1</span>
+          <span style="color:var(--ivory-mute);">· 204m cooldown</span>
+        </div>
+        <div style="text-align:right;font-family:var(--sans);font-size:12px;"><div style="color:var(--gold);">$1,400.00</div><div style="font-size:10px;color:var(--ivory-mute);">mkt $2,284</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════
+     COLOR PALETTE REFERENCE
+════════════════════════════════ -->
+<div class="screen-wrap">
+<div class="screen-title">Design tokens — reference</div>
+<div class="page" style="padding:20px 28px;">
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px;">
+    <div style="text-align:center;">
+      <div style="height:40px;background:#050810;border:0.5px solid var(--gold-border);border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Deep bg</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#050810</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#080b14;border:0.5px solid var(--gold-border);border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Page bg</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#080b14</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#0d1120;border:0.5px solid var(--gold-border);border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Card</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#0d1120</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#c9a84c;border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Gold accent</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#c9a84c</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#f0e8d4;border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Ivory text</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#f0e8d4</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#2e7d52;border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Success</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#2e7d52</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="height:40px;background:#c0392b;border-radius:4px;margin-bottom:6px;"></div>
+      <div style="font-size:9px;color:var(--ivory-mute);font-family:var(--sans);">Danger</div><div style="font-size:9px;color:var(--gold);font-family:monospace;">#c0392b</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-family:var(--sans);font-size:11px;color:var(--ivory-mute);">
+    <div><div style="color:var(--gold);margin-bottom:6px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Typography</div>
+      <div style="margin-bottom:4px;">Headings → <span style="color:var(--ivory);">Georgia, serif · weight 400 · italic for accents</span></div>
+      <div style="margin-bottom:4px;">UI labels → <span style="color:var(--ivory);">Inter/sans · weight 700 · uppercase + tracking</span></div>
+      <div>Body → <span style="color:var(--ivory);">Inter/sans · weight 400 · ivory-mute color</span></div>
+    </div>
+    <div><div style="color:var(--gold);margin-bottom:6px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Borders & Radius</div>
+      <div style="margin-bottom:4px;">All borders → <span style="color:var(--ivory);">0.5px · gold at 22% opacity</span></div>
+      <div style="margin-bottom:4px;">Cards → <span style="color:var(--ivory);">border-radius 6px</span></div>
+      <div>Buttons/badges → <span style="color:var(--ivory);">border-radius 3px · razor sharp</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>

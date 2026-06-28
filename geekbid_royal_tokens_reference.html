@@ -1,0 +1,464 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Courier New',monospace;background:#080b14;color:#f0e8d4;}
+.section{margin-bottom:24px;}
+.section-title{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#c9a84c;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid rgba(201,168,76,0.22);}
+.row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.swatch{width:28px;height:28px;border-radius:3px;flex-shrink:0;border:0.5px solid rgba(255,255,255,0.08);}
+.token{color:#c9a84c;font-size:11px;min-width:220px;}
+.hex{color:#f0e8d4;font-size:11px;min-width:90px;}
+.usage{color:#6b5f45;font-size:10px;flex:1;}
+.copy-btn{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;background:rgba(201,168,76,0.1);color:#c9a84c;border:0.5px solid rgba(201,168,76,0.3);padding:3px 8px;border-radius:2px;cursor:pointer;flex-shrink:0;font-family:'Courier New',monospace;}
+.copy-btn:hover{background:rgba(201,168,76,0.2);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.code-block{background:#050810;border:0.5px solid rgba(201,168,76,0.22);border-radius:4px;padding:14px;font-size:10px;line-height:1.8;color:#f0e8d4;white-space:pre;overflow-x:auto;}
+.code-block .k{color:#c9a84c;}
+.code-block .v{color:#a8997e;}
+.code-block .c{color:#3a3020;}
+.tab-row{display:flex;gap:2px;margin-bottom:16px;}
+.tab{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;border-radius:2px;cursor:pointer;font-family:'Courier New',monospace;border:0.5px solid rgba(201,168,76,0.22);color:#6b5f45;}
+.tab.active{background:rgba(201,168,76,0.12);color:#c9a84c;border-color:rgba(201,168,76,0.5);}
+.panel{display:none;}
+.panel.active{display:block;}
+.badge-preview{display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.bp{font-size:9px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+.note{font-size:10px;color:#6b5f45;font-family:'Courier New',monospace;line-height:1.6;padding:10px;background:#050810;border-left:2px solid rgba(201,168,76,0.3);border-radius:0 3px 3px 0;margin-top:8px;}
+</style>
+
+<div style="padding:8px 0;">
+
+<div class="tab-row">
+  <div class="tab active" onclick="showTab('colors')">Colors</div>
+  <div class="tab" onclick="showTab('typography')">Typography</div>
+  <div class="tab" onclick="showTab('components')">Components</div>
+  <div class="tab" onclick="showTab('pages')">Per-page rules</div>
+  <div class="tab" onclick="showTab('prompt')">Claude Code prompt</div>
+</div>
+
+<!-- ════ TAB 1: COLORS ════ -->
+<div class="panel active" id="tab-colors">
+
+<div class="section">
+<div class="section-title">Backgrounds — 3 elevation layers</div>
+<div class="row"><div class="swatch" style="background:#050810;"></div><div class="token">--bg-deep</div><div class="hex">#050810</div><div class="usage">Navbar bg, deepest surfaces, sidebar</div><button class="copy-btn" onclick="cp('#050810')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#080b14;"></div><div class="token">--bg-page</div><div class="hex">#080b14</div><div class="usage">Main page background (body)</div><button class="copy-btn" onclick="cp('#080b14')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#0d1120;"></div><div class="token">--bg-card</div><div class="hex">#0d1120</div><div class="usage">All cards, panels, modals</div><button class="copy-btn" onclick="cp('#0d1120')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#111625;"></div><div class="token">--bg-hover</div><div class="hex">#111625</div><div class="usage">Card hover state, input bg on focus</div><button class="copy-btn" onclick="cp('#111625')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#0a0e1a;"></div><div class="token">--bg-inset</div><div class="hex">#0a0e1a</div><div class="usage">Inputs, stat boxes inside cards, code</div><button class="copy-btn" onclick="cp('#0a0e1a')">copy</button></div>
+</div>
+
+<div class="section">
+<div class="section-title">Gold accent — the ONE accent color</div>
+<div class="row"><div class="swatch" style="background:#c9a84c;"></div><div class="token">--gold</div><div class="hex">#c9a84c</div><div class="usage">CTAs, active nav, live badges, prices, GeekScore, progress bars</div><button class="copy-btn" onclick="cp('#c9a84c')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#8a6e2f;"></div><div class="token">--gold-dim</div><div class="hex">#8a6e2f</div><div class="usage">Decorative icons, secondary gold elements</div><button class="copy-btn" onclick="cp('#8a6e2f')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(201,168,76,0.12);border:0.5px solid rgba(201,168,76,0.3);"></div><div class="token">--gold-tint</div><div class="hex">rgba(201,168,76,0.12)</div><div class="usage">Selected card bg, freelancer badge bg, active role selector</div><button class="copy-btn" onclick="cp('rgba(201,168,76,0.12)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(201,168,76,0.22);"></div><div class="token">--gold-border</div><div class="hex">rgba(201,168,76,0.22)</div><div class="usage">ALL borders everywhere — cards, inputs, nav dividers, stats</div><button class="copy-btn" onclick="cp('rgba(201,168,76,0.22)')">copy</button></div>
+</div>
+
+<div class="section">
+<div class="section-title">Text — ivory hierarchy</div>
+<div class="row"><div class="swatch" style="background:#f0e8d4;"></div><div class="token">--text-primary</div><div class="hex">#f0e8d4</div><div class="usage">Headings, job titles, prices, primary labels</div><button class="copy-btn" onclick="cp('#f0e8d4')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#a8997e;"></div><div class="token">--text-secondary</div><div class="hex">#a8997e</div><div class="usage">Sub-headings, freelancer names in cards, nav user name</div><button class="copy-btn" onclick="cp('#a8997e')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#6b5f45;"></div><div class="token">--text-muted</div><div class="hex">#6b5f45</div><div class="usage">Body copy, descriptions, meta info, posted-by, timestamps</div><button class="copy-btn" onclick="cp('#6b5f45')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#3a3020;"></div><div class="token">--text-ghost</div><div class="hex">#3a3020</div><div class="usage">Placeholders, disabled text, bar floor/start labels</div><button class="copy-btn" onclick="cp('#3a3020')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#4a4030;"></div><div class="token">--text-dimmer</div><div class="hex">#4a4030</div><div class="usage">Progress bar labels, section subtitles</div><button class="copy-btn" onclick="cp('#4a4030')">copy</button></div>
+</div>
+
+<div class="section">
+<div class="section-title">Semantic — price states</div>
+<div class="row"><div class="swatch" style="background:#2e7d52;"></div><div class="token">--price-steady</div><div class="hex">#2e7d52</div><div class="usage">"Holding steady" decay indicator text + dot</div><button class="copy-btn" onclick="cp('#2e7d52')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(46,125,82,0.18);"></div><div class="token">--price-steady-bg</div><div class="hex">rgba(46,125,82,0.18)</div><div class="usage">"Winning" badge background</div><button class="copy-btn" onclick="cp('rgba(46,125,82,0.18)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#4caf7d;"></div><div class="token">--price-steady-text</div><div class="hex">#4caf7d</div><div class="usage">"Winning" / "Holding steady" badge text</div><button class="copy-btn" onclick="cp('#4caf7d')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#c0392b;"></div><div class="token">--price-dropping</div><div class="hex">#c0392b</div><div class="usage">"Dropping fast" text, red progress bar fill, "Outbid" badge bg accent</div><button class="copy-btn" onclick="cp('#c0392b')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(192,57,43,0.2);"></div><div class="token">--price-dropping-bg</div><div class="hex">rgba(192,57,43,0.2)</div><div class="usage">"Outbid" / "Dropping" badge background</div><button class="copy-btn" onclick="cp('rgba(192,57,43,0.2)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#e57373;"></div><div class="token">--price-dropping-text</div><div class="hex">#e57373</div><div class="usage">"Outbid" badge text color</div><button class="copy-btn" onclick="cp('#e57373')">copy</button></div>
+<div class="row"><div class="swatch" style="background:#2980b9;"></div><div class="token">--badge-pro</div><div class="hex">#2980b9</div><div class="usage">"Pro" tier badge background</div><button class="copy-btn" onclick="cp('#2980b9')">copy</button></div>
+</div>
+
+<div class="section">
+<div class="section-title">Avatar palette — per-initial colors</div>
+<div class="row"><div class="swatch" style="background:rgba(201,168,76,0.15);"></div><div class="token">--avatar-gold (J, A, S…)</div><div class="hex">rgba(201,168,76,0.15)</div><div class="usage">Gold avatar bg · text: #c9a84c</div><button class="copy-btn" onclick="cp('rgba(201,168,76,0.15)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(100,120,200,0.18);"></div><div class="token">--avatar-blue (M, E, D…)</div><div class="hex">rgba(100,120,200,0.18)</div><div class="usage">Blue avatar bg · text: #8899dd</div><button class="copy-btn" onclick="cp('rgba(100,120,200,0.18)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(140,80,60,0.2);"></div><div class="token">--avatar-coral (V, H, R…)</div><div class="hex">rgba(140,80,60,0.2)</div><div class="usage">Coral avatar bg · text: #cc8870</div><button class="copy-btn" onclick="cp('rgba(140,80,60,0.2)')">copy</button></div>
+<div class="row"><div class="swatch" style="background:rgba(80,140,100,0.18);"></div><div class="token">--avatar-teal (N, K, T…)</div><div class="hex">rgba(80,140,100,0.18)</div><div class="usage">Teal avatar bg · text: #6ab88a</div><button class="copy-btn" onclick="cp('rgba(80,140,100,0.18)')">copy</button></div>
+</div>
+
+</div>
+
+<!-- ════ TAB 2: TYPOGRAPHY ════ -->
+<div class="panel" id="tab-typography">
+<div class="section">
+<div class="section-title">Font stacks</div>
+<div class="code-block"><span class="k">--font-serif:</span> <span class="v">'Georgia', 'Times New Roman', serif;</span>  <span class="c">/* headings, hero titles, page titles */</span>
+<span class="k">--font-sans:</span>  <span class="v">'Inter', 'Helvetica Neue', sans-serif;</span> <span class="c">/* all UI: labels, body, badges, buttons */</span>
+<span class="k">--font-mono:</span>  <span class="v">'Courier New', monospace;</span>             <span class="c">/* hex codes, token names, code */</span></div>
+</div>
+<div class="section">
+<div class="section-title">Type scale</div>
+<div class="code-block"><span class="c">/* Page / section headings — serif */</span>
+<span class="k">--text-hero:</span>    <span class="v">36px / weight 400 / font-serif / letter-spacing -0.01em</span>
+<span class="k">--text-h1:</span>      <span class="v">26px / weight 400 / font-serif</span>
+<span class="k">--text-h2:</span>      <span class="v">20px / weight 400 / font-serif</span>     <span class="c">/* dashboard page titles */</span>
+<span class="k">--text-h3:</span>      <span class="v">18px / weight 400 / font-serif</span>     <span class="c">/* job titles, card headings */</span>
+<span class="k">--text-h4:</span>      <span class="v">14px / weight 400 / font-serif</span>
+
+<span class="c">/* Body — sans */</span>
+<span class="k">--text-body:</span>    <span class="v">12px / weight 400 / font-sans / line-height 1.75</span>
+<span class="k">--text-small:</span>   <span class="v">11px / weight 400 / font-sans</span>
+<span class="k">--text-micro:</span>   <span class="v">10px / weight 400 / font-sans</span>
+
+<span class="c">/* Labels — sans, uppercase, tracked */</span>
+<span class="k">--text-label:</span>   <span class="v">9px / weight 700 / font-sans / uppercase / letter-spacing 0.12em</span>
+<span class="k">--text-badge:</span>   <span class="v">9px / weight 700 / font-sans / uppercase / letter-spacing 0.09em</span>
+<span class="k">--text-eyebrow:</span> <span class="v">9px / weight 400 / font-sans / uppercase / letter-spacing 0.16em</span>
+
+<span class="c">/* Numbers / prices */</span>
+<span class="k">--text-price-lg:</span> <span class="v">28-32px / weight 400 / font-serif / color --text-primary</span>
+<span class="k">--text-price-md:</span> <span class="v">18-20px / weight 400 / font-serif / color --text-primary</span>
+<span class="k">--text-price-sm:</span> <span class="v">14-16px / weight 400 / font-serif / color --gold</span>
+
+<span class="c">/* Italic rule — ONLY for accent words in hero headings */</span>
+<span class="k">em (hero):</span>       <span class="v">font-style italic / color --gold / font-serif</span></div>
+</div>
+<div class="note">Rule: Headings always serif, weight 400. Never bold headings.
+UI (buttons, badges, labels) always sans. Never serif UI.
+Gold italic em tag is used ONLY in hero h1 — nowhere else.</div>
+</div>
+
+<!-- ════ TAB 3: COMPONENTS ════ -->
+<div class="panel" id="tab-components">
+<div class="section">
+<div class="section-title">Navbar</div>
+<div class="code-block"><span class="k">background:</span>      <span class="v">#050810</span>
+<span class="k">border-bottom:</span>   <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">padding:</span>         <span class="v">14px 28px</span>
+<span class="k">height:</span>          <span class="v">52px</span>
+
+<span class="c">/* Logo icon */</span>
+<span class="k">background:</span>      <span class="v">#c9a84c</span>
+<span class="k">color:</span>           <span class="v">#050810</span>
+<span class="k">border-radius:</span>   <span class="v">5px</span>
+<span class="k">font:</span>            <span class="v">14px/700 Inter</span>
+
+<span class="c">/* Nav links */</span>
+<span class="k">color (default):</span> <span class="v">#6b5f45</span>
+<span class="k">color (active):</span>  <span class="v">#c9a84c</span>
+<span class="k">border-bottom:</span>   <span class="v">0.5px solid #c9a84c  (active only)</span>
+<span class="k">font:</span>            <span class="v">11px Inter / uppercase / letter-spacing 0.09em</span>
+
+<span class="c">/* Avatar pill */</span>
+<span class="k">width/height:</span>    <span class="v">26px / border-radius 50%</span>
+<span class="k">background:</span>      <span class="v">rgba(201,168,76,0.12)</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">color:</span>           <span class="v">#c9a84c / font 10px/700 Inter</span>
+
+<span class="c">/* Notification badge */</span>
+<span class="k">background:</span>      <span class="v">#c9a84c</span>
+<span class="k">color:</span>           <span class="v">#050810</span>
+<span class="k">font:</span>            <span class="v">8px/700 Inter</span>
+<span class="k">border-radius:</span>   <span class="v">10px / padding 1px 5px</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Buttons</div>
+<div class="code-block"><span class="c">/* Primary — Gold fill */</span>
+<span class="k">background:</span>      <span class="v">#c9a84c</span>
+<span class="k">color:</span>           <span class="v">#050810</span>
+<span class="k">font:</span>            <span class="v">11-12px/700 Inter / uppercase / letter-spacing 0.07em</span>
+<span class="k">padding:</span>         <span class="v">10px 20px</span>
+<span class="k">border-radius:</span>   <span class="v">3px</span>
+<span class="k">border:</span>          <span class="v">none</span>
+
+<span class="c">/* Secondary — Dark outline */</span>
+<span class="k">background:</span>      <span class="v">#0d1120</span>
+<span class="k">color:</span>           <span class="v">#f0e8d4</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">border-radius:</span>   <span class="v">3px</span>
+<span class="k">font:</span>            <span class="v">11px/600 Inter / uppercase / letter-spacing 0.06em</span>
+
+<span class="c">/* Ghost — transparent outline */</span>
+<span class="k">background:</span>      <span class="v">transparent</span>
+<span class="k">color:</span>           <span class="v">#6b5f45</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">border-radius:</span>   <span class="v">3px</span>
+<span class="k">font:</span>            <span class="v">11px Inter / uppercase / letter-spacing 0.06em</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Cards</div>
+<div class="code-block"><span class="k">background:</span>      <span class="v">#0d1120</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">border-radius:</span>   <span class="v">6px</span>
+<span class="k">padding:</span>         <span class="v">14-18px (use 14px for dense, 18px for detail)</span>
+
+<span class="c">/* Card dividers (internal) */</span>
+<span class="k">border-top:</span>      <span class="v">0.5px solid rgba(201,168,76,0.15)</span>
+
+<span class="c">/* Inputs inside cards */</span>
+<span class="k">background:</span>      <span class="v">#0a0e1a</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.22)</span>
+<span class="k">border-radius:</span>   <span class="v">3px</span>
+<span class="k">color:</span>           <span class="v">#6b5f45 (placeholder) / #f0e8d4 (value)</span>
+<span class="k">font:</span>            <span class="v">12px Inter</span>
+<span class="k">padding:</span>         <span class="v">9px 12px</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Badges</div>
+<div class="badge-preview">
+  <span class="bp" style="background:#c9a84c;color:#050810;">Gold fill</span>
+  <span class="bp" style="background:transparent;color:#c9a84c;border:0.5px solid rgba(201,168,76,0.4);">Gold outline</span>
+  <span class="bp" style="background:#111625;color:#a8997e;border:0.5px solid rgba(255,255,255,0.08);">Dark neutral</span>
+  <span class="bp" style="background:rgba(46,125,82,0.18);color:#4caf7d;">Winning/Open</span>
+  <span class="bp" style="background:rgba(192,57,43,0.2);color:#e57373;">Outbid/Low</span>
+  <span class="bp" style="background:#2980b9;color:#fff;">Pro</span>
+</div>
+<div class="code-block" style="margin-top:10px;"><span class="c">/* All badges */</span>
+<span class="k">font:</span>            <span class="v">9px/700 Inter / uppercase / letter-spacing 0.09em</span>
+<span class="k">padding:</span>         <span class="v">3px 8px</span>
+<span class="k">border-radius:</span>   <span class="v">2px</span>  <span class="c">/* sharp, not pill */</span>
+
+<span class="k">Gold fill:</span>       <span class="v">bg #c9a84c · text #050810</span>
+<span class="k">Gold outline:</span>    <span class="v">bg transparent · text #c9a84c · border rgba(201,168,76,0.4)</span>
+<span class="k">Dark neutral:</span>    <span class="v">bg #111625 · text #a8997e · border rgba(255,255,255,0.08)</span>
+<span class="k">Winning/Open:</span>    <span class="v">bg rgba(46,125,82,0.18) · text #4caf7d</span>
+<span class="k">Outbid/Danger:</span>  <span class="v">bg rgba(192,57,43,0.20) · text #e57373</span>
+<span class="k">Pro tier:</span>        <span class="v">bg #2980b9 · text #ffffff</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Progress bars</div>
+<div class="code-block"><span class="k">track-bg:</span>        <span class="v">#1a1f30</span>
+<span class="k">height:</span>          <span class="v">2px</span>
+<span class="k">border-radius:</span>   <span class="v">1px</span>
+
+<span class="k">fill-gold:</span>       <span class="v">#c9a84c  → normal price decay / GeekScore</span>
+<span class="k">fill-red:</span>        <span class="v">#c0392b  → dropping fast (decay > $20/hr)</span>
+<span class="k">fill-green:</span>      <span class="v">#2e7d52  → holding steady</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Skill / tech tags</div>
+<div class="code-block"><span class="k">background:</span>      <span class="v">#111625</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(255,255,255,0.07)</span>
+<span class="k">color:</span>           <span class="v">#6b5f45</span>
+<span class="k">font:</span>            <span class="v">10px Inter</span>
+<span class="k">padding:</span>         <span class="v">2px 8px</span>
+<span class="k">border-radius:</span>   <span class="v">2px</span>
+
+<span class="c">/* Verified / matched skill tag variant */</span>
+<span class="k">border:</span>          <span class="v">0.5px solid rgba(201,168,76,0.3)</span>
+<span class="k">color:</span>           <span class="v">#c9a84c</span></div>
+</div>
+</div>
+
+<!-- ════ TAB 4: PER-PAGE ════ -->
+<div class="panel" id="tab-pages">
+<div class="section">
+<div class="section-title">All pages — shared rules</div>
+<div class="code-block"><span class="k">body:</span>            <span class="v">background #080b14 · color #f0e8d4 · font-family Georgia,serif</span>
+<span class="k">all borders:</span>     <span class="v">0.5px solid rgba(201,168,76,0.22) — no exceptions</span>
+<span class="k">border-radius:</span>   <span class="v">6px cards · 3px buttons/badges/inputs · 2px tags</span>
+<span class="k">no gradients:</span>    <span class="v">flat fills only</span>
+<span class="k">no shadows:</span>      <span class="v">depth via bg color difference only</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Landing page specific</div>
+<div class="code-block"><span class="k">Hero h1:</span>         <span class="v">36px Georgia serif / weight 400 / color #f0e8d4</span>
+<span class="k">Hero em word:</span>    <span class="v">font-style italic / color #c9a84c</span>
+<span class="k">Eyebrow tag:</span>     <span class="v">border 0.5px rgba(201,168,76,0.22) · bg transparent · color #c9a84c</span>
+<span class="k">Live card:</span>       <span class="v">bg #0d1120 · border rgba(201,168,76,0.22) · border-radius 6px</span>
+<span class="k">Trust row icons:</span> <span class="v">◈ symbol · color #8a6e2f</span>
+<span class="k">CTA primary:</span>     <span class="v">bg #c9a84c · text #050810 · "Start Hiring Free →"</span>
+<span class="k">CTA secondary:</span>   <span class="v">ghost button · text #c9a84c · "&lt;/&gt; Join as Freelancer"</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Sign-up / auth page</div>
+<div class="code-block"><span class="k">Left panel bg:</span>   <span class="v">#050810 · border-right 0.5px rgba(201,168,76,0.22)</span>
+<span class="k">Right panel bg:</span>  <span class="v">#080b14</span>
+<span class="k">Role selector:</span>
+  <span class="k">unselected:</span>    <span class="v">bg #0a0e1a · border rgba(201,168,76,0.22) · text #f0e8d4</span>
+  <span class="k">selected:</span>      <span class="v">bg rgba(201,168,76,0.12) · border #c9a84c · text #c9a84c</span>
+<span class="k">Input fields:</span>    <span class="v">bg #050810 · border rgba(201,168,76,0.22) · color #6b5f45</span>
+<span class="k">CTA:</span>             <span class="v">full-width gold button "Create account →"</span>
+<span class="k">Google btn:</span>      <span class="v">bg #0d1120 · border rgba(201,168,76,0.22) · text #f0e8d4</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Job feed (freelancer)</div>
+<div class="code-block"><span class="k">Search bar:</span>      <span class="v">bg #050810 · border rgba(201,168,76,0.22) · border-radius 3px</span>
+<span class="k">Filter buttons:</span>  <span class="v">ghost button style</span>
+<span class="k">Job cards grid:</span>  <span class="v">3-column · gap 12px</span>
+<span class="k">Match % badge:</span>
+  <span class="k">100%:</span>          <span class="v">gold fill #c9a84c · text #050810</span>
+  <span class="k">75%:</span>           <span class="v">gold outline · text #c9a84c</span>
+  <span class="k">50% and below:</span> <span class="v">dark neutral · text #a8997e</span>
+<span class="k">Current price:</span>   <span class="v">18-20px Georgia · color #f0e8d4</span>
+<span class="k">Effective/hr:</span>    <span class="v">14-16px Georgia · color #c9a84c</span>
+<span class="k">Decay "holding":</span> <span class="v">color #4caf7d (green) + ● dot</span>
+<span class="k">Decay "dropping":</span><span class="v">color #e57373 (red) + ↘ arrow</span>
+<span class="k">Bar (dropping):</span>  <span class="v">fill #c0392b</span>
+<span class="k">Bar (normal):</span>    <span class="v">fill #c9a84c</span>
+<span class="k">View Details btn:</span><span class="v">secondary dark button</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Job detail page</div>
+<div class="code-block"><span class="k">Layout:</span>          <span class="v">left 60% content · right 40% sidebar · gap 20px · padding 20px 28px</span>
+<span class="k">Job title:</span>       <span class="v">18px Georgia · color #f0e8d4</span>
+<span class="k">"Open" badge:</span>   <span class="v">bg rgba(46,125,82,0.18) · color #4caf7d</span>
+<span class="k">Verified skills:</span> <span class="v">tag border rgba(201,168,76,0.3) · color #c9a84c · prefix "✓ "</span>
+<span class="k">Live price:</span>      <span class="v">28px Georgia · color #f0e8d4</span>
+<span class="k">Countdown text:</span>  <span class="v">10px Inter · color #6b5f45</span>
+<span class="k">Accept btn:</span>      <span class="v">full-width gold primary</span>
+<span class="k">Divider text:</span>    <span class="v">"— or —" · color #6b5f45</span>
+<span class="k">Counter-bid boxes:</span><span class="v">bg #0a0e1a · border rgba(201,168,76,0.22)</span>
+<span class="k">Bid labels:</span>      <span class="v">9px Inter muted · value 14px Georgia gold</span>
+<span class="k">Price analytics:</span> <span class="v">section header color #c9a84c · values #f0e8d4 · decay #c0392b</span>
+<span class="k">Live bids list:</span>  <span class="v">bg #0a0e1a · border rgba(201,168,76,0.12) · own bid text #c9a84c</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Procurement Terminal (client dashboard)</div>
+<div class="code-block"><span class="k">Page title:</span>      <span class="v">20px Georgia · color #f0e8d4</span>
+<span class="k">Subtitle:</span>        <span class="v">11px Inter · color #6b5f45</span>
+<span class="k">Post Job btn:</span>    <span class="v">gold primary · "+ Post Job"</span>
+<span class="k">Stat cards (4):</span>  <span class="v">bg #0d1120 · border rgba(201,168,76,0.22) · 4-column grid · gap 10px</span>
+<span class="k">Stat label:</span>      <span class="v">9px Inter / uppercase / letter-spacing 0.1em / color #6b5f45</span>
+<span class="k">Stat value:</span>      <span class="v">20px Georgia / color #f0e8d4 (neutral) or #c9a84c (money/savings)</span>
+<span class="k">Market Intel:</span>    <span class="v">section header color #c9a84c / hot tags use tag component</span>
+<span class="k">Talent filter tabs:</span><span class="v">active = gold fill badge / inactive = dark neutral badge</span>
+<span class="k">Talent cards:</span>    <span class="v">3-column · GeekScore in #c9a84c · avgBid in #f0e8d4</span>
+<span class="k">Avatar (lg 36px):</span><span class="v">use avatar palette above per initial</span>
+<span class="k">GeekScore bar:</span>   <span class="v">fill #c9a84c · score% of 1000 = bar width%</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Mission Control (freelancer dashboard)</div>
+<div class="code-block"><span class="k">Page title:</span>      <span class="v">20px Georgia · color #f0e8d4</span>
+<span class="k">My Profile btn:</span>  <span class="v">secondary dark button</span>
+<span class="k">Stat cards (4):</span>  <span class="v">same as Procurement · matches/potential in #c9a84c</span>
+<span class="k">Bids used bar:</span>   <span class="v">progress-track · fill gold · width = (used/total * 100)%</span>
+<span class="k">Recommended row:</span> <span class="v">4-column horizontal scroll · cards same as feed cards</span>
+<span class="k">QuickBid (top match):</span><span class="v">gold primary button</span>
+<span class="k">QuickBid (rest):</span> <span class="v">secondary dark button</span>
+<span class="k">Active bids list:</span><span class="v">flush rows (no gap) · border-radius only on first/last</span>
+  <span class="k">Winning row:</span>   <span class="v">price text #c9a84c</span>
+  <span class="k">Outbid row:</span>    <span class="v">price text #f0e8d4 · badge bg rgba(192,57,43,0.2) · text #e57373</span>
+  <span class="k">Cooldown text:</span> <span class="v">color #6b5f45</span>
+  <span class="k">Market price:</span>  <span class="v">10px · color #4a4030 · prefix "mkt "</span></div>
+</div>
+</div>
+
+<!-- ════ TAB 5: CLAUDE CODE PROMPT ════ -->
+<div class="panel" id="tab-prompt">
+<div class="section">
+<div class="section-title">Copy this entire prompt → paste to Claude Code</div>
+<div class="code-block" style="white-space:pre-wrap;line-height:1.7;font-size:10px;color:#a8997e;">Retheme the entire GeekBid app to a Royal Dark theme.
+Apply these changes across ALL pages and components:
+
+━━ GLOBAL ━━
+body background:     #080b14
+navbar background:   #050810
+card background:     #0d1120
+inset/input bg:      #0a0e1a
+hover state bg:      #111625
+
+ALL borders must be: 0.5px solid rgba(201,168,76,0.22)
+Internal dividers:   0.5px solid rgba(201,168,76,0.15)
+border-radius cards: 6px
+border-radius btns:  3px
+border-radius tags:  2px
+No box-shadows. No gradients. Flat only.
+
+━━ COLORS ━━
+Primary accent:      #c9a84c  (gold — CTAs, active prices, live badges)
+Gold dim:            #8a6e2f  (decorative icons)
+Gold tint bg:        rgba(201,168,76,0.12)  (selected states)
+
+Text primary:        #f0e8d4  (headings, prices, job titles)
+Text secondary:      #a8997e  (sub-headings, names in cards)
+Text muted:          #6b5f45  (body copy, meta, timestamps)
+Text ghost:          #3a3020  (placeholders, disabled)
+Text dimmer:         #4a4030  (progress labels)
+
+Price steady green:  #2e7d52 bg / #4caf7d text
+Price dropping red:  #c0392b bar / rgba(192,57,43,0.2) badge bg / #e57373 badge text
+Pro badge:           #2980b9 bg / #ffffff text
+
+Progress bar track:  #1a1f30
+Progress gold fill:  #c9a84c
+Progress red fill:   #c0392b (when decay > $20/hr or "Dropping fast")
+
+━━ TYPOGRAPHY ━━
+Headings font:       Georgia, serif — weight 400 (never bold headings)
+All UI font:         Inter, sans-serif
+Hero h1 size:        36px
+Page/dash titles:    20px Georgia
+Card headings:       13-14px Georgia
+Body copy:           12px Inter / line-height 1.75
+Labels/badges:       9-10px Inter / uppercase / letter-spacing 0.09-0.16em
+Prices large:        28-32px Georgia / color #f0e8d4
+Prices medium:       18-20px Georgia / color #f0e8d4
+Effective/hr price:  14-16px Georgia / color #c9a84c
+The ONLY italic text: hero h1 accent words → font-style italic + color #c9a84c
+
+━━ BUTTONS ━━
+Primary (gold):      bg #c9a84c / color #050810 / 11px/700 Inter uppercase
+Secondary (dark):    bg #0d1120 / color #f0e8d4 / border rgba(201,168,76,0.22)
+Ghost:               bg transparent / color #6b5f45 / border rgba(201,168,76,0.22)
+
+━━ BADGES ━━
+Gold fill:           bg #c9a84c / text #050810
+Gold outline:        bg transparent / text #c9a84c / border rgba(201,168,76,0.4)
+Neutral dark:        bg #111625 / text #a8997e / border rgba(255,255,255,0.08)
+Winning/Open/100%:   bg rgba(46,125,82,0.18) / text #4caf7d
+Outbid/Dropping:     bg rgba(192,57,43,0.20) / text #e57373
+Pro tier:            bg #2980b9 / text #ffffff
+All badges: 9px/700 Inter / uppercase / letter-spacing 0.09em / padding 3px 8px / radius 2px
+
+━━ SKILL TAGS ━━
+Default:             bg #111625 / border rgba(255,255,255,0.07) / color #6b5f45
+Verified/matched:    border rgba(201,168,76,0.3) / color #c9a84c (prefix "✓ ")
+
+━━ AVATARS ━━
+Size small (nav):    26px circle / bg rgba(201,168,76,0.12) / border rgba(201,168,76,0.22) / text #c9a84c
+Size large (cards):  36px circle / use rotating palette:
+  Gold initials:     bg rgba(201,168,76,0.15) / text #c9a84c
+  Blue initials:     bg rgba(100,120,200,0.18) / text #8899dd
+  Coral initials:    bg rgba(140,80,60,0.20) / text #cc8870
+  Teal initials:     bg rgba(80,140,100,0.18) / text #6ab88a
+
+━━ ACTIVE NAV INDICATOR ━━
+Active tab color:    #c9a84c
+Active tab border:   border-bottom 0.5px solid #c9a84c
+
+━━ LIVE BADGE ━━
+background: #c9a84c / color: #050810 / 9px/700 Inter uppercase
+
+Do NOT change any functionality, routing, data, or layout structure.
+Only change colors, fonts, borders, and border-radius as specified above.</div>
+</div>
+</div>
+
+</div>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+function cp(val){
+  navigator.clipboard.writeText(val).catch(()=>{});
+  const btn=event.target;
+  const orig=btn.textContent;
+  btn.textContent='✓ copied';
+  btn.style.color='#4caf7d';
+  setTimeout(()=>{btn.textContent=orig;btn.style.color='';},1200);
+}
+</script>
