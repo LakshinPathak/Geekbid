@@ -4,167 +4,188 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import {
-  Key, Plus, Trash2, ArrowLeft, Copy, AlertTriangle, Clock, Code2,
+ Key, Plus, Trash2, ArrowLeft, Copy, AlertTriangle, Clock, Code2,
 } from "lucide-react";
 import Link from "next/link";
 
 type ApiKeyItem = { id: string; name: string; prefix: string; lastUsedAt?: string; createdAt: string };
 
 export default function SettingsPage() {
-  const { currentUser, mounted } = useApp();
-  const router = useRouter();
-  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
-  const [newKeyName, setNewKeyName] = useState("");
-  const [newKeyValue, setNewKeyValue] = useState("");
-  const [creating, setCreating] = useState(false);
+ const { currentUser, mounted } = useApp();
+ const router = useRouter();
+ const [keys, setKeys] = useState<ApiKeyItem[]>([]);
+ const [newKeyName, setNewKeyName] = useState("");
+ const [newKeyValue, setNewKeyValue] = useState("");
+ const [creating, setCreating] = useState(false);
+ const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (mounted && !currentUser) router.replace("/login");
-  }, [mounted, currentUser, router]);
+ useEffect(() => {
+ if (mounted && !currentUser) router.replace("/login");
+ }, [mounted, currentUser, router]);
 
-  const loadKeys = useCallback(async () => {
-    const token = localStorage.getItem("gb_access_token");
-    const res = await fetch("/api/keys", { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setKeys(await res.json());
-  }, []);
+ const loadKeys = useCallback(async () => {
+ const token = localStorage.getItem("gb_access_token");
+ const res = await fetch("/api/keys", { headers: { Authorization: `Bearer ${token}` } });
+ if (res.ok) setKeys(await res.json());
+ }, []);
 
-  useEffect(() => { if (mounted && currentUser) loadKeys(); }, [mounted, currentUser, loadKeys]);
+ useEffect(() => { if (mounted && currentUser) loadKeys(); }, [mounted, currentUser, loadKeys]);
 
-  const createKey = async () => {
-    if (!newKeyName.trim()) return;
-    setCreating(true);
-    const token = localStorage.getItem("gb_access_token");
-    const res = await fetch("/api/keys", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: newKeyName }),
-    });
-    const data = await res.json();
-    setCreating(false);
-    if (data.error) { toast.error(data.error); return; }
-    setNewKeyValue(data.key);
-    setNewKeyName("");
-    toast.success("API key created! Copy it now — you won't see it again.");
-    await loadKeys();
-  };
+ const createKey = async () => {
+ if (!newKeyName.trim()) return;
+ setCreating(true);
+ const token = localStorage.getItem("gb_access_token");
+ const res = await fetch("/api/keys", {
+ method: "POST",
+ headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+ body: JSON.stringify({ name: newKeyName }),
+ });
+ const data = await res.json();
+ setCreating(false);
+ if (data.error) { toast.error(data.error); return; }
+ setNewKeyValue(data.key);
+ setNewKeyName("");
+ toast.success("API key created! Copy it now — you won't see it again.");
+ await loadKeys();
+ };
 
-  const revokeKey = async (id: string) => {
-    const token = localStorage.getItem("gb_access_token");
-    const res = await fetch(`/api/keys?id=${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.error) { toast.error(data.error); return; }
-    toast.success("Key revoked");
-    await loadKeys();
-  };
+ const handleCopy = () => {
+ navigator.clipboard.writeText(newKeyValue);
+ setCopied(true);
+ toast.success("Copied!");
+ setTimeout(() => setCopied(false), 2000);
+ };
 
-  if (!mounted) return (
-    <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-      <div className="h-8 w-8 border-2 border-[#00FF88]/30 border-t-[#00FF88] rounded-full animate-spin" />
-    </div>
-  );
+ const revokeKey = async (id: string) => {
+ const token = localStorage.getItem("gb_access_token");
+ const res = await fetch(`/api/keys?id=${id}`, {
+ method: "DELETE",
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ const data = await res.json();
+ if (data.error) { toast.error(data.error); return; }
+ toast.success("Key revoked");
+ await loadKeys();
+ };
 
-  return (
-    <div className="min-h-screen bg-[#0A0A0F]">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
-          <ArrowLeft className="h-4 w-4" /> Back to Profile
-        </Link>
+ if (!mounted) return (
+ <div className="min-h-screen bg-[#0d1120] grid-bg flex items-center justify-center">
+ <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ </div>
+ );
 
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#E8E8EC]">API Settings</h1>
-        <p className="text-[#8A8A9A] text-sm mt-1">Manage your API keys for programmatic access</p>
+ return (
+ <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+ <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <ArrowLeft className="h-4 w-4" /> Back to Profile
+ </Link>
 
-        {/* Create key */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-8">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Plus className="h-4 w-4 text-[#00FF88]" /> Generate API Key
-          </h2>
-          <div className="flex gap-2">
-            <input
-              value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
-              placeholder="Key name (e.g. Production, CI/CD)"
-              className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
-            />
-            <button onClick={createKey} disabled={creating || !newKeyName.trim()}
-              className="h-11 px-4 sm:px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
-              {creating ? "Generating..." : "Generate"}
-            </button>
-          </div>
+ <div className="animate-fade-in-up">
+ <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4]">API Settings</h1>
+ <p className="text-[#a8997e] text-sm mt-1">Manage your API keys for programmatic access</p>
+ </div>
 
-          {newKeyValue && (
-            <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                <p className="text-yellow-500 text-xs font-semibold">Copy this key now — it won't be shown again</p>
-              </div>
-              <div className="flex gap-2">
-                <code className="flex-1 bg-[#0A0A0F] border border-[#1E1E2A] rounded-lg p-3 text-[#00FF88] text-sm font-mono break-all">
-                  {newKeyValue}
-                </code>
-                <button onClick={() => { navigator.clipboard.writeText(newKeyValue); toast.success("Copied!"); }}
-                  className="h-10 px-3 border border-[#1E1E2A] text-[#8A8A9A] rounded-lg hover:bg-[#1A1A24] transition-all self-start">
-                  <Copy className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+ {/* Create key */}
+ <div className="glass-card mt-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+ <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
+ <Plus className="h-4 w-4 text-[#c9a84c]" /> Generate API Key
+ </h2>
+ <div className="flex gap-2">
+ <input
+ value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
+ onKeyDown={e => e.key === "Enter" && createKey()}
+ placeholder="Key name (e.g. Production, CI/CD)"
+ className="glass-input flex-1 h-11 rounded-[6px] text-sm"
+ />
+ <button onClick={createKey} disabled={creating || !newKeyName.trim()}
+ className="btn-primary h-11 px-4 sm:px-6 rounded-[6px] text-sm payment-ready disabled:opacity-40">
+ {creating ? "Generating..." : "Generate"}
+ </button>
+ </div>
 
-        {/* Existing keys */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-6">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Key className="h-4 w-4 text-[#00FF88]" /> Active Keys ({keys.length})
-          </h2>
+ {newKeyValue && (
+ <div className="mt-4 bg-[rgba(201,168,76,0.08)] border border-[rgba(201,168,76,0.25)] rounded-[6px] p-4 animate-fade-in-up">
+ <div className="flex items-center gap-2 mb-2">
+ <AlertTriangle className="h-4 w-4 text-[#c9a84c]" />
+ <p className="text-[#c9a84c] text-xs font-semibold">Copy this key now — it won&apos;t be shown again</p>
+ </div>
+ <div className="flex gap-2">
+ <code className="settings-key-display flex-1 break-all">
+ {newKeyValue}
+ </code>
+ <button onClick={handleCopy}
+ className={`h-10 px-3 rounded-[3px] transition-all self-start ${
+ copied ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[rgba(201,168,76,0.40)]" : "btn-glass"
+ }`}>
+ <Copy className="h-4 w-4" />
+ </button>
+ </div>
+ </div>
+ )}
+ </div>
 
-          {keys.length === 0 ? (
-            <p className="text-[#6E6E85] text-sm">No API keys yet. Generate one above.</p>
-          ) : (
-            <div className="space-y-3">
-              {keys.map(k => (
-                <div key={k.id} className="flex items-center justify-between bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
-                  <div>
-                    <p className="text-[#E8E8EC] text-sm font-medium">{k.name}</p>
-                    <p className="text-[#6E6E85] text-xs font-mono mt-0.5">{k.prefix}</p>
-                    <div className="flex items-center gap-3 mt-1 text-[#6E6E85] text-xs">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}</span>
-                      {k.lastUsedAt && <span>Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
-                    </div>
-                  </div>
-                  <button onClick={() => revokeKey(k.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors p-2">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+ {/* Existing keys */}
+ <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+ <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
+ <Key className="h-4 w-4 text-[#c9a84c]" /> Active Keys
+ <span className="text-xs font-normal text-[#a8997e] bg-[#111625] px-2 py-0.5 rounded-full">{keys.length}</span>
+ </h2>
 
-        {/* API Docs */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-6">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Code2 className="h-4 w-4 text-[#00FF88]" /> API Documentation
-          </h2>
-          <div className="space-y-4">
-            <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
-              <p className="text-[#00FF88] text-xs font-mono mb-1">GET /api/v1/jobs</p>
-              <p className="text-[#8A8A9A] text-sm">List jobs. Query params: status, category, page, limit</p>
-              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
-                curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&limit=10
-              </code>
-            </div>
-            <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
-              <p className="text-[#00FF88] text-xs font-mono mb-1">POST /api/v1/jobs</p>
-              <p className="text-[#8A8A9A] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
-              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
-                curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
-              </code>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {keys.length === 0 ? (
+ <div className="py-6 text-center">
+ <Key className="h-8 w-8 text-[#a8997e] mx-auto mb-2" />
+ <p className="text-[#a8997e] text-sm">No API keys yet. Generate one above.</p>
+ </div>
+ ) : (
+ <div className="space-y-2">
+ {keys.map(k => (
+ <div key={k.id} className="tx-row flex items-center justify-between rounded-[6px] p-4 transition-colors">
+ <div>
+ <p className="text-[#f0e8d4] text-sm font-medium">{k.name}</p>
+ <p className="text-[#a8997e] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
+ <div className="flex items-center gap-3 mt-1 text-[#a8997e] text-xs">
+ <span className="flex items-center gap-1">
+ <Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}
+ </span>
+ {k.lastUsedAt && (
+ <span className="text-[#a8997e]">Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>
+ )}
+ </div>
+ </div>
+ <button onClick={() => revokeKey(k.id)}
+ className="text-[#B02020]/60 hover:text-[#B02020] transition-colors p-2 rounded-[3px] hover:bg-[rgba(176,32,32,0.08)]">
+ <Trash2 className="h-4 w-4" />
+ </button>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+
+ {/* API Docs */}
+ <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+ <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
+ <Code2 className="h-4 w-4 text-[#c9a84c]" /> API Documentation
+ </h2>
+ <div className="space-y-3">
+ <div className="glass-panel-sm rounded-[6px] p-4">
+ <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">GET /api/v1/jobs</p>
+ <p className="text-[#a8997e] text-sm">List jobs. Query params: status, category, page, limit</p>
+ <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&amp;limit=10
+ </code>
+ </div>
+ <div className="glass-panel-sm rounded-[6px] p-4">
+ <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">POST /api/v1/jobs</p>
+ <p className="text-[#a8997e] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
+ <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
+ </code>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }
