@@ -333,9 +333,9 @@ export default function LandingPage() {
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-8 text-xs text-[#6B8BA4]">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-[#C8923D]/50" /> No credit card required</span>
-              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-blue-500/50" /> Escrow protected</span>
-              <span className="flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-amber-500/50" /> Verified talent only</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-[#E0A33E]/80" /> No credit card required</span>
+              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-blue-400/80" /> Escrow protected</span>
+              <span className="flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-amber-400/80" /> Verified talent only</span>
             </div>
           </div>
 
@@ -359,7 +359,7 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <p className="text-xs font-semibold text-[#6B8BA4] uppercase tracking-[0.25em] mb-4">Platform Preview</p>
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#F0EDE8] leading-tight">
-              Your auction feed. <span className="text-[#4A6070]">Reimagined.</span>
+              Your auction feed. <span className="text-[#6B8BA4]">Reimagined.</span>
             </h2>
           </div>
 
@@ -375,7 +375,7 @@ export default function LandingPage() {
                   <div className="h-3 w-3 rounded-full bg-[#EDE8DC]/[0.08]" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="bg-[#EDE8DC]/[0.04] border border-white/[0.06] rounded-lg px-4 py-1 text-xs text-white/30 font-mono">geekbid.com/feed</div>
+                  <div className="bg-[#EDE8DC]/[0.04] border border-white/[0.06] rounded-lg px-4 py-1 text-xs text-white/55 font-mono">geekbid.com/feed</div>
                 </div>
               </div>
 
@@ -392,14 +392,14 @@ export default function LandingPage() {
                     <div key={s.label} className="rounded-xl bg-[#1A2B3C] border border-white/[0.06] p-4">
                       <p className="text-[11px] text-[#6B8BA4] uppercase tracking-wider mb-1">{s.label}</p>
                       <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
-                      <p className="text-[11px] text-[#4A6070] mt-0.5">{s.sub}</p>
+                      <p className="text-[11px] text-[#6B8BA4] mt-0.5">{s.sub}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Job rows */}
                 <div className="rounded-xl border border-white/[0.06] overflow-hidden">
-                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-white/[0.06] text-[11px] text-white/25 uppercase tracking-wider font-semibold">
+                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-white/[0.06] text-[11px] text-white/55 uppercase tracking-wider font-semibold">
                     <span>Project</span>
                     <span className="hidden sm:block text-right">Bids</span>
                     <span className="text-right">Time Left</span>
@@ -408,26 +408,26 @@ export default function LandingPage() {
                   {JOB_ROWS.map((job, i) => (
                     <div key={job.title} className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3.5 ${i < JOB_ROWS.length - 1 ? "border-b border-white/[0.04]" : ""} hover:bg-[#EDE8DC]/[0.02] transition-colors`}>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-lg bg-white/[0.08] flex items-center justify-center text-white/25 shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-white/[0.08] flex items-center justify-center text-white/50 shrink-0">
                           <Code className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white/80 truncate">{job.title}</p>
+                          <p className="text-sm font-medium text-white/90 truncate">{job.title}</p>
                           <div className="flex gap-1.5 mt-0.5">
-                            {job.skills.map(s => <span key={s} className="text-[11px] text-white/20 bg-[#EDE8DC]/[0.04] px-1.5 py-0.5 rounded">{s}</span>)}
+                            {job.skills.map(s => <span key={s} className="text-[11px] text-white/50 bg-white/[0.06] px-1.5 py-0.5 rounded">{s}</span>)}
                           </div>
                         </div>
                       </div>
                       <div className="hidden sm:flex items-center gap-1.5 text-right">
-                        <Users className="h-3 w-3 text-white/15" />
-                        <span className="text-xs text-white/35">{job.bids}</span>
+                        <Users className="h-3 w-3 text-white/40" />
+                        <span className="text-xs text-white/60">{job.bids}</span>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-[#9BB3C8] font-mono">{job.time}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-white">{job.price}</p>
-                        <p className="text-[11px] text-emerald-400/60">{"↓"} {job.decay}</p>
+                        <p className="text-[11px] text-emerald-400/90">{"↓"} {job.decay}</p>
                       </div>
                     </div>
                   ))}
@@ -759,8 +759,8 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/[0.08]">
-            <p className="text-xs text-[#4A6070]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
-            <div className="flex items-center gap-1 text-xs text-[#4A6070]">
+            <p className="text-xs text-[#6B8BA4]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
+            <div className="flex items-center gap-1 text-xs text-[#6B8BA4]">
               <span>Built with</span>
               <span className="text-[#9BB3C8]">Next.js</span>
               <span>&middot;</span>
