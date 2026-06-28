@@ -244,7 +244,7 @@ export default function LandingPage() {
  const router = useRouter();
  const [activeTestimonial, setActiveTestimonial] = useState(0);
 
- const statsSection = useInView(0.3);
+ const statsSection = useInView(0.1);
  const stat0 = useCountUp(STATS[0].value, 2000, 0, statsSection.inView);
  const stat1 = useCountUp(12, 2000, 0, statsSection.inView);
  const stat2 = useCountUp(STATS[2].value, 2000, 0, statsSection.inView);
@@ -266,7 +266,7 @@ export default function LandingPage() {
  <div className="bg-[#0d1120] text-[#f0e8d4] overflow-x-hidden">
  {/* ═══ NAVBAR ═══ */}
  <nav className="sticky top-0 z-50 w-full border-b border-[rgba(201,168,76,0.22)] bg-[#050810]">
- <div className="flex h-12 items-center justify-between px-7 max-w-7xl mx-auto">
+ <div className="flex h-14 items-center justify-between px-8 max-w-7xl mx-auto">
  <div className="flex items-center gap-2.5">
  <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">G</div>
  <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">GeekBid</span>
@@ -291,13 +291,13 @@ export default function LandingPage() {
  </nav>
 
  {/* ═══ HERO ═══ */}
- <section className="relative min-h-screen flex items-center justify-center px-6 lg:px-8 pt-16 pb-16">
+ <section className="relative min-h-[85vh] flex items-center justify-center px-6 lg:px-8 pt-12 pb-12">
  {/* Ambient glows */}
  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[#c9a84c]/[0.04] rounded-full blur-[150px] pointer-events-none" />
  <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/[0.03] rounded-full blur-[120px] pointer-events-none" />
  <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-purple-500/[0.03] rounded-full blur-[100px] pointer-events-none" />
 
- <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start lg:items-center">
+ <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
  {/* Left: Copy */}
  <div className="text-center lg:text-left animate-fade-in-up">
  {/* Badge */}
@@ -397,7 +397,7 @@ export default function LandingPage() {
  <div className="rounded-[6px] border border-[rgba(201,168,76,0.15)] overflow-hidden">
  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-[rgba(201,168,76,0.15)] text-[11px] text-[#a8997e] uppercase tracking-wider font-semibold">
  <span>Project</span>
- <span className="hidden sm:block text-right">Bids</span>
+ <span className="hidden sm:flex items-center justify-end">Bids</span>
  <span className="text-right">Time Left</span>
  <span className="text-right">Price</span>
  </div>
@@ -561,7 +561,7 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ STATS ═══ */}
- <section ref={statsSection.ref} className="py-20 sm:py-28 border-t border-[rgba(201,168,76,0.22)]">
+ <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
  <div className="mx-auto max-w-5xl px-5">
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
  {STATS.map((s, i) => (

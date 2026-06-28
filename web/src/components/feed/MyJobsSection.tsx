@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
  getCurrentPrice, getHoursToFloor, formatHoursToFloor,
@@ -8,7 +8,7 @@ import {
 import { getJobHealth, getCompetitionBadge } from "./feed-helpers";
 import {
  Briefcase, Users, Clock, TrendingDown, ChevronDown,
- Star, CheckCircle, Plus, AlertCircle, Zap,
+ Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -281,6 +281,14 @@ function MyJobCard({
 // ── Main: My Posted Jobs section ───────────────────────────────────
 export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: Props) {
  const [filter, setFilter] = useState<"all" | "hot" | "nobids">("all");
+ const scrollRef = useRef<HTMLDivElement>(null);
+ const [canScrollLeft, setCanScrollLeft] = useState(false);
+ const [canScrollRight, setCanScrollRight] = useState(false);
+ const [activeDot, setActiveDot] = useState(0);
+ const [isDragging, setIsDragging] = useState(false);
+ const dragStart = useRef({ x: 0, scrollLeft: 0 });
+
+ const CARD_W = 320;
 
  const filteredJobs = useMemo(() => {
  switch (filter) {
@@ -294,24 +302,61 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  const noBidCount = jobs.filter(j => (j.bidCount ?? 0) === 0).length;
  const totalBids = bids.filter(b => jobs.map(j => j.id ?? j._id).includes(b.jobId)).length;
 
+ const updateScrollState = useCallback(() => {
+ const el = scrollRef.current;
+ if (!el) return;
+ setCanScrollLeft(el.scrollLeft > 4);
+ setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+ setActiveDot(Math.round(el.scrollLeft / CARD_W));
+ }, [CARD_W]);
+
+ useEffect(() => {
+ updateScrollState();
+ const el = scrollRef.current;
+ if (!el) return;
+ el.addEventListener("scroll", updateScrollState, { passive: true });
+ const ro = new ResizeObserver(updateScrollState);
+ ro.observe(el);
+ return () => { el.removeEventListener("scroll", updateScrollState); ro.disconnect(); };
+ }, [updateScrollState, filteredJobs.length]);
+
+ const scroll = (dir: "left" | "right") => {
+ scrollRef.current?.scrollBy({ left: dir === "right" ? CARD_W * 2 : -CARD_W * 2, behavior: "smooth" });
+ };
+
+ const onMouseDown = (e: React.MouseEvent) => {
+ const el = scrollRef.current; if (!el) return;
+ setIsDragging(true);
+ dragStart.current = { x: e.pageX, scrollLeft: el.scrollLeft };
+ el.style.cursor = "grabbing"; el.style.userSelect = "none";
+ };
+ const onMouseMove = (e: React.MouseEvent) => {
+ if (!isDragging || !scrollRef.current) return;
+ scrollRef.current.scrollLeft = dragStart.current.scrollLeft - (e.pageX - dragStart.current.x);
+ };
+ const onMouseUp = () => {
+ setIsDragging(false);
+ if (scrollRef.current) { scrollRef.current.style.cursor = "grab"; scrollRef.current.style.userSelect = ""; }
+ };
+
  if (jobs.length === 0) return (
  <div className="space-y-3">
- <h2 className="text-sm font-semibold text-[#a8997e] uppercase tracking-wider flex items-center gap-2">
- <Briefcase className="h-4 w-4 text-[#c9a84c]" />
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#a8997e] flex items-center gap-2">
+ <span className="w-3 h-px bg-[#c9a84c] inline-block" />
  My Posted Jobs
  </h2>
- <div className="glass-panel rounded-[6px] border border-dashed border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-colors p-10 flex flex-col items-center justify-center gap-4 text-center">
+ <div className="card border-dashed p-10 flex flex-col items-center justify-center gap-4 text-center">
  <div className="w-14 h-14 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center">
  <Briefcase className="h-6 w-6 text-[#c9a84c]" />
  </div>
  <div>
- <p className="font-heading text-base text-[#f0e8d4] mb-1">No active jobs yet</p>
- <p className="text-[12px] text-[#a8997e] max-w-xs">
- Post your first job and freelancers will start bidding immediately. Prices decay over time — the longer you wait, the cheaper it gets.
+ <p className="font-serif font-normal text-base text-[#f0e8d4] mb-1">No active jobs yet</p>
+ <p className="text-[12px] text-[#a8997e] max-w-xs font-sans">
+ Post your first job and freelancers will start bidding immediately.
  </p>
  </div>
  <Link href="/post-job">
- <button className="flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors">
+ <button className="flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
  <Plus className="h-4 w-4" />
  Post Your First Job
  </button>
@@ -323,34 +368,58 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  return (
  <div className="space-y-4">
 
- {/* ── Header ─────────────────────────────────────────────── */}
+ {/* ── Header row ─────────────────────────────────────────── */}
  <div className="flex items-center justify-between">
  <div>
- <h2 className="text-sm font-semibold text-[#a8997e] uppercase tracking-wider flex items-center gap-2">
- <Briefcase className="h-4 w-4 text-[#c9a84c]" />
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#a8997e] flex items-center gap-2">
+ <span className="w-3 h-px bg-[#c9a84c] inline-block" />
  My Posted Jobs
  </h2>
- <p className="text-[11px] text-[#a8997e] mt-0.5">
+ <p className="text-[11px] text-[#a8997e] mt-0.5 font-sans">
  {jobs.length} active · {totalBids} total bid{totalBids !== 1 ? "s" : ""} received
  </p>
  </div>
 
  <div className="flex items-center gap-2">
- {/* KPI chips */}
  {hotCount > 0 && (
  <div className="px-2.5 py-1.5 rounded-[3px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[9px] text-[#c9a84c] uppercase tracking-wider">🔥 Hot</p>
- <p className="font-heading text-sm text-[#c9a84c]">{hotCount}</p>
+ <p className="text-[9px] text-[#c9a84c] uppercase tracking-wider font-sans">🔥 Hot</p>
+ <p className="font-serif text-sm text-[#c9a84c]">{hotCount}</p>
  </div>
  )}
  {noBidCount > 0 && (
  <div className="px-2.5 py-1.5 rounded-[3px] bg-[rgba(192,57,43,0.2)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[9px] text-[#e57373] uppercase tracking-wider">No Bids</p>
- <p className="font-heading text-sm text-[#e57373]">{noBidCount}</p>
+ <p className="text-[9px] text-[#e57373] uppercase tracking-wider font-sans">No Bids</p>
+ <p className="font-serif text-sm text-[#e57373]">{noBidCount}</p>
  </div>
  )}
+ {/* Arrow buttons */}
+ <div className="flex items-center gap-1">
+ <button
+ onClick={() => scroll("left")}
+ disabled={!canScrollLeft}
+ className={`h-7 w-7 flex items-center justify-center rounded-[3px] border transition-all ${
+ canScrollLeft
+ ? "border-[rgba(201,168,76,0.35)] text-[#c9a84c] hover:bg-[rgba(201,168,76,0.10)] bg-[#0d1120]"
+ : "border-[rgba(201,168,76,0.12)] text-[#a8997e]/30 bg-[#0d1120] cursor-not-allowed"
+ }`}
+ >
+ <ChevronLeft className="h-4 w-4" />
+ </button>
+ <button
+ onClick={() => scroll("right")}
+ disabled={!canScrollRight}
+ className={`h-7 w-7 flex items-center justify-center rounded-[3px] border transition-all ${
+ canScrollRight
+ ? "border-[rgba(201,168,76,0.35)] text-[#c9a84c] hover:bg-[rgba(201,168,76,0.10)] bg-[#0d1120]"
+ : "border-[rgba(201,168,76,0.12)] text-[#a8997e]/30 bg-[#0d1120] cursor-not-allowed"
+ }`}
+ >
+ <ChevronRight className="h-4 w-4" />
+ </button>
+ </div>
  <Link href="/post-job">
- <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors">
+ <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
  <Plus className="h-3.5 w-3.5" />
  Post New
  </button>
@@ -367,8 +436,8 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  ].map(tab => (
  <button
  key={tab.key}
- onClick={() => setFilter(tab.key as typeof filter)}
- className={`px-3 py-1.5 rounded-[3px] text-[11px] font-semibold transition-colors border ${
+ onClick={() => { setFilter(tab.key as typeof filter); scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" }); }}
+ className={`px-3 py-1.5 rounded-[3px] text-[11px] font-sans font-semibold transition-colors border ${
  filter === tab.key
  ? "bg-[#c9a84c] text-[#080b14] border-transparent"
  : "bg-transparent text-[#a8997e] border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c]"
@@ -379,33 +448,67 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  ))}
  </div>
 
- {/* ── Alert if any job has no bids ────────────────────────── */}
+ {/* ── No-bids alert ───────────────────────────────────────── */}
  {noBidCount > 0 && (
  <div className="flex items-start gap-2.5 px-4 py-3 rounded-[3px] bg-[rgba(192,57,43,0.2)] border border-[rgba(201,168,76,0.22)]">
  <AlertCircle className="h-4 w-4 text-[#e57373] shrink-0 mt-0.5" />
- <p className="text-[11px] text-[#e57373] leading-relaxed">
+ <p className="text-[11px] text-[#e57373] leading-relaxed font-sans">
  <strong>{noBidCount} job{noBidCount !== 1 ? "s" : ""}</strong> have received no bids yet.
- Consider lowering the starting price or broadening the required skills.
+ Consider lowering the starting price or broadening required skills.
  </p>
  </div>
  )}
 
- {/* ── Job cards grid ───────────────────────────────────────── */}
+ {/* ── Carousel ────────────────────────────────────────────── */}
  {filteredJobs.length > 0 ? (
- <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+ <div className="relative">
+ {/* Left fade */}
+ <div
+ className="absolute left-0 top-0 bottom-2 w-12 z-10 pointer-events-none transition-opacity duration-200"
+ style={{ background: "linear-gradient(to right, #080b14, transparent)", opacity: canScrollLeft ? 1 : 0 }}
+ />
+ {/* Right fade */}
+ <div
+ className="absolute right-0 top-0 bottom-2 w-16 z-10 pointer-events-none transition-opacity duration-200"
+ style={{ background: "linear-gradient(to left, #080b14, transparent)", opacity: canScrollRight ? 1 : 0 }}
+ />
+
+ <div
+ ref={scrollRef}
+ onMouseDown={onMouseDown}
+ onMouseMove={onMouseMove}
+ onMouseUp={onMouseUp}
+ onMouseLeave={onMouseUp}
+ className="flex gap-3 overflow-x-auto pb-2 select-none"
+ style={{ cursor: "grab", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}
+ >
  {filteredJobs.map(job => (
- <MyJobCard
- key={job.id ?? job._id}
- job={job}
- bids={bids}
- users={users}
- now={now}
- onAcceptBest={onAcceptBest}
+ <div key={job.id ?? job._id} className="shrink-0" style={{ width: CARD_W, scrollSnapAlign: "start" }}>
+ <MyJobCard job={job} bids={bids} users={users} now={now} onAcceptBest={onAcceptBest} />
+ </div>
+ ))}
+ </div>
+
+ {/* Dot indicators */}
+ {filteredJobs.length > 1 && (
+ <div className="flex items-center gap-1.5 mt-3 justify-center">
+ {filteredJobs.map((_, i) => (
+ <button
+ key={i}
+ onClick={() => scrollRef.current?.scrollTo({ left: i * CARD_W, behavior: "smooth" })}
+ className="h-px rounded-none transition-all duration-300"
+ style={{
+ width: i === activeDot ? 24 : 8,
+ background: i === activeDot ? "#c9a84c" : "rgba(201,168,76,0.25)",
+ }}
+ aria-label={`Go to job ${i + 1}`}
  />
  ))}
  </div>
+ )}
+ </div>
  ) : (
- <p className="text-center text-sm text-[#a8997e] py-6">No jobs match this filter.</p>
+ <p className="text-center text-sm text-[#a8997e] py-6 font-sans">No jobs match this filter.</p>
  )}
  </div>
  );

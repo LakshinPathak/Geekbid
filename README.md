@@ -3,6 +3,23 @@
 > **The world's first reverse-auction platform for tech talent.**  
 > Clients post jobs. Prices decay over time. Freelancers bid the price **down**. Best value wins.
 
+**Current version: v7** — Royal Dark design system, horizontal carousel feeds, full mobile responsiveness.
+
+---
+
+## What's New in v7
+
+| Area | Change |
+|------|--------|
+| **Royal Dark design system** | All pages migrated to `#080b14` background, `#c9a84c` gold accent, `#f0e8d4` ivory text. No white backgrounds anywhere. |
+| **Horizontal carousel feeds** | "Recommended For You" (freelancer) and "My Posted Jobs" (client) use scroll-snap carousels with left/right arrows, drag-to-scroll, fade edges, and dot indicators. |
+| **Landing page fixes** | Stats counters animate on scroll (lowered IntersectionObserver threshold). Hero padding tightened. Step numbers positioned correctly inside glass cards. Price decay card visible with proper border. |
+| **Navbar** | Flat sticky bar at `h-14`, text-only UPPERCASE links, "G" logo mark replacing icon. |
+| **Progress bars** | All decay bars are flat `h-0.5` (2px) — no rounded pills. |
+| **Font rule** | Headings: `font-serif font-normal` (Georgia). UI text: `font-sans` (Inter). |
+| **Mobile responsiveness** | Full responsive layout from 320px to 1440px across all pages. |
+| **Contrast** | All text colors pass WCAG AA (minimum 4.5:1 against dark backgrounds). |
+
 ---
 
 ## What is GeekBid?
@@ -86,8 +103,8 @@ $400 ─────────────────────────
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 16, React 19, TypeScript |
-| **Styling** | Tailwind CSS v4, Space Grotesk + Inter fonts |
+| **Frontend** | Next.js 15, React 19, TypeScript |
+| **Styling** | Tailwind CSS v4, Royal Dark design system, Georgia + Inter fonts |
 | **UI Components** | Radix UI, Lucide Icons, Sonner toasts |
 | **Auth** | JWT (jose), bcrypt (12 rounds), Google OAuth 2.0 |
 | **Database** | MongoDB Atlas (native driver) |
@@ -153,7 +170,7 @@ More competition = slower decay = more time for quality bids.
 ```bash
 git clone https://github.com/LakshinPathak/Geekbid.git
 cd Geekbid
-git checkout v5
+git checkout v7
 ```
 
 ### 2. Set up environment variables
