@@ -212,22 +212,25 @@ const COMPARISONS = [
 
 const TESTIMONIALS = [
  {
- quote: "GeekBid saved us 40% on our AI infrastructure project. The reverse auction model is genuinely game-changing for how we source engineering talent.",
- name: "Sarah Chen",
- title: "CTO, NexaAI",
- avatar: "SC",
- },
- {
- quote: "As a freelancer, I love the transparency. I can see exactly when a project hits my target rate and jump on it. No more lowball negotiations.",
- name: "Arjun Dev",
- title: "Senior Full-Stack Engineer",
- avatar: "AD",
- },
- {
- quote: "The escrow system gives us peace of mind. We know the money is there, and the dispute resolution process is fair and fast.",
+ quote: "The escrow and dispute resolution gave us confidence to try GeekBid for our entire engineering pipeline. We've saved 40% on average.",
  name: "Derek Olsen",
  title: "VP Engineering, FinScale",
  avatar: "DO",
+ rating: 5,
+ },
+ {
+ quote: "I switched from Upwork after my first job on GeekBid. The price decay means I actually get fair market rates instead of racing to the bottom.",
+ name: "Priya Sharma",
+ title: "Senior Full-Stack Developer",
+ avatar: "PS",
+ rating: 5,
+ },
+ {
+ quote: "Posted a React Native project at $3,000. Three qualified engineers bid within 6 hours. Hired at $1,800. That's the power of reverse auctions.",
+ name: "Marcus Chen",
+ title: "CTO, LaunchPad AI",
+ avatar: "MC",
+ rating: 5,
  },
 ];
 
@@ -263,7 +266,7 @@ export default function LandingPage() {
  if (!mounted || currentUser) return null;
 
  return (
- <div className="bg-[#0d1120] text-[#f0e8d4] overflow-x-hidden">
+ <div className="bg-[#080b14] text-[#f0e8d4] overflow-x-hidden">
  {/* ═══ NAVBAR ═══ */}
  <nav className="sticky top-0 z-50 w-full border-b border-[rgba(201,168,76,0.22)] bg-[#050810]">
  <div className="flex h-14 items-center justify-between px-8 max-w-7xl mx-auto">
@@ -311,7 +314,7 @@ export default function LandingPage() {
  <em className="text-[#c9a84c] not-italic">at the right price</em>
  </h1>
 
- <p className="text-sm text-[#a8997e] leading-[1.75] mb-6 max-w-sm font-sans mx-auto lg:mx-0">
+ <p className="text-lg sm:text-xl text-[#a8997e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0">
  The world&apos;s first reverse-auction marketplace for tech talent. Post a job, watch prices automatically decay, and hire when it hits your sweet spot.
  </p>
 
@@ -330,11 +333,19 @@ export default function LandingPage() {
  </Link>
  </div>
 
- {/* Trust signals */}
- <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-1.5 mt-5 text-[10px] tracking-[0.04em] text-[#a8997e] font-sans">
- <span><span className="text-[#8a6e2f] mr-1">◈</span>No credit card</span>
- <span><span className="text-[#8a6e2f] mr-1">◈</span>Escrow protected</span>
- <span><span className="text-[#8a6e2f] mr-1">◈</span>Verified talent</span>
+ {/* Trust badges */}
+ <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-6">
+  {[
+   { icon: "🔒", text: "Escrow Protected" },
+   { icon: "⚡", text: "< 4hr Match Time" },
+   { icon: "🛡️", text: "Dispute Resolution" },
+   { icon: "✨", text: "No Upfront Fees" },
+  ].map(b => (
+   <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#a8997e]">
+    <span>{b.icon}</span>
+    <span>{b.text}</span>
+   </div>
+  ))}
  </div>
  </div>
 
@@ -447,19 +458,26 @@ export default function LandingPage() {
  </p>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
- {STEPS.map((s) => (
- <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300">
- <span className="text-5xl font-serif font-normal text-[rgba(201,168,76,0.08)] absolute top-4 right-4 group-hover:text-[rgba(201,168,76,0.18)] transition-colors">{s.num}</span>
- <div className="relative z-10">
- <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
- <s.icon className="h-5 w-5" />
- </div>
- <h3 className="text-base font-serif font-normal text-[#f0e8d4] mb-2">{s.title}</h3>
- <p className="text-sm text-[#a8997e] leading-relaxed">{s.desc}</p>
- </div>
- </div>
- ))}
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-start">
+  {STEPS.map((s, idx) => (
+   <>
+   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300">
+    <span className="text-8xl font-serif font-normal text-[rgba(201,168,76,0.06)] absolute -top-2 -left-2 group-hover:text-[rgba(201,168,76,0.14)] transition-colors leading-none select-none">{s.num}</span>
+    <div className="relative z-10">
+     <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
+      <s.icon className="h-5 w-5" />
+     </div>
+     <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{s.title}</h3>
+     <p className="text-sm sm:text-base text-[#a8997e] leading-relaxed">{s.desc}</p>
+    </div>
+   </div>
+   {idx < STEPS.length - 1 && (
+    <div key={`conn-${s.num}`} className="hidden lg:flex items-center justify-center mt-8">
+     <div className="w-full border-t border-dashed border-[rgba(201,168,76,0.28)]" />
+    </div>
+   )}
+   </>
+  ))}
  </div>
 
  {/* Price decay formula callout */}
@@ -500,7 +518,7 @@ export default function LandingPage() {
  <f.icon className="h-6 w-6 text-[#a8997e] group-hover:text-[#c9a84c] transition-colors" />
  </div>
  <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{f.title}</h3>
- <p className="text-sm text-[#a8997e] leading-relaxed">{f.desc}</p>
+ <p className="text-sm sm:text-base text-[#a8997e] leading-relaxed">{f.desc}</p>
  </div>
  </div>
  ))}
@@ -539,8 +557,25 @@ export default function LandingPage() {
 
  {/* Rows */}
  {COMPARISONS.map((c, i) => (
+  <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] hover:bg-[rgba(201,168,76,0.04)] transition-colors ${i < COMPARISONS.length - 1 ? "border-b border-[rgba(201,168,76,0.22)]" : ""}`}>
+   <div className="p-4 sm:p-5 text-sm sm:text-base font-medium text-[#a8997e]">{c.feature}</div>
+   <div className="p-4 sm:p-5 text-center border-x border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.03)]">
+    <div className="flex items-start justify-center gap-2">
+     <Check className="h-4 w-4 text-[#c9a84c] shrink-0 mt-0.5" />
+     <span className="text-sm sm:text-base text-[#c9a84c] font-medium">{c.geekbid}</span>
+    </div>
+   </div>
+   <div className="p-4 sm:p-5 text-center">
+    <div className="flex items-start justify-center gap-2">
+     <X className="h-4 w-4 text-[#a8997e] shrink-0 mt-0.5" />
+     <span className="text-sm sm:text-base text-[#a8997e]">{c.traditional}</span>
+    </div>
+   </div>
+  </div>
+ ))}
+ {COMPARISONS.map((c, i) => (
  <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] ${i < COMPARISONS.length - 1 ? "border-b border-[rgba(201,168,76,0.22)]" : ""}`}>
- <div className="p-4 sm:p-5 text-sm font-medium text-[#a8997e]">{c.feature}</div>
+ <div className="p-4 sm:p-5 text-sm sm:text-base font-medium text-[#a8997e]">{c.feature}</div>
  <div className="p-4 sm:p-5 text-center border-x border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.03)]">
  <div className="flex items-start justify-center gap-2">
  <Check className="h-4 w-4 text-[#c9a84c] shrink-0 mt-0.5" />
@@ -566,10 +601,10 @@ export default function LandingPage() {
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
  {STATS.map((s, i) => (
  <div key={s.label} className="text-center">
- <p className="text-4xl sm:text-5xl font-serif font-normal text-[#c9a84c] tabular-nums">
+ <p className="text-5xl sm:text-6xl font-serif font-normal text-[#c9a84c] tabular-nums">
  {s.prefix}{i === 1 ? `${(statValues[i] / 10).toFixed(1)}` : statValues[i]}{s.suffix}
  </p>
- <p className="text-[10px] font-sans text-[#a8997e] mt-2 uppercase tracking-[0.10em]">{s.label}</p>
+ <p className="text-sm font-sans text-[#a8997e] mt-2 uppercase tracking-[0.08em]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -597,7 +632,7 @@ export default function LandingPage() {
  <div className="flex gap-1 justify-center mb-8">
  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-5 w-5 fill-[#c9a84c] text-[#c9a84c]" />)}
  </div>
- <blockquote className="text-xl sm:text-2xl font-serif font-normal text-[#f0e8d4] leading-relaxed max-w-2xl mx-auto">
+ <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif font-normal text-[#f0e8d4] leading-relaxed max-w-2xl mx-auto">
  &ldquo;{t.quote}&rdquo;
  </blockquote>
  <div className="mt-8 flex items-center justify-center gap-4">
@@ -683,7 +718,7 @@ export default function LandingPage() {
  {/* ═══ FINAL CTA ═══ */}
  <section className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative grid-bg">
  <div className="absolute inset-0 overflow-hidden pointer-events-none">
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#c9a84c]/[0.03] rounded-full blur-[120px]" />
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[#c9a84c]/[0.07] rounded-full blur-[160px]" />
  </div>
  <div className="mx-auto max-w-4xl px-5 text-center relative z-10">
  <h2 className="text-4xl sm:text-6xl md:text-7xl font-serif font-normal text-[#f0e8d4] leading-[1.05]">
@@ -724,29 +759,34 @@ export default function LandingPage() {
  </p>
  </div>
 
- {/* Links */}
+ {/* Platform */}
  <div>
- <p className="text-[11px] font-medium text-[#a8997e] uppercase tracking-widest mb-4">Platform</p>
- <ul className="space-y-2.5">
- <li><Link href="/feed" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Browse Jobs</Link></li>
- <li><Link href="/login?tab=register&role=client" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Post a Job</Link></li>
- <li><Link href="/login?tab=register&role=freelancer" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Find Work</Link></li>
- </ul>
+  <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Platform</p>
+  <div className="flex flex-col gap-2.5">
+   <Link href="/feed" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Browse Jobs</Link>
+   <Link href="/post-job" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Post a Job</Link>
+   <Link href="/login?role=freelancer" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Find Work</Link>
+   <Link href="/pricing" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Pricing</Link>
+  </div>
  </div>
+ {/* Company */}
  <div>
- <p className="text-[11px] font-medium text-[#a8997e] uppercase tracking-widest mb-4">Resources</p>
- <ul className="space-y-2.5">
- <li><a href="#how-it-works" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">How it Works</a></li>
- <li><a href="#features" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Features</a></li>
- <li><a href="#compare" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">GeekBid vs Traditional</a></li>
- </ul>
+  <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Company</p>
+  <div className="flex flex-col gap-2.5">
+   <span className="text-sm text-[#a8997e]">About Us</span>
+   <span className="text-sm text-[#a8997e]">Careers</span>
+   <span className="text-sm text-[#a8997e]">Blog</span>
+   <span className="text-sm text-[#a8997e]">Contact</span>
+  </div>
  </div>
+ {/* Legal */}
  <div>
- <p className="text-[11px] font-medium text-[#a8997e] uppercase tracking-widest mb-4">Account</p>
- <ul className="space-y-2.5">
- <li><Link href="/login" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Sign In</Link></li>
- <li><Link href="/login?tab=register" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Create Account</Link></li>
- </ul>
+  <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Legal</p>
+  <div className="flex flex-col gap-2.5">
+   <span className="text-sm text-[#a8997e]">Terms of Service</span>
+   <span className="text-sm text-[#a8997e]">Privacy Policy</span>
+   <span className="text-sm text-[#a8997e]">Cookie Policy</span>
+  </div>
  </div>
  </div>
 
