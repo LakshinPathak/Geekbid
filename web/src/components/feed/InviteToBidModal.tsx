@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import { X, Send, Loader2 } from "lucide-react";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney, getCurrentPrice } from "@/lib/utils";
 
 interface Props {
   freelancerId: string;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function InviteToBidModal({ freelancerId, freelancerName, onClose }: Props) {
-  const { jobs, currentUser, auth } = useApp();
+  const { jobs, currentUser, auth, bids, now } = useApp();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,6 +23,10 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
     j.pricingMode !== "direct" as never
   );
 
+  const freelancerBidJobIds = new Set(
+    bids.filter(b => b.freelancerId === freelancerId).map(b => b.jobId)
+  );
+
   const handleInvite = async () => {
     if (!selectedJobId) { toast.error("Select a job first"); return; }
     const job = myOpenJobs.find(j => (j.id ?? j._id) === selectedJobId);
@@ -30,18 +34,15 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/notifications", {
+      const res = await fetch("/api/invites", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${auth.accessToken}`,
         },
         body: JSON.stringify({
-          userId: freelancerId,
-          type: "job_invite",
-          title: `You've been invited to bid on "${job.title}"`,
-          body: "A client wants you specifically for this project. Check it out!",
-          jobId: job.id ?? job._id,
+          freelancerId,
+          jobId: selectedJobId,
         }),
       });
       const data = await res.json();
@@ -108,10 +109,15 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
                            style={{ borderColor: isSelected ? "#c9a84c" : "#a8997e" }}>
                         {isSelected && <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#c9a84c" }} />}
                       </div>
-                      <span className="text-sm text-[#f0e8d4] truncate">{job.title}</span>
+                      <div className="min-w-0">
+                        <span className="text-sm text-[#f0e8d4] truncate block">{job.title}</span>
+                        {freelancerBidJobIds.has(jid) && (
+                          <span className="text-[10px] text-[#4caf7d] font-medium">✓ Already bid on this job</span>
+                        )}
+                      </div>
                     </div>
                     <span className="text-sm font-serif shrink-0" style={{ color: "#c9a84c" }}>
-                      {formatMoney(job.startingPrice)}
+                      {formatMoney(getCurrentPrice(job, now))}
                     </span>
                   </div>
                 </button>

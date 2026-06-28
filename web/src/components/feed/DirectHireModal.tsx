@@ -8,15 +8,19 @@ interface Props {
   freelancerId: string;
   freelancerName: string;
   freelancerSkills: string[];
+  hourlyRateMin?: number;
+  hourlyRateMax?: number;
   onClose: () => void;
 }
 
-export default function DirectHireModal({ freelancerId, freelancerName, freelancerSkills, onClose }: Props) {
+export default function DirectHireModal({ freelancerId, freelancerName, freelancerSkills, hourlyRateMin, hourlyRateMax, onClose }: Props) {
   const { createDirectOffer } = useApp();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(1000);
-  const [estimatedHours, setEstimatedHours] = useState(20);
+  const defaultHours = 20;
+  const defaultPrice = Math.round((hourlyRateMax || hourlyRateMin || 50) * defaultHours);
+  const [price, setPrice] = useState(defaultPrice);
+  const [estimatedHours, setEstimatedHours] = useState(defaultHours);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -127,6 +131,13 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
             />
           </div>
         </div>
+
+        {/* Rate hint */}
+        {(hourlyRateMin || hourlyRateMax) && (
+          <p className="text-[11px] text-[#a8997e] -mt-2">
+            Freelancer rate: <span className="text-[#c9a84c]">${hourlyRateMin}–${hourlyRateMax}/hr</span>
+          </p>
+        )}
 
         {/* Skills (read-only) */}
         {freelancerSkills.length > 0 && (

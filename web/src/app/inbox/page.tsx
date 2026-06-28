@@ -1,6 +1,7 @@
 "use client";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { timeAgo } from "@/lib/utils";
 import {
@@ -8,9 +9,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function InboxPage() {
+function InboxContent() {
  const { chatRooms, chatMessages, sendMessage, currentUser, users, jobs, mounted, fetchChatMessages } = useApp();
  const router = useRouter();
+ const searchParams = useSearchParams();
  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
  const [text, setText] = useState("");
  const [searchQuery, setSearchQuery] = useState("");
@@ -31,6 +33,16 @@ export default function InboxPage() {
  fetchChatMessages(selectedRoom);
  }
  }, [selectedRoom, fetchChatMessages]);
+
+ useEffect(() => {
+ const roomParam = searchParams.get("room");
+ if (roomParam && chatRooms.length > 0) {
+ const roomExists = chatRooms.find(r => r.id === roomParam);
+ if (roomExists) {
+ setSelectedRoom(roomExists.id);
+ }
+ }
+ }, [searchParams, chatRooms]);
 
  const filteredRooms = useMemo(() => {
  if (!searchQuery.trim()) return chatRooms;
@@ -245,5 +257,17 @@ export default function InboxPage() {
  </div>
  </div>
  </div>
+ );
+}
+
+export default function InboxPage() {
+ return (
+ <Suspense fallback={
+ <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
+ <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ </div>
+ }>
+ <InboxContent />
+ </Suspense>
  );
 }

@@ -7,6 +7,7 @@ import { useApp } from "@/lib/store";
 import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSquare, Send } from "lucide-react";
 import DirectHireModal from "./DirectHireModal";
 import InviteToBidModal from "./InviteToBidModal";
+import MessageFreelancerModal from "./MessageFreelancerModal";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface User {
@@ -52,6 +53,7 @@ function FreelancerCard({
   const { currentUser } = useApp();
   const [showHireModal, setShowHireModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   const fid = freelancer.id ?? freelancer._id ?? "";
   const myBids = bids.filter(b => b.freelancerId === fid);
@@ -191,7 +193,7 @@ function FreelancerCard({
           {isClient && (
             <div className="flex items-center gap-2">
               <button
-                onClick={e => { e.stopPropagation(); router.push("/inbox"); }}
+                onClick={e => { e.stopPropagation(); setShowMessageModal(true); }}
                 className="btn-ghost text-[11px] px-2.5 py-1.5 flex items-center gap-1 flex-1 justify-center"
               >
                 <MessageSquare className="h-3 w-3" /> Message
@@ -230,6 +232,8 @@ function FreelancerCard({
           freelancerId={fid}
           freelancerName={freelancer.fullName ?? "Freelancer"}
           freelancerSkills={freelancer.skills ?? []}
+          hourlyRateMin={freelancer.hourlyRateMin}
+          hourlyRateMax={freelancer.hourlyRateMax}
           onClose={() => setShowHireModal(false)}
         />
       )}
@@ -238,6 +242,13 @@ function FreelancerCard({
           freelancerId={fid}
           freelancerName={freelancer.fullName ?? "Freelancer"}
           onClose={() => setShowInviteModal(false)}
+        />
+      )}
+      {showMessageModal && (
+        <MessageFreelancerModal
+          freelancerId={fid}
+          freelancerName={freelancer.fullName ?? "Freelancer"}
+          onClose={() => setShowMessageModal(false)}
         />
       )}
     </>

@@ -927,6 +927,9 @@ export async function POST() {
  db.collection("teams").createIndex({ ownerId: 1 }),
  db.collection("teams").createIndex({ memberIds: 1 }),
  db.collection("api_keys").createIndex({ userId: 1 }),
+ db.collection("invites").createIndex({ clientId: 1, createdAt: -1 }),
+ db.collection("invites").createIndex({ freelancerId: 1, status: 1 }),
+ db.collection("invites").createIndex({ clientId: 1, freelancerId: 1, jobId: 1 }, { unique: true }),
  ]);
 
  return NextResponse.json({

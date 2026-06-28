@@ -97,6 +97,9 @@ type AppState = {
  fetchDisputes: () => Promise<void>;
  seedDatabase: () => Promise<ActionResult>;
  updateProfile: (updates: Partial<User>) => Promise<ActionResult>;
+ createChatRoom: (jobId: string, participantIds: string[]) => Promise<{ ok: boolean; roomId?: string; error?: string }>;
+ invites: any[];
+ fetchInvites: () => Promise<void>;
 };
 
 // ─── Context ────────────────────────────────────────────────────
@@ -155,6 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const [milestones, setMilestones] = useState<Milestone[]>([]);
  const [referralStats, setReferralStats] = useState<{ referralCode: string; totalInvites: number; signedUp: number; completed: number; totalCredits: number } | null>(null);
  const [watchedJobIds, setWatchedJobIds] = useState<string[]>([]);
+ const [invites, setInvites] = useState<any[]>([]);
  const [now, setNow] = useState<Date>(() => new Date());
  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
  const isRefreshingRef = useRef(false);
@@ -363,6 +367,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
  }
  } catch (err) {
  console.error("[fetchDisputes]", err);
+ }
+ }, [getValidToken]);
+
+ const fetchInvites = useCallback(async () => {
+ try {
+ const token = await getValidToken();
+ if (!token) return;
+ const res = await apiRequest("/api/invites", { accessToken: token });
+ if (res.ok) {
+ const data = await res.json();
+ if (Array.isArray(data)) setInvites(data);
+ }
+ } catch (err) {
+ console.error("[fetchInvites]", err);
  }
  }, [getValidToken]);
 
@@ -586,6 +604,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  fetchReviews(),
  fetchRecommendedJobs(),
  fetchReferralStats(),
+ fetchInvites(),
  ]);
  }
  }, [
@@ -600,6 +619,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  fetchReviews,
  fetchRecommendedJobs,
  fetchReferralStats,
+ fetchInvites,
  ]);
 
  // ── Hydration: restore session on mount ───────────────────
@@ -1021,6 +1041,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
  [currentUser, getValidToken]
  );
 
+ // ── Create Chat Room (with DB call) ──────────────────────
+ const createChatRoom = useCallback(
+ async (jobId: string, participantIds: string[]) => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, error: "Not authenticated" };
+ try {
+ const res = await apiRequest("/api/chat/rooms", {
+ method: "POST",
+ body: JSON.stringify({ jobId, participantIds }),
+ accessToken: token,
+ });
+ const data = await res.json();
+ if (data.error) return { ok: false, error: data.error };
+ await fetchChatRooms();
+ return { ok: true, roomId: data.id ?? data._id };
+ } catch {
+ return { ok: false, error: "Failed to create chat room" };
+ }
+ },
+ [getValidToken, fetchChatRooms]
+ );
+
  // ── Update Profile (with DB call) ─────────────────────────
  const updateProfile = useCallback(
  async (updates: Partial<User>): Promise<ActionResult> => {
@@ -1128,6 +1170,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  fetchDisputes,
  seedDatabase,
  updateProfile,
+ createChatRoom,
+ invites,
+ fetchInvites,
  }),
  [
  auth,
@@ -1184,6 +1229,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  fetchDisputes,
  seedDatabase,
  updateProfile,
+ createChatRoom,
+ invites,
+ fetchInvites,
  ]
  );
 
