@@ -277,7 +277,7 @@ export default function PaymentsPage() {
  }
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="bg-[#080b14] max-w-6xl mx-auto px-4 sm:px-6 py-8">
  {/* Header */}
  <div className="flex items-center justify-between mb-8 animate-fade-in-up">

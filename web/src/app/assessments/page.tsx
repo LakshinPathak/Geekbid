@@ -93,7 +93,7 @@ export default function AssessmentsPage() {
  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#0d1120] flex items-center justify-center">
+ <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
  <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
@@ -101,7 +101,7 @@ export default function AssessmentsPage() {
  // Quiz result screen
  if (quizResult) {
  return (
- <div className="min-h-screen bg-[#0d1120] flex items-center justify-center">
+ <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
  <div className="glass-panel p-8 max-w-md text-center animate-fade-in-up">
  {quizResult.passed ? (
  <CheckCircle2 className="h-16 w-16 text-[#c9a84c] mx-auto mb-4 animate-pulse-glow" />
@@ -133,7 +133,7 @@ export default function AssessmentsPage() {
  const secs = timeLeft % 60;
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
  {/* Quiz header */}
  <div className="flex items-center justify-between mb-6">
@@ -199,7 +199,7 @@ export default function AssessmentsPage() {
 
  // Assessment list
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
  <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile

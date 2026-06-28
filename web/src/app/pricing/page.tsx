@@ -61,7 +61,7 @@ export default function PricingPage() {
  const currentPlan = currentUser?.plan ?? "free";
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
  <div className="text-center mb-12 animate-fade-in-up">
  <h1 className="font-heading text-3xl sm:text-4xl font-bold text-gradient">Simple, Transparent Pricing</h1>

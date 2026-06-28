@@ -54,7 +54,7 @@ export default function NotificationsPage() {
  );
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
  {/* Header */}
  <div className="flex items-center justify-between mb-6 animate-fade-in-up">

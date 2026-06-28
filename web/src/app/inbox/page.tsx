@@ -59,13 +59,13 @@ export default function InboxPage() {
  };
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#0d1120] flex items-center justify-center">
+ <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
  <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="flex h-[calc(100vh-64px)]">
  {/* Left Sidebar — Room List */}
  <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[rgba(201,168,76,0.22)] glass-panel`} style={{ borderRadius: 0 }}>

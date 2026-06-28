@@ -69,13 +69,13 @@ export default function SettingsPage() {
  };
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#0d1120] grid-bg flex items-center justify-center">
+ <div className="min-h-screen bg-[#080b14] grid-bg flex items-center justify-center">
  <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#080b14] grid-bg">
  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
  <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile

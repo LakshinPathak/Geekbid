@@ -194,9 +194,9 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* Expanded: job-level breakdown */}
  {isOpen && (
- <div className="border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] px-4 py-3">
+ <div className="border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] px-4 py-3 overflow-x-auto">
  {/* Column headers */}
- <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(201,168,76,0.15)] mb-2">
+ <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(201,168,76,0.15)] mb-2 min-w-[320px]">
  {["Job", "Price", "Decay/hr", "Bids"].map(h => (
  <span key={h} className="text-[10px] text-[#a8997e] font-semibold uppercase last:text-right">
  {h}
@@ -206,7 +206,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  {cat.catJobs.map(j => (
  <div
  key={j.id ?? j._id}
- className="grid grid-cols-[1fr_90px_80px_72px] gap-2 py-1.5 border-b border-[rgba(201,168,76,0.15)] last:border-0"
+ className="grid grid-cols-[1fr_90px_80px_72px] gap-2 py-1.5 border-b border-[rgba(201,168,76,0.15)] last:border-0 min-w-[320px]"
  >
  <span className="text-[11px] text-[#f0e8d4] truncate">{j.title}</span>
  <span className="text-[11px] font-normal font-heading text-[#f0e8d4]">
