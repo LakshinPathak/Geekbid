@@ -823,3 +823,74 @@ input:focus, textarea:focus, select:focus { outline: none; }
   50%       { box-shadow: 0 0 0 20px rgba(200,146,61,0); }
 }
 .confetti { animation: confettiFall 3s linear infinite; }
+
+/* ══════════════════════════════════════════════════════════
+   LANDING PAGE — DARK NAVY THEME
+   Scoped to .landing-dark — app pages remain cream/unaffected
+   ══════════════════════════════════════════════════════════ */
+
+.landing-dark .glass-panel {
+  background: #162232;
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.40);
+}
+.landing-dark .glass-panel:hover {
+  border-color: rgba(255,255,255,0.14);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.50);
+}
+.landing-dark .glass-panel-sm {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.08);
+}
+.landing-dark .glass-card {
+  background: #162232;
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+.landing-dark .glass-card:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.50);
+  border-color: rgba(255,255,255,0.14);
+}
+.landing-dark .job-card {
+  background: #162232;
+  border-color: rgba(255,255,255,0.08);
+}
+.landing-dark .job-card:hover {
+  border-color: rgba(224,163,62,0.30);
+}
+.landing-dark .testimonial-card {
+  background: #162232;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+}
+.landing-dark .grid-bg {
+  background-color: #0D1B2A;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.landing-dark .text-gradient {
+  background: linear-gradient(135deg, #E8C87A 10%, #E0A33E 60%, #C87C2E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.landing-dark .btn-primary {
+  background: #E0A33E;
+  color: #0D1B2A;
+  font-weight: 700;
+}
+.landing-dark .btn-primary:hover {
+  background: #C8903A;
+  box-shadow: 0 6px 24px rgba(224,163,62,0.35);
+}
+.landing-dark .btn-ghost {
+  color: #9BB3C8;
+  border-color: rgba(255,255,255,0.15);
+  background: transparent;
+}
+.landing-dark .btn-ghost:hover {
+  background: rgba(255,255,255,0.07);
+  color: #F0EDE8;
+  border-color: rgba(255,255,255,0.24);
+}
+.landing-dark .scanline::after { opacity: 0.025; }

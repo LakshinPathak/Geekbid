@@ -303,10 +303,11 @@ export default function FreelancerFeed() {
           </div>
 
           {/* Search + Filters */}
-          <div className="space-y-2 mb-4">
-            <div className="flex flex-wrap gap-2">
+          <div className="space-y-2.5 mb-5">
+            {/* Row 1: Search + Category */}
+            <div className="flex gap-2">
               {/* Search */}
-              <div className="relative flex-1 min-w-[200px]">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#253444]" />
                 <input
                   type="text"
@@ -326,19 +327,22 @@ export default function FreelancerFeed() {
               <select
                 value={filterCategory}
                 onChange={e => setFilterCategory(e.target.value)}
-                className="glass-input h-10 px-3 text-sm min-w-[140px]"
+                className="glass-input h-10 px-3 text-sm w-[175px] shrink-0"
               >
                 <option value="all">All Categories</option>
                 {JOB_CATEGORIES.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
+            </div>{/* end Row 1 */}
 
+            {/* Row 2: Sort + Skills + Advanced chips */}
+            <div className="flex flex-wrap items-center gap-2">
               {/* Sort */}
               <div className="relative">
                 <button
                   onClick={() => setShowSortMenu(v => !v)}
-                  className="glass-input h-10 px-3 text-sm flex items-center gap-1.5"
+                  className="glass-input h-10 px-3 text-sm flex items-center gap-2 min-w-[110px]"
                 >
                   {FREELANCER_SORTS.find(s => s.value === sortBy)?.label ?? "Sort"}
                   <ChevronDown className="h-3.5 w-3.5 text-[#253444]" />
@@ -362,7 +366,7 @@ export default function FreelancerFeed() {
               <div className="relative">
                 <button
                   onClick={() => setShowSkillPicker(v => !v)}
-                  className={`glass-input h-10 px-3 text-sm flex items-center gap-1.5 ${filterSkills.length > 0 ? "border-[#7A5218] text-[#7A5218]" : ""}`}
+                  className={`glass-input h-10 px-3 text-sm flex items-center gap-2 min-w-[90px] ${filterSkills.length > 0 ? "border-[#7A5218] text-[#7A5218]" : ""}`}
                 >
                   Skills {filterSkills.length > 0 && `(${filterSkills.length})`}
                   <ChevronDown className="h-3.5 w-3.5 text-[#253444]" />
@@ -392,12 +396,12 @@ export default function FreelancerFeed() {
               {/* Advanced toggle */}
               <button
                 onClick={() => setShowAdvanced(v => !v)}
-                className={`glass-input h-10 px-3 text-sm flex items-center gap-1.5 ${hasAdvancedFilters ? "border-[#7A5218] text-[#7A5218]" : ""}`}
+                className={`glass-input h-10 px-3 text-sm flex items-center gap-2 min-w-[110px] ${hasAdvancedFilters ? "border-[#7A5218] text-[#7A5218]" : ""}`}
               >
                 Advanced {hasAdvancedFilters && "•"}
                 <ChevronDown className={`h-3.5 w-3.5 text-[#253444] transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
               </button>
-            </div>
+            </div>{/* end Row 2 */}
 
             {/* Advanced filters */}
             {showAdvanced && (
