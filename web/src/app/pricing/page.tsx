@@ -61,38 +61,39 @@ export default function PricingPage() {
   const currentPlan = currentUser?.plan ?? "free";
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-        <div className="text-center mb-12">
-          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#E8E8EC]">Simple, Transparent Pricing</h1>
-          <p className="text-[#8A8A9A] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
+        <div className="text-center mb-12 animate-fade-in-up">
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-gradient">Simple, Transparent Pricing</h1>
+          <p className="text-[#3D4E5C] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PLANS.map(plan => (
+          {PLANS.map((plan, idx) => (
             <div
               key={plan.value}
-              className={`bg-[#12121A] border rounded-2xl p-6 flex flex-col ${
-                plan.highlight ? "border-[#00FF88] ring-1 ring-[#00FF88]/20" : "border-[#1E1E2A]"
+              className={`glass-panel p-6 flex flex-col animate-fade-in-up ${
+                plan.highlight ? "border-[#C8923D]/60 glow-border" : ""
               }`}
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
               {plan.highlight && (
-                <span className="bg-[#00FF88] text-[#0A0A0F] text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
+                <span className="bg-[#C8923D] text-white text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
                   MOST POPULAR
                 </span>
               )}
               <div className="flex items-center gap-2 mb-4">
-                <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#00FF88]" : "text-[#8A8A9A]"}`} />
-                <h2 className="font-heading text-xl font-bold text-[#E8E8EC]">{plan.name}</h2>
+                <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#C8923D]" : "text-[#3D4E5C]"}`} />
+                <h2 className="font-heading text-xl font-bold text-[#182739]">{plan.name}</h2>
               </div>
               <div className="mb-6">
-                <span className="font-heading text-4xl font-bold text-[#E8E8EC]">{plan.price}</span>
-                <span className="text-[#6E6E85] text-sm ml-1">{plan.period}</span>
+                <span className="font-heading text-4xl font-bold text-[#182739]">{plan.price}</span>
+                <span className="text-[#7B8694] text-sm ml-1">{plan.period}</span>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-[#8A8A9A]">
-                    <Check className="h-4 w-4 text-[#00FF88] shrink-0" /> {f}
+                  <li key={f} className="flex items-center gap-2 text-sm text-[#3D4E5C]">
+                    <Check className="h-4 w-4 text-[#C8923D] shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
@@ -100,10 +101,10 @@ export default function PricingPage() {
                 disabled={currentPlan === plan.value}
                 className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                   currentPlan === plan.value
-                    ? "bg-[#1E1E2A] text-[#6E6E85] cursor-not-allowed"
+                    ? "bg-[#F5F2EA] text-[#7B8694] cursor-not-allowed"
                     : plan.highlight
-                    ? "bg-[#00FF88] text-[#0A0A0F] hover:bg-[#00CC6A]"
-                    : "border border-[#1E1E2A] text-[#E8E8EC] hover:bg-[#1A1A24]"
+                    ? "btn-primary"
+                    : "btn-ghost"
                 }`}
               >
                 {currentPlan === plan.value ? "Current Plan" : plan.cta}
@@ -113,7 +114,7 @@ export default function PricingPage() {
         </div>
 
         <div className="text-center mt-8">
-          <Link href="/feed" className="text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors">
+          <Link href="/feed" className="text-[#3D4E5C] text-sm hover:text-[#C8923D] transition-colors">
             Back to Feed
           </Link>
         </div>

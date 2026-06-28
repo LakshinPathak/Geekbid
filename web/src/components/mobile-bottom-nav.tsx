@@ -37,7 +37,7 @@ export default function MobileBottomNav() {
     : BASE_ITEMS;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#0A0A0F]/95 backdrop-blur-xl border-t border-[#1E1E2A] pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#EDE8DC]/96 backdrop-blur-xl border-t border-[#BEB5A5] pb-safe">
       <div className="flex h-16 items-center justify-around px-2">
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -46,13 +46,13 @@ export default function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-2 rounded-xl transition-colors ${
-                isActive ? "text-[#00FF88]" : "text-[#6E6E85] hover:text-[#8A8A9A]"
+                isActive ? "text-[#C8923D]" : "text-[#5A6775] hover:text-[#0F1924]"
               }`}
             >
               <item.icon className="h-5 w-5" />
               <span className="text-[10px] font-medium leading-none">{item.label}</span>
               {item.hasBadge && unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#00FF88] text-[9px] font-bold text-[#0A0A0F] px-1">
+                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C8923D] text-[9px] font-bold text-white px-1">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}

@@ -5,6 +5,7 @@ import { useApp } from "@/lib/store";
 import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier, getCategoryLabel } from "@/lib/utils";
 import { getDemandLevel, getEffectiveDecayRate, getDemandMultiplier, getAdaptivePrice } from "@/lib/pricing";
 import { toast } from "sonner";
+import AuctionVictoryModal from "@/components/modals/AuctionVictoryModal";
 import {
   Clock, TrendingDown, DollarSign, Zap, ArrowLeft, Eye, Shield, Send,
   MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, User, Activity,
@@ -14,8 +15,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const { id: jobId } = use(params);
   const { jobs, bids, users, now, currentUser, acceptJob, counterBid, milestones, fetchMilestones, updateMilestone } = useApp();
   const [counterPrice, setCounterPrice] = useState("");
-  const [counterMsg, setCounterMsg] = useState("");
   const [counterError, setCounterError] = useState("");
+  const [victoryData, setVictoryData] = useState<null | {
+    jobId: string; jobTitle: string; finalPrice: number; startingPrice: number;
+    freelancerName: string; freelancerScore?: number; clientName: string;
+  }>(null);
 
   // ── P0: Price ticker delta tracking ──────────────────────────────────────
   const [priceDelta, setPriceDelta] = useState(0);
@@ -138,8 +142,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   }, [jobBids, users]);
 
   if (!job) return (
-    <div className="flex items-center justify-center min-h-[60vh] bg-[#0A0A0F]">
-      <p className="text-[#6E6E85] text-lg">Job not found</p>
+    <div className="flex items-center justify-center min-h-[60vh] bg-[#EDE8DC]">
+      <p className="text-[#4A5568] text-lg">Job not found</p>
     </div>
   );
 
@@ -220,17 +224,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   // P0: Countdown urgency class
   const countdownClass = deadlineHrs > 24
-    ? "text-[#6E6E85] text-sm"
+    ? "text-[#4A5568] text-sm"
     : deadlineHrs > 6
-    ? "text-yellow-400 font-mono text-sm tabular-nums"
+    ? "text-[#7A5218] font-mono text-sm tabular-nums"
     : deadlineHrs > 1
-    ? "text-orange-400 font-mono text-sm tabular-nums animate-pulse"
+    ? "text-[#C05B00] font-mono text-sm tabular-nums animate-pulse"
     : deadlineHrs > (10 / 60)
     ? "text-red-400 font-mono text-sm tabular-nums animate-shake"
     : "text-red-400 font-mono text-2xl font-bold tabular-nums animate-shake";
 
   // P8: Demand-scaled glow on price
-  const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(0,255,136,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
+  const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(200,146,61,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
 
   // P1: Slider / position helpers
   const sliderNum      = Number(counterPrice);
@@ -248,8 +252,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   const handleAccept = async () => {
     const r = await acceptJob(job.id ?? job._id ?? "");
-    if (r.ok) toast.success("Job accepted!", { description: r.message });
-    else toast.error("Cannot accept", { description: r.message });
+    if (r.ok) {
+      const winningBid = bids
+        .filter(b => b.jobId === (job.id ?? job._id ?? ""))
+        .sort((a, b) => a.bidPrice - b.bidPrice)[0];
+      const freelancer = winningBid ? users.find(u => u.id === winningBid.freelancerId) : undefined;
+      const client = users.find(u => u.id === job.clientId);
+      setVictoryData({
+        jobId: job.id ?? job._id ?? "",
+        jobTitle: job.title,
+        finalPrice: current,
+        startingPrice: job.startingPrice,
+        freelancerName: freelancer?.fullName ?? "Freelancer",
+        freelancerScore: freelancer?.geekScore,
+        clientName: client?.fullName ?? "Client",
+      });
+    } else {
+      toast.error("Cannot accept", { description: r.message });
+    }
   };
 
   const handleCounter = async () => {
@@ -258,15 +278,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     if (!price || price <= 0) { setCounterError("Enter a valid price"); return; }
     if (price > current) { setCounterError(`Price must be at most ${formatMoney(current)}`); return; }
     if (price < job.minimumPrice) { setCounterError(`Price must be at least ${formatMoney(job.minimumPrice)}`); return; }
-    const r = await counterBid(job.id ?? job._id ?? "", price, counterMsg);
-    if (r.ok) { toast.success("Counter-bid sent!", { description: r.message }); setCounterPrice(""); setCounterMsg(""); }
+    const r = await counterBid(job.id ?? job._id ?? "", price);
+    if (r.ok) { toast.success("Counter-bid sent!", { description: r.message }); setCounterPrice(""); }
     else toast.error("Counter-bid failed", { description: r.message });
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
+      {victoryData && (
+        <AuctionVictoryModal data={victoryData} onClose={() => setVictoryData(null)} />
+      )}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
+        <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#253444] text-sm hover:text-[#C8923D] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Feed
         </Link>
 
@@ -274,26 +297,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {/* ─── Left Column ─── */}
           <div className="lg:col-span-2 space-y-4">
             {/* Job header */}
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8">
+            <div className="glass-panel scanline p-6 sm:p-8">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#E8E8EC]">{job.title}</h1>
+                  <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#0F1924]">{job.title}</h1>
                   {client && (
                     <div className="flex items-center gap-2 mt-3">
-                      <div className="w-8 h-8 bg-[#00FF88]/10 text-[#00FF88] text-xs font-semibold rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-[rgba(200,146,61,0.10)] text-[#C8923D] text-xs font-semibold rounded-full flex items-center justify-center">
                         {client.avatarInitial}
                       </div>
                       <div>
-                        <p className="text-sm text-[#8A8A9A]">Posted by <span className="text-[#E8E8EC] font-medium">{client.fullName}</span></p>
-                        <p className="text-xs text-[#6E6E85] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
+                        <p className="text-sm text-[#253444]">Posted by <span className="text-[#0F1924] font-medium">{client.fullName}</span></p>
+                        <p className="text-xs text-[#4A5568] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
                       </div>
                     </div>
                   )}
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium shrink-0 ${
-                  isOpen
-                    ? "bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20"
-                    : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+                <span className={`shrink-0 ${
+                  job.status === "open" ? "badge-active"
+                  : (job.status as string) === "accepted" || (job.status as string) === "completed" ? "badge-completed"
+                  : (job.status as string) === "disputed" ? "badge-disputed"
+                  : "badge-pending"
                 }`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
               </div>
               <div className="mt-4 flex flex-wrap gap-1.5">
@@ -301,7 +325,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   const isMatch = currentUser?.skills?.includes(s);
                   return (
                     <span key={s} className={`px-2.5 py-1 rounded-md text-xs border ${
-                      isMatch ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20" : "bg-[#0A0A0F] border-[#1E1E2A] text-[#6E6E85]"
+                      isMatch ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30" : "bg-[#EDE8DC] border-[#BEB5A5] text-[#4A5568]"
                     }`}>{isMatch && "✓ "}{s}</span>
                   );
                 })}
@@ -309,46 +333,46 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
 
             {/* Description */}
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 sm:p-8">
-              <p className="text-[#6E6E85] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
-              <p className="text-[#8A8A9A] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+            <div className="glass-panel p-6 sm:p-8">
+              <p className="text-[#4A5568] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
+              <p className="text-[#253444] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
             </div>
 
             {/* Price Analytics */}
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6">
+            <div className="glass-panel p-6">
               <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="h-4 w-4 text-[#00FF88]" />
-                <p className="text-[#E8E8EC] text-sm font-semibold">Price Analytics</p>
+                <BarChart3 className="h-4 w-4 text-[#C8923D]" />
+                <p className="text-[#0F1924] text-sm font-semibold">Price Analytics</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-[#6E6E85] text-xs">Starting Price</p>
-                  <p className="font-heading text-xl font-bold text-[#E8E8EC] mt-1">{formatMoney(job.startingPrice)}</p>
+                  <p className="text-[#4A5568] text-xs">Starting Price</p>
+                  <p className="terminal-amount text-xl text-[#0F1924] mt-1">{formatMoney(job.startingPrice)}</p>
                 </div>
                 <div>
-                  <p className="text-[#6E6E85] text-xs">Current Price</p>
-                  <p className="font-heading text-xl font-bold text-[#00FF88] mt-1 animate-price-pulse">{formatMoney(current)}</p>
+                  <p className="text-[#4A5568] text-xs">Current Price</p>
+                  <p className="terminal-amount text-xl text-[#C8923D] mt-1 animate-price-pulse">{formatMoney(current)}</p>
                 </div>
                 <div>
-                  <p className="text-[#6E6E85] text-xs">Floor Price</p>
-                  <p className="font-heading text-xl font-bold text-[#E8E8EC] mt-1">{formatMoney(job.minimumPrice)}</p>
+                  <p className="text-[#4A5568] text-xs">Floor Price</p>
+                  <p className="terminal-amount text-xl text-[#0F1924] mt-1">{formatMoney(job.minimumPrice)}</p>
                 </div>
                 <div>
-                  <p className="text-[#6E6E85] text-xs">Decay Rate</p>
-                  <p className="font-heading text-xl font-bold text-red-400/70 mt-1">-${job.decayRatePerHour}/hr</p>
+                  <p className="text-[#4A5568] text-xs">Decay Rate</p>
+                  <p className="terminal-amount text-xl text-[#B02020] mt-1">-${job.decayRatePerHour}/hr</p>
                 </div>
               </div>
-              <div className="h-2 bg-[#1E1E2A] rounded-full mt-4 overflow-hidden">
-                <div className="h-2 bg-gradient-to-r from-[#00FF88] to-[#00CC6A] rounded-full transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
+              <div className="h-2 bg-[#D8D0C0] rounded-full mt-4 overflow-hidden">
+                <div className="decay-bar h-2 transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
               </div>
-              <div className="flex justify-between mt-2 text-xs text-[#6E6E85]">
+              <div className="flex justify-between mt-2 text-xs text-[#4A5568]">
                 <span>Floor: {formatMoney(job.minimumPrice)}</span>
                 <span>Start: {formatMoney(job.startingPrice)}</span>
               </div>
             </div>
 
             {/* ─── Bids: P2 comparison table (client) or P1 animated feed (others) ─── */}
-            <div className={`bg-[#12121A] border rounded-2xl p-6 relative overflow-hidden transition-[border-color] ${isHot ? "border-[#00FF88]/20" : "border-[#1E1E2A]"} ${newBidFlash ? "animate-border-flash" : ""}`}>
+            <div className={`glass-panel p-6 relative overflow-hidden transition-[border-color] ${isHot ? "!border-[#C8923D]/30" : ""} ${newBidFlash ? "animate-border-flash" : ""}`}>
               {/* P8: Ember particles for hot jobs */}
               {isHot && (
                 <div className="absolute top-3 right-16 flex gap-2 pointer-events-none">
@@ -362,20 +386,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 /* ── P2: Client Bid Comparison Matrix ── */
                 <>
                   <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="h-4 w-4 text-[#00FF88]" />
-                    <p className="text-[#E8E8EC] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
+                    <BarChart3 className="h-4 w-4 text-[#C8923D]" />
+                    <p className="text-[#0F1924] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
                     {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                   </div>
                   {jobBids.length === 0 ? (
-                    <p className="text-[#6E6E85] text-sm">No bids yet.</p>
+                    <p className="text-[#4A5568] text-sm">No bids yet.</p>
                   ) : (
                     <>
                       <div className="overflow-x-auto -mx-1">
                         <table className="w-full text-xs min-w-[500px]">
                           <thead>
-                            <tr className="border-b border-[#1E1E2A]">
+                            <tr className="border-b border-[#BEB5A5]">
                               {["Freelancer", "Price", "GeekScore", "Skills", "When", ""].map(h => (
-                                <th key={h} className={`py-2 px-2 text-[#6E6E85] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
+                                <th key={h} className={`py-2 px-2 text-[#4A5568] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
                               ))}
                             </tr>
                           </thead>
@@ -387,31 +411,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                               const isBest = bid.id === bestValueBid?.id;
                               const isNew  = (now.getTime() - new Date(bid.createdAt).getTime()) < 300000;
                               return (
-                                <tr key={bid.id} className={`border-b border-[#1E1E2A]/40 transition-colors ${isBest ? "bg-[#00FF88]/[0.04]" : "hover:bg-[#00FF88]/[0.02]"}`}>
+                                <tr key={bid.id} className={`border-b border-[#BEB5A5]/60 transition-colors ${isBest ? "bg-[#C8923D]/[0.04]" : "hover:bg-[#D8D0C0]"}`}>
                                   <td className="py-3 px-2">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-7 h-7 bg-[#0A0A0F] border border-[#1E1E2A] text-[#8A8A9A] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
+                                      <div className="w-7 h-7 bg-[#EDE8DC] border border-[#BEB5A5] text-[#253444] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
                                         {bidder?.avatarInitial ?? "?"}
                                       </div>
-                                      <span className="text-[#E8E8EC] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
-                                      {isBest && <span className="text-[9px] bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 rounded-full px-1 font-bold shrink-0">★</span>}
-                                      {isNew && <span className="text-[9px] bg-[#00FF88]/10 text-[#00FF88] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
+                                      <span className="text-[#0F1924] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
+                                      {isBest && <span className="text-[9px] bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-1 font-bold shrink-0">★</span>}
+                                      {isNew && <span className="text-[9px] bg-[rgba(200,146,61,0.10)] text-[#C8923D] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
                                     </div>
                                   </td>
-                                  <td className="py-3 px-2 text-right font-heading font-bold text-[#00FF88]">{formatMoney(bid.bidPrice)}</td>
-                                  <td className="py-3 px-2 text-center text-[#8A8A9A]">
+                                  <td className="py-3 px-2 text-right font-heading font-bold text-[#C8923D]">{formatMoney(bid.bidPrice)}</td>
+                                  <td className="py-3 px-2 text-center text-[#253444]">
                                     {bidder ? `${bidder.geekScore}${tier ? ` · ${tier.label}` : ""}` : "—"}
                                   </td>
                                   <td className="py-3 px-2 text-center">
-                                    <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#00FF88]" : skillMatches > 0 ? "text-yellow-400" : "text-[#6E6E85]"}`}>
+                                    <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#C8923D]" : skillMatches > 0 ? "text-[#7A5218]" : "text-[#4A5568]"}`}>
                                       {skillMatches}/{job.skillsRequired.length} ✓
                                     </span>
                                   </td>
-                                  <td className="py-3 px-2 text-right text-[#6E6E85]">{timeAgo(bid.createdAt)}</td>
+                                  <td className="py-3 px-2 text-right text-[#4A5568]">{timeAgo(bid.createdAt)}</td>
                                   <td className="py-3 px-2 text-right">
                                     {isOpen && (
                                       <button onClick={handleAccept}
-                                        className="text-[11px] font-semibold bg-[#00FF88] text-[#0A0A0F] px-2.5 py-1.5 rounded-lg hover:bg-[#00CC6A] transition-colors whitespace-nowrap">
+                                        className="btn-primary text-[11px] py-1.5 px-2.5 whitespace-nowrap">
                                         Accept
                                       </button>
                                     )}
@@ -427,11 +451,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       {bestValueBid && (() => {
                         const bidder = users.find(u => u.id === bestValueBid.freelancerId);
                         return (
-                          <div className="mt-4 bg-[#0A0A0F] border border-[#00FF88]/20 rounded-xl p-3 flex items-center gap-3">
+                          <div className="mt-4 glass-panel-sm border border-[#7A5218]/30 p-3 flex items-center gap-3">
                             <span className="text-lg shrink-0">💡</span>
                             <div>
-                              <p className="text-[#00FF88] text-xs font-semibold">Best value</p>
-                              <p className="text-[#8A8A9A] text-xs mt-0.5">
+                              <p className="text-[#7A5218] text-xs font-semibold">Best value</p>
+                              <p className="text-[#253444] text-xs mt-0.5">
                                 {bidder?.fullName ?? "Freelancer"} — {formatMoney(bestValueBid.bidPrice)} — lowest price among GeekScore &gt; 500 bidders
                               </p>
                             </div>
@@ -446,22 +470,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-[#00FF88]" />
-                      <p className="text-[#E8E8EC] text-sm font-semibold">Live Bids ({jobBids.length})</p>
+                      <MessageSquare className="h-4 w-4 text-[#C8923D]" />
+                      <p className="text-[#0F1924] text-sm font-semibold">Live Bids ({jobBids.length})</p>
                       {isHot && <span className="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
                     </div>
                     {isFreelancer && myRank !== null && (
-                      <span className="text-[11px] text-[#00FF88] bg-[#00FF88]/10 border border-[#00FF88]/20 rounded-full px-2.5 py-0.5">
+                      <span className="text-[11px] text-[#C8923D] bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/30 rounded-full px-2.5 py-0.5">
                         Your bid #{myRank} of {jobBids.length}
                       </span>
                     )}
                     {isFreelancer && myRank === null && jobBids.length > 0 && (
-                      <span className="text-[11px] text-[#6E6E85]">You haven't bid yet</span>
+                      <span className="text-[11px] text-[#4A5568]">You haven't bid yet</span>
                     )}
                   </div>
 
                   {jobBids.length === 0 ? (
-                    <p className="text-[#6E6E85] text-sm">No bids yet. Be the first!</p>
+                    <p className="text-[#4A5568] text-sm">No bids yet. Be the first!</p>
                   ) : (
                     <>
                       <div className="space-y-3">
@@ -473,30 +497,30 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           return (
                             <div
                               key={bid.id}
-                              className={`bg-[#0A0A0F] rounded-xl p-4 border transition-colors animate-slide-up ${
-                                isMyBid ? "border-[#00FF88]/20" : "border-[#1E1E2A] hover:border-[#00FF88]/10"
+                              className={`glass-panel-sm p-4 transition-colors animate-slide-up ${
+                                isMyBid ? "!border-[#C8923D]/30" : "hover:!border-[#C8923D]/10"
                               }`}
                               style={{ animationDelay: `${i * 0.07}s`, animationFillMode: "both" }}
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                  <div className="w-9 h-9 bg-[#12121A] border border-[#1E1E2A] text-[#8A8A9A] text-xs font-bold rounded-full flex items-center justify-center shrink-0 relative">
+                                  <div className="w-9 h-9 bg-[#EDE8DC] border border-[#BEB5A5] text-[#253444] text-xs font-bold rounded-full flex items-center justify-center shrink-0 relative">
                                     {bidder?.avatarInitial ?? "?"}
-                                    {isNew && <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#00FF88] rounded-full animate-pulse" />}
+                                    {isNew && <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#C8923D] rounded-full animate-pulse" />}
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium text-[#E8E8EC]">{bidder?.fullName ?? "Freelancer"}</span>
-                                      {isNew && <span className="text-[9px] font-bold bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/30 rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
-                                      {tier && <span className="bg-[#00FF88]/10 text-[#00FF88] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
-                                      {isMyBid && <span className="text-[9px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-1.5 py-0.5">You</span>}
-                                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[#00FF88]/10 text-[#00FF88]" : "bg-blue-500/10 text-blue-400"}`}>{bid.bidType}</span>
+                                      <span className="text-sm font-medium text-[#0F1924]">{bidder?.fullName ?? "Freelancer"}</span>
+                                      {isNew && <span className="text-[9px] font-bold bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/40 rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
+                                      {tier && <span className="bg-[rgba(200,146,61,0.10)] text-[#C8923D] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
+                                      {isMyBid && <span className="text-[9px] font-bold bg-[rgba(200,146,61,0.10)] text-[#A67628] border border-[#C8923D]/20 rounded-full px-1.5 py-0.5">You</span>}
+                                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D]" : "bg-[rgba(200,146,61,0.10)] text-[#A67628]"}`}>{bid.bidType}</span>
                                     </div>
-                                    {bid.message && <p className="text-xs text-[#8A8A9A] italic mt-1">{bid.message}</p>}
-                                    <p className="text-[11px] text-[#6E6E85] mt-1">{timeAgo(bid.createdAt)}</p>
+                                    
+                                    <p className="text-[11px] text-[#4A5568] mt-1">{timeAgo(bid.createdAt)}</p>
                                   </div>
                                 </div>
-                                <p className="font-heading text-lg font-bold text-[#00FF88] shrink-0">{formatMoney(bid.bidPrice)}</p>
+                                <p className="font-heading text-lg font-bold text-[#C8923D] shrink-0">{formatMoney(bid.bidPrice)}</p>
                               </div>
                             </div>
                           );
@@ -505,26 +529,26 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                       {/* Bid statistics bar */}
                       {minBid !== null && maxBid !== null && avgBid !== null && (
-                        <div className="mt-4 bg-[#0A0A0F] rounded-xl p-4 border border-[#1E1E2A]">
-                          <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
-                          <div className="relative h-2 bg-[#1E1E2A] rounded-full mb-3">
+                        <div className="mt-4 glass-panel-sm rounded-xl p-4">
+                          <p className="text-[#4A5568] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
+                          <div className="relative h-2 bg-[#D8D0C0] rounded-full mb-3">
                             <div
-                              className="absolute h-2 bg-gradient-to-r from-[#00FF88]/40 to-[#00FF88]/80 rounded-full"
+                              className="absolute h-2 bg-gradient-to-r from-[#E0A33E]/40 to-[#C8923D]/80 rounded-full"
                               style={{
                                 left:  `${Math.max(0, ((minBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
                                 right: `${100 - Math.min(100, ((maxBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
                               }}
                             />
                             <div
-                              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#00FF88] rounded-full border-2 border-[#0A0A0F] -ml-1"
+                              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#C8923D] rounded-full border-2 border-[#FCFAF4] -ml-1"
                               style={{ left: `${((avgBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100}%` }}
                               title={`Avg: ${formatMoney(avgBid)}`}
                             />
                           </div>
-                          <div className="flex justify-between text-[11px] text-[#6E6E85]">
-                            <span>Min: <span className="text-[#00FF88] font-medium">{formatMoney(minBid)}</span></span>
-                            <span>Avg: <span className="text-[#8A8A9A] font-medium">{formatMoney(avgBid)}</span></span>
-                            <span>Max: <span className="text-red-400/80 font-medium">{formatMoney(maxBid)}</span></span>
+                          <div className="flex justify-between text-[11px] text-[#4A5568]">
+                            <span>Min: <span className="text-[#C8923D] font-medium">{formatMoney(minBid)}</span></span>
+                            <span>Avg: <span className="text-[#253444] font-medium">{formatMoney(avgBid)}</span></span>
+                            <span>Max: <span className="text-[#B02020] font-medium">{formatMoney(maxBid)}</span></span>
                           </div>
                         </div>
                       )}
@@ -536,48 +560,48 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Milestones */}
             {jobMilestones.length > 0 && (
-              <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6">
+              <div className="glass-panel p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle2 className="h-4 w-4 text-[#00FF88]" />
-                  <p className="text-[#E8E8EC] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
+                  <CheckCircle2 className="h-4 w-4 text-[#C8923D]" />
+                  <p className="text-[#0F1924] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
                 </div>
-                <div className="h-2 bg-[#1E1E2A] rounded-full mb-4 overflow-hidden">
-                  <div className="h-2 bg-[#00FF88] rounded-full transition-all" style={{ width: `${(jobMilestones.filter(m => m.status === "approved").length / jobMilestones.length) * 100}%` }} />
+                <div className="h-2 bg-[#D8D0C0] rounded-full mb-4 overflow-hidden">
+                  <div className="decay-bar h-2 transition-all" style={{ width: `${(jobMilestones.filter(m => m.status === "approved").length / jobMilestones.length) * 100}%` }} />
                 </div>
                 <div className="space-y-3">
                   {jobMilestones.map(ms => {
                     const statusColors: Record<string, string> = {
-                      pending:     "text-[#6E6E85] bg-[#6E6E85]/10 border-[#6E6E85]/20",
-                      in_progress: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-                      submitted:   "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
-                      approved:    "text-[#00FF88] bg-[#00FF88]/10 border-[#00FF88]/20",
+                      pending:     "text-[#4A5568] bg-[#D8D0C0] border-[#BEB5A5]",
+                      in_progress: "text-[#A67628] bg-[rgba(200,146,61,0.10)] border-[#C8923D]/20",
+                      submitted:   "text-[#7A5218] bg-[rgba(122,82,24,0.12)] border-[rgba(122,82,24,0.25)]",
+                      approved:    "text-[#7A5218] bg-[rgba(122,82,24,0.10)] border-[rgba(122,82,24,0.25)]",
                       disputed:    "text-red-400 bg-red-500/10 border-red-500/20",
                     };
                     return (
-                      <div key={ms.id} className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
+                      <div key={ms.id} className="glass-panel-sm rounded-xl p-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-[#6E6E85] text-xs font-mono">#{ms.order}</span>
-                            <span className="text-[#E8E8EC] text-sm font-medium">{ms.title}</span>
+                            <span className="text-[#4A5568] text-xs font-mono">#{ms.order}</span>
+                            <span className="text-[#0F1924] text-sm font-medium">{ms.title}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
                               {ms.status.replace("_", " ")}
                             </span>
-                            <span className="text-[#00FF88] text-sm font-semibold">{formatMoney(ms.amount)}</span>
+                            <span className="text-[#C8923D] text-sm font-semibold">{formatMoney(ms.amount)}</span>
                           </div>
                         </div>
-                        {ms.description && <p className="text-[#8A8A9A] text-xs mt-1">{ms.description}</p>}
+                        {ms.description && <p className="text-[#253444] text-xs mt-1">{ms.description}</p>}
                         <div className="flex gap-2 mt-2">
                           {isFreelancer && ms.status === "in_progress" && (
                             <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
-                              className="text-xs bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20 px-3 py-1 rounded-lg hover:bg-[#00FF88]/20 transition-colors">
+                              className="text-xs bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 px-3 py-1 rounded-lg hover:bg-[#E0A33E]/20 transition-colors">
                               Submit
                             </button>
                           )}
                           {isClient && ms.status === "submitted" && (
                             <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
-                              className="text-xs bg-[#00FF88] text-[#0A0A0F] font-semibold px-3 py-1 rounded-lg hover:bg-[#00CC6A] transition-colors">
+                              className="text-xs bg-[#C8923D] text-white font-semibold px-3 py-1 rounded-lg hover:bg-[#E0A33E] transition-colors">
                               Approve &amp; Release
                             </button>
                           )}
@@ -594,61 +618,61 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <div className="space-y-4 lg:sticky lg:top-20 self-start">
             {/* Pricing Intelligence Card */}
             {isAdaptive && (
-              <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5">
+              <div className="glass-panel p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <Activity className="h-4 w-4 text-[#00FF88]" />
-                  <p className="text-[#E8E8EC] text-sm font-semibold">Pricing Intelligence</p>
-                  <span className="text-[11px] bg-[#00FF88]/20 text-[#00FF88] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
+                  <Activity className="h-4 w-4 text-[#C8923D]" />
+                  <p className="text-[#0F1924] text-sm font-semibold">Pricing Intelligence</p>
+                  <span className="text-[11px] bg-[#C8923D]/20 text-[#C8923D] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
                 </div>
                 <div className="space-y-2.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6E6E85] text-xs">Base Decay</span>
-                    <span className="text-[#8A8A9A] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
+                    <span className="text-[#4A5568] text-xs">Base Decay</span>
+                    <span className="text-[#253444] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6E6E85] text-xs">Effective Decay</span>
-                    <span className="text-[#00FF88] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
+                    <span className="text-[#4A5568] text-xs">Effective Decay</span>
+                    <span className="text-[#C8923D] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6E6E85] text-xs">Demand</span>
+                    <span className="text-[#4A5568] text-xs">Demand</span>
                     {demand ? (
                       <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[11px] font-bold`}>
                         {demand.label} ({bidderCount} bidder{bidderCount !== 1 ? "s" : ""})
                       </span>
                     ) : (
-                      <span className="text-[#6E6E85] text-xs">No bids yet</span>
+                      <span className="text-[#4A5568] text-xs">No bids yet</span>
                     )}
                   </div>
                   {job.lowestCounterBid && (
                     <div className="flex justify-between items-center">
-                      <span className="text-[#6E6E85] text-xs">Lowest Counter</span>
-                      <span className="text-blue-400 text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
+                      <span className="text-[#4A5568] text-xs">Lowest Counter</span>
+                      <span className="text-[#A67628] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
                     </div>
                   )}
                   {job.lastBidAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-[#6E6E85] text-xs">Last Activity</span>
-                      <span className="text-[#8A8A9A] text-xs">{timeAgo(job.lastBidAt)}</span>
+                      <span className="text-[#4A5568] text-xs">Last Activity</span>
+                      <span className="text-[#253444] text-xs">{timeAgo(job.lastBidAt)}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Price Trajectory Chart (history + P2 projection) */}
-                <div className="mt-4 bg-[#0A0A0F] rounded-xl p-4 border border-[#1E1E2A]">
+                <div className="mt-4 glass-panel-sm rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider">Price Trajectory</p>
+                    <p className="text-[#4A5568] text-[11px] uppercase tracking-wider">Price Trajectory</p>
                     <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
-                      <span className="text-[9px] text-[#00FF88]/60">LIVE</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#C8923D] animate-pulse" />
+                      <span className="text-[9px] text-[#C8923D]/60">LIVE</span>
                     </div>
                   </div>
                   {/* Extended viewBox 0 0 270 60: 0-200 history, 200-270 projection */}
                   <svg viewBox="0 0 270 60" className="w-full h-16" preserveAspectRatio="none">
                     <defs>
                       <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00FF88" stopOpacity="0.35" />
-                        <stop offset="50%" stopColor="#00FF88" stopOpacity="0.1" />
-                        <stop offset="100%" stopColor="#00FF88" stopOpacity="0" />
+                        <stop offset="0%" stopColor="#C8923D" stopOpacity="0.35" />
+                        <stop offset="50%" stopColor="#C8923D" stopOpacity="0.1" />
+                        <stop offset="100%" stopColor="#C8923D" stopOpacity="0" />
                       </linearGradient>
                       <filter id="sparkGlow">
                         <feGaussianBlur stdDeviation="1.5" result="b" />
@@ -662,9 +686,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     {sparklinePoints && (
                       <>
                         <polygon points={`0,60 ${sparklinePoints} 200,60`} fill="url(#sparkGrad)" />
-                        <polyline points={sparklinePoints} fill="none" stroke="#00FF88" strokeWidth="1.5" strokeLinejoin="round" filter="url(#sparkGlow)" />
+                        <polyline points={sparklinePoints} fill="none" stroke="#C8923D" strokeWidth="1.5" strokeLinejoin="round" filter="url(#sparkGlow)" />
                         {/* Vertical "now" divider */}
-                        <line x1="200" y1="0" x2="200" y2="60" stroke="#00FF88" strokeWidth="0.5" opacity="0.2" />
+                        <line x1="200" y1="0" x2="200" y2="60" stroke="#C8923D" strokeWidth="0.5" opacity="0.2" />
                         {/* P2: Projection lines */}
                         {projectionData && (
                           <>
@@ -672,7 +696,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             <polyline
                               points={projectionData.pts0}
                               fill="none"
-                              stroke="#00FF88"
+                              stroke="#C8923D"
                               strokeWidth="1.2"
                               strokeDasharray="4,3"
                               opacity="0.5"
@@ -682,7 +706,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             <polyline
                               points={projectionData.pts3}
                               fill="none"
-                              stroke="#00FF88"
+                              stroke="#C8923D"
                               strokeWidth="1.2"
                               strokeDasharray="4,3"
                               opacity="0.25"
@@ -696,11 +720,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           const cx = parseFloat(lastPt[0]), cy = parseFloat(lastPt[1]);
                           return (
                             <>
-                              <circle cx={cx} cy={cy} r={2} fill="none" stroke="#00FF88" strokeWidth="0.5" opacity="0.4">
+                              <circle cx={cx} cy={cy} r={2} fill="none" stroke="#C8923D" strokeWidth="0.5" opacity="0.4">
                                 <animate attributeName="r" from="2" to="8" dur="2s" repeatCount="indefinite" />
                                 <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
                               </circle>
-                              <circle cx={cx} cy={cy} r={2.5} fill="#00FF88" filter="url(#sparkGlow)" />
+                              <circle cx={cx} cy={cy} r={2.5} fill="#C8923D" filter="url(#sparkGlow)" />
                             </>
                           );
                         })()}
@@ -708,20 +732,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     )}
                   </svg>
                   <div className="flex justify-between mt-1.5">
-                    <span className="text-[#6E6E85] text-[9px]">Posted</span>
-                    <span className="text-[#00FF88]/50 text-[9px]">Now ↑</span>
-                    {!isAtFloor && <span className="text-[#6E6E85] text-[9px]">Floor ETA →</span>}
+                    <span className="text-[#4A5568] text-[9px]">Posted</span>
+                    <span className="text-[#C8923D]/50 text-[9px]">Now ↑</span>
+                    {!isAtFloor && <span className="text-[#4A5568] text-[9px]">Floor ETA →</span>}
                   </div>
                   {/* P2: Scenario labels */}
                   {projectionData && (
-                    <div className="mt-2 pt-2 border-t border-[#1E1E2A] space-y-1">
+                    <div className="mt-2 pt-2 border-t border-[#BEB5A5] space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#00FF88" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
-                        <span className="text-[9px] text-[#6E6E85]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
+                        <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#C8923D" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
+                        <span className="text-[9px] text-[#4A5568]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#00FF88" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
-                        <span className="text-[9px] text-[#6E6E85]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
+                        <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#C8923D" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
+                        <span className="text-[9px] text-[#4A5568]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
                       </div>
                     </div>
                   )}
@@ -730,16 +754,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             )}
 
             {/* ─── P0: Live price card ─── */}
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 relative overflow-hidden hover:border-[#00FF88]/15 transition-colors">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00FF88]/50 to-transparent" />
+            <div className="glass-panel p-6 relative overflow-hidden hover:border-[#C8923D]/15 transition-colors">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C8923D]/40 to-transparent" />
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-2.5 h-2.5 bg-[#00FF88] rounded-full animate-glow-ring" />
-                <p className="text-[#8A8A9A] text-sm font-medium">Live Price</p>
+                <div className="w-2.5 h-2.5 bg-[#C8923D] rounded-full animate-glow-ring" />
+                <p className="text-[#253444] text-sm font-medium">Live Price</p>
               </div>
 
               {/* P1: Demand-scaled glow; P0: price-flash animation */}
               <p
-                className={`font-heading text-4xl font-bold text-[#00FF88] ${priceFlash === "drop" ? "animate-price-flash" : "animate-price-pulse"}`}
+                className={`terminal-amount text-4xl text-[#C8923D] ${priceFlash === "drop" ? "animate-price-flash" : "animate-price-pulse"}`}
                 style={{ textShadow: priceGlow }}
               >
                 {formatMoney(current)}
@@ -747,36 +771,36 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
               {/* P0: 30s delta indicator */}
               {priceDelta > 0.01 && (
-                <p className="text-red-400/80 text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
+                <p className="text-[#B02020] text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
               )}
 
-              <p className="text-[#6E6E85] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
+              <p className="text-[#4A5568] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
 
               {/* P0: Urgency countdown */}
               <div className="flex items-center gap-1.5 mt-2">
-                <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-red-400" : deadlineHrs < 6 ? "text-orange-400" : "text-[#8A8A9A]"}`} />
+                <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-red-400" : deadlineHrs < 6 ? "text-orange-400" : "text-[#253444]"}`} />
                 {isAtFloor ? (
-                  <span className="text-[#8A8A9A] text-sm">At floor price</span>
+                  <span className="text-[#253444] text-sm">At floor price</span>
                 ) : (
                   <span className={countdownClass}>{countdownDisplay || formatHoursToFloor(eta)}</span>
                 )}
               </div>
-              <p className="text-[#6E6E85] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
+              <p className="text-[#4A5568] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
             </div>
 
             {/* ─── P0: Freelancer Actions / Cooldown ─── */}
             {isFreelancer && isOpen && (
               isOnCooldown ? (
                 /* P0: Cooldown ring */
-                <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 flex flex-col items-center gap-3">
+                <div className="glass-panel p-6 flex flex-col items-center gap-3">
                   <svg width={72} height={72} viewBox="0 0 72 72">
                     {/* Background ring */}
-                    <circle cx={36} cy={36} r={RING_R} fill="none" stroke="#1E1E2A" strokeWidth={5} />
+                    <circle cx={36} cy={36} r={RING_R} fill="none" stroke="#BEB5A5" strokeWidth={5} />
                     {/* Depleting ring — starts full, depletes clockwise */}
                     <circle
                       cx={36} cy={36} r={RING_R}
                       fill="none"
-                      stroke="#00FF88"
+                      stroke="#C8923D"
                       strokeWidth={5}
                       strokeLinecap="round"
                       strokeDasharray={RING_C}
@@ -784,13 +808,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       transform="rotate(-90 36 36)"
                       style={{ transition: "stroke-dashoffset 1s linear" }}
                     />
-                    <text x={36} y={40} textAnchor="middle" fontSize={11} fill="#E8E8EC" fontFamily="monospace">
+                    <text x={36} y={40} textAnchor="middle" fontSize={11} fill="#0F1924" fontFamily="monospace">
                       {Math.ceil(cooldownMinsLeft)}m
                     </text>
                   </svg>
                   <div className="text-center">
-                    <p className="text-[#8A8A9A] text-sm font-medium">⏳ Cooldown active</p>
-                    <p className="text-[#6E6E85] text-xs mt-1">
+                    <p className="text-[#253444] text-sm font-medium">⏳ Cooldown active</p>
+                    <p className="text-[#4A5568] text-xs mt-1">
                       Bid again at {new Date((myLastBid ? new Date(myLastBid.createdAt).getTime() : 0) + 30 * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -799,48 +823,48 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 /* Normal bid actions */
                 <div className="space-y-3">
                   <button onClick={handleAccept}
-                    className={`w-full bg-[#00FF88] text-[#0A0A0F] font-semibold py-3 rounded-xl hover:bg-[#00CC6A] transition-all glow-green flex items-center justify-center gap-2 text-sm ${justUnlocked ? "animate-glow-ring" : ""}`}>
+                    className={`btn-primary w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm payment-ready ${justUnlocked ? "animate-glow-ring" : ""}`}>
                     <Zap className="h-4 w-4" /> Accept at {formatMoney(current)}
                   </button>
 
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-[#1E1E2A]" />
-                    <span className="text-xs text-[#6E6E85]">or</span>
-                    <div className="flex-1 h-px bg-[#1E1E2A]" />
+                    <div className="flex-1 h-px bg-[#BEB5A5]" />
+                    <span className="text-xs text-[#4A5568]">or</span>
+                    <div className="flex-1 h-px bg-[#BEB5A5]" />
                   </div>
 
                   {/* ─── P1 + P5 + P10: Enhanced Counter-Bid Form ─── */}
-                  <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-5 space-y-4">
-                    <p className="text-[#E8E8EC] text-sm font-semibold flex items-center gap-1.5">
-                      <MessageSquare className="h-4 w-4 text-[#00FF88]" /> Counter-Bid
+                  <div className="glass-panel p-5 space-y-4">
+                    <p className="text-[#0F1924] text-sm font-semibold flex items-center gap-1.5">
+                      <MessageSquare className="h-4 w-4 text-[#C8923D]" /> Counter-Bid
                     </p>
 
                     {/* P5: Smart bid suggestion chips */}
                     <div>
-                      <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
+                      <p className="text-[#4A5568] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => setCounterPrice(String(aggressiveBid))}
-                          className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[#00FF88]/50 bg-[#00FF88]/5" : "border-[#1E1E2A] bg-[#0A0A0F] hover:border-[#00FF88]/30"}`}
+                          className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[#C8923D]/50 bg-[#C8923D]/5" : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#7A5218]/40"}`}
                         >
-                          <p className="text-[11px] text-[#6E6E85] font-semibold">Aggressive</p>
-                          <p className="font-heading text-base font-bold text-[#00FF88]">{formatMoney(aggressiveBid)}</p>
-                          <p className="text-[9px] text-[#6E6E85] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
+                          <p className="text-[11px] text-[#4A5568] font-semibold">Aggressive</p>
+                          <p className="font-heading text-base font-bold text-[#C8923D]">{formatMoney(aggressiveBid)}</p>
+                          <p className="text-[9px] text-[#4A5568] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
                         </button>
                         <button
                           onClick={() => setCounterPrice(String(competitiveBid))}
-                          className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[#1E1E2A] bg-[#0A0A0F] hover:border-blue-500/20"}`}
+                          className={`text-left p-2.5 rounded-xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#7A5218]/20"}`}
                         >
-                          <p className="text-[11px] text-[#6E6E85] font-semibold">Competitive</p>
-                          <p className="font-heading text-base font-bold text-blue-400">{formatMoney(competitiveBid)}</p>
-                          <p className="text-[9px] text-[#6E6E85] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
+                          <p className="text-[11px] text-[#4A5568] font-semibold">Competitive</p>
+                          <p className="font-heading text-base font-bold text-[#A67628]">{formatMoney(competitiveBid)}</p>
+                          <p className="text-[9px] text-[#4A5568] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
                         </button>
                       </div>
                     </div>
 
                     {/* P10: Price slider */}
                     <div>
-                      <div className="flex justify-between text-[11px] text-[#6E6E85] mb-1.5">
+                      <div className="flex justify-between text-[11px] text-[#4A5568] mb-1.5">
                         <span>Floor {formatMoney(job.minimumPrice)}</span>
                         <span>Current {formatMoney(current)}</span>
                       </div>
@@ -851,12 +875,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         step={5}
                         value={sliderNum > 0 ? sliderNum : aggressiveBid}
                         onChange={e => setCounterPrice(e.target.value)}
-                        className="w-full h-2 bg-[#1E1E2A] rounded-full appearance-none cursor-pointer"
+                        className="w-full h-2 bg-[#D8D0C0] rounded-full appearance-none cursor-pointer"
                       />
                       {sliderHourly > 0 && (
-                        <p className="text-[11px] text-[#8A8A9A] mt-1.5">
-                          Effective rate: <span className="text-[#00FF88] font-medium">{formatMoney(sliderHourly)}/hr</span>
-                          {bidsBelow > 0 && <span className="text-[#6E6E85]"> · below {bidsBelow} of {jobBids.length} bids</span>}
+                        <p className="text-[11px] text-[#253444] mt-1.5">
+                          Effective rate: <span className="text-[#C8923D] font-medium">{formatMoney(sliderHourly)}/hr</span>
+                          {bidsBelow > 0 && <span className="text-[#4A5568]"> · below {bidsBelow} of {jobBids.length} bids</span>}
                         </p>
                       )}
                     </div>
@@ -864,18 +888,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     {/* P5: Position bar */}
                     {posMyBid !== null && (
                       <div>
-                        <p className="text-[#6E6E85] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
-                        <div className="relative h-2 bg-[#1E1E2A] rounded-full">
+                        <p className="text-[#4A5568] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
+                        <div className="relative h-2 bg-[#D8D0C0] rounded-full">
                           {/* Min bid marker */}
                           {posMinBid !== null && (
-                            <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-3 bg-[#00FF88]/40 rounded-sm -ml-0.5" style={{ left: `${posMinBid}%` }} title={`Lowest: ${formatMoney(minBid!)}`} />
+                            <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-3 bg-[#C8923D]/40 rounded-sm -ml-0.5" style={{ left: `${posMinBid}%` }} title={`Lowest: ${formatMoney(minBid!)}`} />
                           )}
                           {/* Your bid marker */}
-                          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#00FF88] rounded-full border-2 border-[#12121A] -ml-1.5 shadow-[0_0_8px_rgba(0,255,136,0.5)]" style={{ left: `${posMyBid}%` }} />
+                          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#C8923D] rounded-full border-2 border-[#12121A] -ml-1.5 shadow-[0_0_8px_rgba(200,146,61,0.5)]" style={{ left: `${posMyBid}%` }} />
                         </div>
-                        <div className="flex justify-between text-[9px] text-[#6E6E85] mt-1">
+                        <div className="flex justify-between text-[9px] text-[#4A5568] mt-1">
                           <span>Floor</span>
-                          <span className="text-[#00FF88]">↑ you</span>
+                          <span className="text-[#C8923D]">↑ you</span>
                           <span>Current</span>
                         </div>
                       </div>
@@ -883,25 +907,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                     {/* Price text input */}
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6E6E85] text-sm">$</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A5568] text-sm">$</span>
                       <input
                         type="number"
                         placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
                         value={counterPrice}
                         onChange={e => { setCounterPrice(e.target.value); setCounterError(""); }}
-                        className="w-full h-11 pl-8 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] font-heading text-lg placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
+                        className="glass-input w-full h-11 pl-8 pr-4 font-heading text-lg"
                       />
                     </div>
-                    <textarea
-                      placeholder="Why should the client pick you?"
-                      value={counterMsg}
-                      onChange={e => setCounterMsg(e.target.value)}
-                      rows={3}
-                      className="w-full bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all px-4 py-2.5 resize-none"
-                    />
+
                     {counterError && <p className="text-red-400 text-xs">{counterError}</p>}
                     <button onClick={handleCounter}
-                      className="w-full border border-[#00FF88] text-[#00FF88] font-semibold py-3 rounded-xl hover:bg-[#00FF88]/5 transition-all flex items-center justify-center gap-2 text-sm">
+                      className="btn-glass w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
                       <Send className="h-4 w-4" /> Submit Counter-Bid
                     </button>
                   </div>
@@ -912,7 +930,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             {isClient && isOpen && (
               <div className="space-y-3">
                 <Link href={`/post-job`}>
-                  <button className="w-full border border-[#1E1E2A] text-[#E8E8EC] font-semibold py-3 rounded-xl hover:bg-[#12121A] transition-all text-sm">
+                  <button className="btn-ghost w-full py-3 text-sm">
                     Edit Job
                   </button>
                 </Link>
@@ -920,12 +938,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             )}
 
             {job.status === "accepted" && (
-              <div className="bg-[#12121A] border border-[#00FF88]/20 rounded-2xl p-6 text-center">
-                <CheckCircle2 className="h-8 w-8 text-[#00FF88] mx-auto mb-2" />
-                <p className="font-heading text-lg font-bold text-[#E8E8EC]">Job Accepted</p>
-                <p className="font-heading text-2xl font-bold text-[#00FF88] mt-1">{formatMoney(job.finalPrice ?? current)}</p>
+              <div className="glass-panel p-6 text-center border-[#C8923D]/30">
+                <CheckCircle2 className="h-8 w-8 text-[#C8923D] mx-auto mb-2" />
+                <p className="font-heading text-lg font-bold text-[#0F1924]">Job Accepted</p>
+                <p className="terminal-amount text-2xl text-[#C8923D] mt-1">{formatMoney(job.finalPrice ?? current)}</p>
                 {job.acceptedBy && (
-                  <p className="text-[#8A8A9A] text-xs mt-2">
+                  <p className="text-[#253444] text-xs mt-2">
                     Accepted by {users.find(u => u.id === job.acceptedBy)?.fullName ?? "Freelancer"}
                   </p>
                 )}
@@ -933,7 +951,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             )}
 
             {/* Job details sidebar */}
-            <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 space-y-3">
+            <div className="glass-panel p-6 space-y-3">
               {[
                 { icon: Clock,       label: "Estimated Hours", value: `${job.estimatedHours}h` },
                 { icon: Calendar,    label: "Posted",          value: new Date(job.postedAt).toLocaleDateString() },
@@ -943,10 +961,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-[#6E6E85]" />
-                    <span className="text-[#8A8A9A] text-sm">{item.label}</span>
+                    <item.icon className="h-4 w-4 text-[#4A5568]" />
+                    <span className="text-[#253444] text-sm">{item.label}</span>
                   </div>
-                  <span className="text-[#E8E8EC] text-sm font-medium">{item.value}</span>
+                  <span className="text-[#0F1924] text-sm font-medium">{item.value}</span>
                 </div>
               ))}
             </div>

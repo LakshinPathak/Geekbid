@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendEscrowReleasedEmail, sendDisputeEmail, sendJobCompletedEmail } from "@/lib/email";
 
 // GET /api/transactions (protected)
 export async function GET(req: NextRequest) {
@@ -79,6 +80,39 @@ export async function PATCH(req: NextRequest) {
           },
         }
       );
+
+      // Fire-and-forget: notify freelancer about payment release
+      const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
+      const job = tx?.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
+      if (tx?.freelancerId) {
+        const freelancer = await db.collection("users").findOne(
+          { _id: new ObjectId(tx.freelancerId) },
+          { projection: { email: 1, name: 1 } }
+        );
+        if (freelancer?.email) {
+          sendEscrowReleasedEmail(
+            freelancer.email, freelancer.name ?? "Freelancer",
+            tx.netAmount ?? tx.grossAmount ?? 0,
+            job?.title ?? "Your project", transactionId
+          ).catch(() => {});
+        }
+
+        // Also send job completed summary to the client
+        const client = await db.collection("users").findOne(
+          { _id: new ObjectId(auth.payload.userId) },
+          { projection: { email: 1, name: 1 } }
+        );
+        if (client?.email) {
+          sendJobCompletedEmail(
+            client.email, client.name ?? "Client",
+            freelancer?.name ?? "Freelancer",
+            job?.title ?? "Your project",
+            tx.grossAmount ?? 0, tx.platformFee ?? 0,
+            transactionId
+          ).catch(() => {});
+        }
+      }
+
       return NextResponse.json({ ok: true, message: "Escrow released" });
     }
 
@@ -87,13 +121,36 @@ export async function PATCH(req: NextRequest) {
         { _id: new ObjectId(transactionId) },
         { $set: { escrowStatus: "disputed" } }
       );
+      const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
       await db.collection("disputes").insertOne({
         transactionId,
         raisedBy: auth.payload.userId,
         reason: reason ?? "Quality dispute",
         status: "open",
+        jobTitle: tx?.jobId ? (await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }))?.title : undefined,
         createdAt: new Date().toISOString(),
       });
+
+      // Fire-and-forget: notify the other party
+      if (tx) {
+        const otherId = tx.clientId === auth.payload.userId ? tx.freelancerId : tx.clientId;
+        if (otherId) {
+          const other = await db.collection("users").findOne(
+            { _id: new ObjectId(otherId) },
+            { projection: { email: 1, name: 1 } }
+          );
+          const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
+          if (other?.email) {
+            sendDisputeEmail(
+              other.email, other.name ?? "User",
+              job?.title ?? "a project",
+              reason ?? "Quality dispute",
+              transactionId
+            ).catch(() => {});
+          }
+        }
+      }
+
       return NextResponse.json({ ok: true, message: "Dispute raised" });
     }
 

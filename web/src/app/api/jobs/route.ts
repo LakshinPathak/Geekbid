@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendJobPostedEmail } from "@/lib/email";
 
 // GET /api/jobs — list all jobs (public), supports ?category= filter
 export async function GET(req: NextRequest) {
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await db.collection("jobs").insertOne(job);
+    const jobId = result.insertedId.toString();
 
     // Increment plan counter
     await db.collection("users").updateOne(
@@ -128,8 +130,21 @@ export async function POST(req: NextRequest) {
       { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
     );
 
+    // Fire-and-forget: send job posted confirmation to client
+    const poster = await db.collection("users").findOne(
+      { _id: new ObjectId(auth.payload.userId) },
+      { projection: { email: 1, name: 1 } }
+    );
+    if (poster?.email) {
+      sendJobPostedEmail(
+        poster.email, poster.name ?? "Client",
+        title, Number(startingPrice), Number(minimumPrice),
+        job.pricingMode, job.deadlineAt, jobCategory, jobId
+      ).catch(() => {});
+    }
+
     return NextResponse.json(
-      { ...job, _id: result.insertedId.toString(), id: result.insertedId.toString() },
+      { ...job, _id: jobId, id: jobId },
       { status: 201 }
     );
   } catch (err) {

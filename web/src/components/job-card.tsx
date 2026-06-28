@@ -20,13 +20,13 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
   const pricePercent = ((current - job.minimumPrice) / (job.startingPrice - job.minimumPrice)) * 100;
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-neutral-200 hover:border-neutral-400 animate-fade-in bg-white">
+    <Card className="group hover:shadow-lg transition-all duration-300 border-[#BEB5A5] hover:border-[#C8923D] animate-fade-in bg-[#EDE8DC]">
       <CardContent className="p-5">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             {client && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-semibold text-white">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1924] text-xs font-semibold text-white">
                 {client.avatarInitial}
               </div>
             )}
@@ -42,7 +42,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
 
         {/* Title */}
         <Link href={`/jobs/${job.id}`}>
-          <h3 className="text-base font-semibold text-black mb-2 group-hover:text-neutral-600 transition-colors line-clamp-2 cursor-pointer">
+          <h3 className="text-base font-semibold text-[#0F1924] mb-2 group-hover:text-[#C8923D] transition-colors line-clamp-2 cursor-pointer">
             {job.title}
           </h3>
         </Link>
@@ -50,7 +50,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
         {/* Skills */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {job.skillsRequired.slice(0, 4).map(s => (
-            <Badge key={s} variant="secondary" className="text-[11px] font-medium bg-neutral-100 text-neutral-600 border-neutral-200">
+            <Badge key={s} variant="secondary" className="text-[11px] font-medium bg-[#D8D0C0] text-[#253444] border-[#BEB5A5]">
               {s}
             </Badge>
           ))}
@@ -60,7 +60,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
         </div>
 
         {/* Price */}
-        <div className="bg-neutral-50 rounded-xl p-3 mb-3 space-y-2">
+        <div className="bg-[#D8D0C0] rounded-xl p-3 mb-3 space-y-2">
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold text-black tabular-nums">{formatMoney(current)}</span>
             <span className="text-xs text-neutral-400">
@@ -85,7 +85,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
         {job.status === "open" && (
           <div className="flex gap-2">
             {isFreelancer && onAccept && (
-              <Button size="sm" className="flex-1 bg-black hover:bg-neutral-800 text-white" onClick={onAccept}>
+              <Button size="sm" className="flex-1 bg-[#0F1924] hover:bg-[#253444] text-white" onClick={onAccept}>
                 <Zap className="mr-1.5 h-3.5 w-3.5" /> Accept {formatMoney(current)}
               </Button>
             )}

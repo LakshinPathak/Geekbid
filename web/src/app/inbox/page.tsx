@@ -59,26 +59,26 @@ export default function InboxPage() {
   };
 
   if (!mounted) return (
-    <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-      <div className="h-8 w-8 border-2 border-[#00FF88]/30 border-t-[#00FF88] rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#EDE8DC] flex items-center justify-center">
+      <div className="h-8 w-8 border-2 border-[#C8923D]/40 border-t-[#C8923D] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="flex h-[calc(100vh-64px)]">
         {/* Left Sidebar — Room List */}
-        <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[#1E1E2A] bg-[#12121A]`}>
+        <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[#BEB5A5] glass-panel`} style={{ borderRadius: 0 }}>
           {/* Header */}
-          <div className="p-4 border-b border-[#1E1E2A]">
-            <h2 className="font-heading text-xl font-bold text-[#E8E8EC] mb-3">Messages</h2>
+          <div className="glass-panel-sm p-4" style={{ borderRadius: 0, borderBottom: '1px solid rgba(59,75,61,0.3)' }}>
+            <h2 className="font-heading text-xl font-bold text-[#182739] mb-3">Messages</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6E6E85]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3D4E5C]" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..."
-                className="w-full h-10 pl-10 pr-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
+                className="glass-input pl-10 h-10 text-sm rounded-xl"
               />
             </div>
           </div>
@@ -87,14 +87,14 @@ export default function InboxPage() {
           <div className="flex-1 overflow-y-auto">
             {filteredRooms.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="mx-auto h-14 w-14 rounded-2xl bg-[#0A0A0F] border border-[#1E1E2A] flex items-center justify-center mb-3">
-                  <Users className="h-6 w-6 text-[#6E6E85]" />
+                <div className="mx-auto h-14 w-14 rounded-2xl glass-panel-sm flex items-center justify-center mb-3">
+                  <Users className="h-6 w-6 text-[#3D4E5C]" />
                 </div>
-                <p className="text-sm text-[#8A8A9A] font-medium">No conversations yet</p>
-                <p className="text-xs text-[#6E6E85] mt-1">Start chatting by accepting a job</p>
+                <p className="text-sm text-[#3D4E5C] font-medium">No conversations yet</p>
+                <p className="text-xs text-[#3D4E5C] mt-1">Start chatting by accepting a job</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#1E1E2A]">
+              <div className="divide-y divide-[#BEB5A5]">
                 {filteredRooms.map(room => {
                   const otherUser = getOtherUser(room);
                   const lastMsg = chatMessages.filter(m => m.roomId === room.id).pop();
@@ -107,29 +107,31 @@ export default function InboxPage() {
                       onClick={() => setSelectedRoom(room.id)}
                       className={`w-full text-left px-4 py-3 transition-all ${
                         isSelected
-                          ? "bg-[#1A1A24] border-l-2 border-l-[#00FF88]"
-                          : "hover:bg-[#1A1A24] border-l-2 border-l-transparent"
+                          ? "bg-[#D8D0C0] border-l-2 border-l-[#C8923D]"
+                          : "hover:bg-[#D8D0C0] border-l-2 border-l-transparent"
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold ${
-                          isSelected ? "bg-[#00FF88]/10 text-[#00FF88]" : "bg-[#0A0A0F] text-[#8A8A9A] border border-[#1E1E2A]"
+                          isSelected
+                            ? "bg-[#7A5218] text-white"
+                            : "bg-[#EDE8DC] text-[#3D4E5C] border border-[#BEB5A5]"
                         }`}>
                           {otherUser?.avatarInitial ?? "?"}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className={`text-sm font-medium truncate ${isSelected ? "text-[#E8E8EC]" : "text-[#E8E8EC]"}`}>
+                            <p className="text-sm font-medium truncate text-[#182739]">
                               {otherUser?.fullName ?? "Unknown"}
                             </p>
                             {lastMsg && (
-                              <span className="text-[11px] text-[#6E6E85] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
+                              <span className="text-[11px] text-[#3D4E5C] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
                             )}
                           </div>
-                          <p className="text-[#6E6E85] text-[11px] truncate mt-0.5">{jobTitle}</p>
+                          <p className="text-[#3D4E5C] text-[11px] truncate mt-0.5">{jobTitle}</p>
                           {lastMsg && (
-                            <p className="text-[#8A8A9A] text-xs truncate mt-0.5">{lastMsg.text}</p>
+                            <p className="text-[#3D4E5C] text-xs truncate mt-0.5">{lastMsg.text}</p>
                           )}
                         </div>
                       </div>
@@ -146,37 +148,37 @@ export default function InboxPage() {
           {!selectedRoom ? (
             <div className="flex-1 flex items-center justify-center text-center px-4">
               <div>
-                <div className="h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-7 w-7 text-[#6E6E85]" />
+                <div className="h-16 w-16 rounded-2xl glass-panel-sm flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-7 w-7 text-[#3D4E5C]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#E8E8EC] mb-1">Select a conversation</h3>
-                <p className="text-sm text-[#8A8A9A] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
+                <h3 className="text-lg font-heading font-bold text-[#182739] mb-1">Select a conversation</h3>
+                <p className="text-sm text-[#3D4E5C] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
               </div>
             </div>
           ) : (
             <>
               {/* Chat header */}
-              <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-[#1E1E2A] bg-[#12121A]">
+              <div className="glass-panel-sm p-4 flex items-center justify-between px-4 sm:px-6" style={{ borderRadius: 0, borderBottom: '1px solid rgba(59,75,61,0.3)' }}>
                 <div className="flex items-center gap-3">
                   <button
-                    className="md:hidden h-8 w-8 rounded-lg border border-[#1E1E2A] flex items-center justify-center text-[#8A8A9A] hover:bg-[#1A1A24] transition-colors"
+                    className="md:hidden h-8 w-8 rounded-lg border border-[#BEB5A5] flex items-center justify-center text-[#253444] hover:bg-[#D8D0C0] transition-colors"
                     onClick={() => setSelectedRoom(null)}
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </button>
-                  <div className="h-10 w-10 rounded-full bg-[#00FF88]/10 text-[#00FF88] flex items-center justify-center text-sm font-bold">
+                  <div className="h-10 w-10 rounded-full bg-[#7A5218] text-white flex items-center justify-center text-sm font-bold">
                     {getOtherUser(activeRoom!)?.avatarInitial ?? "?"}
                   </div>
                   <div>
-                    <p className="font-heading text-base font-semibold text-[#E8E8EC]">
+                    <p className="font-heading text-base font-semibold text-[#182739]">
                       {getOtherUser(activeRoom!)?.fullName ?? "Unknown"}
                     </p>
-                    <p className="text-[#6E6E85] text-xs">
+                    <p className="text-[#3D4E5C] text-xs">
                       {getJobTitle(activeRoom!.jobId)}
                     </p>
                   </div>
                 </div>
-                <Link href={`/jobs/${activeRoom!.jobId}`} className="text-[#00FF88] text-sm hover:underline flex items-center gap-1">
+                <Link href={`/jobs/${activeRoom!.jobId}`} className="text-[#7A5218] text-sm hover:text-[#C8923D] transition-colors flex items-center gap-1">
                   View Job <ExternalLink className="h-3 w-3" />
                 </Link>
               </div>
@@ -186,7 +188,7 @@ export default function InboxPage() {
                 <div className="space-y-4 max-w-2xl mx-auto">
                   {roomMessages.length === 0 ? (
                     <div className="text-center py-12">
-                      <p className="text-sm text-[#6E6E85]">No messages yet. Start the conversation!</p>
+                      <p className="text-sm text-[#3D4E5C]">No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
                     roomMessages.map(msg => {
@@ -197,16 +199,16 @@ export default function InboxPage() {
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[70%] ${
                             isMine
-                              ? "bg-[#00FF88] text-[#0A0A0F] rounded-2xl rounded-br-md"
-                              : "bg-[#12121A] border border-[#1E1E2A] text-[#E8E8EC] rounded-2xl rounded-bl-md"
+                              ? "chat-bubble-self text-[#182739]"
+                              : "chat-bubble-other text-[#182739]"
                           } px-4 py-2.5`}>
                             {!isMine && (
-                              <p className="text-[#00FF88] text-[11px] font-medium mb-0.5">
+                              <p className="text-[#7A5218] text-[11px] font-medium mb-0.5">
                                 {sender?.fullName ?? "Unknown"}
                               </p>
                             )}
                             <p className="text-sm leading-relaxed">{msg.text}</p>
-                            <p className={`text-[11px] mt-1 ${isMine ? "text-[#0A0A0F]/50" : "text-[#6E6E85]"} ${isMine ? "text-right" : ""}`}>
+                            <p className={`text-[11px] mt-1 text-[#3D4E5C] ${isMine ? "text-right" : ""}`}>
                               {timeAgo(msg.createdAt)}
                             </p>
                           </div>
@@ -218,7 +220,7 @@ export default function InboxPage() {
               </div>
 
               {/* Message input bar */}
-              <div className="px-4 sm:px-6 py-4 pb-4 border-t border-[#1E1E2A] bg-[#12121A]">
+              <div className="glass-panel-sm px-4 sm:px-6 py-4 pb-4" style={{ borderRadius: 0, borderTop: '1px solid rgba(59,75,61,0.3)' }}>
                 <form
                   onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                   className="flex items-center gap-3 max-w-2xl mx-auto"
@@ -227,14 +229,14 @@ export default function InboxPage() {
                     value={text}
                     onChange={e => setText(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
+                    className="glass-input flex-1 h-11 text-sm rounded-xl"
                   />
                   <button
                     type="submit"
                     disabled={!text.trim()}
-                    className="w-11 h-11 bg-[#00FF88] rounded-xl flex items-center justify-center hover:bg-[#00CC6A] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    className="btn-primary w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 p-0"
                   >
-                    <Send className="h-[18px] w-[18px] text-[#0A0A0F]" />
+                    <Send className="h-[18px] w-[18px]" />
                   </button>
                 </form>
               </div>

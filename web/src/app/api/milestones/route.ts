@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendMilestoneSubmittedEmail, sendMilestoneApprovedEmail } from "@/lib/email";
 
 // GET /api/milestones?jobId=xxx
 export async function GET(req: NextRequest) {
@@ -119,6 +120,44 @@ export async function PATCH(req: NextRequest) {
       { _id: new ObjectId(milestoneId) },
       { $set: update }
     );
+
+    // Fire-and-forget: milestone email notifications
+    if (action === "submit" && job.clientId) {
+      // Freelancer submitted → notify the client
+      const client = await db.collection("users").findOne(
+        { _id: new ObjectId(job.clientId) },
+        { projection: { email: 1, name: 1 } }
+      );
+      const freelancer = await db.collection("users").findOne(
+        { _id: new ObjectId(auth.payload.userId) },
+        { projection: { name: 1 } }
+      );
+      if (client?.email) {
+        sendMilestoneSubmittedEmail(
+          client.email,
+          client.name ?? "Client",
+          freelancer?.name ?? "A freelancer",
+          milestone.title ?? "Milestone",
+          milestone.amount ?? 0,
+          job.title ?? "Untitled Job"
+        ).catch(() => {});
+      }
+    } else if (action === "approve" && job.acceptedBy) {
+      // Client approved → notify the freelancer
+      const freelancer = await db.collection("users").findOne(
+        { _id: new ObjectId(job.acceptedBy) },
+        { projection: { email: 1, name: 1 } }
+      );
+      if (freelancer?.email) {
+        sendMilestoneApprovedEmail(
+          freelancer.email,
+          freelancer.name ?? "Freelancer",
+          milestone.title ?? "Milestone",
+          milestone.amount ?? 0,
+          job.title ?? "Untitled Job"
+        ).catch(() => {});
+      }
+    }
 
     return NextResponse.json({ ok: true, status: update.status });
   } catch (err) {

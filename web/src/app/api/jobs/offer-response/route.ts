@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendOfferResponseEmail, sendBookingConfirmationEmail } from "@/lib/email";
 
 // PATCH /api/jobs/offer-response — freelancer accepts/declines a direct offer
 export async function PATCH(req: NextRequest) {
@@ -55,6 +56,40 @@ export async function PATCH(req: NextRequest) {
     }
 
     await db.collection("jobs").updateOne({ _id: new ObjectId(jobId) }, { $set: update });
+
+    // Fire-and-forget: notify client about offer response
+    const client = await db.collection("users").findOne(
+      { _id: new ObjectId(job.clientId) },
+      { projection: { email: 1, name: 1 } }
+    );
+    const freelancer = await db.collection("users").findOne(
+      { _id: new ObjectId(auth.payload.userId) },
+      { projection: { name: 1, email: 1 } }
+    );
+    if (client?.email) {
+      sendOfferResponseEmail(
+        client.email,
+        client.name ?? "Client",
+        freelancer?.name ?? "A freelancer",
+        job.title ?? "Untitled Job",
+        response as "accepted" | "declined",
+        job.startingPrice ?? 0,
+        jobId
+      ).catch(() => {});
+    }
+
+    // Post-deal-accept: send freelancer their booking confirmation with financials
+    if (response === "accepted" && freelancer?.email) {
+      sendBookingConfirmationEmail(
+        freelancer.email,
+        freelancer.name ?? "Freelancer",
+        client?.name ?? "Client",
+        job.title ?? "Untitled Job",
+        job.startingPrice ?? 0,
+        job.startingPrice ?? 0,
+        jobId
+      ).catch(() => {});
+    }
 
     return NextResponse.json({ ok: true, offerStatus: response });
   } catch (err) {

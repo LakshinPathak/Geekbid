@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import crypto from "crypto";
+import { sendPaymentConfirmationEmail } from "@/lib/email";
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "secret_placeholder";
@@ -166,11 +167,30 @@ export async function PATCH(req: NextRequest) {
     };
 
     const result = await db.collection("transactions").insertOne(tx);
+    const txId = result.insertedId.toString();
+
+    // Fire-and-forget: send payment receipt to client
+    const payer = await db.collection("users").findOne(
+      { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
+      { projection: { email: 1, name: 1 } }
+    );
+    const jobDoc = jobId ? await db.collection("jobs").findOne(
+      { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
+      { projection: { title: 1 } }
+    ) : null;
+    if (payer?.email) {
+      sendPaymentConfirmationEmail(
+        payer.email, payer.name ?? "Client",
+        grossAmount, currency,
+        jobDoc?.title ?? description ?? "GeekBid Project",
+        txId, razorpay_order_id.startsWith("order_mock_")
+      ).catch(() => {});
+    }
 
     return NextResponse.json({
       verified: true,
-      transactionId: result.insertedId.toString(),
-      transaction: { ...tx, _id: result.insertedId.toString(), id: result.insertedId.toString() },
+      transactionId: txId,
+      transaction: { ...tx, _id: txId, id: txId },
     });
   } catch (err) {
     console.error("[Payments PATCH Error]", err);

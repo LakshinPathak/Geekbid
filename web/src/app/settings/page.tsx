@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyValue, setNewKeyValue] = useState("");
   const [creating, setCreating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (mounted && !currentUser) router.replace("/login");
@@ -48,6 +49,13 @@ export default function SettingsPage() {
     await loadKeys();
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(newKeyValue);
+    setCopied(true);
+    toast.success("Copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const revokeKey = async (id: string) => {
     const token = localStorage.getItem("gb_access_token");
     const res = await fetch(`/api/keys?id=${id}`, {
@@ -61,50 +69,55 @@ export default function SettingsPage() {
   };
 
   if (!mounted) return (
-    <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-      <div className="h-8 w-8 border-2 border-[#00FF88]/30 border-t-[#00FF88] rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#FCFAF4] grid-bg flex items-center justify-center">
+      <div className="h-8 w-8 border-2 border-[#C8923D]/40 border-t-[#C8923D] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#8A8A9A] text-sm hover:text-[#00FF88] transition-colors mb-6">
+        <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#3D4E5C] text-sm hover:text-[#C8923D] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Profile
         </Link>
 
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#E8E8EC]">API Settings</h1>
-        <p className="text-[#8A8A9A] text-sm mt-1">Manage your API keys for programmatic access</p>
+        <div className="animate-fade-in-up">
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#182739]">API Settings</h1>
+          <p className="text-[#3D4E5C] text-sm mt-1">Manage your API keys for programmatic access</p>
+        </div>
 
         {/* Create key */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-8">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Plus className="h-4 w-4 text-[#00FF88]" /> Generate API Key
+        <div className="glass-card mt-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+          <h2 className="font-heading text-lg font-semibold text-[#182739] mb-4 flex items-center gap-2">
+            <Plus className="h-4 w-4 text-[#C8923D]" /> Generate API Key
           </h2>
           <div className="flex gap-2">
             <input
               value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && createKey()}
               placeholder="Key name (e.g. Production, CI/CD)"
-              className="flex-1 h-11 px-4 bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl text-[#E8E8EC] text-sm placeholder:text-[#6E6E85] focus:border-[#00FF88]/50 outline-none transition-all"
+              className="glass-input flex-1 h-11 rounded-xl text-sm"
             />
             <button onClick={createKey} disabled={creating || !newKeyName.trim()}
-              className="h-11 px-4 sm:px-6 bg-[#00FF88] text-[#0A0A0F] font-semibold rounded-xl text-sm hover:bg-[#00CC6A] transition-all disabled:opacity-40">
+              className="btn-primary h-11 px-4 sm:px-6 rounded-xl text-sm payment-ready disabled:opacity-40">
               {creating ? "Generating..." : "Generate"}
             </button>
           </div>
 
           {newKeyValue && (
-            <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
+            <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 animate-fade-in-up">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                <p className="text-yellow-500 text-xs font-semibold">Copy this key now — it won't be shown again</p>
+                <p className="text-yellow-500 text-xs font-semibold">Copy this key now — it won&apos;t be shown again</p>
               </div>
               <div className="flex gap-2">
-                <code className="flex-1 bg-[#0A0A0F] border border-[#1E1E2A] rounded-lg p-3 text-[#00FF88] text-sm font-mono break-all">
+                <code className="settings-key-display flex-1 break-all">
                   {newKeyValue}
                 </code>
-                <button onClick={() => { navigator.clipboard.writeText(newKeyValue); toast.success("Copied!"); }}
-                  className="h-10 px-3 border border-[#1E1E2A] text-[#8A8A9A] rounded-lg hover:bg-[#1A1A24] transition-all self-start">
+                <button onClick={handleCopy}
+                  className={`h-10 px-3 rounded-lg transition-all self-start ${
+                    copied ? "bg-[#C8923D]/20 text-[#C8923D] border border-[#C8923D]/40" : "btn-glass"
+                  }`}>
                   <Copy className="h-4 w-4" />
                 </button>
               </div>
@@ -113,27 +126,35 @@ export default function SettingsPage() {
         </div>
 
         {/* Existing keys */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-6">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Key className="h-4 w-4 text-[#00FF88]" /> Active Keys ({keys.length})
+        <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+          <h2 className="font-heading text-lg font-semibold text-[#182739] mb-4 flex items-center gap-2">
+            <Key className="h-4 w-4 text-[#C8923D]" /> Active Keys
+            <span className="text-xs font-normal text-[#7B8694] bg-[#F5F2EA] px-2 py-0.5 rounded-full">{keys.length}</span>
           </h2>
 
           {keys.length === 0 ? (
-            <p className="text-[#6E6E85] text-sm">No API keys yet. Generate one above.</p>
+            <div className="py-6 text-center">
+              <Key className="h-8 w-8 text-[#7B8694] mx-auto mb-2" />
+              <p className="text-[#7B8694] text-sm">No API keys yet. Generate one above.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {keys.map(k => (
-                <div key={k.id} className="flex items-center justify-between bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
+                <div key={k.id} className="tx-row flex items-center justify-between rounded-xl p-4 transition-colors">
                   <div>
-                    <p className="text-[#E8E8EC] text-sm font-medium">{k.name}</p>
-                    <p className="text-[#6E6E85] text-xs font-mono mt-0.5">{k.prefix}</p>
-                    <div className="flex items-center gap-3 mt-1 text-[#6E6E85] text-xs">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}</span>
-                      {k.lastUsedAt && <span>Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
+                    <p className="text-[#182739] text-sm font-medium">{k.name}</p>
+                    <p className="text-[#7B8694] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
+                    <div className="flex items-center gap-3 mt-1 text-[#7B8694] text-xs">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}
+                      </span>
+                      {k.lastUsedAt && (
+                        <span className="text-[#3D4E5C]">Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>
+                      )}
                     </div>
                   </div>
                   <button onClick={() => revokeKey(k.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors p-2">
+                    className="text-red-400/60 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -143,22 +164,22 @@ export default function SettingsPage() {
         </div>
 
         {/* API Docs */}
-        <div className="bg-[#12121A] border border-[#1E1E2A] rounded-2xl p-6 mt-6">
-          <h2 className="font-heading text-lg font-semibold text-[#E8E8EC] mb-4 flex items-center gap-2">
-            <Code2 className="h-4 w-4 text-[#00FF88]" /> API Documentation
+        <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+          <h2 className="font-heading text-lg font-semibold text-[#182739] mb-4 flex items-center gap-2">
+            <Code2 className="h-4 w-4 text-[#C8923D]" /> API Documentation
           </h2>
-          <div className="space-y-4">
-            <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
-              <p className="text-[#00FF88] text-xs font-mono mb-1">GET /api/v1/jobs</p>
-              <p className="text-[#8A8A9A] text-sm">List jobs. Query params: status, category, page, limit</p>
-              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
-                curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&limit=10
+          <div className="space-y-3">
+            <div className="glass-panel-sm rounded-xl p-4">
+              <p className="text-[#C8923D] text-xs font-mono mb-1 terminal-amount">GET /api/v1/jobs</p>
+              <p className="text-[#3D4E5C] text-sm">List jobs. Query params: status, category, page, limit</p>
+              <code className="block mt-2 text-[#7B8694] text-xs font-mono bg-[#FCFAF4]/50 rounded-lg px-3 py-2">
+                curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&amp;limit=10
               </code>
             </div>
-            <div className="bg-[#0A0A0F] border border-[#1E1E2A] rounded-xl p-4">
-              <p className="text-[#00FF88] text-xs font-mono mb-1">POST /api/v1/jobs</p>
-              <p className="text-[#8A8A9A] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
-              <code className="block mt-2 text-[#6E6E85] text-xs font-mono">
+            <div className="glass-panel-sm rounded-xl p-4">
+              <p className="text-[#C8923D] text-xs font-mono mb-1 terminal-amount">POST /api/v1/jobs</p>
+              <p className="text-[#3D4E5C] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
+              <code className="block mt-2 text-[#7B8694] text-xs font-mono bg-[#FCFAF4]/50 rounded-lg px-3 py-2">
                 curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
               </code>
             </div>

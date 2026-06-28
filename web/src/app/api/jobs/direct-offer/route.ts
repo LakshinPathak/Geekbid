@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendDirectOfferEmail } from "@/lib/email";
 
 // POST /api/jobs/direct-offer — client creates direct offer to specific freelancer
 export async function POST(req: NextRequest) {
@@ -63,6 +64,17 @@ export async function POST(req: NextRequest) {
       isRead: false,
       createdAt: new Date().toISOString(),
     });
+
+    // Fire-and-forget: email the freelancer about the offer
+    if (freelancer.email) {
+      sendDirectOfferEmail(
+        freelancer.email,
+        freelancer.name ?? "Freelancer",
+        title,
+        Number(price),
+        result.insertedId.toString()
+      ).catch(() => {});
+    }
 
     return NextResponse.json(
       { ...job, _id: result.insertedId.toString(), id: result.insertedId.toString() },

@@ -12,10 +12,10 @@ type FilterType = "all" | "price_drop" | "counter_bid" | "payment" | "job_match"
 
 const ICON_CONFIG: Record<string, { icon: typeof Zap; bg: string; color: string }> = {
   price_drop: { icon: TrendingDown, bg: "bg-red-500/10", color: "text-red-400" },
-  counter_bid: { icon: MessageSquare, bg: "bg-blue-500/10", color: "text-blue-400" },
-  payment: { icon: DollarSign, bg: "bg-[#00FF88]/10", color: "text-[#00FF88]" },
-  job_match: { icon: Zap, bg: "bg-purple-500/10", color: "text-purple-400" },
-  general: { icon: Bell, bg: "bg-[#1A1A24]", color: "text-[#6E6E85]" },
+  counter_bid: { icon: MessageSquare, bg: "bg-[rgba(122,82,24,0.12)]", color: "text-[#7A5218]" },
+  payment: { icon: DollarSign, bg: "bg-[rgba(122,82,24,0.12)]", color: "text-[#7A5218]" },
+  job_match: { icon: Zap, bg: "bg-[#D8D0C0]", color: "text-[#253444]" },
+  general: { icon: Bell, bg: "bg-[#D8D0C0]", color: "text-[#3D4E5C]" },
 };
 
 const FILTER_TABS: { key: FilterType; label: string }[] = [
@@ -48,20 +48,20 @@ export default function NotificationsPage() {
   }, [myNotifs, filter]);
 
   if (!mounted) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
-      <div className="h-8 w-8 border-2 border-[#6E6E85] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-[#EDE8DC]">
+      <div className="h-8 w-8 border-2 border-[#BEB5A5] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 animate-fade-in-up">
           <div className="flex items-center gap-3">
-            <h1 className="font-heading text-2xl font-bold text-[#E8E8EC]">Notifications</h1>
+            <h1 className="font-heading text-2xl font-bold text-[#182739]">Notifications</h1>
             {unreadCount > 0 && (
-              <span className="bg-[#00FF88] text-[#0A0A0F] text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+              <span className="bg-[#C8923D] text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse-glow">
                 {unreadCount}
               </span>
             )}
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="flex items-center gap-1.5 text-[#00FF88] text-sm hover:underline font-medium"
+              className="btn-ghost flex items-center gap-1.5 text-sm px-4 py-2 rounded-xl"
             >
               <CheckCheck className="h-4 w-4" />
               Mark all read
@@ -79,31 +79,33 @@ export default function NotificationsPage() {
 
         {/* Filter Tabs */}
         <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-          {FILTER_TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                filter === tab.key
-                  ? "bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20"
-                  : "text-[#8A8A9A] hover:text-[#E8E8EC]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          <div className="glass-panel-sm p-1 rounded-xl inline-flex gap-1">
+            {FILTER_TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  filter === tab.key
+                    ? "bg-[#7A5218] text-white border border-transparent"
+                    : "text-[#3D4E5C] hover:text-[#182739]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Notification List */}
         {displayNotifs.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-[#12121A] border border-[#1E1E2A] flex items-center justify-center mb-4">
-              <Bell className="h-7 w-7 text-[#6E6E85]" />
+          <div className="glass-panel p-12 text-center animate-fade-in-up">
+            <div className="mx-auto h-16 w-16 rounded-2xl glass-panel-sm flex items-center justify-center mb-4">
+              <Bell className="h-7 w-7 text-[#3D4E5C]" />
             </div>
-            <h3 className="text-lg font-heading font-bold text-[#E8E8EC] mb-1">
+            <h3 className="text-lg font-heading font-bold text-[#182739] mb-1">
               {filter !== "all" ? "No notifications in this category" : "You're all caught up!"}
             </h3>
-            <p className="text-sm text-[#8A8A9A]">
+            <p className="text-sm text-[#3D4E5C]">
               {filter !== "all"
                 ? "Try a different filter"
                 : "We'll notify you when something happens"}
@@ -120,12 +122,10 @@ export default function NotificationsPage() {
                 <div
                   key={n.id}
                   onClick={() => markNotificationRead(n.id)}
-                  className={`bg-[#12121A] border rounded-xl p-4 flex items-start gap-4 cursor-pointer transition-all hover:border-[#00FF88]/10 ${
-                    isUnread
-                      ? "border-l-2 border-l-[#00FF88] border-t border-r border-b border-[#1E1E2A] bg-[#1A1A24]/30"
-                      : "border-[#1E1E2A]"
+                  className={`notif-card p-4 flex items-start gap-4 cursor-pointer hover:border-[#C8923D]/30 animate-fade-in-up ${
+                    isUnread ? "unread" : ""
                   }`}
-                  style={{ animationDelay: `${i * 0.03}s` }}
+                  style={{ animationDelay: `${i * 50}ms` }}
                 >
                   {/* Icon */}
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>
@@ -134,13 +134,13 @@ export default function NotificationsPage() {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${isUnread ? "font-medium text-[#E8E8EC]" : "text-[#8A8A9A]"}`}>
+                    <p className={`text-sm ${isUnread ? "font-medium text-[#182739]" : "text-[#3D4E5C]"}`}>
                       {n.title}
                     </p>
                     {n.body && (
-                      <p className="text-xs text-[#8A8A9A] mt-0.5 line-clamp-2">{n.body}</p>
+                      <p className="text-xs text-[#3D4E5C] mt-0.5 line-clamp-2">{n.body}</p>
                     )}
-                    <p className="text-[11px] text-[#6E6E85] mt-1 flex items-center gap-1">
+                    <p className="text-[11px] text-[#3D4E5C] mt-1 flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {timeAgo(n.createdAt)}
                     </p>
@@ -148,7 +148,7 @@ export default function NotificationsPage() {
 
                   {/* Unread indicator */}
                   {isUnread && (
-                    <span className="w-2 h-2 bg-[#00FF88] rounded-full shrink-0 mt-2" />
+                    <span className="w-2 h-2 bg-[#C8923D] rounded-full shrink-0 mt-2 unread-dot" />
                   )}
                 </div>
               );

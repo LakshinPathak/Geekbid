@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
 
 // GET /api/bids?jobId=xxx (public)
 export async function GET(req: NextRequest) {
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
       .collection("jobs")
       .findOne(
         { _id: new ObjectId(jobId) },
-        { projection: { lowestCounterBid: 1 } }
+        { projection: { lowestCounterBid: 1, clientId: 1, title: 1, minimumPrice: 1 } }
       );
     if (
       jobDoc &&
@@ -139,6 +140,39 @@ export async function POST(req: NextRequest) {
     await db
       .collection("jobs")
       .updateOne({ _id: new ObjectId(jobId) }, updateOps);
+
+    // Fire-and-forget: notify the client about the new bid
+    if (jobDoc?.clientId) {
+      const client = await db.collection("users").findOne(
+        { _id: new ObjectId(jobDoc.clientId) },
+        { projection: { email: 1, name: 1 } }
+      );
+      if (client?.email) {
+        const freelancerUser = await db.collection("users").findOne(
+          { _id: new ObjectId(auth.payload.userId) },
+          { projection: { name: 1 } }
+        );
+        sendNewBidEmail(
+          client.email,
+          client.name ?? "Client",
+          freelancerUser?.name ?? "A freelancer",
+          jobDoc.title ?? "Untitled Job",
+          Number(bidPrice),
+          jobId
+        ).catch(() => {});
+
+        // Price target alert: if bid is within 110% of floor price
+        if (jobDoc.minimumPrice && Number(bidPrice) <= jobDoc.minimumPrice * 1.1) {
+          sendPriceTargetAlertEmail(
+            client.email, client.name ?? "Client",
+            freelancerUser?.name ?? "A freelancer",
+            jobDoc.title ?? "Untitled Job",
+            Number(bidPrice), jobDoc.minimumPrice,
+            jobId, result.insertedId.toString()
+          ).catch(() => {});
+        }
+      }
+    }
 
     await db.collection("users").updateOne(
       { _id: new ObjectId(auth.payload.userId) },

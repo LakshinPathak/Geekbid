@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerUser, loginUser, setRefreshCookie } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { sendWelcomeEmail, sendReferralSignupEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,11 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const userId = (result.user as Record<string, unknown>)?.id as string | undefined;
+
+      // Fire-and-forget welcome email
+      sendWelcomeEmail(email, name, role ?? "freelancer", userId).catch(() => {});
+
       // Track referral if code provided
       if (referralCode && result.user) {
         const db = await getDb();
@@ -48,6 +54,10 @@ export async function POST(req: NextRequest) {
             { _id: (await import("mongodb")).ObjectId.createFromHexString(userId) },
             { $set: { referredBy: referralCode } }
           );
+          // Fire-and-forget referral notification to referrer
+          if (referrer.email) {
+            sendReferralSignupEmail(referrer.email, referrer.name ?? "User", name).catch(() => {});
+          }
         }
       }
 

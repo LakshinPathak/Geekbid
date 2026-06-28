@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendDisputeResolvedEmail } from "@/lib/email";
 
 /**
  * GET /api/disputes — list disputes (protected)
@@ -79,6 +80,24 @@ export async function PATCH(req: NextRequest) {
         },
       }
     );
+
+    // Fire-and-forget: notify the user who raised the dispute
+    const dispute = await db.collection("disputes").findOne({ _id: new ObjectId(disputeId) });
+    if (dispute?.raisedBy) {
+      const raiser = await db.collection("users").findOne(
+        { _id: new ObjectId(dispute.raisedBy) },
+        { projection: { email: 1, name: 1 } }
+      );
+      if (raiser?.email) {
+        sendDisputeResolvedEmail(
+          raiser.email,
+          raiser.name ?? "User",
+          dispute.jobTitle ?? "a project",
+          resolution ?? newStatus,
+          dispute.transactionId
+        ).catch(() => {});
+      }
+    }
 
     return NextResponse.json({ ok: true, message: "Dispute updated" });
   } catch (err) {

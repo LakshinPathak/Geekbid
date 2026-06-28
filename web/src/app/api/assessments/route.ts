@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendAssessmentPassedEmail } from "@/lib/email";
 
 // GET /api/assessments — list available assessments, or ?results=true for user's results
 export async function GET(req: NextRequest) {
@@ -118,6 +119,15 @@ export async function POST(req: NextRequest) {
           $inc: { geekScore: 50 },
         }
       );
+
+      // Fire-and-forget: congratulate the freelancer
+      sendAssessmentPassedEmail(
+        auth.payload.email,
+        "Freelancer",
+        assessment.skill,
+        score,
+        assessmentId
+      ).catch(() => {});
     }
 
     return NextResponse.json({ ...result, passed, score }, { status: 201 });

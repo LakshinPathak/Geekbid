@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { sendTeamInviteEmail } from "@/lib/email";
 
 // GET /api/teams — get user's team
 export async function GET(req: NextRequest) {
@@ -120,6 +121,17 @@ export async function PATCH(req: NextRequest) {
         { _id: team._id },
         { $push: { invites: { email, status: "pending", invitedAt: new Date().toISOString() } } as never }
       );
+
+      // Fire-and-forget: email the invited user
+      const inviter = await db.collection("users").findOne(
+        { _id: new ObjectId(auth.payload.userId) },
+        { projection: { name: 1 } }
+      );
+      sendTeamInviteEmail(
+        email,
+        team.name ?? "A Team",
+        inviter?.name ?? "Someone"
+      ).catch(() => {});
 
       return NextResponse.json({ ok: true, message: "Invite sent" });
     }

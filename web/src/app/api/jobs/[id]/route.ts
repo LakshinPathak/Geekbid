@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { getAdaptivePrice } from "@/lib/pricing";
+import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -35,7 +36,7 @@ export async function GET(
   }
 }
 
-// PATCH /api/jobs/[id] — accept job (protected, freelancer only)
+// PATCH /api/jobs/[id] — accept | cancel | complete job (protected)
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,14 +48,69 @@ export async function PATCH(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
+    const body = await req.json();
+    const action = body.action ?? "accept";
+
+    // ── CANCEL ──────────────────────────────────────────────────────────────
+    if (action === "cancel") {
+      if (auth.payload.role !== "client") {
+        return NextResponse.json({ error: "Only clients can cancel jobs" }, { status: 403 });
+      }
+      const db = await getDb();
+      let job: any;
+      try { job = await db.collection("jobs").findOne({ _id: new ObjectId(id) }); }
+      catch { job = await db.collection("jobs").findOne({ id }); }
+      if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      if (job.status !== "open") return NextResponse.json({ error: "Only open jobs can be cancelled" }, { status: 400 });
+      const filter = job._id ? { _id: job._id } : { id };
+      await db.collection("jobs").updateOne(filter, { $set: { status: "cancelled", cancelledAt: new Date().toISOString() } });
+      // Notify all bidders
+      const bidders = await db.collection("bids").distinct("freelancerId", { jobId: id });
+      for (const fid of bidders) {
+        const f = await db.collection("users").findOne({ _id: new ObjectId(fid) }, { projection: { email: 1, fullName: 1, name: 1 } });
+        if (f?.email) sendJobCancelledEmail(f.email, f.fullName ?? f.name ?? "Freelancer", job.title ?? "Untitled Job").catch(() => {});
+      }
+      return NextResponse.json({ ok: true, message: "Job cancelled" });
+    }
+
+    // ── COMPLETE ─────────────────────────────────────────────────────────────
+    if (action === "complete") {
+      if (auth.payload.role !== "client") {
+        return NextResponse.json({ error: "Only clients can mark jobs complete" }, { status: 403 });
+      }
+      const db = await getDb();
+      let job: any;
+      try { job = await db.collection("jobs").findOne({ _id: new ObjectId(id) }); }
+      catch { job = await db.collection("jobs").findOne({ id }); }
+      if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      if (job.status !== "accepted") return NextResponse.json({ error: "Job must be accepted before completing" }, { status: 400 });
+      const filter = job._id ? { _id: job._id } : { id };
+      await db.collection("jobs").updateOne(filter, { $set: { status: "completed", completedAt: new Date().toISOString() } });
+      // Release escrow
+      await db.collection("transactions").updateOne(
+        { jobId: id, escrowStatus: "held" },
+        { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
+      );
+      // Send summary emails
+      const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) }, { projection: { email: 1, fullName: 1, name: 1 } });
+      const freelancer = job.acceptedBy ? await db.collection("users").findOne({ _id: new ObjectId(job.acceptedBy) }, { projection: { email: 1, fullName: 1, name: 1 } }) : null;
+      if (client?.email && freelancer?.email) {
+        sendJobCompletedSummaryEmail(
+          client.email, client.fullName ?? client.name ?? "Client",
+          freelancer.email, freelancer.fullName ?? freelancer.name ?? "Freelancer",
+          job.title ?? "Untitled Job", job.finalPrice ?? 0
+        ).catch(() => {});
+      }
+      return NextResponse.json({ ok: true, message: "Job completed and escrow released" });
+    }
+
+    // ── ACCEPT (default) ─────────────────────────────────────────────────────
     if (auth.payload.role !== "freelancer") {
       return NextResponse.json(
         { error: "Only freelancers can accept jobs" },
         { status: 403 }
       );
     }
-
-    const body = await req.json();
     const db = await getDb();
 
     let job;
@@ -167,6 +223,40 @@ export async function PATCH(
       escrowStatus: "held",
       createdAt: acceptedAt,
     });
+
+    // Fire-and-forget: notify the client their job was accepted
+    if (job.clientId) {
+      const client = await db.collection("users").findOne(
+        { _id: new ObjectId(job.clientId) },
+        { projection: { email: 1, name: 1 } }
+      );
+      const freelancer = await db.collection("users").findOne(
+        { _id: new ObjectId(auth.payload.userId) },
+        { projection: { name: 1 } }
+      );
+      if (client?.email) {
+        sendJobAcceptedEmail(
+          client.email,
+          client.name ?? "Client",
+          freelancer?.name ?? "A freelancer",
+          job.title ?? "Untitled Job",
+          finalPrice,
+          id
+        ).catch(() => {});
+      }
+
+      // Also notify the freelancer with their booking confirmation
+      if (freelancer?.email) {
+        sendBookingConfirmationEmail(
+          freelancer.email,
+          freelancer.name ?? "Freelancer",
+          client?.name ?? "Client",
+          job.title ?? "Untitled Job",
+          finalPrice, finalPrice,
+          id
+        ).catch(() => {});
+      }
+    }
 
     return NextResponse.json({ ok: true, finalPrice });
   } catch (err) {

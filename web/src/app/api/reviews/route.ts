@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { sendNewReviewEmail } from "@/lib/email";
 
 // GET /api/reviews?userId=xxx or ?jobId=xxx
 export async function GET(req: NextRequest) {
@@ -107,6 +108,30 @@ export async function POST(req: NextRequest) {
       { _id: (await import("mongodb")).ObjectId.createFromHexString(revieweeId) },
       { $set: { averageRating: Number(avgRating.toFixed(2)), totalReviews: allReviews.length } }
     );
+
+    // Fire-and-forget: email the reviewed user
+    const reviewee = await db.collection("users").findOne(
+      { _id: (await import("mongodb")).ObjectId.createFromHexString(revieweeId) },
+      { projection: { email: 1, name: 1 } }
+    );
+    const reviewer = await db.collection("users").findOne(
+      { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
+      { projection: { name: 1 } }
+    );
+    const jobForReview = await db.collection("jobs").findOne(
+      { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
+      { projection: { title: 1 } }
+    );
+    if (reviewee?.email) {
+      sendNewReviewEmail(
+        reviewee.email,
+        reviewee.name ?? "User",
+        reviewer?.name ?? "Someone",
+        numRating,
+        trimmedComment,
+        jobForReview?.title ?? "a project"
+      ).catch(() => {});
+    }
 
     return NextResponse.json(
       { ...review, _id: result.insertedId.toString(), id: result.insertedId.toString() },
