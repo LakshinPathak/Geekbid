@@ -249,8 +249,8 @@ export default function PaymentsPage() {
 
   if (!mounted || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FCFAF4]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#7B8694]" />
+      <div className="min-h-screen flex items-center justify-center bg-[#EDE8DC]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#4A5568]" />
       </div>
     );
   }
@@ -269,7 +269,7 @@ export default function PaymentsPage() {
 
   function getStatusBadgeClass(status: string) {
     switch (status) {
-      case "released": return "badge-active";
+      case "released": return "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#0F1924] text-white";
       case "held": return "badge-pending";
       case "disputed": return "badge-disputed";
       default: return "badge-completed";
@@ -277,16 +277,16 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 animate-fade-in-up">
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#182739]">Financial Terminal</h1>
-            <p className="text-[#3D4E5C] text-sm mt-1">Manage escrow, transactions, and payment methods</p>
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#0F1924]">Financial Terminal</h1>
+            <p className="text-[#253444] text-sm mt-1">Manage escrow, transactions, and payment methods</p>
           </div>
           {config?.mock && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-500">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(122,82,24,0.12)] border border-[rgba(122,82,24,0.25)] px-3 py-1 text-xs font-medium text-[#7A5218]">
               <Zap className="h-3 w-3" />
               Test Mode
             </span>
@@ -296,15 +296,15 @@ export default function PaymentsPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="finance-card p-5 animate-fade-in-up" style={{ animationDelay: "0.05s" }}>
-            <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">Total Spent / Earned</p>
-            <p className="font-heading text-2xl font-bold text-[#182739] mt-1 terminal-amount">{formatMoney(totalAmount)}</p>
+            <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Total Spent / Earned</p>
+            <p className="font-heading text-2xl font-bold text-[#0F1924] mt-1 terminal-amount">{formatMoney(totalAmount)}</p>
           </div>
           <div className="finance-card p-5 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-            <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">In Escrow</p>
-            <p className="font-heading text-2xl font-bold text-yellow-500 mt-1 terminal-amount">{formatMoney(heldAmount)}</p>
+            <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">In Escrow</p>
+            <p className="font-heading text-2xl font-bold text-[#7A5218] mt-1 terminal-amount">{formatMoney(heldAmount)}</p>
           </div>
           <div className="finance-card p-5 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-            <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">Available</p>
+            <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Available</p>
             <p className="font-heading text-2xl font-bold text-[#C8923D] mt-1 terminal-amount">{formatMoney(releasedAmount)}</p>
           </div>
         </div>
@@ -314,18 +314,18 @@ export default function PaymentsPage() {
           <div className="border-b border-[rgba(59,75,61,0.3)] px-4 sm:px-6 py-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-[#C8923D]" />
-              <h2 className="font-heading text-lg font-semibold text-[#182739]">Fund Escrow</h2>
+              <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Fund Escrow</h2>
             </div>
-            <p className="text-sm text-[#3D4E5C] mt-1">Securely pay via Razorpay — funds held in escrow until work is delivered</p>
+            <p className="text-sm text-[#253444] mt-1">Securely pay via Razorpay — funds held in escrow until work is delivered</p>
           </div>
 
           <div className="p-6 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-[#3D4E5C] mb-1.5">
+              <label className="block text-sm font-medium text-[#253444] mb-1.5">
                 Amount ({config?.currency || "INR"})
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                 <input
                   type="number"
                   min="1"
@@ -339,7 +339,7 @@ export default function PaymentsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#3D4E5C] mb-1.5">
+              <label className="block text-sm font-medium text-[#253444] mb-1.5">
                 Description (optional)
               </label>
               <input
@@ -375,20 +375,20 @@ export default function PaymentsPage() {
                 className={`rounded-xl border p-4 flex items-start gap-3 animate-fade-in-up ${
                   paymentResult.success
                     ? "bg-[#C8923D]/5 border-[#C8923D]/30"
-                    : "bg-red-500/5 border-red-500/20"
+                    : "bg-red-500/5 border-[rgba(176,32,32,0.20)]"
                 }`}
               >
                 {paymentResult.success ? (
                   <CheckCircle2 className="h-5 w-5 text-[#C8923D] mt-0.5 shrink-0" />
                 ) : (
-                  <XCircle className="h-5 w-5 text-red-400 mt-0.5 shrink-0" />
+                  <XCircle className="h-5 w-5 text-[#B02020] mt-0.5 shrink-0" />
                 )}
                 <div>
-                  <p className={`text-sm font-medium ${paymentResult.success ? "text-[#C8923D]" : "text-red-400"}`}>
+                  <p className={`text-sm font-medium ${paymentResult.success ? "text-[#C8923D]" : "text-[#B02020]"}`}>
                     {paymentResult.message}
                   </p>
                   {paymentResult.transactionId && (
-                    <p className="text-xs text-[#7B8694] mt-1 font-mono-il terminal-amount">
+                    <p className="text-xs text-[#4A5568] mt-1 font-mono-il terminal-amount">
                       TXN: {paymentResult.transactionId}
                     </p>
                   )}
@@ -396,7 +396,7 @@ export default function PaymentsPage() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-xs text-[#7B8694]">
+            <div className="flex items-center gap-2 text-xs text-[#4A5568]">
               <Lock className="h-3 w-3" />
               <span>Secured by Razorpay • 256-bit SSL encryption • PCI DSS compliant</span>
             </div>
@@ -407,8 +407,8 @@ export default function PaymentsPage() {
         <div className="glass-panel overflow-hidden">
           <div className="border-b border-[rgba(59,75,61,0.3)] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="font-heading text-lg font-semibold text-[#182739]">Transaction History</h2>
-              <p className="text-sm text-[#3D4E5C] mt-0.5">{typedTransactions.length} transaction{typedTransactions.length !== 1 ? "s" : ""}</p>
+              <h2 className="font-heading text-lg font-semibold text-[#0F1924]">Transaction History</h2>
+              <p className="text-sm text-[#253444] mt-0.5">{typedTransactions.length} transaction{typedTransactions.length !== 1 ? "s" : ""}</p>
             </div>
             <div className="flex items-center gap-2 glass-panel-sm p-1" style={{ borderRadius: "12px" }}>
               {STATUS_FILTERS.map(f => (
@@ -418,7 +418,7 @@ export default function PaymentsPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
                     statusFilter === f
                       ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30"
-                      : "text-[#3D4E5C] hover:text-[#182739]"
+                      : "text-[#253444] hover:text-[#0F1924]"
                   }`}
                 >
                   {f}
@@ -426,7 +426,7 @@ export default function PaymentsPage() {
               ))}
               <button
                 onClick={() => fetchTransactions()}
-                className="ml-1 inline-flex items-center gap-1.5 text-xs font-medium text-[#3D4E5C] hover:text-[#C8923D] transition-colors px-3 py-1.5 rounded-lg hover:bg-[#F5F2EA]"
+                className="ml-1 inline-flex items-center gap-1.5 text-xs font-medium text-[#253444] hover:text-[#C8923D] transition-colors px-3 py-1.5 rounded-lg hover:bg-[#D8D0C0]"
               >
                 <RefreshCw className="h-3 w-3" />
                 Refresh
@@ -436,16 +436,16 @@ export default function PaymentsPage() {
 
           {filteredTxns.length === 0 ? (
             <div className="px-4 sm:px-6 py-16 text-center">
-              <CreditCard className="h-10 w-10 text-[#7B8694] mx-auto mb-3" />
-              <p className="text-sm text-[#3D4E5C] font-medium">No transactions found</p>
-              <p className="text-xs text-[#7B8694] mt-1">
+              <CreditCard className="h-10 w-10 text-[#4A5568] mx-auto mb-3" />
+              <p className="text-sm text-[#253444] font-medium">No transactions found</p>
+              <p className="text-xs text-[#4A5568] mt-1">
                 {statusFilter !== "all" ? "Try a different filter" : "Make your first payment to see it here"}
               </p>
             </div>
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 sm:px-6 py-3 bg-[#FCFAF4]/60 text-[#7B8694] text-xs uppercase tracking-wider font-semibold border-b border-[rgba(59,75,61,0.3)]">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 sm:px-6 py-3 bg-[#EDE8DC]/60 text-[#4A5568] text-xs uppercase tracking-wider font-semibold border-b border-[rgba(59,75,61,0.3)]">
                 <span>Transaction</span>
                 <span className="text-right w-20">Amount</span>
                 <span className="text-right w-16">Fee</span>
@@ -463,28 +463,28 @@ export default function PaymentsPage() {
                     <div className="sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto_auto] sm:gap-4 sm:items-center">
                       {/* Transaction info */}
                       <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F5F2EA] border border-[rgba(59,75,61,0.3)] shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D8D0C0] border border-[rgba(59,75,61,0.3)] shrink-0">
                           {tx.paymentMethod === "razorpay" ? (
-                            <CreditCard className="h-4 w-4 text-[#3D4E5C]" />
+                            <CreditCard className="h-4 w-4 text-[#253444]" />
                           ) : (
-                            <DollarSign className="h-4 w-4 text-[#3D4E5C]" />
+                            <DollarSign className="h-4 w-4 text-[#253444]" />
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-[#182739]">
+                          <p className="text-sm font-medium text-[#0F1924]">
                             {tx.description || (tx.paymentMethod === "razorpay" ? "Razorpay Payment" : `Job #${(tx.jobId || "").slice(-6)}`)}
                           </p>
-                          <p className="text-xs text-[#7B8694]">{formatDate(tx.createdAt)}</p>
+                          <p className="text-xs text-[#4A5568]">{formatDate(tx.createdAt)}</p>
                         </div>
                       </div>
 
                       {/* Amount */}
-                      <p className="font-heading text-sm text-[#182739] text-right w-20 hidden sm:block terminal-amount">
+                      <p className="font-heading text-sm text-[#0F1924] text-right w-20 hidden sm:block terminal-amount">
                         {formatCurrency(tx.grossAmount)}
                       </p>
 
                       {/* Fee */}
-                      <p className="text-sm text-[#7B8694] text-right w-16 hidden sm:block terminal-amount">
+                      <p className="text-sm text-[#4A5568] text-right w-16 hidden sm:block terminal-amount">
                         {tx.platformFee > 0 ? formatCurrency(tx.platformFee) : "—"}
                       </p>
 
@@ -502,7 +502,7 @@ export default function PaymentsPage() {
                           {tx.escrowStatus}
                         </span>
                         {tx.mock && (
-                          <span className="ml-1.5 text-[11px] text-[#7B8694] font-medium">TEST</span>
+                          <span className="ml-1.5 text-[11px] text-[#4A5568] font-medium">TEST</span>
                         )}
                       </div>
 
@@ -516,13 +516,13 @@ export default function PaymentsPage() {
                             Release
                           </button>
                         ) : (
-                          <span className="text-[#7B8694] text-xs">—</span>
+                          <span className="text-[#4A5568] text-xs">—</span>
                         )}
                       </div>
                     </div>
 
                     {/* Mobile amounts */}
-                    <div className="flex items-center gap-4 mt-2 sm:hidden text-xs text-[#3D4E5C]">
+                    <div className="flex items-center gap-4 mt-2 sm:hidden text-xs text-[#253444]">
                       <span className="terminal-amount">Gross: {formatCurrency(tx.grossAmount)}</span>
                       {tx.platformFee > 0 && <span className="terminal-amount">Fee: {formatCurrency(tx.platformFee)}</span>}
                       {tx.netAmount > 0 && <span className="text-[#C8923D] terminal-amount">Net: {formatCurrency(tx.netAmount)}</span>}
@@ -539,8 +539,8 @@ export default function PaymentsPage() {
       {releaseConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={() => setReleaseConfirm(null)}>
           <div className="glass-panel-lg p-8 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
-            <h3 className="font-heading text-lg font-bold text-[#182739] mb-2">Release Escrow?</h3>
-            <p className="text-sm text-[#3D4E5C] mb-1">
+            <h3 className="font-heading text-lg font-bold text-[#0F1924] mb-2">Release Escrow?</h3>
+            <p className="text-sm text-[#253444] mb-1">
               This will release the held funds to the freelancer. This action cannot be undone.
             </p>
             {(() => {

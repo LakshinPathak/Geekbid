@@ -61,19 +61,19 @@ export default function MyJobsPage() {
   ];
 
   if (!mounted) return (
-    <div className="min-h-screen bg-[#FCFAF4] flex items-center justify-center">
+    <div className="min-h-screen bg-[#EDE8DC] flex items-center justify-center">
       <div className="h-8 w-8 border-2 border-[#C8923D]/40 border-t-[#C8923D] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#182739]">My Jobs</h1>
-            <p className="text-[#3D4E5C] text-sm mt-1">
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#0F1924]">My Jobs</h1>
+            <p className="text-[#253444] text-sm mt-1">
               {isClient ? "Jobs you've posted" : "Jobs you've accepted or bid on"}
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function MyJobsPage() {
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === t.key
                   ? "bg-[#C8923D] text-white"
-                  : "text-[#3D4E5C] hover:text-[#182739]"
+                  : "text-[#253444] hover:text-[#0F1924]"
               }`}
             >
               {t.label}
@@ -107,10 +107,10 @@ export default function MyJobsPage() {
         {myJobs.length === 0 ? (
           <div className="text-center py-20">
             <div className="mx-auto h-16 w-16 rounded-2xl glass-panel-sm flex items-center justify-center mb-4">
-              <Briefcase className="h-7 w-7 text-[#7B8694]" />
+              <Briefcase className="h-7 w-7 text-[#4A5568]" />
             </div>
-            <h3 className="text-lg font-bold text-[#182739] mb-1">No jobs found</h3>
-            <p className="text-sm text-[#3D4E5C] mb-4">
+            <h3 className="text-lg font-bold text-[#0F1924] mb-1">No jobs found</h3>
+            <p className="text-sm text-[#253444] mb-4">
               {isClient ? "Post your first job to get started!" : "Accept a job from the feed to see it here."}
             </p>
             <Link href={isClient ? "/post-job" : "/feed"}>
@@ -137,12 +137,12 @@ export default function MyJobsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Link href={`/jobs/${jid}`}>
-                        <h3 className="text-[#182739] font-medium text-base hover:text-[#C8923D] transition-colors cursor-pointer truncate">
+                        <h3 className="text-[#0F1924] font-medium text-base hover:text-[#C8923D] transition-colors cursor-pointer truncate">
                           {job.title}
                         </h3>
                       </Link>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-[#7B8694] text-xs mt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-[#4A5568] text-xs mt-1">
                       <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {timeAgo(job.postedAt)}</span>
                       <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {bidCount} bids</span>
                       <span className="flex items-center gap-1"><TrendingDown className="h-3 w-3" /> ${job.decayRatePerHour}/hr</span>
@@ -155,7 +155,7 @@ export default function MyJobsPage() {
                   {/* Center: Price */}
                   <div className="text-right sm:text-center shrink-0">
                     <p className="font-heading text-xl font-bold text-[#C8923D]">{formatMoney(price)}</p>
-                    <p className="text-[#7B8694] text-[11px]">{isOpen ? "Current price" : "Final price"}</p>
+                    <p className="text-[#4A5568] text-[11px]">{isOpen ? "Current price" : "Final price"}</p>
                   </div>
 
                   {/* Right: Status + Action */}
@@ -163,12 +163,12 @@ export default function MyJobsPage() {
                     <span className={`rounded-full text-[11px] font-medium px-3 py-1 border ${
                       isOpen
                         ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30"
-                        : "bg-[#8A8A9A]/10 text-[#3D4E5C] border-[#8A8A9A]/20"
+                        : "bg-[#8A8A9A]/10 text-[#253444] border-[#8A8A9A]/20"
                     }`}>
                       {isOpen ? "Live" : "Completed"}
                     </span>
                     <Link href={`/jobs/${jid}`}>
-                      <button className="border border-[#E4DDD0] text-[#182739] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#F5F2EA] transition-all">
+                      <button className="border border-[#BEB5A5] text-[#0F1924] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#D8D0C0] transition-all">
                         View
                       </button>
                     </Link>
@@ -180,13 +180,13 @@ export default function MyJobsPage() {
                             r.ok ? toast.success(r.message) : toast.error(r.message);
                           }}
                           className={`flex items-center gap-1 border text-xs font-medium px-3 py-2 rounded-lg transition-all ${
-                            job.featured ? "border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10" : "border-[#E4DDD0] text-[#3D4E5C] hover:bg-[#F5F2EA]"
+                            job.featured ? "border-yellow-500/30 text-[#7A5218] hover:bg-[rgba(122,82,24,0.12)]" : "border-[#BEB5A5] text-[#253444] hover:bg-[#D8D0C0]"
                           }`}
                         >
                           <Sparkles className="h-3 w-3" /> {job.featured ? "Featured" : "Feature"}
                         </button>
                         <Link href="/inbox">
-                          <button className="border border-[#E4DDD0] text-[#3D4E5C] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#F5F2EA] transition-all">
+                          <button className="border border-[#BEB5A5] text-[#253444] text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[#D8D0C0] transition-all">
                             Chat
                           </button>
                         </Link>
@@ -202,7 +202,7 @@ export default function MyJobsPage() {
                         return (
                           <button
                             onClick={() => { setReviewModal({ jobId: jid, revieweeId, revieweeName: reviewee?.fullName ?? "User" }); setReviewRating(5); setReviewComment(""); }}
-                            className="flex items-center gap-1 border border-yellow-500/30 text-yellow-500 text-xs font-medium px-4 py-2 rounded-lg hover:bg-yellow-500/10 transition-all"
+                            className="flex items-center gap-1 border border-yellow-500/30 text-[#7A5218] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[rgba(122,82,24,0.12)] transition-all"
                           >
                             <Star className="h-3 w-3" /> Review
                           </button>
@@ -223,23 +223,23 @@ export default function MyJobsPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="glass-panel animate-scale-in p-6 w-full max-w-md" style={{ borderRadius: '16px' }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading text-lg font-semibold text-[#182739]">Review {reviewModal.revieweeName}</h3>
-              <button onClick={() => setReviewModal(null)} className="text-[#7B8694] hover:text-[#182739]"><X className="h-5 w-5" /></button>
+              <h3 className="font-heading text-lg font-semibold text-[#0F1924]">Review {reviewModal.revieweeName}</h3>
+              <button onClick={() => setReviewModal(null)} className="text-[#4A5568] hover:text-[#0F1924]"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="mb-4">
-              <label className="text-[#3D4E5C] text-xs font-medium block mb-2">Rating</label>
+              <label className="text-[#253444] text-xs font-medium block mb-2">Rating</label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110">
-                    <Star className={`h-8 w-8 ${star <= reviewRating ? "text-yellow-500 fill-yellow-500" : "text-[#7B8694]"}`} />
+                    <Star className={`h-8 w-8 ${star <= reviewRating ? "text-[#7A5218] fill-[#7A5218]" : "text-[#4A5568]"}`} />
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Comment (optional)</label>
+              <label className="text-[#253444] text-xs font-medium block mb-1.5">Comment (optional)</label>
               <textarea
                 value={reviewComment}
                 onChange={e => setReviewComment(e.target.value)}
@@ -248,11 +248,11 @@ export default function MyJobsPage() {
                 placeholder="Share your experience..."
                 className="glass-input w-full p-3 rounded-xl text-sm resize-none"
               />
-              <p className="text-[#7B8694] text-xs mt-1">{reviewComment.length}/1000</p>
+              <p className="text-[#4A5568] text-xs mt-1">{reviewComment.length}/1000</p>
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setReviewModal(null)} className="flex-1 h-10 border border-[#E4DDD0] text-[#182739] font-medium rounded-xl text-sm hover:bg-[#F5F2EA] transition-all">
+              <button onClick={() => setReviewModal(null)} className="flex-1 h-10 border border-[#BEB5A5] text-[#0F1924] font-medium rounded-xl text-sm hover:bg-[#D8D0C0] transition-all">
                 Cancel
               </button>
               <button

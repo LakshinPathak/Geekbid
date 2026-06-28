@@ -61,11 +61,11 @@ export default function PricingPage() {
   const currentPlan = currentUser?.plan ?? "free";
 
   return (
-    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
         <div className="text-center mb-12 animate-fade-in-up">
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-gradient">Simple, Transparent Pricing</h1>
-          <p className="text-[#3D4E5C] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
+          <p className="text-[#253444] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -83,16 +83,16 @@ export default function PricingPage() {
                 </span>
               )}
               <div className="flex items-center gap-2 mb-4">
-                <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#C8923D]" : "text-[#3D4E5C]"}`} />
-                <h2 className="font-heading text-xl font-bold text-[#182739]">{plan.name}</h2>
+                <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#C8923D]" : "text-[#253444]"}`} />
+                <h2 className="font-heading text-xl font-bold text-[#0F1924]">{plan.name}</h2>
               </div>
               <div className="mb-6">
-                <span className="font-heading text-4xl font-bold text-[#182739]">{plan.price}</span>
-                <span className="text-[#7B8694] text-sm ml-1">{plan.period}</span>
+                <span className="font-heading text-4xl font-bold text-[#0F1924]">{plan.price}</span>
+                <span className="text-[#4A5568] text-sm ml-1">{plan.period}</span>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-[#3D4E5C]">
+                  <li key={f} className="flex items-center gap-2 text-sm text-[#253444]">
                     <Check className="h-4 w-4 text-[#C8923D] shrink-0" /> {f}
                   </li>
                 ))}
@@ -101,7 +101,7 @@ export default function PricingPage() {
                 disabled={currentPlan === plan.value}
                 className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                   currentPlan === plan.value
-                    ? "bg-[#F5F2EA] text-[#7B8694] cursor-not-allowed"
+                    ? "bg-[#D8D0C0] text-[#4A5568] cursor-not-allowed"
                     : plan.highlight
                     ? "btn-primary"
                     : "btn-ghost"
@@ -114,7 +114,7 @@ export default function PricingPage() {
         </div>
 
         <div className="text-center mt-8">
-          <Link href="/feed" className="text-[#3D4E5C] text-sm hover:text-[#C8923D] transition-colors">
+          <Link href="/feed" className="text-[#253444] text-sm hover:text-[#C8923D] transition-colors">
             Back to Feed
           </Link>
         </div>

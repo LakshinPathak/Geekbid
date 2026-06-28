@@ -63,10 +63,10 @@ export default function Navbar() {
             >
               <Zap className="h-4 w-4" />
             </div>
-            <span className="text-base font-extrabold text-[#182739] hidden sm:block font-heading">
-              Geek<span className="text-[#3D4E5C]">Bid</span>
+            <span className="text-base font-extrabold text-[#0F1924] hidden sm:block font-heading">
+              Geek<span className="text-[#253444]">Bid</span>
             </span>
-            <span className="hidden sm:flex text-[11px] px-1.5 py-0.5 rounded-md border border-[#E4DDD0] text-[#7B8694] font-medium">
+            <span className="hidden sm:flex text-[11px] px-1.5 py-0.5 rounded-md border border-[#BEB5A5] text-[#4A5568] font-medium">
               BETA
             </span>
           </Link>
@@ -112,10 +112,10 @@ export default function Navbar() {
                       {currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
                     </div>
                     <div className="hidden md:flex flex-col items-start">
-                      <span className="text-sm font-semibold text-[#182739] leading-tight">{currentUser.fullName}</span>
-                      <span className="text-[11px] text-[#7B8694] capitalize">{currentUser.role}</span>
+                      <span className="text-sm font-semibold text-[#0F1924] leading-tight">{currentUser.fullName}</span>
+                      <span className="text-[11px] text-[#4A5568] capitalize">{currentUser.role}</span>
                     </div>
-                    <ChevronDown className="h-3.5 w-3.5 text-[#7B8694]" />
+                    <ChevronDown className="h-3.5 w-3.5 text-[#4A5568]" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -124,37 +124,37 @@ export default function Navbar() {
                   sideOffset={8}
                 >
                   <div className="px-3 py-2.5">
-                    <p className="text-sm font-semibold text-[#182739]">{currentUser.fullName}</p>
-                    <p className="text-xs text-[#7B8694] mt-0.5">{currentUser.email}</p>
+                    <p className="text-sm font-semibold text-[#0F1924]">{currentUser.fullName}</p>
+                    <p className="text-xs text-[#4A5568] mt-0.5">{currentUser.email}</p>
                   </div>
                   <DropdownMenuSeparator className="bg-[#BEB5A5]" />
-                  <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                    <User className="h-4 w-4 mr-2.5 text-[#7B8694]" /> Profile
+                  <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <User className="h-4 w-4 mr-2.5 text-[#4A5568]" /> Profile
                   </DropdownMenuItem>
                   {currentUser.role === "client" && (
-                    <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                      <PlusCircle className="h-4 w-4 mr-2.5 text-[#7B8694]" /> Post a Job
+                    <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                      <PlusCircle className="h-4 w-4 mr-2.5 text-[#4A5568]" /> Post a Job
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                    <Briefcase className="h-4 w-4 mr-2.5 text-[#7B8694]" /> My Jobs
+                  <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <Briefcase className="h-4 w-4 mr-2.5 text-[#4A5568]" /> My Jobs
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                    <DollarSign className="h-4 w-4 mr-2.5 text-[#7B8694]" /> Earnings
+                  <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <DollarSign className="h-4 w-4 mr-2.5 text-[#4A5568]" /> Earnings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                    <CreditCard className="h-4 w-4 mr-2.5 text-[#7B8694]" /> Payments
+                  <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <CreditCard className="h-4 w-4 mr-2.5 text-[#4A5568]" /> Payments
                   </DropdownMenuItem>
                   {currentUser.role === "admin" && (
-                    <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
                       <Shield className="h-4 w-4 mr-2.5 text-[#C8923D]" /> Admin Panel
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-lg cursor-pointer py-2.5 text-[#3D4E5C] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
-                    <Settings className="h-4 w-4 mr-2.5 text-[#7B8694]" /> Settings
+                  <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-lg cursor-pointer py-2.5 text-[#253444] hover:text-[#0F1924] hover:bg-[#D8D0C0] focus:text-[#0F1924] focus:bg-[#D8D0C0]">
+                    <Settings className="h-4 w-4 mr-2.5 text-[#4A5568]" /> Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-[#BEB5A5]" />
-                  <DropdownMenuItem onClick={handleLogout} className="rounded-lg cursor-pointer py-2.5 text-red-400 focus:text-red-400 focus:bg-red-500/10">
+                  <DropdownMenuItem onClick={handleLogout} className="rounded-lg cursor-pointer py-2.5 text-[#B02020] focus:text-[#B02020] focus:bg-[rgba(176,32,32,0.08)]">
                     <LogOut className="h-4 w-4 mr-2.5" /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -189,7 +189,7 @@ export default function Navbar() {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C8923D] text-white">
                   <Zap className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-base font-extrabold text-[#182739] font-heading">GeekBid</span>
+                <span className="text-base font-extrabold text-[#0F1924] font-heading">GeekBid</span>
               </div>
               <button
                 className="h-8 w-8 flex items-center justify-center rounded-lg text-[#5A6775] hover:text-[#0F1924] hover:bg-[#D8D0C0] transition-colors"
@@ -200,7 +200,7 @@ export default function Navbar() {
             </div>
 
             {/* User info */}
-            <div className="px-6 py-4 border-b border-[#E4DDD0]">
+            <div className="px-6 py-4 border-b border-[#BEB5A5]">
               <div className="flex items-center gap-3">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-[#C8923D] shrink-0"
@@ -209,8 +209,8 @@ export default function Navbar() {
                   {currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#182739]">{currentUser.fullName}</p>
-                  <p className="text-xs text-[#7B8694] capitalize">{currentUser.role} · {currentUser.email}</p>
+                  <p className="text-sm font-semibold text-[#0F1924]">{currentUser.fullName}</p>
+                  <p className="text-xs text-[#4A5568] capitalize">{currentUser.role} · {currentUser.email}</p>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function Navbar() {
                 );
               })}
 
-              <div className="border-t border-[#E4DDD0] my-2 pt-2">
+              <div className="border-t border-[#BEB5A5] my-2 pt-2">
                 {[
                   { href: "/profile", label: "Profile", icon: User },
                   { href: "/my-jobs", label: "My Jobs", icon: Briefcase },
@@ -268,7 +268,7 @@ export default function Navbar() {
             <div className="px-4 py-4 border-t border-[#BEB5A5]">
               <button
                 onClick={() => { setMobileOpen(false); handleLogout(); }}
-                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-[#B02020] hover:bg-[rgba(176,32,32,0.08)] transition-colors"
               >
                 <LogOut className="h-5 w-5" />
                 Sign Out

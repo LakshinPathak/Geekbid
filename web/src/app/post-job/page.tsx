@@ -146,7 +146,7 @@ function DecayCurvePreview({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <TrendingDown className="h-4 w-4 text-[#C8923D]" />
-          <p className="text-[#3D4E5C] text-xs font-semibold uppercase tracking-wider font-heading">Decay Curve Preview</p>
+          <p className="text-[#253444] text-xs font-semibold uppercase tracking-wider font-heading">Decay Curve Preview</p>
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/30">
           <div className="h-1.5 w-1.5 rounded-full bg-[#C8923D] animate-pulse" />
@@ -168,7 +168,7 @@ function DecayCurvePreview({
         {yTicks.map(t => (
           <g key={`y-${t}`}>
             <line x1={PAD.l} y1={scaleY(t)} x2={W - PAD.r} y2={scaleY(t)}
-              stroke="#1E1E2A" strokeWidth={1} strokeDasharray="3,3" />
+              stroke="#BEB5A5" strokeWidth={1} strokeDasharray="3,3" />
             <text x={PAD.l - 6} y={scaleY(t) + 3.5} textAnchor="end"
               fill="#6E6E85" fontSize={9} fontFamily="monospace">
               ${t}
@@ -178,7 +178,7 @@ function DecayCurvePreview({
         {xTicks.map(t => (
           <g key={`x-${t}`}>
             <line x1={scaleX(t)} y1={PAD.t} x2={scaleX(t)} y2={H - PAD.b}
-              stroke="#1E1E2A" strokeWidth={1} strokeDasharray="2,4" />
+              stroke="#BEB5A5" strokeWidth={1} strokeDasharray="2,4" />
             <text x={scaleX(t)} y={H - PAD.b + 14} textAnchor="middle"
               fill="#6E6E85" fontSize={9} fontFamily="monospace">
               {t}h
@@ -305,8 +305,8 @@ function DecayCurvePreview({
           }}
         />
         <div className="flex justify-between mt-1">
-          <span className="text-[11px] text-[#7B8694]">0h (Posted)</span>
-          <span className="text-[11px] text-[#7B8694]">{maxHours}h (Deadline)</span>
+          <span className="text-[11px] text-[#4A5568]">0h (Posted)</span>
+          <span className="text-[11px] text-[#4A5568]">{maxHours}h (Deadline)</span>
         </div>
       </div>
 
@@ -315,11 +315,11 @@ function DecayCurvePreview({
         <div className="flex items-center gap-5 mt-3 px-1">
           <div className="flex items-center gap-2">
             <div className="w-5 h-[2px] bg-[#C8923D] rounded shadow-[0_0_6px_rgba(200,146,61,0.5)]" />
-            <span className="text-[11px] text-[#3D4E5C]">Fixed decay</span>
+            <span className="text-[11px] text-[#253444]">Fixed decay</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-[2px] rounded" style={{ background: "linear-gradient(90deg, #38BDF8, #818CF8)", boxShadow: "0 0 6px rgba(56,189,248,0.4)" }} />
-            <span className="text-[11px] text-[#3D4E5C]">Adaptive (3 bidders)</span>
+            <span className="text-[11px] text-[#253444]">Adaptive (3 bidders)</span>
           </div>
         </div>
       )}
@@ -327,21 +327,21 @@ function DecayCurvePreview({
       {/* Key metrics row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         <div className="glass-panel-sm rounded-xl p-3 text-center">
-          <p className="text-[9px] text-[#7B8694] uppercase tracking-wider">Time to Floor</p>
-          <p className="text-sm font-bold text-[#182739] font-heading mt-1">
+          <p className="text-[9px] text-[#4A5568] uppercase tracking-wider">Time to Floor</p>
+          <p className="text-sm font-bold text-[#0F1924] font-heading mt-1">
             {hoursToFloor === Infinity ? "∞" : `${hoursToFloor.toFixed(1)}h`}
           </p>
         </div>
         <div className="glass-panel-sm rounded-xl p-3 text-center">
-          <p className="text-[9px] text-[#7B8694] uppercase tracking-wider">Decay</p>
-          <p className="text-sm font-bold text-red-400 font-heading mt-1">-${decayRate}/hr</p>
+          <p className="text-[9px] text-[#4A5568] uppercase tracking-wider">Decay</p>
+          <p className="text-sm font-bold text-[#B02020] font-heading mt-1">-${decayRate}/hr</p>
         </div>
         <div className="glass-panel-sm rounded-xl p-3 text-center border-[#C8923D]/15">
-          <p className="text-[9px] text-[#7B8694] uppercase tracking-wider">@ {scrubHour.toFixed(0)}h</p>
+          <p className="text-[9px] text-[#4A5568] uppercase tracking-wider">@ {scrubHour.toFixed(0)}h</p>
           <p className="text-sm font-bold text-[#C8923D] font-heading mt-1">{formatMoney(Math.round(scrubPrice))}</p>
         </div>
         <div className="glass-panel-sm rounded-xl p-3 text-center border-[#C8923D]/15">
-          <p className="text-[9px] text-[#7B8694] uppercase tracking-wider">Savings</p>
+          <p className="text-[9px] text-[#4A5568] uppercase tracking-wider">Savings</p>
           <p className="text-sm font-bold text-[#C8923D] font-heading mt-1">{savingsPercent}%</p>
         </div>
       </div>
@@ -432,22 +432,22 @@ export default function PostJobPage() {
   };
 
   if (!mounted) return (
-    <div className="min-h-screen bg-[#FCFAF4] flex items-center justify-center">
+    <div className="min-h-screen bg-[#EDE8DC] flex items-center justify-center">
       <div className="h-8 w-8 border-2 border-[#C8923D]/40 border-t-[#C8923D] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FCFAF4] grid-bg">
+    <div className="min-h-screen bg-[#EDE8DC] grid-bg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Back link */}
-        <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#3D4E5C] text-sm hover:text-[#C8923D] transition-colors mb-6">
+        <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#253444] text-sm hover:text-[#C8923D] transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Feed
         </Link>
 
         {/* Header */}
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#182739]">Post a New Job</h1>
-        <p className="text-[#3D4E5C] text-sm mt-1">Set your starting price and let the market find the true value.</p>
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#0F1924]">Post a New Job</h1>
+        <p className="text-[#253444] text-sm mt-1">Set your starting price and let the market find the true value.</p>
 
         {/* Progress bar */}
         <div className="mt-8 mb-2">
@@ -462,7 +462,7 @@ export default function PostJobPage() {
                 className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all font-heading ${
                   step >= s.num
                     ? "text-[#C8923D] bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/25"
-                    : "text-[#7B8694] glass-panel-sm"
+                    : "text-[#4A5568] glass-panel-sm"
                 }`}
               >
                 {step > s.num ? <Check className="h-3.5 w-3.5 shrink-0" /> : <s.icon className="h-3.5 w-3.5 shrink-0" />}
@@ -480,18 +480,18 @@ export default function PostJobPage() {
               <p className="text-[#C8923D] text-xs uppercase tracking-wider font-semibold">Project Details</p>
 
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Job Title *</label>
+                <label className="text-[#253444] text-xs font-medium block mb-1.5">Job Title *</label>
                 <input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Build AI chatbot for customer support"
                   className="glass-input w-full"
                 />
-                {errors.title && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.title}</p>}
+                {errors.title && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.title}</p>}
               </div>
 
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Category *</label>
+                <label className="text-[#253444] text-xs font-medium block mb-1.5">Category *</label>
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value as JobCategory)}
@@ -504,7 +504,7 @@ export default function PostJobPage() {
               </div>
 
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Description</label>
+                <label className="text-[#253444] text-xs font-medium block mb-1.5">Description</label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
@@ -515,7 +515,7 @@ export default function PostJobPage() {
               </div>
 
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-2">Required Skills</label>
+                <label className="text-[#253444] text-xs font-medium block mb-2">Required Skills</label>
                 {/* Selected skills */}
                 {skills.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
@@ -542,7 +542,7 @@ export default function PostJobPage() {
                       className={`text-xs rounded-lg py-1.5 px-3 transition-all border ${
                         skills.includes(s)
                           ? "bg-[rgba(200,146,61,0.10)] text-[#C8923D] border-[#C8923D]/30"
-                          : "bg-[#FCFAF4] border-[#E4DDD0] text-[#7B8694] hover:text-[#3D4E5C] hover:border-[#8A8A9A]/30"
+                          : "bg-[#EDE8DC] border-[#BEB5A5] text-[#4A5568] hover:text-[#253444] hover:border-[#8A8A9A]/30"
                       }`}
                     >
                       {skills.includes(s) && <Check className="inline h-3 w-3 mr-1" />}{s}
@@ -552,9 +552,9 @@ export default function PostJobPage() {
               </div>
 
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Estimated Hours</label>
+                <label className="text-[#253444] text-xs font-medium block mb-1.5">Estimated Hours</label>
                 <div className="relative">
-                  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                   <input
                     type="number"
                     value={estimatedHours}
@@ -565,7 +565,7 @@ export default function PostJobPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[#F5F2EA]" />
+              <div className="h-px bg-[#BEB5A5]" />
 
               <button
                 onClick={nextStep}
@@ -584,7 +584,7 @@ export default function PostJobPage() {
 
               {/* Pricing Mode Toggle */}
               <div>
-                <label className="text-[#3D4E5C] text-xs font-medium block mb-2.5">Pricing Mode</label>
+                <label className="text-[#253444] text-xs font-medium block mb-2.5">Pricing Mode</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -592,15 +592,15 @@ export default function PostJobPage() {
                     className={`p-3.5 rounded-xl border text-left transition-all ${
                       pricingMode === "adaptive"
                         ? "border-[#C8923D] bg-[#C8923D]/5"
-                        : "border-[#E4DDD0] bg-[#FCFAF4] hover:border-[#8A8A9A]/30"
+                        : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#8A8A9A]/30"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#C8923D]" : "text-[#7B8694]"}`} />
-                      <p className={`text-sm font-semibold ${pricingMode === "adaptive" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>Adaptive</p>
+                      <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#C8923D]" : "text-[#4A5568]"}`} />
+                      <p className={`text-sm font-semibold ${pricingMode === "adaptive" ? "text-[#0F1924]" : "text-[#253444]"}`}>Adaptive</p>
                       <span className="text-[11px] bg-[#C8923D]/20 text-[#C8923D] px-1.5 py-0.5 rounded-full font-medium">Recommended</span>
                     </div>
-                    <p className="text-[#7B8694] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
+                    <p className="text-[#4A5568] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
                   </button>
                   <button
                     type="button"
@@ -608,23 +608,23 @@ export default function PostJobPage() {
                     className={`p-3.5 rounded-xl border text-left transition-all ${
                       pricingMode === "fixed"
                         ? "border-[#C8923D] bg-[#C8923D]/5"
-                        : "border-[#E4DDD0] bg-[#FCFAF4] hover:border-[#8A8A9A]/30"
+                        : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#8A8A9A]/30"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <TrendingDown className={`h-4 w-4 ${pricingMode === "fixed" ? "text-[#C8923D]" : "text-[#7B8694]"}`} />
-                      <p className={`text-sm font-semibold ${pricingMode === "fixed" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>Fixed Decay</p>
+                      <TrendingDown className={`h-4 w-4 ${pricingMode === "fixed" ? "text-[#C8923D]" : "text-[#4A5568]"}`} />
+                      <p className={`text-sm font-semibold ${pricingMode === "fixed" ? "text-[#0F1924]" : "text-[#253444]"}`}>Fixed Decay</p>
                     </div>
-                    <p className="text-[#7B8694] text-xs leading-relaxed">Price drops at a constant rate. Traditional reverse auction.</p>
+                    <p className="text-[#4A5568] text-xs leading-relaxed">Price drops at a constant rate. Traditional reverse auction.</p>
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
+                  <label className="text-[#253444] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                     <input
                       type="number"
                       value={startingPrice}
@@ -633,27 +633,27 @@ export default function PostJobPage() {
                       style={{ paddingLeft: '44px' }}
                     />
                   </div>
-                  <p className="text-[#7B8694] text-xs mt-1">The price your job starts at</p>
-                  {errors.startingPrice && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.startingPrice}</p>}
+                  <p className="text-[#4A5568] text-xs mt-1">The price your job starts at</p>
+                  {errors.startingPrice && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.startingPrice}</p>}
                 </div>
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Minimum Price ($) *</label>
+                  <label className="text-[#253444] text-xs font-medium block mb-1.5">Minimum Price ($) *</label>
                   <input
                     type="number"
                     value={minimumPrice}
                     onChange={e => setMinimumPrice(Number(e.target.value))}
                     className="glass-input w-full"
                   />
-                  <p className="text-[#7B8694] text-xs mt-1">Price will never drop below this</p>
-                  {errors.minimumPrice && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.minimumPrice}</p>}
+                  <p className="text-[#4A5568] text-xs mt-1">Price will never drop below this</p>
+                  {errors.minimumPrice && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.minimumPrice}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
+                  <label className="text-[#253444] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
                   <div className="relative">
-                    <TrendingDown className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B8694]" />
+                    <TrendingDown className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
                     <input
                       type="number"
                       value={decayRate}
@@ -662,11 +662,11 @@ export default function PostJobPage() {
                       style={{ paddingLeft: '44px' }}
                     />
                   </div>
-                  <p className="text-[#7B8694] text-xs mt-1">How fast the price decreases</p>
-                  {errors.decayRate && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.decayRate}</p>}
+                  <p className="text-[#4A5568] text-xs mt-1">How fast the price decreases</p>
+                  {errors.decayRate && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.decayRate}</p>}
                 </div>
                 <div>
-                  <label className="text-[#3D4E5C] text-xs font-medium block mb-1.5">Deadline (hours)</label>
+                  <label className="text-[#253444] text-xs font-medium block mb-1.5">Deadline (hours)</label>
                   <input
                     type="number"
                     value={deadline}
@@ -684,16 +684,16 @@ export default function PostJobPage() {
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <p className="text-[#7B8694] text-[11px]">Avg Final Price</p>
-                      <p className="font-heading text-lg font-bold text-[#182739]">${pricingHint.avgFinalPrice}</p>
+                      <p className="text-[#4A5568] text-[11px]">Avg Final Price</p>
+                      <p className="font-heading text-lg font-bold text-[#0F1924]">${pricingHint.avgFinalPrice}</p>
                     </div>
                     <div>
-                      <p className="text-[#7B8694] text-[11px]">Price Range</p>
-                      <p className="font-heading text-lg font-bold text-[#182739]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
+                      <p className="text-[#4A5568] text-[11px]">Price Range</p>
+                      <p className="font-heading text-lg font-bold text-[#0F1924]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
                     </div>
                     <div>
-                      <p className="text-[#7B8694] text-[11px]">Avg Decay Rate</p>
-                      <p className="font-heading text-lg font-bold text-[#182739]">${pricingHint.avgDecayRate}/hr</p>
+                      <p className="text-[#4A5568] text-[11px]">Avg Decay Rate</p>
+                      <p className="font-heading text-lg font-bold text-[#0F1924]">${pricingHint.avgDecayRate}/hr</p>
                     </div>
                   </div>
                 </div>
@@ -709,7 +709,7 @@ export default function PostJobPage() {
                 hoursToFloor={hoursToFloor}
               />
 
-              <div className="h-px bg-[#F5F2EA]" />
+              <div className="h-px bg-[#BEB5A5]" />
 
               <div className="flex gap-3">
                 <button
@@ -735,86 +735,86 @@ export default function PostJobPage() {
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">Title</p>
-                  <p className="text-[#182739] text-sm font-semibold mt-0.5">{title || "Untitled"}</p>
+                  <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Title</p>
+                  <p className="text-[#0F1924] text-sm font-semibold mt-0.5">{title || "Untitled"}</p>
                 </div>
-                <div className="h-px bg-[#F5F2EA]" />
+                <div className="h-px bg-[#BEB5A5]" />
                 <div>
-                  <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">Description</p>
-                  <p className="text-[#3D4E5C] text-sm mt-0.5 whitespace-pre-wrap">{description || "No description"}</p>
+                  <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Description</p>
+                  <p className="text-[#253444] text-sm mt-0.5 whitespace-pre-wrap">{description || "No description"}</p>
                 </div>
-                <div className="h-px bg-[#F5F2EA]" />
+                <div className="h-px bg-[#BEB5A5]" />
                 <div>
-                  <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
+                  <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
                   <div className="flex flex-wrap gap-1.5">
                     {skills.length > 0 ? skills.map(s => (
                       <span key={s} className="bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-3 py-1 text-xs font-medium">{s}</span>
                     )) : (
-                      <span className="text-[#7B8694] text-xs">None selected</span>
+                      <span className="text-[#4A5568] text-xs">None selected</span>
                     )}
                   </div>
                 </div>
-                <div className="h-px bg-[#F5F2EA]" />
+                <div className="h-px bg-[#BEB5A5]" />
                 <div>
-                  <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium">Category</p>
+                  <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium">Category</p>
                   <span className="inline-block mt-1 bg-[rgba(200,146,61,0.10)] text-[#C8923D] border border-[#C8923D]/30 rounded-full px-3 py-1 text-xs font-medium">
                     {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
                   </span>
                 </div>
-                <div className="h-px bg-[#F5F2EA]" />
+                <div className="h-px bg-[#BEB5A5]" />
 
                 {/* Price grid */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { label: "Starting", value: formatMoney(startingPrice), color: "text-[#182739]" },
-                    { label: "Floor", value: formatMoney(minimumPrice), color: "text-[#182739]" },
-                    { label: "Decay Rate", value: `$${decayRate}/hr`, color: "text-red-400/70" },
-                    { label: "Est. Hours", value: `${estimatedHours}h`, color: "text-[#182739]" },
-                    { label: "Pricing", value: pricingMode === "adaptive" ? "Adaptive" : "Fixed", color: pricingMode === "adaptive" ? "text-[#C8923D]" : "text-[#3D4E5C]" },
-                    { label: "Deadline", value: `${deadline}h`, color: "text-[#182739]" },
+                    { label: "Starting", value: formatMoney(startingPrice), color: "text-[#0F1924]" },
+                    { label: "Floor", value: formatMoney(minimumPrice), color: "text-[#0F1924]" },
+                    { label: "Decay Rate", value: `$${decayRate}/hr`, color: "text-[#B02020]/70" },
+                    { label: "Est. Hours", value: `${estimatedHours}h`, color: "text-[#0F1924]" },
+                    { label: "Pricing", value: pricingMode === "adaptive" ? "Adaptive" : "Fixed", color: pricingMode === "adaptive" ? "text-[#C8923D]" : "text-[#253444]" },
+                    { label: "Deadline", value: `${deadline}h`, color: "text-[#0F1924]" },
                   ].map(d => (
                     <div key={d.label} className="glass-panel-sm rounded-xl p-3">
-                      <p className="text-[#7B8694] text-[11px] uppercase tracking-wider">{d.label}</p>
+                      <p className="text-[#4A5568] text-[11px] uppercase tracking-wider">{d.label}</p>
                       <p className={`font-heading text-lg font-bold mt-0.5 ${d.color}`}>{d.value}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="h-px bg-[#F5F2EA]" />
+                <div className="h-px bg-[#BEB5A5]" />
 
                 {/* Visibility */}
                 <div>
-                  <p className="text-[#7B8694] text-xs uppercase tracking-wider font-medium mb-3">Visibility</p>
+                  <p className="text-[#4A5568] text-xs uppercase tracking-wider font-medium mb-3">Visibility</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setVisibility("public")}
                       className={`p-4 rounded-xl border text-center transition-all ${
                         visibility === "public"
                           ? "border-[#C8923D] bg-[#C8923D]/5"
-                          : "border-[#E4DDD0] bg-[#FCFAF4] hover:border-[#8A8A9A]/30"
+                          : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#8A8A9A]/30"
                       }`}
                     >
-                      <Globe className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "public" ? "text-[#C8923D]" : "text-[#7B8694]"}`} />
-                      <p className={`text-sm font-medium ${visibility === "public" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>Public</p>
-                      <p className="text-[#7B8694] text-xs mt-0.5">Anyone can see</p>
+                      <Globe className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "public" ? "text-[#C8923D]" : "text-[#4A5568]"}`} />
+                      <p className={`text-sm font-medium ${visibility === "public" ? "text-[#0F1924]" : "text-[#253444]"}`}>Public</p>
+                      <p className="text-[#4A5568] text-xs mt-0.5">Anyone can see</p>
                     </button>
                     <button
                       onClick={() => setVisibility("invite_only")}
                       className={`p-4 rounded-xl border text-center transition-all ${
                         visibility === "invite_only"
                           ? "border-[#C8923D] bg-[#C8923D]/5"
-                          : "border-[#E4DDD0] bg-[#FCFAF4] hover:border-[#8A8A9A]/30"
+                          : "border-[#BEB5A5] bg-[#EDE8DC] hover:border-[#8A8A9A]/30"
                       }`}
                     >
-                      <Lock className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "invite_only" ? "text-[#C8923D]" : "text-[#7B8694]"}`} />
-                      <p className={`text-sm font-medium ${visibility === "invite_only" ? "text-[#182739]" : "text-[#3D4E5C]"}`}>Invite Only</p>
-                      <p className="text-[#7B8694] text-xs mt-0.5">Selected freelancers</p>
+                      <Lock className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "invite_only" ? "text-[#C8923D]" : "text-[#4A5568]"}`} />
+                      <p className={`text-sm font-medium ${visibility === "invite_only" ? "text-[#0F1924]" : "text-[#253444]"}`}>Invite Only</p>
+                      <p className="text-[#4A5568] text-xs mt-0.5">Selected freelancers</p>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="h-px bg-[#F5F2EA]" />
+              <div className="h-px bg-[#BEB5A5]" />
 
               <div className="flex gap-3">
                 <button

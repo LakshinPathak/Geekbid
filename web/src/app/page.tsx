@@ -70,8 +70,8 @@ function PriceDecayDemo() {
     <div className="glass-panel scanline p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-xs text-[#3D4E5C] uppercase tracking-wider font-semibold">Live Price Decay</p>
-          <p className="text-sm text-[#3D4E5C] mt-1 font-heading">AI Chatbot Development</p>
+          <p className="text-xs text-[#253444] uppercase tracking-wider font-semibold">Live Price Decay</p>
+          <p className="text-sm text-[#253444] mt-1 font-heading">AI Chatbot Development</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#7A5218] border border-transparent">
           <div className="h-1.5 w-1.5 rounded-full bg-[#C8923D] unread-dot" />
@@ -80,7 +80,7 @@ function PriceDecayDemo() {
       </div>
 
       <div className="flex items-end gap-3 mb-4">
-        <span className="text-5xl sm:text-6xl font-black text-[#182739] tabular-nums tracking-tight font-heading">
+        <span className="text-5xl sm:text-6xl font-black text-[#0F1924] tabular-nums tracking-tight font-heading">
           ${price.toLocaleString()}
         </span>
         <div className="flex items-center gap-1 pb-2">
@@ -95,7 +95,7 @@ function PriceDecayDemo() {
           style={{ width: `${100 - pct}%` }}
         />
       </div>
-      <div className="flex justify-between text-[11px] text-[#3D4E5C]">
+      <div className="flex justify-between text-[11px] text-[#253444]">
         <span>Floor: ${MIN.toLocaleString()}</span>
         <span>Elapsed: {elapsed}h</span>
         <span>Start: $2,400</span>
@@ -108,9 +108,9 @@ function PriceDecayDemo() {
           { label: "Time Left", value: `${Math.max(64 - elapsed, 0)}h`, icon: Timer },
         ].map(s => (
           <div key={s.label} className="rounded-xl glass-panel-sm px-3 py-2.5 text-center bg-[#EDE8DC]">
-            <s.icon className="h-3.5 w-3.5 text-[#3D4E5C] mx-auto mb-1" />
-            <p className="text-sm font-bold text-[#182739]">{s.value}</p>
-            <p className="text-[11px] text-[#3D4E5C]">{s.label}</p>
+            <s.icon className="h-3.5 w-3.5 text-[#253444] mx-auto mb-1" />
+            <p className="text-sm font-bold text-[#0F1924]">{s.value}</p>
+            <p className="text-[11px] text-[#253444]">{s.label}</p>
           </div>
         ))}
       </div>
@@ -185,7 +185,7 @@ const STEPS = [
     title: "Escrow & Deliver",
     desc: "Payment locks in escrow automatically. Release funds when the work ships. Dispute resolution if needed.",
     icon: Lock,
-    accent: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    accent: "bg-[#D8D0C0] text-[#253444] border-purple-500/20",
   },
 ];
 
@@ -258,7 +258,7 @@ export default function LandingPage() {
   if (!mounted || currentUser) return null;
 
   return (
-    <div className="bg-[#EDE8DC] text-[#182739] overflow-x-hidden">
+    <div className="bg-[#EDE8DC] text-[#0F1924] overflow-x-hidden">
       {/* ═══ NAVBAR ═══ */}
       <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
         <div className="flex h-14 items-center justify-between px-6 rounded-2xl border border-[#BEB5A5] bg-[#EDE8DC]/90 backdrop-blur-2xl shadow-[0_4px_16px_rgba(24,39,57,0.08)]">
@@ -266,9 +266,9 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C8923D] text-white animate-pulse-glow">
               <Zap className="h-4 w-4" />
             </div>
-            <span className="text-base font-bold tracking-tight font-heading text-[#182739]">GeekBid</span>
+            <span className="text-base font-bold tracking-tight font-heading text-[#0F1924]">GeekBid</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-[#3D4E5C]">
+          <div className="hidden md:flex items-center gap-8 text-sm text-[#253444]">
             <a href="#how-it-works" className="hover:text-[#C8923D] transition-colors duration-200">How it Works</a>
             <a href="#features" className="hover:text-[#C8923D] transition-colors duration-200">Features</a>
             <a href="#compare" className="hover:text-[#C8923D] transition-colors duration-200">Compare</a>
@@ -276,7 +276,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <button className="hidden sm:block text-sm text-[#3D4E5C] hover:text-[#182739] transition-colors font-medium">Sign In</button>
+              <button className="hidden sm:block text-sm text-[#253444] hover:text-[#0F1924] transition-colors font-medium">Sign In</button>
             </Link>
             <Link href="/login?tab=register&role=client">
               <button className="flex items-center gap-2 btn-primary text-sm px-5 py-2.5 rounded-xl">
@@ -299,9 +299,9 @@ export default function LandingPage() {
           <div className="text-center lg:text-left animate-fade-in-up">
             {/* Badge */}
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#BEB5A5] bg-[rgba(122,82,24,0.04)] mb-8 text-sm text-[#253444] hover:bg-[rgba(122,82,24,0.07)] transition-colors cursor-default">
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#7A5218] text-white text-[11px] font-bold uppercase tracking-wider"><span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse inline-block mr-1"></span>LIVE</span>
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#7A5218] text-white text-[11px] font-bold uppercase tracking-wider"><span className="h-1.5 w-1.5 rounded-full bg-[#EDE8DC] animate-pulse inline-block mr-1"></span>LIVE</span>
               <span>Reverse Auction Platform for Engineers</span>
-              <ChevronRight className="h-3.5 w-3.5 text-[#3D4E5C]" />
+              <ChevronRight className="h-3.5 w-3.5 text-[#253444]" />
             </div>
 
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-[-0.04em] leading-[0.95] font-heading">
@@ -312,7 +312,7 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-[#3D4E5C] mt-8 max-w-lg leading-relaxed mx-auto lg:mx-0">
+            <p className="text-lg sm:text-xl text-[#253444] mt-8 max-w-lg leading-relaxed mx-auto lg:mx-0">
               The world&apos;s first reverse-auction marketplace for tech talent. Post a job, watch prices automatically decay, and hire when it hits your sweet spot.
             </p>
 
@@ -332,7 +332,7 @@ export default function LandingPage() {
             </div>
 
             {/* Trust signals */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-8 text-xs text-[#3D4E5C]">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-8 text-xs text-[#253444]">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-[#C8923D]/50" /> No credit card required</span>
               <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-blue-500/50" /> Escrow protected</span>
               <span className="flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-amber-500/50" /> Verified talent only</span>
@@ -347,7 +347,7 @@ export default function LandingPage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#3D4E5C] animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#253444] animate-bounce">
           <span className="text-[11px] uppercase tracking-widest">Scroll</span>
           <ChevronDown className="h-4 w-4" />
         </div>
@@ -370,12 +370,12 @@ export default function LandingPage() {
               {/* Chrome bar */}
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.06]">
                 <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-white/[0.08]" />
-                  <div className="h-3 w-3 rounded-full bg-white/[0.08]" />
-                  <div className="h-3 w-3 rounded-full bg-white/[0.08]" />
+                  <div className="h-3 w-3 rounded-full bg-[#EDE8DC]/[0.08]" />
+                  <div className="h-3 w-3 rounded-full bg-[#EDE8DC]/[0.08]" />
+                  <div className="h-3 w-3 rounded-full bg-[#EDE8DC]/[0.08]" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg px-4 py-1 text-xs text-white/30 font-mono">geekbid.com/feed</div>
+                  <div className="bg-[#EDE8DC]/[0.04] border border-white/[0.06] rounded-lg px-4 py-1 text-xs text-white/30 font-mono">geekbid.com/feed</div>
                 </div>
               </div>
 
@@ -389,7 +389,7 @@ export default function LandingPage() {
                     { label: "Avg Decay", value: "$23/hr", sub: "Price reduction", color: "text-[#A67628]" },
                     { label: "Active Bids", value: "34", sub: "7 new today", color: "text-amber-400" },
                   ].map(s => (
-                    <div key={s.label} className="rounded-xl bg-[#FCFAF4] border border-white/[0.06] p-4">
+                    <div key={s.label} className="rounded-xl bg-[#EDE8DC] border border-white/[0.06] p-4">
                       <p className="text-[11px] text-white/30 uppercase tracking-wider mb-1">{s.label}</p>
                       <p className={`text-xl sm:text-2xl font-black ${s.color}`}>{s.value}</p>
                       <p className="text-[11px] text-white/20 mt-0.5">{s.sub}</p>
@@ -406,7 +406,7 @@ export default function LandingPage() {
                     <span className="text-right">Price</span>
                   </div>
                   {JOB_ROWS.map((job, i) => (
-                    <div key={job.title} className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3.5 ${i < JOB_ROWS.length - 1 ? "border-b border-white/[0.04]" : ""} hover:bg-white/[0.02] transition-colors`}>
+                    <div key={job.title} className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3.5 ${i < JOB_ROWS.length - 1 ? "border-b border-white/[0.04]" : ""} hover:bg-[#EDE8DC]/[0.02] transition-colors`}>
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="h-8 w-8 rounded-lg bg-[#D8D0C0] flex items-center justify-center text-white/25 shrink-0">
                           <Code className="h-4 w-4" />
@@ -414,7 +414,7 @@ export default function LandingPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white/80 truncate">{job.title}</p>
                           <div className="flex gap-1.5 mt-0.5">
-                            {job.skills.map(s => <span key={s} className="text-[11px] text-white/20 bg-white/[0.04] px-1.5 py-0.5 rounded">{s}</span>)}
+                            {job.skills.map(s => <span key={s} className="text-[11px] text-white/20 bg-[#EDE8DC]/[0.04] px-1.5 py-0.5 rounded">{s}</span>)}
                           </div>
                         </div>
                       </div>
@@ -423,7 +423,7 @@ export default function LandingPage() {
                         <span className="text-xs text-white/35">{job.bids}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-[#3D4E5C] font-mono">{job.time}</p>
+                        <p className="text-xs text-[#253444] font-mono">{job.time}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-white">{job.price}</p>
@@ -442,11 +442,11 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 sm:py-32 border-t border-[#BEB5A5]">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="text-center mb-16 sm:mb-20">
-            <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-[0.25em] mb-4">How It Works</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#182739] leading-tight max-w-3xl mx-auto font-heading">
+            <p className="text-xs font-semibold text-[#253444] uppercase tracking-[0.25em] mb-4">How It Works</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#0F1924] leading-tight max-w-3xl mx-auto font-heading">
               From posting to payment in four simple steps
             </h2>
-            <p className="text-base text-[#3D4E5C] max-w-xl mx-auto mt-5">
+            <p className="text-base text-[#253444] max-w-xl mx-auto mt-5">
               Traditional hiring is slow, expensive, and opaque. GeekBid&apos;s algorithmic pricing finds the true market rate automatically.
             </p>
           </div>
@@ -459,8 +459,8 @@ export default function LandingPage() {
                   <div className={`h-10 w-10 rounded-xl border ${s.accent} flex items-center justify-center mb-5`}>
                     <s.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="text-base font-bold text-[#182739] mb-2 font-heading">{s.title}</h3>
-                  <p className="text-sm text-[#3D4E5C] leading-relaxed">{s.desc}</p>
+                  <h3 className="text-base font-bold text-[#0F1924] mb-2 font-heading">{s.title}</h3>
+                  <p className="text-sm text-[#253444] leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -468,20 +468,20 @@ export default function LandingPage() {
 
           {/* Price decay formula callout */}
           <div className="mt-12 glass-panel p-6 sm:p-8 text-center scanline">
-            <p className="text-xs text-[#3D4E5C] uppercase tracking-widest mb-4 font-semibold">The Price Decay Formula</p>
-            <p className="text-xl sm:text-2xl md:text-3xl font-mono-il text-[#3D4E5C] tracking-tight">
+            <p className="text-xs text-[#253444] uppercase tracking-widest mb-4 font-semibold">The Price Decay Formula</p>
+            <p className="text-xl sm:text-2xl md:text-3xl font-mono-il text-[#253444] tracking-tight">
               <span className="text-[#7A5218]">currentPrice</span>
               {" = max("}
-              <span className="text-[#182739]/50">startPrice</span>
+              <span className="text-[#0F1924]/50">startPrice</span>
               {" − "}
               <span className="text-[#A67628]">decayRate</span>
               {" × "}
               <span className="text-[#7A5218]">hours</span>
               {", "}
-              <span className="text-[#182739]/50">floor</span>
+              <span className="text-[#0F1924]/50">floor</span>
               {")"}
             </p>
-            <p className="text-sm text-[#3D4E5C] mt-3">Prices never go below your configured minimum. You control the speed.</p>
+            <p className="text-sm text-[#253444] mt-3">Prices never go below your configured minimum. You control the speed.</p>
           </div>
         </div>
       </section>
@@ -490,8 +490,8 @@ export default function LandingPage() {
       <section id="features" className="py-24 sm:py-32 border-t border-[#BEB5A5]">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-[0.25em] mb-4">Platform Features</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#182739] leading-tight max-w-3xl mx-auto font-heading">
+            <p className="text-xs font-semibold text-[#253444] uppercase tracking-[0.25em] mb-4">Platform Features</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#0F1924] leading-tight max-w-3xl mx-auto font-heading">
               Everything you need to hire and deliver, built in
             </h2>
           </div>
@@ -503,11 +503,11 @@ export default function LandingPage() {
                   <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${f.gradient} rounded-full blur-3xl`} />
                 </div>
                 <div className="relative z-10">
-                  <div className="h-14 w-14 rounded-2xl bg-[#D8D0C0] border border-[#E4DDD0] flex items-center justify-center mb-6 group-hover:border-[#C8923D]/30 transition-colors">
-                    <f.icon className="h-6 w-6 text-[#3D4E5C] group-hover:text-[#C8923D] transition-colors" />
+                  <div className="h-14 w-14 rounded-2xl bg-[#D8D0C0] border border-[#BEB5A5] flex items-center justify-center mb-6 group-hover:border-[#C8923D]/30 transition-colors">
+                    <f.icon className="h-6 w-6 text-[#253444] group-hover:text-[#C8923D] transition-colors" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#182739] mb-2 font-heading">{f.title}</h3>
-                  <p className="text-sm text-[#3D4E5C] leading-relaxed">{f.desc}</p>
+                  <h3 className="text-lg font-bold text-[#0F1924] mb-2 font-heading">{f.title}</h3>
+                  <p className="text-sm text-[#253444] leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -519,11 +519,11 @@ export default function LandingPage() {
       <section id="compare" className="py-24 sm:py-32 border-t border-[#BEB5A5]">
         <div className="mx-auto max-w-4xl px-5 sm:px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-[0.25em] mb-4">Why GeekBid</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#182739] leading-tight font-heading">
+            <p className="text-xs font-semibold text-[#253444] uppercase tracking-[0.25em] mb-4">Why GeekBid</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#0F1924] leading-tight font-heading">
               Traditional hiring is broken
             </h2>
-            <p className="text-base text-[#3D4E5C] max-w-lg mx-auto mt-5">
+            <p className="text-base text-[#253444] max-w-lg mx-auto mt-5">
               See how GeekBid&apos;s reverse auction model compares to the old way of sourcing engineering talent.
             </p>
           </div>
@@ -531,33 +531,33 @@ export default function LandingPage() {
           <div className="overflow-x-auto">
           <div className="glass-panel overflow-hidden min-w-[500px]">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[#E4DDD0]">
-              <div className="p-4 sm:p-5 text-sm font-semibold text-[#3D4E5C]" />
-              <div className="p-4 sm:p-5 text-center border-x border-[#E4DDD0] bg-[#C8923D]/[0.04]">
+            <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[#BEB5A5]">
+              <div className="p-4 sm:p-5 text-sm font-semibold text-[#253444]" />
+              <div className="p-4 sm:p-5 text-center border-x border-[#BEB5A5] bg-[#C8923D]/[0.04]">
                 <div className="flex items-center justify-center gap-2">
                   <Zap className="h-4 w-4 text-[#7A5218]" />
                   <span className="text-sm font-bold text-[#7A5218]">GeekBid</span>
                 </div>
               </div>
               <div className="p-4 sm:p-5 text-center">
-                <span className="text-sm font-semibold text-[#3D4E5C]">Traditional</span>
+                <span className="text-sm font-semibold text-[#253444]">Traditional</span>
               </div>
             </div>
 
             {/* Rows */}
             {COMPARISONS.map((c, i) => (
-              <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] ${i < COMPARISONS.length - 1 ? "border-b border-[#E4DDD0]" : ""}`}>
-                <div className="p-4 sm:p-5 text-sm font-medium text-[#3D4E5C]">{c.feature}</div>
-                <div className="p-4 sm:p-5 text-center border-x border-[#E4DDD0] bg-[#C8923D]/[0.02]">
+              <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] ${i < COMPARISONS.length - 1 ? "border-b border-[#BEB5A5]" : ""}`}>
+                <div className="p-4 sm:p-5 text-sm font-medium text-[#253444]">{c.feature}</div>
+                <div className="p-4 sm:p-5 text-center border-x border-[#BEB5A5] bg-[#C8923D]/[0.02]">
                   <div className="flex items-start justify-center gap-2">
                     <Check className="h-4 w-4 text-[#7A5218] shrink-0 mt-0.5" />
-                    <span className="text-sm text-[#3D4E5C]">{c.geekbid}</span>
+                    <span className="text-sm text-[#253444]">{c.geekbid}</span>
                   </div>
                 </div>
                 <div className="p-4 sm:p-5 text-center">
                   <div className="flex items-start justify-center gap-2">
-                    <X className="h-4 w-4 text-[#3D4E5C] shrink-0 mt-0.5" />
-                    <span className="text-sm text-[#3D4E5C]">{c.traditional}</span>
+                    <X className="h-4 w-4 text-[#253444] shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#253444]">{c.traditional}</span>
                   </div>
                 </div>
               </div>
@@ -576,7 +576,7 @@ export default function LandingPage() {
                 <p className="text-4xl sm:text-5xl font-black text-[#7A5218] tracking-tight tabular-nums font-heading">
                   {s.prefix}{i === 1 ? `${(statValues[i] / 10).toFixed(1)}` : statValues[i]}{s.suffix}
                 </p>
-                <p className="text-xs text-[#3D4E5C] mt-2 font-medium uppercase tracking-wider">{s.label}</p>
+                <p className="text-xs text-[#253444] mt-2 font-medium uppercase tracking-wider">{s.label}</p>
               </div>
             ))}
           </div>
@@ -587,8 +587,8 @@ export default function LandingPage() {
       <section id="testimonials" className="py-24 sm:py-32 border-t border-[#BEB5A5]">
         <div className="mx-auto max-w-4xl px-5">
           <div className="text-center mb-16">
-            <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-[0.25em] mb-4">Testimonials</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#182739] leading-tight font-heading">
+            <p className="text-xs font-semibold text-[#253444] uppercase tracking-[0.25em] mb-4">Testimonials</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#0F1924] leading-tight font-heading">
               Loved by engineers and clients alike
             </h2>
           </div>
@@ -604,14 +604,14 @@ export default function LandingPage() {
                   <div className="flex gap-1 justify-center mb-8">
                     {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-5 w-5 fill-[#7A5218] text-[#7A5218]" />)}
                   </div>
-                  <blockquote className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#3D4E5C] leading-relaxed tracking-tight max-w-2xl mx-auto">
+                  <blockquote className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#253444] leading-relaxed tracking-tight max-w-2xl mx-auto">
                     &ldquo;{t.quote}&rdquo;
                   </blockquote>
                   <div className="mt-8 flex items-center justify-center gap-4">
                     <div className="h-12 w-12 rounded-full bg-[#7A5218] border-0 flex items-center justify-center text-sm font-bold text-white">{t.avatar}</div>
                     <div className="text-left">
-                      <p className="text-sm font-semibold text-[#182739]">{t.name}</p>
-                      <p className="text-xs text-[#3D4E5C] mt-0.5">{t.title}</p>
+                      <p className="text-sm font-semibold text-[#0F1924]">{t.name}</p>
+                      <p className="text-xs text-[#253444] mt-0.5">{t.title}</p>
                     </div>
                   </div>
                 </div>
@@ -643,10 +643,10 @@ export default function LandingPage() {
                 <div className="h-12 w-12 rounded-2xl bg-[#7A5218] border border-transparent flex items-center justify-center mb-6">
                   <Target className="h-6 w-6 text-[#7A5218]" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#182739] mb-3 font-heading">For Clients</h3>
+                <h3 className="text-2xl font-bold text-[#0F1924] mb-3 font-heading">For Clients</h3>
                 <ul className="space-y-3 mb-8">
                   {["Post jobs with custom decay rates", "Escrow protects every payment", "Browse verified freelancer profiles", "Real-time chat with candidates"].map(item => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-[#3D4E5C]">
+                    <li key={item} className="flex items-center gap-3 text-sm text-[#253444]">
                       <CheckCircle2 className="h-4 w-4 text-[#7A5218]/80 shrink-0" />
                       {item}
                     </li>
@@ -667,10 +667,10 @@ export default function LandingPage() {
                 <div className="h-12 w-12 rounded-2xl bg-[rgba(200,146,61,0.10)] border border-[#C8923D]/20 flex items-center justify-center mb-6">
                   <Code className="h-6 w-6 text-[#A67628]" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#182739] mb-3 font-heading">For Freelancers</h3>
+                <h3 className="text-2xl font-bold text-[#0F1924] mb-3 font-heading">For Freelancers</h3>
                 <ul className="space-y-3 mb-8">
                   {["Watch job prices and bid at your target rate", "Build your GeekScore™ reputation", "Get matched to jobs by skills", "Guaranteed payment via escrow"].map(item => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-[#3D4E5C]">
+                    <li key={item} className="flex items-center gap-3 text-sm text-[#253444]">
                       <CheckCircle2 className="h-4 w-4 text-[#7A5218]/80 shrink-0" />
                       {item}
                     </li>
@@ -693,10 +693,10 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#C8923D]/[0.03] rounded-full blur-[120px]" />
         </div>
         <div className="mx-auto max-w-4xl px-5 text-center relative z-10">
-          <h2 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-[#182739] leading-[1.05] font-heading">
+          <h2 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-[#0F1924] leading-[1.05] font-heading">
             Ready to hire <span className="text-gradient">smarter?</span>
           </h2>
-          <p className="text-lg text-[#3D4E5C] mt-6 max-w-lg mx-auto">
+          <p className="text-lg text-[#253444] mt-6 max-w-lg mx-auto">
             Join thousands of companies using reverse auctions to find the best engineering talent at the right price.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
@@ -724,49 +724,49 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C8923D] text-white">
                   <Zap className="h-4 w-4" />
                 </div>
-                <span className="text-base font-bold font-heading text-[#182739]">GeekBid</span>
+                <span className="text-base font-bold font-heading text-[#0F1924]">GeekBid</span>
               </div>
-              <p className="text-sm text-[#3D4E5C] leading-relaxed">
+              <p className="text-sm text-[#253444] leading-relaxed">
                 The reverse-auction marketplace for engineering talent.
               </p>
             </div>
 
             {/* Links */}
             <div>
-              <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-wider mb-4">Platform</p>
+              <p className="text-xs font-semibold text-[#253444] uppercase tracking-wider mb-4">Platform</p>
               <ul className="space-y-2.5">
-                <li><Link href="/feed" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Browse Jobs</Link></li>
-                <li><Link href="/login?tab=register&role=client" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Post a Job</Link></li>
-                <li><Link href="/login?tab=register&role=freelancer" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Find Work</Link></li>
+                <li><Link href="/feed" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Browse Jobs</Link></li>
+                <li><Link href="/login?tab=register&role=client" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Post a Job</Link></li>
+                <li><Link href="/login?tab=register&role=freelancer" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Find Work</Link></li>
               </ul>
             </div>
             <div>
-              <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-wider mb-4">Resources</p>
+              <p className="text-xs font-semibold text-[#253444] uppercase tracking-wider mb-4">Resources</p>
               <ul className="space-y-2.5">
-                <li><a href="#how-it-works" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">How it Works</a></li>
-                <li><a href="#features" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Features</a></li>
-                <li><a href="#compare" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">GeekBid vs Traditional</a></li>
+                <li><a href="#how-it-works" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">How it Works</a></li>
+                <li><a href="#features" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Features</a></li>
+                <li><a href="#compare" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">GeekBid vs Traditional</a></li>
               </ul>
             </div>
             <div>
-              <p className="text-xs font-semibold text-[#3D4E5C] uppercase tracking-wider mb-4">Account</p>
+              <p className="text-xs font-semibold text-[#253444] uppercase tracking-wider mb-4">Account</p>
               <ul className="space-y-2.5">
-                <li><Link href="/login" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Sign In</Link></li>
-                <li><Link href="/login?tab=register" className="text-sm text-[#3D4E5C] hover:text-[#C8923D] transition-colors">Create Account</Link></li>
+                <li><Link href="/login" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Sign In</Link></li>
+                <li><Link href="/login?tab=register" className="text-sm text-[#253444] hover:text-[#C8923D] transition-colors">Create Account</Link></li>
               </ul>
             </div>
           </div>
 
           {/* Bottom bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[#BEB5A5]">
-            <p className="text-xs text-[#3D4E5C]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
-            <div className="flex items-center gap-1 text-xs text-[#3D4E5C]">
+            <p className="text-xs text-[#253444]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
+            <div className="flex items-center gap-1 text-xs text-[#253444]">
               <span>Built with</span>
-              <span className="text-[#3D4E5C]">Next.js</span>
+              <span className="text-[#253444]">Next.js</span>
               <span>&middot;</span>
-              <span className="text-[#3D4E5C]">MongoDB</span>
+              <span className="text-[#253444]">MongoDB</span>
               <span>&middot;</span>
-              <span className="text-[#3D4E5C]">Socket.IO</span>
+              <span className="text-[#253444]">Socket.IO</span>
             </div>
           </div>
         </div>
