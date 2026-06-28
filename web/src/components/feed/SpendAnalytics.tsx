@@ -63,7 +63,7 @@ export default function SpendAnalytics({
  <s.icon className={`h-4 w-4 ${s.color}`} />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
  <p className={`font-heading text-base font-normal ${s.color} leading-tight`}>{s.value}</p>
  </div>
  </div>

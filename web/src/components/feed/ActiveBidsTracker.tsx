@@ -26,7 +26,7 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  <h2 className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider">
  My Active Bids
  </h2>
- <span className="text-[11px] text-[#6b5f45] font-medium">{bids.length} pending</span>
+ <span className="text-[11px] text-[#a8997e] font-medium">{bids.length} pending</span>
  </div>
 
  <div className="glass-panel rounded-[3px] overflow-hidden divide-y divide-[rgba(201,168,76,0.15)]">
@@ -71,11 +71,11 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  </p>
  <div className="flex items-center gap-2 mt-0.5">
  <span className={`text-[10px] font-semibold ${statusConfig.color}`}>{statusConfig.label}</span>
- <span className="text-[10px] text-[#6b5f45]">·</span>
+ <span className="text-[10px] text-[#a8997e]">·</span>
  <span className="text-[10px] text-[#a8997e] font-medium">Rank #{bid.rank}</span>
  {cooldownMins > 0 && (
  <>
- <span className="text-[10px] text-[#6b5f45]">·</span>
+ <span className="text-[10px] text-[#a8997e]">·</span>
  <span className="flex items-center gap-0.5 text-[10px] text-[#c9a84c] font-semibold">
  <Clock className="h-2.5 w-2.5" />
  {Math.ceil(cooldownMins)}m cooldown
@@ -89,7 +89,7 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  <div className="text-right shrink-0">
  <p className="font-heading text-sm font-normal text-[#f0e8d4]">{formatMoney(bid.myPrice)}</p>
  {bid.currentPrice !== bid.myPrice && (
- <p className="text-[10px] text-[#6b5f45] font-medium">mkt {formatMoney(bid.currentPrice)}</p>
+ <p className="text-[10px] text-[#a8997e] font-medium">mkt {formatMoney(bid.currentPrice)}</p>
  )}
  </div>
  </Link>

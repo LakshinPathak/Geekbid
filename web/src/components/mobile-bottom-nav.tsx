@@ -46,7 +46,7 @@ export default function MobileBottomNav() {
  key={item.href}
  href={item.href}
  className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-2 rounded-[3px] transition-colors ${
- isActive ? "text-[#c9a84c]" : "text-[#6b5f45] hover:text-[#f0e8d4]"
+ isActive ? "text-[#c9a84c]" : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}
  >
  <item.icon className="h-5 w-5" />

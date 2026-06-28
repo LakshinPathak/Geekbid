@@ -12,11 +12,11 @@ import {
 function PasswordStrength({ password }: { password: string }) {
  const len = password.length;
  const level = len === 0 ? 0 : len < 6 ? 1 : len < 10 ? 2 : 3;
- const colors = ["bg-white/10", "bg-red-500", "bg-yellow-500", "bg-[#d4b55a]"];
+ const colors = ["bg-[rgba(201,168,76,0.08)]", "bg-red-500", "bg-yellow-500", "bg-[#d4b55a]"];
  return (
  <div className="flex gap-1 mt-1.5">
  {[1, 2, 3].map(i => (
- <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= level ? colors[level] : "bg-white/10"}`} />
+ <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= level ? colors[level] : "bg-[rgba(201,168,76,0.08)]"}`} />
  ))}
  </div>
  );
@@ -112,7 +112,7 @@ function LoginPageContent() {
  {/* Logo */}
  <div className="relative z-10">
  <Link href="/" className="flex items-center gap-2.5">
- <div className="flex h-9 w-9 items-center justify-center rounded-[3px] text-white"
+ <div className="flex h-9 w-9 items-center justify-center rounded-[3px] text-[#f0e8d4]"
  style={{ background: "#c9a84c" }}>
  <Zap className="h-4 w-4" />
  </div>
@@ -201,7 +201,7 @@ function LoginPageContent() {
  {/* Mobile logo */}
  <div className="lg:hidden flex items-center gap-2.5 mb-8">
  <Link href="/" className="flex items-center gap-2.5">
- <div className="flex h-9 w-9 items-center justify-center rounded-[3px] text-white"
+ <div className="flex h-9 w-9 items-center justify-center rounded-[3px] text-[#f0e8d4]"
  style={{ background: "#c9a84c" }}>
  <Zap className="h-4 w-4" />
  </div>

@@ -88,7 +88,7 @@ export default function TeamPage() {
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
  <div className="glass-panel p-8 text-center animate-fade-in-up">
- <Users className="h-12 w-12 text-[#6b5f45] mx-auto mb-4" />
+ <Users className="h-12 w-12 text-[#a8997e] mx-auto mb-4" />
  <h1 className="font-heading text-2xl font-bold text-[#f0e8d4] mb-2">Create a Team</h1>
  <p className="text-[#a8997e] text-sm mb-6">Group your organization under a shared billing and job management umbrella.</p>
  <input
@@ -126,9 +126,9 @@ export default function TeamPage() {
  { icon: DollarSign, label: "Total Spend", value: formatMoney(team.analytics.totalSpend) },
  ].map((s, i) => (
  <div key={s.label} className="finance-card p-4 text-center animate-fade-in-up" style={{ animationDelay: `${i * 0.05}s` }}>
- <s.icon className="h-5 w-5 text-[#6b5f45] mx-auto mb-2" />
+ <s.icon className="h-5 w-5 text-[#a8997e] mx-auto mb-2" />
  <p className="font-heading text-xl font-bold text-[#f0e8d4] terminal-amount">{s.value}</p>
- <p className="text-[11px] text-[#6b5f45]">{s.label}</p>
+ <p className="text-[11px] text-[#a8997e]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -146,7 +146,7 @@ export default function TeamPage() {
  </div>
  <div className="flex-1">
  <p className="text-[#f0e8d4] text-sm font-medium">{m.fullName}</p>
- <p className="text-[#6b5f45] text-xs">{m.email}</p>
+ <p className="text-[#a8997e] text-xs">{m.email}</p>
  </div>
  <span className={`text-xs px-2 py-0.5 rounded-full ${m.id === team.ownerId ? "badge-active" : "text-[#a8997e]"}`}>
  {m.id === team.ownerId ? "Owner" : "Member"}

@@ -168,7 +168,7 @@ export default function ClientFeed() {
 
  <div className="flex items-center gap-3">
  <Link href="/post-job">
- <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#c9a84c] text-white border border-transparent hover:bg-[rgba(201,168,76,0.12)] transition-colors text-sm font-semibold">
+ <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#c9a84c] text-[#050810] border border-transparent hover:bg-[rgba(201,168,76,0.12)] transition-colors text-sm font-semibold">
  <Plus className="h-4 w-4" />
  Post Job
  </button>

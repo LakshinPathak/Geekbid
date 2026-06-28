@@ -78,7 +78,7 @@ export default function PricingPage() {
  style={{ animationDelay: `${idx * 0.1}s` }}
  >
  {plan.highlight && (
- <span className="bg-[#c9a84c] text-white text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
+ <span className="bg-[#c9a84c] text-[#050810] text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
  MOST POPULAR
  </span>
  )}
@@ -88,7 +88,7 @@ export default function PricingPage() {
  </div>
  <div className="mb-6">
  <span className="font-heading text-4xl font-bold text-[#f0e8d4]">{plan.price}</span>
- <span className="text-[#6b5f45] text-sm ml-1">{plan.period}</span>
+ <span className="text-[#a8997e] text-sm ml-1">{plan.period}</span>
  </div>
  <ul className="space-y-3 mb-8 flex-1">
  {plan.features.map(f => (
@@ -101,7 +101,7 @@ export default function PricingPage() {
  disabled={currentPlan === plan.value}
  className={`w-full py-3 rounded-[6px] font-semibold text-sm transition-all ${
  currentPlan === plan.value
- ? "bg-[#111625] text-[#6b5f45] cursor-not-allowed"
+ ? "bg-[#111625] text-[#a8997e] cursor-not-allowed"
  : plan.highlight
  ? "btn-primary"
  : "btn-ghost"

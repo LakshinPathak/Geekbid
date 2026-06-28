@@ -134,7 +134,7 @@ function FreelancerCard({
  <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]">{s}</span>
  ))}
  {extraCount > 0 && (
- <span className="px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#6b5f45] border border-[rgba(201,168,76,0.15)]">+{extraCount} more</span>
+ <span className="px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]">+{extraCount} more</span>
  )}
  </div>
  </div>
@@ -143,14 +143,14 @@ function FreelancerCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[10px] text-[#6b5f45] font-medium uppercase tracking-wider">GeekScore</span>
+ <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider">GeekScore</span>
  <p className={`font-heading text-2xl font-normal ${tierStyle.color}`}>
  {freelancer.geekScore ?? 0}
  </p>
  </div>
  {avgBid && (
  <div className="text-right">
- <span className="text-[10px] text-[#6b5f45] font-medium uppercase tracking-wider">Avg Bid</span>
+ <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider">Avg Bid</span>
  <p className="font-heading text-lg font-normal text-[#f0e8d4]">{formatMoney(avgBid)}</p>
  </div>
  )}
@@ -158,13 +158,13 @@ function FreelancerCard({
 
  {/* Score bar */}
  <div className="space-y-1">
- <div className="h-1.5 w-full bg-[#111625] rounded-full overflow-hidden border border-[rgba(201,168,76,0.15)]">
+ <div className="h-0.5 w-full bg-[#1a1f30]">
  <div
  className="h-full rounded-full transition-all duration-500"
  style={{ width: `${scorePct}%`, background: `linear-gradient(to right, ${tierStyle.rawColor}88, ${tierStyle.rawColor})` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6b5f45] font-medium">
+ <div className="flex justify-between text-[10px] text-[#a8997e] font-medium">
  <span>0</span>
  <span className="font-semibold" style={{ color: tierStyle.rawColor }}>{tier.label}</span>
  <span>1000</span>
@@ -180,14 +180,14 @@ function FreelancerCard({
  ${freelancer.hourlyRateMin}–${freelancer.hourlyRateMax}/hr
  </span>
  {myBids.length > 0 && (
- <span className="text-[#6b5f45]">· {myBids.length} bid{myBids.length !== 1 ? "s" : ""} placed</span>
+ <span className="text-[#a8997e]">· {myBids.length} bid{myBids.length !== 1 ? "s" : ""} placed</span>
  )}
  </div>
  )}
 
  {/* ── Footer ───────────────────────────────────────────────── */}
  <div className="mt-auto pt-3 border-t border-[rgba(201,168,76,0.15)]">
- <div className="flex items-center gap-3 text-[11px] text-[#6b5f45] font-medium">
+ <div className="flex items-center gap-3 text-[11px] text-[#a8997e] font-medium">
  {(freelancer.averageRating ?? 0) > 0 && (
  <span className="flex items-center gap-1 text-[#a8997e]">
  <Star className="h-3 w-3 text-[#c9a84c] fill-[#c9a84c]/20" />
@@ -195,11 +195,11 @@ function FreelancerCard({
  </span>
  )}
  <span className="flex items-center gap-1">
- <Award className="h-3 w-3 text-[#6b5f45]" />
+ <Award className="h-3 w-3 text-[#a8997e]" />
  {freelancer.totalReviews ?? 0} review{(freelancer.totalReviews ?? 0) !== 1 ? "s" : ""}
  </span>
  <span className="flex items-center gap-1">
- <Briefcase className="h-3 w-3 text-[#6b5f45]" />
+ <Briefcase className="h-3 w-3 text-[#a8997e]" />
  {myBids.length} bid{myBids.length !== 1 ? "s" : ""}
  </span>
  </div>
@@ -268,18 +268,18 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
  <Users className="h-4 w-4 text-[#c9a84c]" />
  Talent Pool
  </h2>
- <p className="text-[11px] text-[#6b5f45] mt-0.5">
+ <p className="text-[11px] text-[#a8997e] mt-0.5">
  {displayFreelancers.length} freelancer{displayFreelancers.length !== 1 ? "s" : ""} available
  {activeSkill !== "all" ? ` · ${activeSkill}` : " · all skills"}
  </p>
  </div>
  <div className="flex items-center gap-2">
  <div className="px-3 py-1.5 rounded-[3px] bg-[#111625] border border-[rgba(201,168,76,0.15)] text-right">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider">Freelancers</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Freelancers</p>
  <p className="font-heading text-sm font-normal text-[#f0e8d4]">{freelancers.length}</p>
  </div>
  <div className="px-3 py-1.5 rounded-[3px] bg-[#c9a84c]/12 border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider">Avg GeekScore</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Avg GeekScore</p>
  <p className="font-heading text-sm font-normal text-[#c9a84c]">{avgGeekScore}</p>
  </div>
  </div>
@@ -331,7 +331,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
  ))}
  </div>
  ) : (
- <div className="text-center py-10 text-[#6b5f45] text-sm">
+ <div className="text-center py-10 text-[#a8997e] text-sm">
  No freelancers found for <strong className="text-[#a8997e]">{activeSkill}</strong>.
  </div>
  )}

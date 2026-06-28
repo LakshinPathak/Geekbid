@@ -91,7 +91,7 @@ export default function FreelancerJobCard({
  </span>
  )}
  </div>
- <ChevronRight className="h-4 w-4 text-[#6b5f45] group-hover:text-[#c9a84c] transition-colors shrink-0 mt-0.5" />
+ <ChevronRight className="h-4 w-4 text-[#a8997e] group-hover:text-[#c9a84c] transition-colors shrink-0 mt-0.5" />
  </div>
 
  <h3 className="font-heading text-[15px] font-normal text-[#f0e8d4] leading-snug group-hover:text-[#c9a84c] transition-colors line-clamp-2">
@@ -106,7 +106,7 @@ export default function FreelancerJobCard({
  </span>
  ))}
  {missingSkills.slice(0, 2).map(s => (
- <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#6b5f45] border border-[rgba(201,168,76,0.15)]">
+ <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]">
  ✗ {s}
  </span>
  ))}
@@ -117,12 +117,12 @@ export default function FreelancerJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#6b5f45] font-medium uppercase tracking-wider">Current Price</span>
+ <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider">Current Price</span>
  <p className="font-heading text-2xl font-normal text-[#f0e8d4]">{formatMoney(current)}</p>
  </div>
  {hourlyRate && (
  <div className="text-right">
- <span className="text-[11px] text-[#6b5f45] font-medium uppercase tracking-wider">Effective/hr</span>
+ <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider">Effective/hr</span>
  <p className="font-heading text-lg font-normal text-[#a8997e]">${hourlyRate}/hr</p>
  </div>
  )}
@@ -132,18 +132,18 @@ export default function FreelancerJobCard({
  <div className="flex items-center gap-1.5 text-xs mb-2">
  <span className={trajectory.color}>{trajectory.icon}</span>
  <span className="text-[#a8997e] font-medium">{trajectory.label}</span>
- <span className="text-[#6b5f45]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
+ <span className="text-[#a8997e]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
  </div>
 
  {/* Decay bar */}
  <div className="space-y-1">
- <div className="h-1.5 w-full bg-[#111625] rounded-full overflow-hidden border border-[rgba(201,168,76,0.15)]">
+ <div className="h-0.5 w-full bg-[#1a1f30]">
  <div
- className="h-full rounded-full from-[#c0392b] via-[#c9a84c] to-[#c9a84c] transition-all duration-500"
+ className="h-full bg-[#c9a84c] transition-all duration-500"
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6b5f45] font-medium">
+ <div className="flex justify-between text-[10px] text-[#a8997e] font-medium">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  {hoursLeft > 0 && <span className="text-[#c9a84c] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} to floor</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
@@ -154,8 +154,8 @@ export default function FreelancerJobCard({
  {/* ── Client info ─────────────────────────────────────────────────── */}
  {clientName && (
  <div className="flex items-center gap-2">
- <User className="h-3 w-3 text-[#6b5f45] shrink-0" />
- <span className="text-[10px] text-[#6b5f45] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
+ <User className="h-3 w-3 text-[#a8997e] shrink-0" />
+ <span className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
  <div className="w-5 h-5 rounded-full bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)] flex items-center justify-center text-[9px] font-bold shrink-0">
  {clientName[0]}
  </div>
@@ -172,15 +172,15 @@ export default function FreelancerJobCard({
  <div className="flex items-center gap-3 text-[11px] text-[#a8997e] font-medium">
  {job.estimatedHours && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#6b5f45]" />{job.estimatedHours}h
+ <Clock className="h-3 w-3 text-[#a8997e]" />{job.estimatedHours}h
  </span>
  )}
  <span className="flex items-center gap-1">
- <Users className="h-3 w-3 text-[#6b5f45]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
+ <Users className="h-3 w-3 text-[#a8997e]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
  {hoursLeft > 0 && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#6b5f45]" />{formatHoursToFloor(hoursLeft)} left
+ <Clock className="h-3 w-3 text-[#a8997e]" />{formatHoursToFloor(hoursLeft)} left
  </span>
  )}
  </div>

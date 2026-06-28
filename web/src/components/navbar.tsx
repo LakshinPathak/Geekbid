@@ -8,7 +8,7 @@ import {
  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
- Zap, LayoutGrid, MessageSquare, Bell, User, ChevronDown,
+ LayoutGrid, MessageSquare, Bell, User, ChevronDown,
  LogOut, Settings, Briefcase, PlusCircle, DollarSign, Shield,
  CreditCard, X, Menu,
 } from "lucide-react";
@@ -55,36 +55,35 @@ export default function Navbar() {
  >
  <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6">
  {/* Logo */}
- <Link href="/feed" className="flex items-center gap-2.5 group">
- <div
- className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#080b14]"
- >
- <Zap className="h-4 w-4" />
+ <Link href="/feed" className="flex items-center gap-2.5">
+ <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">
+ G
  </div>
- <span className="text-base font-extrabold text-[#f0e8d4] hidden sm:block font-heading">
- Geek<span className="text-[#a8997e]">Bid</span>
+ <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4] hidden sm:block">
+ GeekBid
  </span>
  </Link>
 
  {/* Center nav — desktop */}
- <nav className="hidden md:flex items-center gap-1">
+ <nav className="hidden md:flex items-center gap-6">
  {NAV_ITEMS.map((item) => {
  const isActive = pathname === item.href;
  return (
  <Link key={item.href} href={item.href}>
- <button
- className={`relative flex items-center gap-1.5 text-sm font-medium h-9 px-3 rounded-[3px] transition-all duration-300 ${
- isActive ? "nav-link-active" : "text-[#6b5f45] hover:text-[#f0e8d4] hover:bg-[#111625]"
+ <span
+ className={`relative text-[11px] tracking-[0.09em] uppercase font-sans transition-colors duration-200 pb-0.5 ${
+ isActive
+ ? "text-[#c9a84c] border-b border-[#c9a84c]"
+ : "text-[#a8997e] hover:text-[#a8997e]"
  }`}
  >
- <item.icon className="h-4 w-4" />
- <span>{item.label}</span>
+ {item.label}
  {item.hasBadge && unreadCount > 0 && (
- <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[11px] font-bold text-[#080b14] px-1 animate-pulse">
+ <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-[#080b14] px-1">
  {unreadCount > 9 ? "9+" : unreadCount}
  </span>
  )}
- </button>
+ </span>
  </Link>
  );
  })}
@@ -108,9 +107,9 @@ export default function Navbar() {
  </div>
  <div className="hidden md:flex flex-col items-start">
  <span className="text-sm font-semibold text-[#f0e8d4] leading-tight">{currentUser.fullName}</span>
- <span className="text-[11px] text-[#6b5f45] capitalize">{currentUser.role}</span>
+ <span className="text-[11px] text-[#a8997e] capitalize">{currentUser.role}</span>
  </div>
- <ChevronDown className="h-3.5 w-3.5 text-[#6b5f45]" />
+ <ChevronDown className="h-3.5 w-3.5 text-[#a8997e]" />
  </button>
  </DropdownMenuTrigger>
  <DropdownMenuContent
@@ -120,25 +119,25 @@ export default function Navbar() {
  >
  <div className="px-3 py-2.5">
  <p className="text-sm font-semibold text-[#f0e8d4]">{currentUser.fullName}</p>
- <p className="text-xs text-[#6b5f45] mt-0.5">{currentUser.email}</p>
+ <p className="text-xs text-[#a8997e] mt-0.5">{currentUser.email}</p>
  </div>
  <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
  <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <User className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> Profile
+ <User className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Profile
  </DropdownMenuItem>
  {currentUser.role === "client" && (
  <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <PlusCircle className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> Post a Job
+ <PlusCircle className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Post a Job
  </DropdownMenuItem>
  )}
  <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <Briefcase className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> My Jobs
+ <Briefcase className="h-4 w-4 mr-2.5 text-[#a8997e]" /> My Jobs
  </DropdownMenuItem>
  <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <DollarSign className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> Earnings
+ <DollarSign className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Earnings
  </DropdownMenuItem>
  <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <CreditCard className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> Payments
+ <CreditCard className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Payments
  </DropdownMenuItem>
  {currentUser.role === "admin" && (
  <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
@@ -146,7 +145,7 @@ export default function Navbar() {
  </DropdownMenuItem>
  )}
  <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <Settings className="h-4 w-4 mr-2.5 text-[#6b5f45]" /> Settings
+ <Settings className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Settings
  </DropdownMenuItem>
  <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
  <DropdownMenuItem onClick={handleLogout} className="rounded-[3px] cursor-pointer py-2.5 text-[#e57373] focus:text-[#e57373] focus:bg-[rgba(192,57,43,0.2)]">
@@ -181,13 +180,13 @@ export default function Navbar() {
  {/* Drawer header */}
  <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,168,76,0.22)]">
  <div className="flex items-center gap-2.5">
- <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#080b14]">
- <Zap className="h-3.5 w-3.5" />
+ <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">
+ G
  </div>
- <span className="text-base font-extrabold text-[#f0e8d4] font-heading">GeekBid</span>
+ <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">GeekBid</span>
  </div>
  <button
- className="h-8 w-8 flex items-center justify-center rounded-[3px] text-[#6b5f45] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors"
+ className="h-8 w-8 flex items-center justify-center rounded-[3px] text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors"
  onClick={() => setMobileOpen(false)}
  >
  <X className="h-4 w-4" />
@@ -205,7 +204,7 @@ export default function Navbar() {
  </div>
  <div>
  <p className="text-sm font-semibold text-[#f0e8d4]">{currentUser.fullName}</p>
- <p className="text-xs text-[#6b5f45] capitalize">{currentUser.role} · {currentUser.email}</p>
+ <p className="text-xs text-[#a8997e] capitalize">{currentUser.role} · {currentUser.email}</p>
  </div>
  </div>
  </div>

@@ -107,7 +107,7 @@ export default function MyJobsPage() {
  {myJobs.length === 0 ? (
  <div className="text-center py-20">
  <div className="mx-auto h-16 w-16 rounded-[6px] glass-panel-sm flex items-center justify-center mb-4">
- <Briefcase className="h-7 w-7 text-[#6b5f45]" />
+ <Briefcase className="h-7 w-7 text-[#a8997e]" />
  </div>
  <h3 className="text-lg font-bold text-[#f0e8d4] mb-1">No jobs found</h3>
  <p className="text-sm text-[#a8997e] mb-4">
@@ -142,7 +142,7 @@ export default function MyJobsPage() {
  </h3>
  </Link>
  </div>
- <div className="flex flex-wrap items-center gap-4 text-[#6b5f45] text-xs mt-1">
+ <div className="flex flex-wrap items-center gap-4 text-[#a8997e] text-xs mt-1">
  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {timeAgo(job.postedAt)}</span>
  <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {bidCount} bids</span>
  <span className="flex items-center gap-1"><TrendingDown className="h-3 w-3" /> ${job.decayRatePerHour}/hr</span>
@@ -155,7 +155,7 @@ export default function MyJobsPage() {
  {/* Center: Price */}
  <div className="text-right sm:text-center shrink-0">
  <p className="font-heading text-xl font-bold text-[#c9a84c]">{formatMoney(price)}</p>
- <p className="text-[#6b5f45] text-[11px]">{isOpen ? "Current price" : "Final price"}</p>
+ <p className="text-[#a8997e] text-[11px]">{isOpen ? "Current price" : "Final price"}</p>
  </div>
 
  {/* Right: Status + Action */}
@@ -224,7 +224,7 @@ export default function MyJobsPage() {
  <div className="glass-panel animate-scale-in p-6 w-full max-w-md" style={{ borderRadius: '6px' }}>
  <div className="flex items-center justify-between mb-4">
  <h3 className="font-heading text-lg font-semibold text-[#f0e8d4]">Review {reviewModal.revieweeName}</h3>
- <button onClick={() => setReviewModal(null)} className="text-[#6b5f45] hover:text-[#f0e8d4]"><X className="h-5 w-5" /></button>
+ <button onClick={() => setReviewModal(null)} className="text-[#a8997e] hover:text-[#f0e8d4]"><X className="h-5 w-5" /></button>
  </div>
 
  <div className="mb-4">
@@ -232,7 +232,7 @@ export default function MyJobsPage() {
  <div className="flex gap-1">
  {[1, 2, 3, 4, 5].map(star => (
  <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110">
- <Star className={`h-8 w-8 ${star <= reviewRating ? "text-[#c9a84c] fill-[#c9a84c]" : "text-[#6b5f45]"}`} />
+ <Star className={`h-8 w-8 ${star <= reviewRating ? "text-[#c9a84c] fill-[#c9a84c]" : "text-[#a8997e]"}`} />
  </button>
  ))}
  </div>
@@ -248,7 +248,7 @@ export default function MyJobsPage() {
  placeholder="Share your experience..."
  className="glass-input w-full p-3 rounded-[3px] text-sm resize-none"
  />
- <p className="text-[#6b5f45] text-xs mt-1">{reviewComment.length}/1000</p>
+ <p className="text-[#a8997e] text-xs mt-1">{reviewComment.length}/1000</p>
  </div>
 
  <div className="flex gap-3">

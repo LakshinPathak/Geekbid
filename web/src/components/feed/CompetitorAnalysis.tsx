@@ -112,18 +112,18 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <BarChart2 className="h-4 w-4 text-[#c9a84c]" />
  Market Pricing Intelligence
  </h2>
- <p className="text-[11px] text-[#6b5f45] mt-0.5">
+ <p className="text-[11px] text-[#a8997e] mt-0.5">
  Bid smarter — {mktJobs.length} live jobs across {categoryStats.length} categories
  </p>
  </div>
  {/* Summary pills */}
  <div className="flex items-center gap-2">
  <div className="px-3 py-1.5 rounded-[3px] bg-[#111625] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider">Market Avg</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Market Avg</p>
  <p className="font-heading text-sm font-normal text-[#f0e8d4]">{formatMoney(overallAvg)}</p>
  </div>
  <div className="px-3 py-1.5 rounded-[3px] bg-[rgba(192,57,43,0.1)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider">Avg Decay</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Avg Decay</p>
  <p className="font-heading text-sm font-normal text-[#e57373]">-{formatMoney(overallDecay)}/hr</p>
  </div>
  </div>
@@ -133,7 +133,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── LEFT: Category breakdown ────────────────── */}
  <div className="space-y-2">
- <p className="text-[11px] text-[#6b5f45] font-semibold uppercase tracking-wider px-1">
+ <p className="text-[11px] text-[#a8997e] font-semibold uppercase tracking-wider px-1">
  By Category
  </p>
 
@@ -168,13 +168,13 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  )}
  </div>
  {/* Price bar */}
- <div className="h-1.5 w-full bg-[#1a1f30] rounded-full overflow-hidden">
+ <div className="h-0.5 w-full bg-[#1a1f30]">
  <div
  className="h-full rounded-full bg-[#c9a84c] transition-all duration-500"
  style={{ width: `${barPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6b5f45] mt-1">
+ <div className="flex justify-between text-[10px] text-[#a8997e] mt-1">
  <span>Min {formatMoney(cat.minPrice)}</span>
  <span>Max {formatMoney(cat.maxPrice)}</span>
  </div>
@@ -189,7 +189,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  </p>
  </div>
 
- <ChevronDown className={`h-4 w-4 text-[#6b5f45] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#a8997e] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
  </button>
 
  {/* Expanded: job-level breakdown */}
@@ -198,7 +198,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  {/* Column headers */}
  <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(201,168,76,0.15)] mb-2">
  {["Job", "Price", "Decay/hr", "Bids"].map(h => (
- <span key={h} className="text-[10px] text-[#6b5f45] font-semibold uppercase last:text-right">
+ <span key={h} className="text-[10px] text-[#a8997e] font-semibold uppercase last:text-right">
  {h}
  </span>
  ))}
@@ -215,7 +215,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <span className="text-[11px] text-[#e57373]">
  -{formatMoney(j.decayRatePerHour)}
  </span>
- <span className="text-[11px] text-[#6b5f45] text-right">
+ <span className="text-[11px] text-[#a8997e] text-right">
  {j.bidCount ?? 0}
  </span>
  </div>
@@ -229,7 +229,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── RIGHT: Skill demand ─────────────────────── */}
  <div className="space-y-3">
- <p className="text-[11px] text-[#6b5f45] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
+ <p className="text-[11px] text-[#a8997e] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
  <Flame className="h-3.5 w-3.5 text-[#c9a84c]" />
  Hot Skills by Demand
  </p>
@@ -243,7 +243,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] px-3 py-2.5"
  >
  <div className="flex items-center gap-2 mb-1.5">
- <span className="text-[10px] font-bold text-[#6b5f45] w-5 shrink-0">
+ <span className="text-[10px] font-bold text-[#a8997e] w-5 shrink-0">
  #{i + 1}
  </span>
  <span className={`flex-1 text-xs font-semibold truncate ${
@@ -251,7 +251,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  }`}>
  {skill.skill}{skill.isMine ? " ✓" : ""}
  </span>
- <span className="text-[10px] text-[#6b5f45] shrink-0">
+ <span className="text-[10px] text-[#a8997e] shrink-0">
  {skill.count} job{skill.count !== 1 ? "s" : ""}
  </span>
  <span className="text-[10px] font-bold text-[#c9a84c] shrink-0">

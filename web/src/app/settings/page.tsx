@@ -129,13 +129,13 @@ export default function SettingsPage() {
  <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
  <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
  <Key className="h-4 w-4 text-[#c9a84c]" /> Active Keys
- <span className="text-xs font-normal text-[#6b5f45] bg-[#111625] px-2 py-0.5 rounded-full">{keys.length}</span>
+ <span className="text-xs font-normal text-[#a8997e] bg-[#111625] px-2 py-0.5 rounded-full">{keys.length}</span>
  </h2>
 
  {keys.length === 0 ? (
  <div className="py-6 text-center">
- <Key className="h-8 w-8 text-[#6b5f45] mx-auto mb-2" />
- <p className="text-[#6b5f45] text-sm">No API keys yet. Generate one above.</p>
+ <Key className="h-8 w-8 text-[#a8997e] mx-auto mb-2" />
+ <p className="text-[#a8997e] text-sm">No API keys yet. Generate one above.</p>
  </div>
  ) : (
  <div className="space-y-2">
@@ -143,8 +143,8 @@ export default function SettingsPage() {
  <div key={k.id} className="tx-row flex items-center justify-between rounded-[6px] p-4 transition-colors">
  <div>
  <p className="text-[#f0e8d4] text-sm font-medium">{k.name}</p>
- <p className="text-[#6b5f45] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
- <div className="flex items-center gap-3 mt-1 text-[#6b5f45] text-xs">
+ <p className="text-[#a8997e] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
+ <div className="flex items-center gap-3 mt-1 text-[#a8997e] text-xs">
  <span className="flex items-center gap-1">
  <Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}
  </span>
@@ -172,14 +172,14 @@ export default function SettingsPage() {
  <div className="glass-panel-sm rounded-[6px] p-4">
  <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">GET /api/v1/jobs</p>
  <p className="text-[#a8997e] text-sm">List jobs. Query params: status, category, page, limit</p>
- <code className="block mt-2 text-[#6b5f45] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
  curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&amp;limit=10
  </code>
  </div>
  <div className="glass-panel-sm rounded-[6px] p-4">
  <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">POST /api/v1/jobs</p>
  <p className="text-[#a8997e] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
- <code className="block mt-2 text-[#6b5f45] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
  curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
  </code>
  </div>

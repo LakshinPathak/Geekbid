@@ -44,9 +44,9 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
  ? Math.round(current / job.estimatedHours) : null;
 
  const matchColor = matchScore >= 75
- ? "bg-[#c9a84c] text-white border-0"
+ ? "bg-[#c9a84c] text-[#050810] border-0"
  : matchScore >= 50
- ? "bg-[#c9a84c] text-white border-0"
+ ? "bg-[#c9a84c] text-[#050810] border-0"
  : "text-[#a8997e] border-[rgba(201,168,76,0.22)] bg-[#111625]";
 
  return (
@@ -85,7 +85,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
  e.preventDefault();
  if (onQuickBid) onQuickBid(jobId);
  }}
- className="mt-auto flex items-center justify-center gap-1.5 py-2 rounded-[3px] text-xs font-semibold bg-[#050810] text-white hover:bg-[#111625] transition-colors"
+ className="mt-auto flex items-center justify-center gap-1.5 py-2 rounded-[3px] text-xs font-semibold bg-[#050810] text-[#f0e8d4] hover:bg-[#111625] transition-colors"
  >
  <Zap className="h-3 w-3" />
  QuickBid

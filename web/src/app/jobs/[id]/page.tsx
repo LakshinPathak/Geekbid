@@ -143,7 +143,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  if (!job) return (
  <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120]">
- <p className="text-[#6b5f45] text-lg">Job not found</p>
+ <p className="text-[#a8997e] text-lg">Job not found</p>
  </div>
  );
 
@@ -224,7 +224,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  // P0: Countdown urgency class
  const countdownClass = deadlineHrs > 24
- ? "text-[#6b5f45] text-sm"
+ ? "text-[#a8997e] text-sm"
  : deadlineHrs > 6
  ? "text-[#c9a84c] font-mono text-sm tabular-nums"
  : deadlineHrs > 1
@@ -308,7 +308,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  <div>
  <p className="text-sm text-[#a8997e]">Posted by <span className="text-[#f0e8d4] font-medium">{client.fullName}</span></p>
- <p className="text-xs text-[#6b5f45] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
+ <p className="text-xs text-[#a8997e] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
  </div>
  </div>
  )}
@@ -325,7 +325,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const isMatch = currentUser?.skills?.includes(s);
  return (
  <span key={s} className={`px-2.5 py-1 rounded-[3px] text-xs border ${
- isMatch ? "bg-[#c9a84c] text-white border-transparent" : "bg-[#0d1120] border-[rgba(201,168,76,0.22)] text-[#6b5f45]"
+ isMatch ? "bg-[#c9a84c] text-[#050810] border-transparent" : "bg-[#0d1120] border-[rgba(201,168,76,0.22)] text-[#a8997e]"
  }`}>{isMatch && "✓ "}{s}</span>
  );
  })}
@@ -334,7 +334,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* Description */}
  <div className="glass-panel p-6 sm:p-8">
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
  <p className="text-[#a8997e] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
  </div>
 
@@ -346,26 +346,26 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  <div>
- <p className="text-[#6b5f45] text-xs">Starting Price</p>
+ <p className="text-[#a8997e] text-xs">Starting Price</p>
  <p className="terminal-amount text-xl text-[#f0e8d4] mt-1">{formatMoney(job.startingPrice)}</p>
  </div>
  <div>
- <p className="text-[#6b5f45] text-xs">Current Price</p>
+ <p className="text-[#a8997e] text-xs">Current Price</p>
  <p className="terminal-amount text-xl text-[#c9a84c] mt-1 animate-price-pulse">{formatMoney(current)}</p>
  </div>
  <div>
- <p className="text-[#6b5f45] text-xs">Floor Price</p>
+ <p className="text-[#a8997e] text-xs">Floor Price</p>
  <p className="terminal-amount text-xl text-[#f0e8d4] mt-1">{formatMoney(job.minimumPrice)}</p>
  </div>
  <div>
- <p className="text-[#6b5f45] text-xs">Decay Rate</p>
+ <p className="text-[#a8997e] text-xs">Decay Rate</p>
  <p className="terminal-amount text-xl text-[#B02020] mt-1">-${job.decayRatePerHour}/hr</p>
  </div>
  </div>
  <div className="h-2 bg-[#111625] rounded-full mt-4 overflow-hidden">
  <div className="decay-bar h-2 transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
  </div>
- <div className="flex justify-between mt-2 text-xs text-[#6b5f45]">
+ <div className="flex justify-between mt-2 text-xs text-[#a8997e]">
  <span>Floor: {formatMoney(job.minimumPrice)}</span>
  <span>Start: {formatMoney(job.startingPrice)}</span>
  </div>
@@ -391,7 +391,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {isHot && <span className="text-[11px] bg-[rgba(192,91,0,0.10)] text-[#C05B00] border border-[rgba(192,91,0,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
  </div>
  {jobBids.length === 0 ? (
- <p className="text-[#6b5f45] text-sm">No bids yet.</p>
+ <p className="text-[#a8997e] text-sm">No bids yet.</p>
  ) : (
  <>
  <div className="overflow-x-auto -mx-1">
@@ -399,7 +399,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <thead>
  <tr className="border-b border-[rgba(201,168,76,0.22)]">
  {["Freelancer", "Price", "GeekScore", "Skills", "When", ""].map(h => (
- <th key={h} className={`py-2 px-2 text-[#6b5f45] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
+ <th key={h} className={`py-2 px-2 text-[#a8997e] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
  ))}
  </tr>
  </thead>
@@ -418,7 +418,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {bidder?.avatarInitial ?? "?"}
  </div>
  <span className="text-[#f0e8d4] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
- {isBest && <span className="text-[9px] bg-[#c9a84c] text-white border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
+ {isBest && <span className="text-[9px] bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
  {isNew && <span className="text-[9px] bg-[rgba(201,168,76,0.12)] text-[#c9a84c] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
  </div>
  </td>
@@ -427,11 +427,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {bidder ? `${bidder.geekScore}${tier ? ` · ${tier.label}` : ""}` : "—"}
  </td>
  <td className="py-3 px-2 text-center">
- <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#c9a84c]" : skillMatches > 0 ? "text-[#c9a84c]" : "text-[#6b5f45]"}`}>
+ <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#c9a84c]" : skillMatches > 0 ? "text-[#c9a84c]" : "text-[#a8997e]"}`}>
  {skillMatches}/{job.skillsRequired.length} ✓
  </span>
  </td>
- <td className="py-3 px-2 text-right text-[#6b5f45]">{timeAgo(bid.createdAt)}</td>
+ <td className="py-3 px-2 text-right text-[#a8997e]">{timeAgo(bid.createdAt)}</td>
  <td className="py-3 px-2 text-right">
  {isOpen && (
  <button onClick={handleAccept}
@@ -480,12 +480,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </span>
  )}
  {isFreelancer && myRank === null && jobBids.length > 0 && (
- <span className="text-[11px] text-[#6b5f45]">You haven't bid yet</span>
+ <span className="text-[11px] text-[#a8997e]">You haven't bid yet</span>
  )}
  </div>
 
  {jobBids.length === 0 ? (
- <p className="text-[#6b5f45] text-sm">No bids yet. Be the first!</p>
+ <p className="text-[#a8997e] text-sm">No bids yet. Be the first!</p>
  ) : (
  <>
  <div className="space-y-3">
@@ -511,13 +511,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
  <span className="text-sm font-medium text-[#f0e8d4]">{bidder?.fullName ?? "Freelancer"}</span>
- {isNew && <span className="text-[9px] font-bold bg-[#c9a84c] text-white border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
+ {isNew && <span className="text-[9px] font-bold bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
  {tier && <span className="bg-[rgba(201,168,76,0.12)] text-[#c9a84c] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
  {isMyBid && <span className="text-[9px] font-bold bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)] rounded-full px-1.5 py-0.5">You</span>}
  <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(201,168,76,0.12)] text-[#c9a84c]" : "bg-[rgba(201,168,76,0.12)] text-[#c9a84c]"}`}>{bid.bidType}</span>
  </div>
  
- <p className="text-[11px] text-[#6b5f45] mt-1">{timeAgo(bid.createdAt)}</p>
+ <p className="text-[11px] text-[#a8997e] mt-1">{timeAgo(bid.createdAt)}</p>
  </div>
  </div>
  <p className="font-heading text-lg font-bold text-[#c9a84c] shrink-0">{formatMoney(bid.bidPrice)}</p>
@@ -530,10 +530,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {/* Bid statistics bar */}
  {minBid !== null && maxBid !== null && avgBid !== null && (
  <div className="mt-4 glass-panel-sm rounded-[6px] p-4">
- <p className="text-[#6b5f45] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
+ <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
  <div className="relative h-2 bg-[#111625] rounded-full mb-3">
  <div
- className="absolute h-2 from-[#E0A33E]/40  rounded-full"
+ className="absolute h-0.5 bg-[#c9a84c] rounded-none"
  style={{
  left: `${Math.max(0, ((minBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
  right: `${100 - Math.min(100, ((maxBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
@@ -545,7 +545,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  title={`Avg: ${formatMoney(avgBid)}`}
  />
  </div>
- <div className="flex justify-between text-[11px] text-[#6b5f45]">
+ <div className="flex justify-between text-[11px] text-[#a8997e]">
  <span>Min: <span className="text-[#c9a84c] font-medium">{formatMoney(minBid)}</span></span>
  <span>Avg: <span className="text-[#a8997e] font-medium">{formatMoney(avgBid)}</span></span>
  <span>Max: <span className="text-[#B02020] font-medium">{formatMoney(maxBid)}</span></span>
@@ -571,7 +571,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="space-y-3">
  {jobMilestones.map(ms => {
  const statusColors: Record<string, string> = {
- pending: "text-[#6b5f45] bg-[#111625] border-[rgba(201,168,76,0.22)]",
+ pending: "text-[#a8997e] bg-[#111625] border-[rgba(201,168,76,0.22)]",
  in_progress: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.25)]",
  submitted: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.25)]",
  approved: "text-[#c9a84c] bg-[rgba(201,168,76,0.10)] border-[rgba(201,168,76,0.25)]",
@@ -581,7 +581,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div key={ms.id} className="glass-panel-sm rounded-[6px] p-4">
  <div className="flex items-center justify-between mb-1">
  <div className="flex items-center gap-2">
- <span className="text-[#6b5f45] text-xs font-mono">#{ms.order}</span>
+ <span className="text-[#a8997e] text-xs font-mono">#{ms.order}</span>
  <span className="text-[#f0e8d4] text-sm font-medium">{ms.title}</span>
  </div>
  <div className="flex items-center gap-2">
@@ -595,13 +595,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="flex gap-2 mt-2">
  {isFreelancer && ms.status === "in_progress" && (
  <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#c9a84c] text-white border border-transparent px-3 py-1 rounded-[3px] hover:bg-[#d4b55a]/20 transition-colors">
+ className="text-xs bg-[#c9a84c] text-[#050810] border border-transparent px-3 py-1 rounded-[3px] hover:bg-[#d4b55a]/20 transition-colors">
  Submit
  </button>
  )}
  {isClient && ms.status === "submitted" && (
  <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#c9a84c] text-white font-semibold px-3 py-1 rounded-[3px] hover:bg-[#d4b55a] transition-colors">
+ className="text-xs bg-[#c9a84c] text-[#050810] font-semibold px-3 py-1 rounded-[3px] hover:bg-[#d4b55a] transition-colors">
  Approve &amp; Release
  </button>
  )}
@@ -626,32 +626,32 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  <div className="space-y-2.5">
  <div className="flex justify-between items-center">
- <span className="text-[#6b5f45] text-xs">Base Decay</span>
+ <span className="text-[#a8997e] text-xs">Base Decay</span>
  <span className="text-[#a8997e] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
  </div>
  <div className="flex justify-between items-center">
- <span className="text-[#6b5f45] text-xs">Effective Decay</span>
+ <span className="text-[#a8997e] text-xs">Effective Decay</span>
  <span className="text-[#c9a84c] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
  </div>
  <div className="flex justify-between items-center">
- <span className="text-[#6b5f45] text-xs">Demand</span>
+ <span className="text-[#a8997e] text-xs">Demand</span>
  {demand ? (
  <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[11px] font-bold`}>
  {demand.label} ({bidderCount} bidder{bidderCount !== 1 ? "s" : ""})
  </span>
  ) : (
- <span className="text-[#6b5f45] text-xs">No bids yet</span>
+ <span className="text-[#a8997e] text-xs">No bids yet</span>
  )}
  </div>
  {job.lowestCounterBid && (
  <div className="flex justify-between items-center">
- <span className="text-[#6b5f45] text-xs">Lowest Counter</span>
+ <span className="text-[#a8997e] text-xs">Lowest Counter</span>
  <span className="text-[#c9a84c] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
  </div>
  )}
  {job.lastBidAt && (
  <div className="flex justify-between items-center">
- <span className="text-[#6b5f45] text-xs">Last Activity</span>
+ <span className="text-[#a8997e] text-xs">Last Activity</span>
  <span className="text-[#a8997e] text-xs">{timeAgo(job.lastBidAt)}</span>
  </div>
  )}
@@ -660,7 +660,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {/* Price Trajectory Chart (history + P2 projection) */}
  <div className="mt-4 glass-panel-sm rounded-[6px] p-4">
  <div className="flex items-center justify-between mb-3">
- <p className="text-[#6b5f45] text-[11px] uppercase tracking-wider">Price Trajectory</p>
+ <p className="text-[#a8997e] text-[11px] uppercase tracking-wider">Price Trajectory</p>
  <div className="flex items-center gap-1">
  <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
  <span className="text-[9px] text-[#c9a84c]/60">LIVE</span>
@@ -732,20 +732,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  )}
  </svg>
  <div className="flex justify-between mt-1.5">
- <span className="text-[#6b5f45] text-[9px]">Posted</span>
+ <span className="text-[#a8997e] text-[9px]">Posted</span>
  <span className="text-[#c9a84c]/50 text-[9px]">Now ↑</span>
- {!isAtFloor && <span className="text-[#6b5f45] text-[9px]">Floor ETA →</span>}
+ {!isAtFloor && <span className="text-[#a8997e] text-[9px]">Floor ETA →</span>}
  </div>
  {/* P2: Scenario labels */}
  {projectionData && (
  <div className="mt-2 pt-2 border-t border-[rgba(201,168,76,0.22)] space-y-1">
  <div className="flex items-center gap-1.5">
  <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#c9a84c" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
- <span className="text-[9px] text-[#6b5f45]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
+ <span className="text-[9px] text-[#a8997e]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
  </div>
  <div className="flex items-center gap-1.5">
  <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#c9a84c" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
- <span className="text-[9px] text-[#6b5f45]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
+ <span className="text-[9px] text-[#a8997e]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
  </div>
  </div>
  )}
@@ -755,7 +755,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* ─── P0: Live price card ─── */}
  <div className="glass-panel p-6 relative overflow-hidden hover:border-[rgba(201,168,76,0.35)]/15 transition-colors">
- <div className="absolute top-0 left-0 right-0 h-[2px] via-[#c9a84c]/40 " />
+ <div className="absolute top-0 left-0 right-0 h-px bg-[rgba(201,168,76,0.40)]" />
  <div className="flex items-center gap-2 mb-3">
  <div className="w-2.5 h-2.5 bg-[#c9a84c] rounded-full animate-glow-ring" />
  <p className="text-[#a8997e] text-sm font-medium">Live Price</p>
@@ -774,7 +774,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <p className="text-[#B02020] text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
  )}
 
- <p className="text-[#6b5f45] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
+ <p className="text-[#a8997e] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
 
  {/* P0: Urgency countdown */}
  <div className="flex items-center gap-1.5 mt-2">
@@ -785,7 +785,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <span className={countdownClass}>{countdownDisplay || formatHoursToFloor(eta)}</span>
  )}
  </div>
- <p className="text-[#6b5f45] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
+ <p className="text-[#a8997e] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
  </div>
 
  {/* ─── P0: Freelancer Actions / Cooldown ─── */}
@@ -814,7 +814,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </svg>
  <div className="text-center">
  <p className="text-[#a8997e] text-sm font-medium">⏳ Cooldown active</p>
- <p className="text-[#6b5f45] text-xs mt-1">
+ <p className="text-[#a8997e] text-xs mt-1">
  Bid again at {new Date((myLastBid ? new Date(myLastBid.createdAt).getTime() : 0) + 30 * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>
  </div>
@@ -829,7 +829,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  <div className="flex items-center gap-3">
  <div className="flex-1 h-px bg-[rgba(201,168,76,0.15)]" />
- <span className="text-xs text-[#6b5f45]">or</span>
+ <span className="text-xs text-[#a8997e]">or</span>
  <div className="flex-1 h-px bg-[rgba(201,168,76,0.15)]" />
  </div>
 
@@ -841,30 +841,30 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* P5: Smart bid suggestion chips */}
  <div>
- <p className="text-[#6b5f45] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
+ <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
  <div className="grid grid-cols-2 gap-2">
  <button
  onClick={() => setCounterPrice(String(aggressiveBid))}
  className={`text-left p-2.5 rounded-[6px] border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[rgba(201,168,76,0.35)]/50 bg-[#c9a84c]/5" : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[rgba(201,168,76,0.35)]/40"}`}
  >
- <p className="text-[11px] text-[#6b5f45] font-semibold">Aggressive</p>
+ <p className="text-[11px] text-[#a8997e] font-semibold">Aggressive</p>
  <p className="font-heading text-base font-bold text-[#c9a84c]">{formatMoney(aggressiveBid)}</p>
- <p className="text-[9px] text-[#6b5f45] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
+ <p className="text-[9px] text-[#a8997e] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
  </button>
  <button
  onClick={() => setCounterPrice(String(competitiveBid))}
  className={`text-left p-2.5 rounded-[6px] border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[rgba(201,168,76,0.35)]/20"}`}
  >
- <p className="text-[11px] text-[#6b5f45] font-semibold">Competitive</p>
+ <p className="text-[11px] text-[#a8997e] font-semibold">Competitive</p>
  <p className="font-heading text-base font-bold text-[#c9a84c]">{formatMoney(competitiveBid)}</p>
- <p className="text-[9px] text-[#6b5f45] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
+ <p className="text-[9px] text-[#a8997e] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
  </button>
  </div>
  </div>
 
  {/* P10: Price slider */}
  <div>
- <div className="flex justify-between text-[11px] text-[#6b5f45] mb-1.5">
+ <div className="flex justify-between text-[11px] text-[#a8997e] mb-1.5">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  <span>Current {formatMoney(current)}</span>
  </div>
@@ -880,7 +880,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {sliderHourly > 0 && (
  <p className="text-[11px] text-[#a8997e] mt-1.5">
  Effective rate: <span className="text-[#c9a84c] font-medium">{formatMoney(sliderHourly)}/hr</span>
- {bidsBelow > 0 && <span className="text-[#6b5f45]"> · below {bidsBelow} of {jobBids.length} bids</span>}
+ {bidsBelow > 0 && <span className="text-[#a8997e]"> · below {bidsBelow} of {jobBids.length} bids</span>}
  </p>
  )}
  </div>
@@ -888,7 +888,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {/* P5: Position bar */}
  {posMyBid !== null && (
  <div>
- <p className="text-[#6b5f45] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
+ <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
  <div className="relative h-2 bg-[#111625] rounded-full">
  {/* Min bid marker */}
  {posMinBid !== null && (
@@ -897,7 +897,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {/* Your bid marker */}
  <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#c9a84c] rounded-full border-2 border-[#12121A] -ml-1.5 shadow-[0_0_8px_rgba(200,146,61,0.5)]" style={{ left: `${posMyBid}%` }} />
  </div>
- <div className="flex justify-between text-[9px] text-[#6b5f45] mt-1">
+ <div className="flex justify-between text-[9px] text-[#a8997e] mt-1">
  <span>Floor</span>
  <span className="text-[#c9a84c]">↑ you</span>
  <span>Current</span>
@@ -907,7 +907,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* Price text input */}
  <div className="relative">
- <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6b5f45] text-sm">$</span>
+ <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#a8997e] text-sm">$</span>
  <input
  type="number"
  placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
@@ -961,7 +961,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  ].map(item => (
  <div key={item.label} className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <item.icon className="h-4 w-4 text-[#6b5f45]" />
+ <item.icon className="h-4 w-4 text-[#a8997e]" />
  <span className="text-[#a8997e] text-sm">{item.label}</span>
  </div>
  <span className="text-[#f0e8d4] text-sm font-medium">{item.value}</span>

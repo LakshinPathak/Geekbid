@@ -64,11 +64,11 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  <p className="text-xs font-semibold text-[#f0e8d4] truncate">
  {user?.fullName ?? "Unknown"}
  {user?.plan === "pro" && (
- <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-white">Pro</span>
+ <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Pro</span>
  )}
  </p>
  <div className="flex items-center gap-2 mt-0.5">
- <span className="text-[10px] text-[#6b5f45]">GS {user?.geekScore ?? 0}</span>
+ <span className="text-[10px] text-[#a8997e]">GS {user?.geekScore ?? 0}</span>
  {(user?.averageRating ?? 0) > 0 && (
  <span className="flex items-center gap-0.5 text-[10px] text-[#c9a84c]">
  <Star className="h-2.5 w-2.5" />
@@ -80,7 +80,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
 
  {/* Bid message excerpt */}
  {bid.message && (
- <p className="text-[10px] text-[#6b5f45] italic line-clamp-1 max-w-[120px] hidden sm:block">
+ <p className="text-[10px] text-[#a8997e] italic line-clamp-1 max-w-[120px] hidden sm:block">
  &ldquo;{bid.message}&rdquo;
  </p>
  )}
@@ -91,7 +91,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  {formatMoney(bid.bidPrice)}
  </p>
  {bid.createdAt && (
- <p className="text-[9px] text-[#6b5f45]">
+ <p className="text-[9px] text-[#a8997e]">
  {new Date(bid.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
  </p>
  )}
@@ -169,7 +169,7 @@ function MyJobCard({
  <span key={s} className="px-2 py-0.5 rounded-[2px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">{s}</span>
  ))}
  {job.skillsRequired.length > 4 && (
- <span className="px-2 py-0.5 rounded-[2px] text-[11px] bg-[#111625] text-[#6b5f45] border border-[rgba(201,168,76,0.22)]">
+ <span className="px-2 py-0.5 rounded-[2px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">
  +{job.skillsRequired.length - 4}
  </span>
  )}
@@ -180,12 +180,12 @@ function MyJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#6b5f45] uppercase tracking-wider">Current Price</span>
+ <span className="text-[11px] text-[#a8997e] uppercase tracking-wider">Current Price</span>
  <p className="font-heading text-2xl text-[#f0e8d4]">{formatMoney(current)}</p>
  </div>
  {savings > 0 && (
  <div className="text-right">
- <span className="text-[11px] text-[#6b5f45] uppercase tracking-wider">Saved</span>
+ <span className="text-[11px] text-[#a8997e] uppercase tracking-wider">Saved</span>
  <p className="font-heading text-lg text-[#4caf7d]">-{formatMoney(savings)}</p>
  </div>
  )}
@@ -193,13 +193,13 @@ function MyJobCard({
 
  {/* Decay bar */}
  <div className="space-y-1">
- <div className="h-1.5 w-full bg-[#1a1f30] rounded-full overflow-hidden">
+ <div className="h-0.5 w-full bg-[#1a1f30]">
  <div
  className="h-full rounded-full bg-[#c9a84c] transition-all duration-500"
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6b5f45]">
+ <div className="flex justify-between text-[10px] text-[#a8997e]">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  {hoursLeft > 0 && <span className="text-[#c9a84c] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} left</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
@@ -209,7 +209,7 @@ function MyJobCard({
 
  {/* Footer stats */}
  <div className="flex items-center justify-between pt-3 border-t border-[rgba(201,168,76,0.22)]">
- <div className="flex items-center gap-3 text-[11px] text-[#6b5f45]">
+ <div className="flex items-center gap-3 text-[11px] text-[#a8997e]">
  <span className="flex items-center gap-1">
  <Users className="h-3 w-3" />
  {bidCount} bid{bidCount !== 1 ? "s" : ""}
@@ -251,14 +251,14 @@ function MyJobCard({
  <Zap className="h-3.5 w-3.5 text-[#c9a84c]" />
  {bidsOpen ? "Hide" : "View"} {bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
- <ChevronDown className={`h-4 w-4 text-[#6b5f45] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#a8997e] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
  </button>
  )}
 
  {/* ── Expanded bids feed ─────────────────────────────────── */}
  {bidsOpen && (
  <div className="border-t border-[rgba(201,168,76,0.12)] bg-[#0a0e1a]/50 px-4 py-4 space-y-2">
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider font-semibold mb-3">
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold mb-3">
  Active Bids — sorted by lowest price
  </p>
  {jobBids.slice(0, 8).map((bid, i) => {
@@ -268,7 +268,7 @@ function MyJobCard({
  );
  })}
  {jobBids.length > 8 && (
- <p className="text-[10px] text-[#6b5f45] text-center pt-1">
+ <p className="text-[10px] text-[#a8997e] text-center pt-1">
  +{jobBids.length - 8} more bids — <Link href={`/jobs/${jobId}`} className="text-[#c9a84c] hover:underline">view all</Link>
  </p>
  )}
@@ -306,7 +306,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  </div>
  <div>
  <p className="font-heading text-base text-[#f0e8d4] mb-1">No active jobs yet</p>
- <p className="text-[12px] text-[#6b5f45] max-w-xs">
+ <p className="text-[12px] text-[#a8997e] max-w-xs">
  Post your first job and freelancers will start bidding immediately. Prices decay over time — the longer you wait, the cheaper it gets.
  </p>
  </div>
@@ -330,7 +330,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  <Briefcase className="h-4 w-4 text-[#c9a84c]" />
  My Posted Jobs
  </h2>
- <p className="text-[11px] text-[#6b5f45] mt-0.5">
+ <p className="text-[11px] text-[#a8997e] mt-0.5">
  {jobs.length} active · {totalBids} total bid{totalBids !== 1 ? "s" : ""} received
  </p>
  </div>
@@ -405,7 +405,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  ))}
  </div>
  ) : (
- <p className="text-center text-sm text-[#6b5f45] py-6">No jobs match this filter.</p>
+ <p className="text-center text-sm text-[#a8997e] py-6">No jobs match this filter.</p>
  )}
  </div>
  );

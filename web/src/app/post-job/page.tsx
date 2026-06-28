@@ -305,8 +305,8 @@ function DecayCurvePreview({
  }}
  />
  <div className="flex justify-between mt-1">
- <span className="text-[11px] text-[#6b5f45]">0h (Posted)</span>
- <span className="text-[11px] text-[#6b5f45]">{maxHours}h (Deadline)</span>
+ <span className="text-[11px] text-[#a8997e]">0h (Posted)</span>
+ <span className="text-[11px] text-[#a8997e]">{maxHours}h (Deadline)</span>
  </div>
  </div>
 
@@ -327,21 +327,21 @@ function DecayCurvePreview({
  {/* Key metrics row */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
  <div className="glass-panel-sm rounded-[6px] p-3 text-center">
- <p className="text-[9px] text-[#6b5f45] uppercase tracking-wider">Time to Floor</p>
+ <p className="text-[9px] text-[#a8997e] uppercase tracking-wider">Time to Floor</p>
  <p className="text-sm font-bold text-[#f0e8d4] font-heading mt-1">
  {hoursToFloor === Infinity ? "∞" : `${hoursToFloor.toFixed(1)}h`}
  </p>
  </div>
  <div className="glass-panel-sm rounded-[6px] p-3 text-center">
- <p className="text-[9px] text-[#6b5f45] uppercase tracking-wider">Decay</p>
+ <p className="text-[9px] text-[#a8997e] uppercase tracking-wider">Decay</p>
  <p className="text-sm font-bold text-[#B02020] font-heading mt-1">-${decayRate}/hr</p>
  </div>
  <div className="glass-panel-sm rounded-[6px] p-3 text-center border-[rgba(201,168,76,0.35)]/15">
- <p className="text-[9px] text-[#6b5f45] uppercase tracking-wider">@ {scrubHour.toFixed(0)}h</p>
+ <p className="text-[9px] text-[#a8997e] uppercase tracking-wider">@ {scrubHour.toFixed(0)}h</p>
  <p className="text-sm font-bold text-[#c9a84c] font-heading mt-1">{formatMoney(Math.round(scrubPrice))}</p>
  </div>
  <div className="glass-panel-sm rounded-[6px] p-3 text-center border-[rgba(201,168,76,0.35)]/15">
- <p className="text-[9px] text-[#6b5f45] uppercase tracking-wider">Savings</p>
+ <p className="text-[9px] text-[#a8997e] uppercase tracking-wider">Savings</p>
  <p className="text-sm font-bold text-[#c9a84c] font-heading mt-1">{savingsPercent}%</p>
  </div>
  </div>
@@ -462,7 +462,7 @@ export default function PostJobPage() {
  className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-[6px] text-xs font-semibold transition-all font-heading ${
  step >= s.num
  ? "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.35)]/25"
- : "text-[#6b5f45] glass-panel-sm"
+ : "text-[#a8997e] glass-panel-sm"
  }`}
  >
  {step > s.num ? <Check className="h-3.5 w-3.5 shrink-0" /> : <s.icon className="h-3.5 w-3.5 shrink-0" />}
@@ -520,9 +520,9 @@ export default function PostJobPage() {
  {skills.length > 0 && (
  <div className="flex flex-wrap gap-1.5 mb-3">
  {skills.map(s => (
- <span key={s} className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">
+ <span key={s} className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">
  {s}
- <button onClick={() => toggleSkill(s)} className="hover:text-white transition-colors"><X className="h-3 w-3" /></button>
+ <button onClick={() => toggleSkill(s)} className="hover:text-[#f0e8d4] transition-colors"><X className="h-3 w-3" /></button>
  </span>
  ))}
  </div>
@@ -541,8 +541,8 @@ export default function PostJobPage() {
  onClick={() => toggleSkill(s)}
  className={`text-xs rounded-[3px] py-1.5 px-3 transition-all border ${
  skills.includes(s)
- ? "bg-[#c9a84c] text-white border-transparent"
- : "bg-[#0d1120] border-[rgba(201,168,76,0.22)] text-[#6b5f45] hover:text-[#a8997e] hover:border-[#8A8A9A]/30"
+ ? "bg-[#c9a84c] text-[#050810] border-transparent"
+ : "bg-[#0d1120] border-[rgba(201,168,76,0.22)] text-[#a8997e] hover:text-[#a8997e] hover:border-[#8A8A9A]/30"
  }`}
  >
  {skills.includes(s) && <Check className="inline h-3 w-3 mr-1" />}{s}
@@ -554,7 +554,7 @@ export default function PostJobPage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Estimated Hours</label>
  <div className="relative">
- <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
  type="number"
  value={estimatedHours}
@@ -596,11 +596,11 @@ export default function PostJobPage() {
  }`}
  >
  <div className="flex items-center gap-2 mb-1">
- <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#c9a84c]" : "text-[#6b5f45]"}`} />
+ <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#c9a84c]" : "text-[#a8997e]"}`} />
  <p className={`text-sm font-semibold ${pricingMode === "adaptive" ? "text-[#f0e8d4]" : "text-[#a8997e]"}`}>Adaptive</p>
  <span className="text-[11px] bg-[#c9a84c]/20 text-[#c9a84c] px-1.5 py-0.5 rounded-full font-medium">Recommended</span>
  </div>
- <p className="text-[#6b5f45] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
+ <p className="text-[#a8997e] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
  </button>
  <button
  type="button"
@@ -612,10 +612,10 @@ export default function PostJobPage() {
  }`}
  >
  <div className="flex items-center gap-2 mb-1">
- <TrendingDown className={`h-4 w-4 ${pricingMode === "fixed" ? "text-[#c9a84c]" : "text-[#6b5f45]"}`} />
+ <TrendingDown className={`h-4 w-4 ${pricingMode === "fixed" ? "text-[#c9a84c]" : "text-[#a8997e]"}`} />
  <p className={`text-sm font-semibold ${pricingMode === "fixed" ? "text-[#f0e8d4]" : "text-[#a8997e]"}`}>Fixed Decay</p>
  </div>
- <p className="text-[#6b5f45] text-xs leading-relaxed">Price drops at a constant rate. Traditional reverse auction.</p>
+ <p className="text-[#a8997e] text-xs leading-relaxed">Price drops at a constant rate. Traditional reverse auction.</p>
  </button>
  </div>
  </div>
@@ -624,7 +624,7 @@ export default function PostJobPage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
  <div className="relative">
- <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
  type="number"
  value={startingPrice}
@@ -633,7 +633,7 @@ export default function PostJobPage() {
  style={{ paddingLeft: '44px' }}
  />
  </div>
- <p className="text-[#6b5f45] text-xs mt-1">The price your job starts at</p>
+ <p className="text-[#a8997e] text-xs mt-1">The price your job starts at</p>
  {errors.startingPrice && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.startingPrice}</p>}
  </div>
  <div>
@@ -644,7 +644,7 @@ export default function PostJobPage() {
  onChange={e => setMinimumPrice(Number(e.target.value))}
  className="glass-input w-full"
  />
- <p className="text-[#6b5f45] text-xs mt-1">Price will never drop below this</p>
+ <p className="text-[#a8997e] text-xs mt-1">Price will never drop below this</p>
  {errors.minimumPrice && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.minimumPrice}</p>}
  </div>
  </div>
@@ -653,7 +653,7 @@ export default function PostJobPage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
  <div className="relative">
- <TrendingDown className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <TrendingDown className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
  type="number"
  value={decayRate}
@@ -662,7 +662,7 @@ export default function PostJobPage() {
  style={{ paddingLeft: '44px' }}
  />
  </div>
- <p className="text-[#6b5f45] text-xs mt-1">How fast the price decreases</p>
+ <p className="text-[#a8997e] text-xs mt-1">How fast the price decreases</p>
  {errors.decayRate && <p className="text-[#B02020] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.decayRate}</p>}
  </div>
  <div>
@@ -684,15 +684,15 @@ export default function PostJobPage() {
  </p>
  <div className="grid grid-cols-3 gap-3">
  <div>
- <p className="text-[#6b5f45] text-[11px]">Avg Final Price</p>
+ <p className="text-[#a8997e] text-[11px]">Avg Final Price</p>
  <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.avgFinalPrice}</p>
  </div>
  <div>
- <p className="text-[#6b5f45] text-[11px]">Price Range</p>
+ <p className="text-[#a8997e] text-[11px]">Price Range</p>
  <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.minPrice}–${pricingHint.maxPrice}</p>
  </div>
  <div>
- <p className="text-[#6b5f45] text-[11px]">Avg Decay Rate</p>
+ <p className="text-[#a8997e] text-[11px]">Avg Decay Rate</p>
  <p className="font-heading text-lg font-bold text-[#f0e8d4]">${pricingHint.avgDecayRate}/hr</p>
  </div>
  </div>
@@ -735,29 +735,29 @@ export default function PostJobPage() {
 
  <div className="space-y-4">
  <div>
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Title</p>
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Title</p>
  <p className="text-[#f0e8d4] text-sm font-semibold mt-0.5">{title || "Untitled"}</p>
  </div>
  <div className="h-px bg-[rgba(201,168,76,0.15)]" />
  <div>
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Description</p>
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Description</p>
  <p className="text-[#a8997e] text-sm mt-0.5 whitespace-pre-wrap">{description || "No description"}</p>
  </div>
  <div className="h-px bg-[rgba(201,168,76,0.15)]" />
  <div>
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium mb-2">Skills</p>
  <div className="flex flex-wrap gap-1.5">
  {skills.length > 0 ? skills.map(s => (
- <span key={s} className="bg-[#c9a84c] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">{s}</span>
+ <span key={s} className="bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">{s}</span>
  )) : (
- <span className="text-[#6b5f45] text-xs">None selected</span>
+ <span className="text-[#a8997e] text-xs">None selected</span>
  )}
  </div>
  </div>
  <div className="h-px bg-[rgba(201,168,76,0.15)]" />
  <div>
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Category</p>
- <span className="inline-block mt-1 bg-[#c9a84c] text-white border border-transparent rounded-full px-3 py-1 text-xs font-medium">
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Category</p>
+ <span className="inline-block mt-1 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs font-medium">
  {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
  </span>
  </div>
@@ -774,7 +774,7 @@ export default function PostJobPage() {
  { label: "Deadline", value: `${deadline}h`, color: "text-[#f0e8d4]" },
  ].map(d => (
  <div key={d.label} className="glass-panel-sm rounded-[6px] p-3">
- <p className="text-[#6b5f45] text-[11px] uppercase tracking-wider">{d.label}</p>
+ <p className="text-[#a8997e] text-[11px] uppercase tracking-wider">{d.label}</p>
  <p className={`font-heading text-lg font-bold mt-0.5 ${d.color}`}>{d.value}</p>
  </div>
  ))}
@@ -784,7 +784,7 @@ export default function PostJobPage() {
 
  {/* Visibility */}
  <div>
- <p className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium mb-3">Visibility</p>
+ <p className="text-[#a8997e] text-xs uppercase tracking-wider font-medium mb-3">Visibility</p>
  <div className="grid grid-cols-2 gap-3">
  <button
  onClick={() => setVisibility("public")}
@@ -794,9 +794,9 @@ export default function PostJobPage() {
  : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[#8A8A9A]/30"
  }`}
  >
- <Globe className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "public" ? "text-[#c9a84c]" : "text-[#6b5f45]"}`} />
+ <Globe className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "public" ? "text-[#c9a84c]" : "text-[#a8997e]"}`} />
  <p className={`text-sm font-medium ${visibility === "public" ? "text-[#f0e8d4]" : "text-[#a8997e]"}`}>Public</p>
- <p className="text-[#6b5f45] text-xs mt-0.5">Anyone can see</p>
+ <p className="text-[#a8997e] text-xs mt-0.5">Anyone can see</p>
  </button>
  <button
  onClick={() => setVisibility("invite_only")}
@@ -806,9 +806,9 @@ export default function PostJobPage() {
  : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[#8A8A9A]/30"
  }`}
  >
- <Lock className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "invite_only" ? "text-[#c9a84c]" : "text-[#6b5f45]"}`} />
+ <Lock className={`h-5 w-5 mx-auto mb-1.5 ${visibility === "invite_only" ? "text-[#c9a84c]" : "text-[#a8997e]"}`} />
  <p className={`text-sm font-medium ${visibility === "invite_only" ? "text-[#f0e8d4]" : "text-[#a8997e]"}`}>Invite Only</p>
- <p className="text-[#6b5f45] text-xs mt-0.5">Selected freelancers</p>
+ <p className="text-[#a8997e] text-xs mt-0.5">Selected freelancers</p>
  </button>
  </div>
  </div>

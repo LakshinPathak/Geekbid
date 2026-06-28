@@ -115,7 +115,7 @@ export default function InboxPage() {
  {/* Avatar */}
  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold ${
  isSelected
- ? "bg-[#c9a84c] text-white"
+ ? "bg-[#c9a84c] text-[#050810]"
  : "bg-[#0d1120] text-[#a8997e] border border-[rgba(201,168,76,0.22)]"
  }`}>
  {otherUser?.avatarInitial ?? "?"}
@@ -166,7 +166,7 @@ export default function InboxPage() {
  >
  <ArrowLeft className="h-4 w-4" />
  </button>
- <div className="h-10 w-10 rounded-full bg-[#c9a84c] text-white flex items-center justify-center text-sm font-bold">
+ <div className="h-10 w-10 rounded-full bg-[#c9a84c] text-[#050810] flex items-center justify-center text-sm font-bold">
  {getOtherUser(activeRoom!)?.avatarInitial ?? "?"}
  </div>
  <div>

@@ -257,7 +257,7 @@ export default function FreelancerFeed() {
 
  <div className="flex items-center gap-3">
  <Link href="/profile">
- <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#050810] text-white border-0 hover:bg-[#111625] transition-colors text-sm font-medium">
+ <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#050810] text-[#f0e8d4] border-0 hover:bg-[#111625] transition-colors text-sm font-medium">
  My Profile
  </button>
  </Link>
@@ -311,7 +311,7 @@ export default function FreelancerFeed() {
 
  {/* Search */}
  <div className="relative flex-1 min-w-0">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6b5f45]" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#a8997e]" />
  <input
  type="text"
  placeholder="Search jobs or skills..."
@@ -321,7 +321,7 @@ export default function FreelancerFeed() {
  />
  {search && (
  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
- <X className="h-3 w-3 text-[#6b5f45]" />
+ <X className="h-3 w-3 text-[#a8997e]" />
  </button>
  )}
  </div>
@@ -341,7 +341,7 @@ export default function FreelancerFeed() {
  <option key={c.value} value={c.value}>{c.label}</option>
  ))}
  </select>
- <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#6b5f45]" />
+ <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#a8997e]" />
  </div>
 
  {/* Divider */}
@@ -385,7 +385,7 @@ export default function FreelancerFeed() {
  : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
  }`}
  >
- Skills {filterSkills.length > 0 && <span className="bg-[#c9a84c] text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
+ Skills {filterSkills.length > 0 && <span className="bg-[#c9a84c] text-[#050810] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
  <ChevronDown className={`h-3 w-3 transition-transform ${showSkillPicker ? "rotate-180" : ""}`} />
  </button>
  {showSkillPicker && (
@@ -395,7 +395,7 @@ export default function FreelancerFeed() {
  <button
  key={s}
  onClick={() => setFilterSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
- className={`px-2 py-1 rounded-[3px] text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[#c9a84c] text-white border-transparent" : "bg-[#111625] text-[#f0e8d4] border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)]"}`}
+ className={`px-2 py-1 rounded-[3px] text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[#c9a84c] text-[#050810] border-transparent" : "bg-[#111625] text-[#f0e8d4] border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)]"}`}
  >
  {s}
  </button>
@@ -427,7 +427,7 @@ export default function FreelancerFeed() {
  {/* Advanced drawer */}
  {showAdvanced && (
  <div className="border-t border-[rgba(201,168,76,0.22)]/50 px-4 py-3 flex flex-wrap items-center gap-2">
- <span className="text-[11px] text-[#6b5f45] font-medium uppercase tracking-wider mr-1">Advanced:</span>
+ <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider mr-1">Advanced:</span>
 
  <select
  value={filterBudget}

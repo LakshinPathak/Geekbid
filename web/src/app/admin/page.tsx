@@ -24,7 +24,7 @@ export default function AdminPage() {
  return (
  <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120] grid-bg">
  <div className="glass-panel p-8 text-center max-w-md animate-scale-in">
- <Shield className="mx-auto h-12 w-12 text-[#6b5f45] mb-3" />
+ <Shield className="mx-auto h-12 w-12 text-[#a8997e] mb-3" />
  <h2 className="font-heading text-xl font-bold text-[#f0e8d4] mb-2">Admin Access Required</h2>
  <p className="text-sm text-[#a8997e]">Switch to Admin role from the top menu to access this dashboard.</p>
  </div>
@@ -101,7 +101,7 @@ export default function AdminPage() {
  <s.icon className={`h-5 w-5 ${s.color}`} />
  </div>
  <p className={`font-heading text-2xl font-bold ${s.color}`}>{s.value}</p>
- <p className="text-xs text-[#6b5f45] mt-0.5">{s.label}</p>
+ <p className="text-xs text-[#a8997e] mt-0.5">{s.label}</p>
  </div>
  ))}
  </div>
@@ -112,12 +112,12 @@ export default function AdminPage() {
  <button key={t.key} onClick={() => setActiveTab(t.key)}
  className={`flex items-center gap-1.5 px-5 py-2 rounded-[3px] text-sm font-medium transition-all ${
  activeTab === t.key
- ? "bg-[#c9a84c] text-white border border-transparent"
+ ? "bg-[#c9a84c] text-[#050810] border border-transparent"
  : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}>
  {t.label}
  <span className={`text-[11px] font-bold rounded-full px-1.5 py-0.5 ${
- activeTab === t.key ? "bg-[#c9a84c]/20 text-[#c9a84c]" : "bg-[#111625] text-[#6b5f45]"
+ activeTab === t.key ? "bg-[#c9a84c]/20 text-[#c9a84c]" : "bg-[#111625] text-[#a8997e]"
  }`}>{t.count}</span>
  </button>
  ))}
@@ -148,7 +148,7 @@ export default function AdminPage() {
  <h3 className="font-heading text-sm font-semibold text-[#f0e8d4]">
  Dispute #{d.id.slice(-6)} — {jobTitle}
  </h3>
- <p className="text-xs text-[#6b5f45] flex items-center gap-1 mt-0.5">
+ <p className="text-xs text-[#a8997e] flex items-center gap-1 mt-0.5">
  <Clock className="h-3 w-3" /> {timeAgo(d.createdAt)} · Raised by{" "}
  <span className="text-[#a8997e] font-medium">{raiser?.fullName ?? d.raisedBy}</span>
  </p>
@@ -175,7 +175,7 @@ export default function AdminPage() {
  { label: "Net", value: formatMoney(tx.netAmount) },
  ].map(s => (
  <div key={s.label} className="glass-panel-sm rounded-[3px] p-2.5 text-center">
- <p className="text-[11px] text-[#6b5f45]">{s.label}</p>
+ <p className="text-[11px] text-[#a8997e]">{s.label}</p>
  <p className="text-sm font-bold text-[#f0e8d4] terminal-amount">{s.value}</p>
  </div>
  ))}
@@ -222,7 +222,7 @@ export default function AdminPage() {
  <button key={f} onClick={() => setUserRoleFilter(f)}
  className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
  userRoleFilter === f
- ? "bg-[#c9a84c] text-white border border-transparent"
+ ? "bg-[#c9a84c] text-[#050810] border border-transparent"
  : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}>
  {f === "all" ? `All (${users.length})` : f}
@@ -232,7 +232,7 @@ export default function AdminPage() {
 
  <div className="overflow-x-auto">
  <div className="glass-panel overflow-hidden min-w-[600px]">
- <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#6b5f45] uppercase tracking-wider font-semibold">
+ <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#a8997e] uppercase tracking-wider font-semibold">
  <span>Name</span><span>Email</span><span>Role</span><span>Score</span><span>Verified</span>
  </div>
  {filteredUsers.map(u => {
@@ -247,9 +247,9 @@ export default function AdminPage() {
  <p className="text-sm font-medium text-[#f0e8d4] truncate">{u.fullName}</p>
  <div className="flex gap-1 mt-0.5">
  {u.skills.slice(0, 2).map(s => (
- <span key={s} className="text-[11px] text-[#6b5f45] bg-[#111625] px-1.5 py-0.5 rounded-[3px]">{s}</span>
+ <span key={s} className="text-[11px] text-[#a8997e] bg-[#111625] px-1.5 py-0.5 rounded-[3px]">{s}</span>
  ))}
- {u.skills.length > 2 && <span className="text-[11px] text-[#6b5f45]">+{u.skills.length - 2}</span>}
+ {u.skills.length > 2 && <span className="text-[11px] text-[#a8997e]">+{u.skills.length - 2}</span>}
  </div>
  </div>
  </div>
@@ -265,7 +265,7 @@ export default function AdminPage() {
  <span className="text-center w-16">
  {u.isVerified
  ? <CheckCircle className="h-4 w-4 text-[#c9a84c] mx-auto" />
- : <X className="h-4 w-4 text-[#6b5f45] mx-auto" />}
+ : <X className="h-4 w-4 text-[#a8997e] mx-auto" />}
  </span>
  </div>
  );
@@ -283,7 +283,7 @@ export default function AdminPage() {
  <button key={f} onClick={() => setJobStatusFilter(f)}
  className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
  jobStatusFilter === f
- ? "bg-[#c9a84c] text-white border border-transparent"
+ ? "bg-[#c9a84c] text-[#050810] border border-transparent"
  : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}>
  {f === "all" ? `All (${jobs.length})` : f}
@@ -293,7 +293,7 @@ export default function AdminPage() {
 
  <div className="overflow-x-auto">
  <div className="glass-panel overflow-hidden min-w-[550px]">
- <div className="grid grid-cols-[2fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#6b5f45] uppercase tracking-wider font-semibold">
+ <div className="grid grid-cols-[2fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#a8997e] uppercase tracking-wider font-semibold">
  <span>Title</span><span>Status</span><span>Current</span><span>Decay</span><span>Bids</span>
  </div>
  {filteredJobs.map(job => {
@@ -304,7 +304,7 @@ export default function AdminPage() {
  <p className="text-sm font-medium text-[#f0e8d4] truncate">{job.title}</p>
  <div className="flex gap-1 mt-0.5">
  {job.skillsRequired.slice(0, 3).map(s => (
- <span key={s} className="text-[11px] text-[#6b5f45] bg-[#111625] px-1.5 py-0.5 rounded-[3px]">{s}</span>
+ <span key={s} className="text-[11px] text-[#a8997e] bg-[#111625] px-1.5 py-0.5 rounded-[3px]">{s}</span>
  ))}
  </div>
  </div>
@@ -338,7 +338,7 @@ export default function AdminPage() {
  ].map(s => (
  <div key={s.label} className="glass-panel-sm rounded-[6px] p-4 text-center">
  <p className={`font-heading text-2xl font-bold terminal-amount ${s.color}`}>{s.value}</p>
- <p className="text-[11px] text-[#6b5f45] mt-1">{s.label}</p>
+ <p className="text-[11px] text-[#a8997e] mt-1">{s.label}</p>
  </div>
  ))}
  </div>
@@ -349,7 +349,7 @@ export default function AdminPage() {
  <button key={f} onClick={() => setTxFilter(f)}
  className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
  txFilter === f
- ? "bg-[#c9a84c] text-white border border-transparent"
+ ? "bg-[#c9a84c] text-[#050810] border border-transparent"
  : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}>
  {f}
@@ -359,7 +359,7 @@ export default function AdminPage() {
 
  {/* Table */}
  <div className="glass-panel overflow-hidden">
- <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#6b5f45] uppercase tracking-wider font-semibold">
+ <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-[rgba(201,168,76,0.22)] text-[11px] text-[#a8997e] uppercase tracking-wider font-semibold">
  <span>Job</span><span>Gross</span><span>Fee</span><span>Net</span><span>Status</span><span>Action</span>
  </div>
  {filteredTx.map(t => {
@@ -368,10 +368,10 @@ export default function AdminPage() {
  <div key={t.id ?? t._id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 items-center px-5 py-3.5 border-b border-[rgba(201,168,76,0.22)]/50 tx-row transition-colors">
  <div className="min-w-0">
  <p className="text-sm font-medium text-[#f0e8d4] truncate">{jobTitle}</p>
- <p className="text-[11px] text-[#6b5f45]">{timeAgo(t.createdAt)}</p>
+ <p className="text-[11px] text-[#a8997e]">{timeAgo(t.createdAt)}</p>
  </div>
  <span className="font-heading text-sm text-[#f0e8d4] w-20 text-right terminal-amount">{formatMoney(t.grossAmount)}</span>
- <span className="text-xs text-[#6b5f45] w-16 text-right terminal-amount">{formatMoney(t.platformFee)}</span>
+ <span className="text-xs text-[#a8997e] w-16 text-right terminal-amount">{formatMoney(t.platformFee)}</span>
  <span className="text-sm font-medium text-[#c9a84c] w-20 text-right terminal-amount">{formatMoney(t.netAmount)}</span>
  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border w-20 text-center ${
  t.escrowStatus === "released" ? "badge-active" :
@@ -385,7 +385,7 @@ export default function AdminPage() {
  Release
  </button>
  ) : (
- <span className="text-[#6b5f45] text-xs">—</span>
+ <span className="text-[#a8997e] text-xs">—</span>
  )}
  </div>
  </div>
@@ -393,7 +393,7 @@ export default function AdminPage() {
  })}
  {filteredTx.length === 0 && (
  <div className="px-5 py-12 text-center">
- <DollarSign className="h-8 w-8 text-[#6b5f45] mx-auto mb-2" />
+ <DollarSign className="h-8 w-8 text-[#a8997e] mx-auto mb-2" />
  <p className="text-sm text-[#a8997e]">No transactions match this filter</p>
  </div>
  )}

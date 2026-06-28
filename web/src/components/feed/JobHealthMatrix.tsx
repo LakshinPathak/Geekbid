@@ -19,7 +19,7 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
  <h2 className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider">
  My Jobs — Health Matrix
  </h2>
- <span className="text-[11px] text-[#6b5f45]">{jobs.length} active</span>
+ <span className="text-[11px] text-[#a8997e]">{jobs.length} active</span>
  </div>
 
  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -61,7 +61,7 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
  <p className="font-heading text-base font-normal text-[#f0e8d4]">{formatMoney(current)}</p>
 
  {/* Bid count */}
- <div className="flex items-center gap-1 text-[10px] text-[#6b5f45]">
+ <div className="flex items-center gap-1 text-[10px] text-[#a8997e]">
  <Users className="h-3 w-3" />
  <span>{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
  </div>

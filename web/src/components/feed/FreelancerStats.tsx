@@ -43,7 +43,7 @@ export default function FreelancerStats({
  label: "Win Rate",
  value: `${winRate}%`,
  icon: Trophy,
- color: winRate >= 30 ? "text-[#c9a84c]" : winRate >= 15 ? "text-[#c9a84c]" : "text-[#6b5f45]",
+ color: winRate >= 30 ? "text-[#c9a84c]" : winRate >= 15 ? "text-[#c9a84c]" : "text-[#a8997e]",
  bg: winRate >= 30 ? "bg-[rgba(201,168,76,0.12)]" : winRate >= 15 ? "bg-[rgba(201,168,76,0.12)]" : "bg-[#111625]",
  border: winRate >= 30 ? "border-[rgba(201,168,76,0.30)]" : winRate >= 15 ? "border-[rgba(201,168,76,0.30)]" : "border-[rgba(201,168,76,0.22)]",
  sub: "accepted rate",
@@ -67,7 +67,7 @@ export default function FreelancerStats({
  <div className={`w-8 h-8 rounded-[3px] ${s.bg} border ${s.border} flex items-center justify-center shrink-0`}>
  <s.icon className={`h-4 w-4 ${s.color}`} />
  </div>
- <p className="text-[10px] text-[#6b5f45] uppercase tracking-wider font-semibold">{s.label}</p>
+ <p className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold">{s.label}</p>
  </div>
  <p className={`font-heading text-xl font-bold ${s.color} leading-tight`}>{s.value}</p>
  {s.progress !== undefined && (
@@ -78,7 +78,7 @@ export default function FreelancerStats({
  />
  </div>
  )}
- <p className="text-[10px] text-[#6b5f45]">{s.sub}</p>
+ <p className="text-[10px] text-[#a8997e]">{s.sub}</p>
  </div>
  ))}
  </div>

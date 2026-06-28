@@ -32,7 +32,7 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
  )}
  <div>
  {client && <p className="text-xs text-[#a8997e]">{client.fullName} {client.isVerified && <span className="text-[#c9a84c]">✓</span>}</p>}
- <p className="text-[11px] text-[#6b5f45]">{timeAgo(job.postedAt)}</p>
+ <p className="text-[11px] text-[#a8997e]">{timeAgo(job.postedAt)}</p>
  </div>
  </div>
  <Badge className={`text-[11px] font-body font-semibold px-2 py-0.5 rounded-[3px] border ${
@@ -67,20 +67,20 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
  <div className="bg-[#0a0e1a] border border-[rgba(201,168,76,0.15)] rounded-[3px] p-3 mb-3 space-y-2">
  <div className="flex items-baseline justify-between">
  <span className="text-2xl font-heading font-normal text-[#c9a84c] tabular-nums">{formatMoney(current)}</span>
- <span className="text-xs text-[#6b5f45]">
- <ArrowDown className="inline h-3 w-3 text-[#6b5f45] mr-0.5" />
+ <span className="text-xs text-[#a8997e]">
+ <ArrowDown className="inline h-3 w-3 text-[#a8997e] mr-0.5" />
  ${job.decayRatePerHour}/hr
  </span>
  </div>
- <Progress value={pricePercent} className="h-1.5" />
- <div className="flex justify-between text-[11px] text-[#6b5f45]">
+ <Progress value={pricePercent} className="h-0.5" />
+ <div className="flex justify-between text-[11px] text-[#a8997e]">
  <span>Floor: {formatMoney(job.minimumPrice)}</span>
  <span>Start: {formatMoney(job.startingPrice)}</span>
  </div>
  </div>
 
  {/* Meta */}
- <div className="flex items-center gap-3 text-[11px] text-[#6b5f45] mb-3">
+ <div className="flex items-center gap-3 text-[11px] text-[#a8997e] mb-3">
  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {job.estimatedHours}h est.</span>
  <span className="flex items-center gap-1"><TrendingDown className="h-3 w-3" /> {formatMoney(job.startingPrice)} start</span>
  </div>

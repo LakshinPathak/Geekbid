@@ -61,7 +61,7 @@ export default function NotificationsPage() {
  <div className="flex items-center gap-3">
  <h1 className="font-heading text-2xl font-bold text-[#f0e8d4]">Notifications</h1>
  {unreadCount > 0 && (
- <span className="bg-[#c9a84c] text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse-glow">
+ <span className="bg-[#c9a84c] text-[#050810] text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse-glow">
  {unreadCount}
  </span>
  )}
@@ -86,7 +86,7 @@ export default function NotificationsPage() {
  onClick={() => setFilter(tab.key)}
  className={`px-4 py-1.5 rounded-[3px] text-sm font-medium whitespace-nowrap transition-all ${
  filter === tab.key
- ? "bg-[#c9a84c] text-white border border-transparent"
+ ? "bg-[#c9a84c] text-[#050810] border border-transparent"
  : "text-[#a8997e] hover:text-[#f0e8d4]"
  }`}
  >

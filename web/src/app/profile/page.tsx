@@ -186,7 +186,7 @@ export default function ProfilePage() {
  {isFreelancer && (
  <div className="text-center shrink-0">
  <GeekScoreRing score={currentUser.geekScore ?? 0} />
- <p className="text-[#6b5f45] text-xs font-medium mt-1">
+ <p className="text-[#a8997e] text-xs font-medium mt-1">
  <span style={{ color: tier.color }}>{tier.label}</span>
  </p>
  </div>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
  <div key={s.label} className="glass-panel-sm rounded-[6px] p-3 text-center">
  <s.icon className="h-4 w-4 text-[#a8997e] mx-auto mb-1.5" />
  <p className="font-heading text-lg font-normal text-[#f0e8d4]">{s.value}</p>
- <p className="text-[11px] text-[#6b5f45]">{s.label}</p>
+ <p className="text-[11px] text-[#a8997e]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -230,7 +230,7 @@ export default function ProfilePage() {
  <div key={review.id} className="glass-card">
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center gap-2">
- <div className="w-7 h-7 bg-[#c9a84c] text-white text-xs font-semibold rounded-full flex items-center justify-center">
+ <div className="w-7 h-7 bg-[#c9a84c] text-[#050810] text-xs font-semibold rounded-full flex items-center justify-center">
  {reviewer?.avatarInitial ?? "?"}
  </div>
  <div>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
  <Copy className="h-3.5 w-3.5" /> Copy
  </button>
  </div>
- <p className="text-[#6b5f45] text-xs mt-2">Code: <span className="text-[#c9a84c] font-mono-il">{referralStats.referralCode}</span></p>
+ <p className="text-[#a8997e] text-xs mt-2">Code: <span className="text-[#c9a84c] font-mono-il">{referralStats.referralCode}</span></p>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  {[
@@ -290,7 +290,7 @@ export default function ProfilePage() {
  <div key={s.label} className="glass-panel-sm rounded-[6px] p-3 text-center">
  <s.icon className="h-4 w-4 text-[#a8997e] mx-auto mb-1.5" />
  <p className="font-heading text-lg font-bold text-[#f0e8d4]">{s.value}</p>
- <p className="text-[11px] text-[#6b5f45]">{s.label}</p>
+ <p className="text-[11px] text-[#a8997e]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -333,7 +333,7 @@ export default function ProfilePage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Company</label>
  <div className="relative">
- <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
  value={company} onChange={e => setCompany(e.target.value)}
  className="w-full h-11 glass-input rounded-[6px] text-sm"
@@ -357,9 +357,9 @@ export default function ProfilePage() {
  {skills.length > 0 && (
  <div className="flex flex-wrap gap-1.5 mb-3">
  {skills.map(s => (
- <span key={s} className="inline-flex items-center gap-1 bg-[#c9a84c] text-white border border-transparent rounded-full px-3 py-1 text-xs transition-colors">
+ <span key={s} className="inline-flex items-center gap-1 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs transition-colors">
  {s}
- <button onClick={() => toggleSkill(s)} className="hover:text-white transition-colors">
+ <button onClick={() => toggleSkill(s)} className="hover:text-[#f0e8d4] transition-colors">
  <X className="h-3 w-3" />
  </button>
  </span>
@@ -369,7 +369,7 @@ export default function ProfilePage() {
  <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto p-3 glass-panel-sm rounded-[6px]">
  {SKILL_TAXONOMY.filter(s => !skills.includes(s)).map(s => (
  <button key={s} onClick={() => toggleSkill(s)}
- className="bg-[#111625] text-[#a8997e] rounded-[3px] px-2.5 py-1 text-xs hover:bg-[#c9a84c] hover:text-white hover:border-transparent border border-transparent transition-all duration-200">
+ className="bg-[#111625] text-[#a8997e] rounded-[3px] px-2.5 py-1 text-xs hover:bg-[#c9a84c] hover:text-[#050810] hover:border-transparent border border-transparent transition-all duration-200">
  {s}
  </button>
  ))}
@@ -381,7 +381,7 @@ export default function ProfilePage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
  <div className="relative">
- <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
  className="w-full h-11 glass-input rounded-[6px] text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -391,7 +391,7 @@ export default function ProfilePage() {
  <div>
  <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
  <div className="relative">
- <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
  className="w-full h-11 glass-input rounded-[6px] text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -427,7 +427,7 @@ export default function ProfilePage() {
  <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">GitHub Username</label>
  <div className="flex gap-2">
  <div className="relative flex-1">
- <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b5f45]" />
+ <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
  value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
  className="w-full h-11 glass-input rounded-[6px] text-sm"
@@ -480,7 +480,7 @@ export default function ProfilePage() {
  </button>
  ) : (
  <div className="flex items-center gap-2 mt-3">
- <button className="bg-red-500 text-white px-4 py-2 rounded-[3px] text-xs font-semibold hover:bg-red-600 transition-colors">
+ <button className="bg-red-500 text-[#f0e8d4] px-4 py-2 rounded-[3px] text-xs font-semibold hover:bg-red-600 transition-colors">
  Confirm Delete
  </button>
  <button onClick={() => setShowDeleteConfirm(false)}

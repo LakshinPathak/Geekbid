@@ -66,10 +66,10 @@ export default function EarningsPage() {
  <div className="relative">
  <div className="flex items-center gap-2 mb-3">
  <TrendingUp className="h-4 w-4 text-[#c9a84c]" />
- <span className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Total Earned</span>
+ <span className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Total Earned</span>
  </div>
  <p className="font-heading text-3xl font-normal text-[#c9a84c]">{formatMoney(totalEarned)}</p>
- <p className="text-[#6b5f45] text-xs mt-1">All time</p>
+ <p className="text-[#a8997e] text-xs mt-1">All time</p>
  </div>
  </div>
 
@@ -77,32 +77,32 @@ export default function EarningsPage() {
  <div className="finance-card p-5">
  <div className="flex items-center gap-2 mb-3">
  <DollarSign className="h-4 w-4 text-[#a8997e]" />
- <span className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">This Month</span>
+ <span className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">This Month</span>
  </div>
  <p className="font-heading text-2xl font-normal text-[#f0e8d4]">
  {formatMoney(chartData[chartData.length - 1]?.value ?? 0)}
  </p>
- <p className="text-[#6b5f45] text-xs mt-1">Jun 2026</p>
+ <p className="text-[#a8997e] text-xs mt-1">Jun 2026</p>
  </div>
 
  {/* Pending */}
  <div className="finance-card p-5">
  <div className="flex items-center gap-2 mb-3">
  <Clock className="h-4 w-4 text-[#c9a84c]" />
- <span className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Pending</span>
+ <span className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Pending</span>
  </div>
  <p className="font-heading text-2xl font-normal text-[#c9a84c]">{formatMoney(pending)}</p>
- <p className="text-[#6b5f45] text-xs mt-1">In escrow</p>
+ <p className="text-[#a8997e] text-xs mt-1">In escrow</p>
  </div>
 
  {/* Avg Job Value */}
  <div className="finance-card p-5">
  <div className="flex items-center gap-2 mb-3">
  <Wallet className="h-4 w-4 text-[#a8997e]" />
- <span className="text-[#6b5f45] text-xs uppercase tracking-wider font-medium">Avg. Job Value</span>
+ <span className="text-[#a8997e] text-xs uppercase tracking-wider font-medium">Avg. Job Value</span>
  </div>
  <p className="font-heading text-2xl font-normal text-[#f0e8d4]">{formatMoney(avgJobValue)}</p>
- <p className="text-[#6b5f45] text-xs mt-1">{myTxns.length} jobs</p>
+ <p className="text-[#a8997e] text-xs mt-1">{myTxns.length} jobs</p>
  </div>
  </div>
 
@@ -122,7 +122,7 @@ export default function EarningsPage() {
  >
  </div>
  </div>
- <p className="text-xs text-[#6b5f45] font-medium">{d.month}</p>
+ <p className="text-xs text-[#a8997e] font-medium">{d.month}</p>
  </div>
  );
  })}
@@ -139,10 +139,10 @@ export default function EarningsPage() {
  {myTxns.length === 0 ? (
  <div className="text-center py-16 px-4">
  <div className="mx-auto h-14 w-14 rounded-[6px] glass-panel-sm flex items-center justify-center mb-3">
- <DollarSign className="h-6 w-6 text-[#6b5f45]" />
+ <DollarSign className="h-6 w-6 text-[#a8997e]" />
  </div>
  <h3 className="text-sm font-semibold text-[#a8997e]">No transactions yet</h3>
- <p className="text-xs text-[#6b5f45] mt-1">Transactions will appear here after you accept or post jobs.</p>
+ <p className="text-xs text-[#a8997e] mt-1">Transactions will appear here after you accept or post jobs.</p>
  </div>
  ) : (
  <div className="divide-y divide-[rgba(201,168,76,0.15)]">
@@ -162,21 +162,21 @@ export default function EarningsPage() {
  </div>
  <div className="min-w-0">
  <p className="text-sm font-medium text-[#f0e8d4] truncate">{jobTitle || `Job #${(t.jobId || "").slice(-6)}`}</p>
- <p className="text-xs text-[#6b5f45]">{timeAgo(t.createdAt)}</p>
+ <p className="text-xs text-[#a8997e]">{timeAgo(t.createdAt)}</p>
  </div>
  </div>
  <div className="flex items-center gap-4 shrink-0">
  <div className="hidden sm:flex gap-3">
  <div className="text-right">
- <p className="text-[11px] text-[#6b5f45]">Gross</p>
+ <p className="text-[11px] text-[#a8997e]">Gross</p>
  <p className="text-xs font-bold text-[#f0e8d4]">{formatMoney(t.grossAmount)}</p>
  </div>
  <div className="text-right">
- <p className="text-[11px] text-[#6b5f45]">Fee (10%)</p>
+ <p className="text-[11px] text-[#a8997e]">Fee (10%)</p>
  <p className="text-xs font-bold text-[#e57373]">-{formatMoney(t.platformFee)}</p>
  </div>
  <div className="text-right">
- <p className="text-[11px] text-[#6b5f45]">Net</p>
+ <p className="text-[11px] text-[#a8997e]">Net</p>
  <p className="text-xs font-bold text-[#c9a84c]">{formatMoney(t.netAmount)}</p>
  </div>
  </div>
