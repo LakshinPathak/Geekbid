@@ -39,6 +39,48 @@ function LoginPageContent() {
  const [error, setError] = useState("");
  const [success, setSuccess] = useState("");
 
+ // Typewriter state
+ const [phraseIndex, setPhraseIndex] = useState(0);
+ const [charIndex, setCharIndex] = useState(0);
+ const [isDeleting, setIsDeleting] = useState(false);
+ const PHRASES = [
+   "prices find their true value.",
+   "talent meets opportunity.",
+   "hiring gets transparent.",
+   "the market decides the rate.",
+ ];
+
+ // Ticker state
+ const [tickerIndex, setTickerIndex] = useState(0);
+ const TICKER_JOBS = [
+   { title: "AI Chatbot Build", price: 647, decay: 15, floor: 500, start: 2400, progress: 27 },
+   { title: "K8s Cluster Hardening", price: 1100, decay: 20, floor: 600, start: 1800, progress: 58 },
+   { title: "DeFi Yield Audit", price: 2200, decay: 35, floor: 800, start: 3500, progress: 23 },
+ ];
+
+ useEffect(() => {
+   const id = setInterval(() => setTickerIndex(p => (p + 1) % TICKER_JOBS.length), 3000);
+   return () => clearInterval(id);
+ }, []);
+
+ useEffect(() => {
+   const current = PHRASES[phraseIndex];
+   const speed = isDeleting ? 30 : 60;
+   if (!isDeleting && charIndex === current.length) {
+     const timeout = setTimeout(() => setIsDeleting(true), 2000);
+     return () => clearTimeout(timeout);
+   }
+   if (isDeleting && charIndex === 0) {
+     setIsDeleting(false);
+     setPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+     return;
+   }
+   const timeout = setTimeout(() => {
+     setCharIndex((prev) => prev + (isDeleting ? -1 : 1));
+   }, speed);
+   return () => clearTimeout(timeout);
+ }, [charIndex, isDeleting, phraseIndex]);
+
  useEffect(() => {
  const googleToken = params.get("google_token");
  const googleUser = params.get("google_user");
@@ -104,8 +146,8 @@ function LoginPageContent() {
  }} />
 
  {/* Glow blobs */}
- <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] rounded-full blur-[120px]"
- style={{ background: "rgba(201,168,76,0.06)" }} />
+ <div className="absolute top-[30%] left-[20%] w-[500px] h-[500px] rounded-full blur-[160px]"
+ style={{ background: "rgba(201,168,76,0.07)" }} />
  <div className="absolute bottom-[-80px] right-[-80px] w-[220px] h-[220px] rounded-full blur-[80px]"
  style={{ background: "rgba(201,168,76,0.05)" }} />
 
@@ -124,61 +166,85 @@ function LoginPageContent() {
 
  {/* Hero text */}
  <div className="relative z-10 flex-1 flex flex-col justify-center">
- <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-5"
- style={{ color: "#a8997e" }}>
- Reverse Auction Marketplace
- </p>
- <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
- style={{ color: "#f0e8d4" }}>
- The marketplace where{" "}
- <span style={{ WebkitBackgroundClip: "text",
- WebkitTextFillColor: "transparent",
- backgroundClip: "text",
- }}>
- prices go down.
- </span>
- </h1>
+   <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-5"
+      style={{ color: "#a8997e" }}>
+     Reverse Auction Marketplace
+   </p>
+   <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
+       style={{ color: "#f0e8d4" }}>
+     The marketplace where{" "}
+     <span style={{ color: "#c9a84c" }}>
+       {PHRASES[phraseIndex].substring(0, charIndex)}
+     </span>
+     <span className="animate-pulse" style={{ color: "#c9a84c" }}>|</span>
+   </h1>
 
- <div className="flex flex-col gap-3 mt-8">
- {["Reverse auction pricing", "Escrow-protected payments", "Real-time price decay"].map(f => (
- <div key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#a8997e" }}>
- <span style={{ color: "#c9a84c" }}>✦</span>
- {f}
- </div>
- ))}
- </div>
+   {/* Stats row */}
+   <div className="grid grid-cols-3 gap-4 mt-10 mb-6">
+     {[
+       { value: "2,400+", label: "Engineers" },
+       { value: "$1.2M", label: "Total Volume" },
+       { value: "94%", label: "Satisfaction" },
+     ].map((stat) => (
+       <div key={stat.label} className="text-center">
+         <p className="font-heading text-2xl xl:text-3xl font-bold"
+            style={{ color: "#c9a84c" }}>{stat.value}</p>
+         <p className="text-[10px] uppercase tracking-[0.12em] mt-1"
+            style={{ color: "#a8997e" }}>{stat.label}</p>
+       </div>
+     ))}
+   </div>
+
+   <div className="h-px my-6" style={{ background: "rgba(201,168,76,0.12)" }} />
+
+   {/* Live Auction Ticker */}
+   <div className="relative z-10 space-y-2">
+     <div className="flex items-center gap-2 mb-3">
+       <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "#c9a84c" }} />
+       <span className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+             style={{ color: "#a8997e" }}>Live Auctions</span>
+     </div>
+     {TICKER_JOBS.map((job, i) => (
+       <div
+         key={job.title}
+         className="rounded-[6px] p-3.5 border transition-all duration-500"
+         style={{
+           background: i === tickerIndex ? "#0d1120" : "rgba(13,17,32,0.5)",
+           borderColor: i === tickerIndex ? "rgba(201,168,76,0.35)" : "rgba(201,168,76,0.08)",
+           transform: i === tickerIndex ? "scale(1.02)" : "scale(1)",
+           opacity: i === tickerIndex ? 1 : 0.5,
+         }}
+       >
+         <div className="flex items-center justify-between">
+           <div className="flex items-center gap-2.5">
+             <div className="h-7 w-7 rounded-[3px] flex items-center justify-center"
+                  style={{ background: "rgba(201,168,76,0.12)" }}>
+               <TrendingDown className="h-3.5 w-3.5" style={{ color: "#c9a84c" }} />
+             </div>
+             <p className="text-xs font-medium" style={{ color: i === tickerIndex ? "#f0e8d4" : "#a8997e" }}>{job.title}</p>
+           </div>
+           <div className="text-right">
+             <p className="text-sm font-bold font-heading" style={{ color: "#c9a84c" }}>${job.price.toLocaleString()}</p>
+             <p className="text-[10px]" style={{ color: "#EF4444" }}>-${job.decay}/hr</p>
+           </div>
+         </div>
+         {i === tickerIndex && (
+           <div className="mt-2.5">
+             <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(201,168,76,0.08)" }}>
+               <div className="h-full rounded-full transition-all duration-1000"
+                    style={{ width: `${job.progress}%`, background: "#c9a84c" }} />
+             </div>
+             <div className="flex justify-between mt-1">
+               <span className="text-[9px]" style={{ color: "#a8997e" }}>Floor: ${job.floor.toLocaleString()}</span>
+               <span className="text-[9px]" style={{ color: "#a8997e" }}>Start: ${job.start.toLocaleString()}</span>
+             </div>
+           </div>
+         )}
+       </div>
+     ))}
+   </div>
  </div>
 
- {/* Mini price ticker */}
- <div className="relative z-10 rounded-[6px] p-4 border"
- style={{
- background: "#0d1120",
- borderColor: "rgba(201,168,76,0.12)", }}>
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-3">
- <div className="h-9 w-9 rounded-[3px] flex items-center justify-center"
- style={{ background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.22)" }}>
- <TrendingDown className="h-4 w-4" style={{ color: "#c9a84c" }} />
- </div>
- <div>
- <p className="text-sm font-medium" style={{ color: "#f0e8d4" }}>AI Chatbot Build</p>
- <p className="text-xs" style={{ color: "#a8997e" }}>Live auction</p>
- </div>
- </div>
- <div className="text-right">
- <p className="font-heading text-lg font-bold" style={{ color: "#c9a84c" }}>$647</p>
- <p className="text-xs" style={{ color: "#EF4444" }}>-$15/hr</p>
- </div>
- </div>
- {/* Decay bar */}
- <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: "rgba(201,168,76,0.08)" }}>
- <div className="h-full rounded-full transition-all" style={{ width: "27%", background: "#c9a84c" }} />
- </div>
- <div className="flex justify-between mt-1.5">
- <span className="text-[10px]" style={{ color: "#a8997e" }}>Floor: $500</span>
- <span className="text-[10px]" style={{ color: "#a8997e" }}>Start: $2,400</span>
- </div>
- </div>
  </div>
 
  {/* ─── Right Form Panel ─── */}
