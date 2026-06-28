@@ -73,14 +73,14 @@ function PriceDecayDemo() {
  <p className="text-xs text-[#a8997e] uppercase tracking-wider font-semibold">Live Price Decay</p>
  <p className="text-sm text-[#a8997e] mt-1 font-heading">AI Chatbot Development</p>
  </div>
- <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#d4b55a] border border-transparent">
+ <div className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-[#c9a84c] border border-transparent">
  <div className="h-1.5 w-1.5 rounded-full bg-[#c9a84c] unread-dot" />
  <span className="text-xs text-white font-semibold">LIVE</span>
  </div>
  </div>
 
  <div className="flex items-end gap-3 mb-4">
- <span className="text-5xl sm:text-6xl font-black text-[#f0e8d4] tabular-nums tracking-tight font-heading">
+ <span className="text-5xl sm:text-6xl font-serif font-normal text-[#f0e8d4] tabular-nums">
  ${price.toLocaleString()}
  </span>
  <div className="flex items-center gap-1 pb-2">
@@ -107,9 +107,9 @@ function PriceDecayDemo() {
  { label: "Watchers", value: "23", icon: Eye },
  { label: "Time Left", value: `${Math.max(64 - elapsed, 0)}h`, icon: Timer },
  ].map(s => (
- <div key={s.label} className="rounded-[6px] glass-panel-sm px-3 py-2.5 text-center bg-[rgba(201,168,76,0.06)]">
+ <div key={s.label} className="rounded-[3px] border border-[rgba(201,168,76,0.15)] px-3 py-2.5 text-center bg-[rgba(201,168,76,0.05)]">
  <s.icon className="h-3.5 w-3.5 text-[#a8997e] mx-auto mb-1" />
- <p className="text-sm font-bold text-[#f0e8d4]">{s.value}</p>
+ <p className="text-sm font-serif font-normal text-[#f0e8d4]">{s.value}</p>
  <p className="text-[11px] text-[#a8997e]">{s.label}</p>
  </div>
  ))}
@@ -261,9 +261,9 @@ export default function LandingPage() {
  <div className="bg-[#0d1120] text-[#f0e8d4] overflow-x-hidden">
  {/* ═══ NAVBAR ═══ */}
  <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
- <div className="flex h-14 items-center justify-between px-6 rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#0d1120]/90 shadow-[0_4px_16px_rgba(0,0,0,0.40)]">
+ <div className="flex h-14 items-center justify-between px-6 border border-[rgba(201,168,76,0.22)] bg-[#0d1120]/90">
  <div className="flex items-center gap-2.5">
- <div className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#c9a84c] text-white animate-pulse-glow">
+ <div className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#080b14]">
  <Zap className="h-4 w-4" />
  </div>
  <span className="text-base font-bold tracking-tight font-heading text-[#f0e8d4]">GeekBid</span>
@@ -279,7 +279,7 @@ export default function LandingPage() {
  <button className="hidden sm:block text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors font-medium">Sign In</button>
  </Link>
  <Link href="/login?tab=register&role=client">
- <button className="flex items-center gap-2 btn-primary text-sm px-5 py-2.5 rounded-[6px]">
+ <button className="flex items-center gap-2 btn-primary text-sm px-5 py-2.5 rounded-[3px]">
  Get Started <ArrowUpRight className="h-3.5 w-3.5" />
  </button>
  </Link>
@@ -298,13 +298,13 @@ export default function LandingPage() {
  {/* Left: Copy */}
  <div className="text-center lg:text-left animate-fade-in-up">
  {/* Badge */}
- <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.04)] mb-8 text-sm text-[#a8997e] hover:bg-[rgba(201,168,76,0.07)] transition-colors cursor-default">
- <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] bg-[#d4b55a] text-[#0D1B2A] text-[11px] font-bold uppercase tracking-wider"><span className="h-1.5 w-1.5 rounded-full bg-[#0d1120] animate-pulse inline-block mr-1"></span>LIVE</span>
+ <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-[3px] border border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.04)] mb-8 text-sm text-[#a8997e] hover:bg-[rgba(201,168,76,0.07)] transition-colors cursor-default">
+ <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[#c9a84c] text-[#080b14] text-[11px] font-bold uppercase tracking-wider"><span className="h-1.5 w-1.5 rounded-full bg-[#080b14] animate-pulse inline-block mr-1"></span>LIVE</span>
  <span>Reverse Auction Platform for Engineers</span>
  <ChevronRight className="h-3.5 w-3.5 text-[#a8997e]" />
  </div>
 
- <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-[-0.04em] leading-[0.95] font-heading">
+ <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-serif font-normal tracking-tight leading-[1.05]">
  Hire engineers
  <br />
  <span className="text-gradient">
@@ -319,13 +319,13 @@ export default function LandingPage() {
  {/* CTAs */}
  <div className="flex flex-col sm:flex-row gap-4 mt-10 justify-center lg:justify-start">
  <Link href="/login?tab=register&role=client">
- <button className="group btn-primary text-base px-10 py-4 rounded-[6px] hover:-translate-y-0.5 duration-300 glow-green-sm">
+ <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
  Start Hiring Free
  <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
  </button>
  </Link>
  <Link href="/login?tab=register&role=freelancer">
- <button className="group btn-ghost text-base px-10 py-4 rounded-[6px] hover:-translate-y-0.5 transition-all duration-300">
+ <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
  <Code className="h-4 w-4" /> Join as Freelancer
  </button>
  </Link>
@@ -341,7 +341,7 @@ export default function LandingPage() {
 
  {/* Right: Live Price Decay Demo */}
  <div className="relative animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
- <div className="absolute -inset-4  to-[#3B3BD4]/[0.04] rounded-[6px] blur-xl pointer-events-none" />
+ 
  <PriceDecayDemo />
  </div>
  </div>
@@ -358,7 +358,7 @@ export default function LandingPage() {
  <div className="mx-auto max-w-6xl px-5">
  <div className="text-center mb-12">
  <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-[0.25em] mb-4">Platform Preview</p>
- <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#f0e8d4] leading-tight">
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
  Your auction feed. <span className="text-[#a8997e]">Reimagined.</span>
  </h2>
  </div>
@@ -443,7 +443,7 @@ export default function LandingPage() {
  <div className="mx-auto max-w-6xl px-5 sm:px-8">
  <div className="text-center mb-16 sm:mb-20">
  <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-[0.25em] mb-4">How It Works</p>
- <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#f0e8d4] leading-tight max-w-3xl mx-auto font-heading">
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
  From posting to payment in four simple steps
  </h2>
  <p className="text-base text-[#a8997e] max-w-xl mx-auto mt-5">
@@ -453,13 +453,13 @@ export default function LandingPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
  {STEPS.map((s) => (
- <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)]/30 transition-all duration-300 job-card-hover">
- <span className="text-5xl font-black text-white/[0.05] absolute top-4 right-4 group-hover:text-[#d4b55a]/20 transition-colors font-heading">{s.num}</span>
+ <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300">
+ <span className="text-5xl font-serif font-normal text-[rgba(201,168,76,0.08)] absolute top-4 right-4 group-hover:text-[rgba(201,168,76,0.18)] transition-colors">{s.num}</span>
  <div className="relative z-10">
  <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
  <s.icon className="h-5 w-5" />
  </div>
- <h3 className="text-base font-bold text-[#f0e8d4] mb-2 font-heading">{s.title}</h3>
+ <h3 className="text-base font-serif font-normal text-[#f0e8d4] mb-2">{s.title}</h3>
  <p className="text-sm text-[#a8997e] leading-relaxed">{s.desc}</p>
  </div>
  </div>
@@ -491,22 +491,19 @@ export default function LandingPage() {
  <div className="mx-auto max-w-6xl px-5 sm:px-8">
  <div className="text-center mb-16">
  <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-[0.25em] mb-4">Platform Features</p>
- <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#f0e8d4] leading-tight max-w-3xl mx-auto font-heading">
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
  Everything you need to hire and deliver, built in
  </h2>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {FEATURES.map(f => (
- <div key={f.title} className="group job-card p-8 job-card-hover relative overflow-hidden">
- <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
- <div className={`absolute -top-20 -right-20 w-40 h-40 ${f.gradient} rounded-full blur-3xl`} />
- </div>
+ <div key={f.title} className="group job-card p-8 relative">
  <div className="relative z-10">
- <div className="h-14 w-14 rounded-[6px] bg-[rgba(201,168,76,0.07)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center mb-6 group-hover:border-[rgba(201,168,76,0.35)]/30 transition-colors">
- <f.icon className="h-6 w-6 text-[#a8997e] group-hover:text-[#d4b55a] transition-colors" />
+ <div className="h-14 w-14 rounded-[6px] bg-[rgba(201,168,76,0.07)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center mb-6 group-hover:border-[rgba(201,168,76,0.35)] transition-colors">
+ <f.icon className="h-6 w-6 text-[#a8997e] group-hover:text-[#c9a84c] transition-colors" />
  </div>
- <h3 className="text-lg font-bold text-[#f0e8d4] mb-2 font-heading">{f.title}</h3>
+ <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{f.title}</h3>
  <p className="text-sm text-[#a8997e] leading-relaxed">{f.desc}</p>
  </div>
  </div>
@@ -520,7 +517,7 @@ export default function LandingPage() {
  <div className="mx-auto max-w-4xl px-5 sm:px-8">
  <div className="text-center mb-16">
  <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-[0.25em] mb-4">Why GeekBid</p>
- <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#f0e8d4] leading-tight font-heading">
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
  Traditional hiring is broken
  </h2>
  <p className="text-base text-[#a8997e] max-w-lg mx-auto mt-5">
@@ -573,7 +570,7 @@ export default function LandingPage() {
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
  {STATS.map((s, i) => (
  <div key={s.label} className="text-center">
- <p className="text-4xl sm:text-5xl font-black text-[#d4b55a] tracking-tight tabular-nums font-heading">
+ <p className="text-4xl sm:text-5xl font-serif font-normal text-[#c9a84c] tabular-nums">
  {s.prefix}{i === 1 ? `${(statValues[i] / 10).toFixed(1)}` : statValues[i]}{s.suffix}
  </p>
  <p className="text-xs text-[#a8997e] mt-2 font-medium uppercase tracking-wider">{s.label}</p>
@@ -588,7 +585,7 @@ export default function LandingPage() {
  <div className="mx-auto max-w-4xl px-5">
  <div className="text-center mb-16">
  <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-[0.25em] mb-4">Testimonials</p>
- <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#f0e8d4] leading-tight font-heading">
+ <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
  Loved by engineers and clients alike
  </h2>
  </div>
@@ -604,11 +601,11 @@ export default function LandingPage() {
  <div className="flex gap-1 justify-center mb-8">
  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-5 w-5 fill-[#d4b55a] text-[#d4b55a]" />)}
  </div>
- <blockquote className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#a8997e] leading-relaxed tracking-tight max-w-2xl mx-auto">
+ <blockquote className="text-xl sm:text-2xl font-serif font-normal text-[#f0e8d4] leading-relaxed max-w-2xl mx-auto">
  &ldquo;{t.quote}&rdquo;
  </blockquote>
  <div className="mt-8 flex items-center justify-center gap-4">
- <div className="h-12 w-12 rounded-full bg-[#d4b55a] border-0 flex items-center justify-center text-sm font-bold text-[#0D1B2A]">{t.avatar}</div>
+ <div className="h-12 w-12 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.35)] flex items-center justify-center text-sm font-bold text-[#c9a84c]">{t.avatar}</div>
  <div className="text-left">
  <p className="text-sm font-semibold text-[#f0e8d4]">{t.name}</p>
  <p className="text-xs text-[#a8997e] mt-0.5">{t.title}</p>
@@ -625,7 +622,7 @@ export default function LandingPage() {
  <button
  key={i}
  onClick={() => setActiveTestimonial(i)}
- className={`h-2 rounded-full transition-all duration-300 ${i === activeTestimonial ? "w-8 bg-[#d4b55a]/60" : "w-2 bg-[rgba(201,168,76,0.15)] hover:bg-[#d4b55a]/20"}`}
+ className={`h-0.5 rounded-none transition-all duration-300 ${i === activeTestimonial ? "w-8 bg-[#c9a84c]" : "w-3 bg-[rgba(201,168,76,0.25)] hover:bg-[rgba(201,168,76,0.50)]"}`}
  />
  ))}
  </div>
@@ -640,20 +637,20 @@ export default function LandingPage() {
  <div className="group glass-card hover:border-[rgba(201,168,76,0.35)]/40 job-card-hover relative overflow-hidden">
  <div className="absolute -top-32 -right-32 w-64 h-64 bg-[#c9a84c]/[0.05] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
  <div className="relative z-10">
- <div className="h-12 w-12 rounded-[6px] bg-[#d4b55a] border border-transparent flex items-center justify-center mb-6">
- <Target className="h-6 w-6 text-[#0D1B2A]" />
+ <div className="h-12 w-12 rounded-[3px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.35)] flex items-center justify-center mb-6">
+ <Target className="h-6 w-6 text-[#c9a84c]" />
  </div>
- <h3 className="text-2xl font-bold text-[#f0e8d4] mb-3 font-heading">For Clients</h3>
+ <h3 className="text-2xl font-serif font-normal text-[#f0e8d4] mb-3">For Clients</h3>
  <ul className="space-y-3 mb-8">
  {["Post jobs with custom decay rates", "Escrow protects every payment", "Browse verified freelancer profiles", "Real-time chat with candidates"].map(item => (
  <li key={item} className="flex items-center gap-3 text-sm text-[#a8997e]">
- <CheckCircle2 className="h-4 w-4 text-[#d4b55a]/80 shrink-0" />
+ <CheckCircle2 className="h-4 w-4 text-[#c9a84c] shrink-0" />
  {item}
  </li>
  ))}
  </ul>
  <Link href="/login?tab=register&role=client">
- <button className="btn-primary text-sm px-8 py-3.5 rounded-[6px] w-full justify-center">
+ <button className="btn-primary text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
  Start Hiring <ArrowRight className="h-4 w-4" />
  </button>
  </Link>
@@ -667,17 +664,17 @@ export default function LandingPage() {
  <div className="h-12 w-12 rounded-[6px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center mb-6">
  <Code className="h-6 w-6 text-[#d4b55a]" />
  </div>
- <h3 className="text-2xl font-bold text-[#f0e8d4] mb-3 font-heading">For Freelancers</h3>
+ <h3 className="text-2xl font-serif font-normal text-[#f0e8d4] mb-3">For Freelancers</h3>
  <ul className="space-y-3 mb-8">
  {["Watch job prices and bid at your target rate", "Build your GeekScore™ reputation", "Get matched to jobs by skills", "Guaranteed payment via escrow"].map(item => (
  <li key={item} className="flex items-center gap-3 text-sm text-[#a8997e]">
- <CheckCircle2 className="h-4 w-4 text-[#d4b55a]/80 shrink-0" />
+ <CheckCircle2 className="h-4 w-4 text-[#c9a84c] shrink-0" />
  {item}
  </li>
  ))}
  </ul>
  <Link href="/login?tab=register&role=freelancer">
- <button className="btn-ghost text-sm px-8 py-3.5 rounded-[6px] w-full justify-center">
+ <button className="btn-ghost text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
  Join as Freelancer <ArrowRight className="h-4 w-4" />
  </button>
  </Link>
@@ -693,7 +690,7 @@ export default function LandingPage() {
  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#c9a84c]/[0.03] rounded-full blur-[120px]" />
  </div>
  <div className="mx-auto max-w-4xl px-5 text-center relative z-10">
- <h2 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-[#f0e8d4] leading-[1.05] font-heading">
+ <h2 className="text-4xl sm:text-6xl md:text-7xl font-serif font-normal text-[#f0e8d4] leading-[1.05]">
  Ready to hire <span className="text-gradient">smarter?</span>
  </h2>
  <p className="text-lg text-[#a8997e] mt-6 max-w-lg mx-auto">
@@ -701,12 +698,12 @@ export default function LandingPage() {
  </p>
  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
  <Link href="/login?tab=register&role=client">
- <button className="group btn-primary text-base px-12 py-4 rounded-[6px] glow-green-sm hover:-translate-y-0.5 transition-transform duration-300">
+ <button className="group btn-primary text-base px-12 py-4 rounded-[3px]">
  Get Started Free <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
  </button>
  </Link>
  <Link href="/login?tab=register&role=freelancer">
- <button className="btn-ghost text-base px-12 py-4 rounded-[6px] hover:-translate-y-0.5 transition-transform duration-300">
+ <button className="btn-ghost text-base px-12 py-4 rounded-[3px]">
  Apply as Freelancer <ChevronRight className="h-4 w-4" />
  </button>
  </Link>
@@ -724,7 +721,7 @@ export default function LandingPage() {
  <div className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#c9a84c] text-white">
  <Zap className="h-4 w-4" />
  </div>
- <span className="text-base font-bold font-heading text-[#f0e8d4]">GeekBid</span>
+ <span className="text-base font-serif font-normal text-[#f0e8d4]">GeekBid</span>
  </div>
  <p className="text-sm text-[#a8997e] leading-relaxed">
  The reverse-auction marketplace for engineering talent.
@@ -733,26 +730,26 @@ export default function LandingPage() {
 
  {/* Links */}
  <div>
- <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider mb-4">Platform</p>
+ <p className="text-[11px] font-medium text-[#6b5f45] uppercase tracking-widest mb-4">Platform</p>
  <ul className="space-y-2.5">
- <li><Link href="/feed" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Browse Jobs</Link></li>
- <li><Link href="/login?tab=register&role=client" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Post a Job</Link></li>
- <li><Link href="/login?tab=register&role=freelancer" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Find Work</Link></li>
+ <li><Link href="/feed" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Browse Jobs</Link></li>
+ <li><Link href="/login?tab=register&role=client" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Post a Job</Link></li>
+ <li><Link href="/login?tab=register&role=freelancer" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Find Work</Link></li>
  </ul>
  </div>
  <div>
- <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider mb-4">Resources</p>
+ <p className="text-[11px] font-medium text-[#6b5f45] uppercase tracking-widest mb-4">Resources</p>
  <ul className="space-y-2.5">
- <li><a href="#how-it-works" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">How it Works</a></li>
- <li><a href="#features" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Features</a></li>
- <li><a href="#compare" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">GeekBid vs Traditional</a></li>
+ <li><a href="#how-it-works" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">How it Works</a></li>
+ <li><a href="#features" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Features</a></li>
+ <li><a href="#compare" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">GeekBid vs Traditional</a></li>
  </ul>
  </div>
  <div>
- <p className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider mb-4">Account</p>
+ <p className="text-[11px] font-medium text-[#6b5f45] uppercase tracking-widest mb-4">Account</p>
  <ul className="space-y-2.5">
- <li><Link href="/login" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Sign In</Link></li>
- <li><Link href="/login?tab=register" className="text-sm text-[#a8997e] hover:text-[#d4b55a] transition-colors">Create Account</Link></li>
+ <li><Link href="/login" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Sign In</Link></li>
+ <li><Link href="/login?tab=register" className="text-sm text-[#a8997e] hover:text-[#c9a84c] transition-colors">Create Account</Link></li>
  </ul>
  </div>
  </div>
