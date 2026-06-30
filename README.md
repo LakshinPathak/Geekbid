@@ -3,7 +3,7 @@
 > **The world's first reverse-auction platform for tech talent.**  
 > Clients post jobs. Prices decay over time. Freelancers bid the price **down**. Best value wins.
 
-**Current version: v9** — Role-based feeds, premium landing page animations, full CRUD pipeline, Royal Dark design system.
+**Current version: v10** — Cloudinary image CDN for avatars + Gemini AI bid strategist, bid evaluator, job description generator, and pricing advisor.
 
 ---
 
@@ -31,6 +31,20 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's New in v10
+
+| Area | Change |
+|------|--------|
+| **Cloudinary CDN** | All avatars served via Cloudinary — `CldImage` with face-detection crop, WebP auto-format, responsive sizing |
+| **CloudinaryAvatar** | Single source-of-truth component used in every avatar location (navbar, profiles, inbox, job cards, feeds, team, admin, landing) |
+| **AvatarUploader** | `CldUploadWidget` with crop-to-square, Royal Dark theme, change + remove photo |
+| **Upload API** | `/api/upload/sign` (signed upload) and `/api/upload/delete` (ownership-verified deletion) |
+| **AI Bid Strategist** | Gemini analyses 7 market signals and recommends optimal bid price, win probability, timing, risks, and 2 alternatives. Free plan: 2/month |
+| **AI Bid Evaluator** | Clients get AI value scores across all bids — not just lowest price, but skill match + GeekScore + commitment |
+| **AI Description Generator** | Type a job title → ✨ Generate fills a 200-word professional description with deliverables and requirements |
+| **AI Pricing Advisor** | Recommends starting price, floor, and decay rate based on category + skills + market data |
+| **AI foundation** | `lib/ai.ts` — single Gemini SDK wrapper; 8 auth-gated API routes; free-tier gating; graceful degradation |
 
 ## What's New in v9
 
@@ -68,6 +82,14 @@ $400 ─────────────────────────
 - **Sort modes** — Best Match, Price: Low→High, High→Low, Newest, Fewest Bids, Skill Match %
 - **Quick Bid** — 2% below current price in one click
 - **GeekScore** — reputation that grows with successful jobs and received ratings
+
+### AI Features (v10)
+- **AI Bid Strategist** — 7-signal analysis: current price, decay rate, demand multiplier, bid distribution, time remaining, competition, and freelancer fit. Returns suggested bid, win probability, timing advice, risks, and 2 alternative prices with Apply buttons
+- **AI Bid Evaluator** — client-side bid ranking by value score (price + skill match + GeekScore + commitment), not just lowest price. Highlights the best overall bid with a one-click Accept
+- **AI Description Generator** — type a title, click ✨ Generate, get a 200-word professional job description with deliverables, requirements, and acceptance criteria
+- **AI Pricing Advisor** — recommends starting price, floor, and hourly decay rate based on job category, required skills, and market data. One-click "Apply" fills all pricing fields
+- **Free plan gating** — 2 AI bid analyses per month on free plan; counter shown on the Analyze button; upgrade prompt on limit
+- **Graceful degradation** — if Gemini is unavailable, AI buttons are hidden; no page breakage
 
 ### Auction Engine
 - Fixed and adaptive pricing modes (demand slows decay)
@@ -111,6 +133,8 @@ $400 ─────────────────────────
 | **State** | React Context + useCallback (no external state library) |
 | **Auth** | JWT (jose), bcrypt 12 rounds, Google OAuth 2.0, HttpOnly refresh cookies |
 | **Database** | MongoDB Atlas (native driver, no ORM) |
+| **Image CDN** | Cloudinary — `next-cloudinary` (`CldImage`, `CldUploadWidget`), face-detect crop, WebP auto |
+| **AI** | Google Gemini 2.0 Flash via `@google/generative-ai` — bid strategy, evaluation, generation |
 | **Payments** | Razorpay escrow (order → verify → release flow) |
 | **Email** | Nodemailer — job posted, bid received, accepted, cancelled, completed |
 | **Real-time** | Socket.IO (bid decay broadcast + chat) |
@@ -147,7 +171,9 @@ GeekBid/
 │       ├── auth.ts                 JWT helpers + authenticateRequest
 │       ├── pricing.ts              Adaptive price formula
 │       ├── mongodb.ts              Atlas connection singleton
-│       └── email.ts                Nodemailer transactional emails
+│       ├── email.ts                Nodemailer transactional emails
+│       ├── cloudinary.ts           Cloudinary server-side SDK config (v10)
+│       └── ai.ts                   Gemini SDK wrapper — single entry point (v10)
 │
 ├── backend/                      ← Express microservices
 │   ├── services/gateway/           Port 3000
@@ -338,6 +364,28 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 | GET | `/api/transactions` | Bearer | Own transactions |
 | PATCH | `/api/transactions` | Client | Release or dispute escrow |
 
+### Image Upload (v10)
+
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| POST | `/api/upload/sign` | Bearer | Returns Cloudinary signed upload params |
+| DELETE | `/api/upload/delete` | Bearer | Deletes image; verifies ownership via `avatarPublicId` |
+
+### AI (v10)
+
+All AI routes require `Authorization: Bearer <token>`. Gemini key stays server-side only.
+
+| Method | Endpoint | Notes |
+|--------|----------|-------|
+| POST | `/api/ai/bid-strategy` | `{jobId}` → optimal bid, win%, timing, risks, 2 alternatives. Free plan: 2/month |
+| POST | `/api/ai/evaluate-bids` | `{job, bids[]}` → value scores + recommended bid index |
+| POST | `/api/ai/generate-description` | `{title, category, skills, estimatedHours}` → professional job description |
+| POST | `/api/ai/pricing-advisor` | `{title, category, skills, estimatedHours}` → starting price, floor, decay rate |
+| POST | `/api/ai/summarize-reviews` | `{reviews[]}` → summary, strengths[], improvements[] (min 3 reviews) |
+| POST | `/api/ai/smart-search` | `{query, type}` → parsed filters (skills, category, budget range) |
+| POST | `/api/ai/chat-assist` | `{command, jobContext, chatHistory, userRole}` → drafted message |
+| POST | `/api/ai/quality-check` | `{content}` → trustScore, flags[], action (approve/review/reject) |
+
 ### Other
 
 | Endpoint | Description |
@@ -345,7 +393,7 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 | `GET /api/users` | List users (logged-in) |
 | `GET /api/users/[id]` | Public profile |
 | `GET /api/user` | Own full profile |
-| `PATCH /api/user` | Update own profile |
+| `PATCH /api/user` | Update own profile (`avatarUrl`, `avatarPublicId` accepted in v10) |
 | `POST /api/user/verify-github` | Link GitHub handle |
 | `GET /api/milestones?jobId=` | Job milestones |
 | `GET /api/disputes` | Disputes |
@@ -369,6 +417,12 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 | `MONGODB_URI` | Yes | MongoDB Atlas connection string |
 | `NEXTAUTH_SECRET` | Yes | JWT signing secret (32+ chars) |
 | `NEXTAUTH_URL` | Yes | `http://localhost:3000` for local dev |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Yes (v10) | Cloudinary cloud name (public, client-safe) |
+| `CLOUDINARY_API_KEY` | Yes (v10) | Cloudinary API key (server only) |
+| `CLOUDINARY_API_SECRET` | Yes (v10) | Cloudinary API secret — **never expose client-side** |
+| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Yes (v10) | Upload preset name (e.g. `geekbid_unsigned`) |
+| `GEMINI_API_KEY` | Yes (v10) | Google Gemini API key — **never expose client-side** |
+| `AI_MODEL` | No | Gemini model ID (default: `gemini-2.0-flash`) |
 | `GOOGLE_CLIENT_ID` | No | Enables Google Login |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
 | `RAZORPAY_KEY_ID` | No | Payments (app works without — mock mode) |
@@ -418,7 +472,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `main` | **v9** — Current stable (role-based feeds, animations, CRUD fixes) |
+| `v10` | **Latest** — Cloudinary image CDN + Gemini AI (bid strategist, evaluator, description gen, pricing advisor) |
+| `main` | v9 — Role-based feeds, animations, CRUD fixes |
 | `v9` | Same as main |
 | `v7` | Royal Dark design system, horizontal carousels |
 | `v5` | Mobile responsiveness, port pinning |
