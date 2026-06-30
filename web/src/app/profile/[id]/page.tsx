@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import DirectHireModal from "@/components/feed/DirectHireModal";
 import InviteToBidModal from "@/components/feed/InviteToBidModal";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 interface PublicUser {
   _id: string; id: string;
-  fullName?: string; avatarInitial?: string; role?: string;
+  fullName?: string; avatarInitial?: string; avatarUrl?: string; role?: string;
   skills?: string[]; geekScore?: number; averageRating?: number;
   totalReviews?: number; availability?: string; bio?: string;
   hourlyRateMin?: number; hourlyRateMax?: number;
@@ -102,10 +103,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
 
             {/* Avatar */}
-            <div className="h-16 w-16 rounded-[6px] flex items-center justify-center text-2xl font-bold text-[#050810] shrink-0"
-                 style={{ background: "linear-gradient(135deg, #c9a84c, #8a6e2f)" }}>
-              {user.avatarInitial ?? user.fullName?.[0]?.toUpperCase() ?? "?"}
-            </div>
+            <CloudinaryAvatar
+              avatarUrl={user.avatarUrl}
+              avatarInitial={user.avatarInitial ?? user.fullName?.[0]?.toUpperCase() ?? "?"}
+              size="lg"
+            />
 
             {/* Name + badges */}
             <div className="flex-1 min-w-0">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState, useRef } from "react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 import {
  Zap, ArrowRight, TrendingDown, Shield, Users, Code, Clock,
  DollarSign, Star, ChevronRight, Sparkles, BarChart3, Lock,
@@ -801,9 +802,11 @@ export default function LandingPage() {
  <div className="flex items-center gap-3">
   {/* Avatar photo */}
   <div className="relative shrink-0">
-  <div className="h-[60px] w-[60px] rounded-full border border-[rgba(201,168,76,0.25)] overflow-hidden">
-  <img src={t.photo} alt={t.name} className="h-full w-full object-cover" />
- </div>
+  <CloudinaryAvatar
+    avatarUrl={t.photo}
+    avatarInitial={t.avatar}
+    size="lg"
+  />
  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-[#0a0d18]" />
  </div>
  <div>

@@ -56,6 +56,8 @@ export async function PATCH(req: NextRequest) {
  "availability",
  "hourlyRateMin",
  "hourlyRateMax",
+ "avatarUrl",
+ "avatarPublicId",
  ];
  const safeUpdates: Record<string, unknown> = {};
  for (const key of allowedFields) {

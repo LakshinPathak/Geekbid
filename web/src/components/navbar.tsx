@@ -12,6 +12,7 @@ import {
  LogOut, Settings, Briefcase, PlusCircle, DollarSign, Shield,
  CreditCard, X, Menu,
 } from "lucide-react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 const NAV_ITEMS = [
  { href: "/feed", label: "Feed", icon: LayoutGrid },
@@ -96,15 +97,11 @@ export default function Navbar() {
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
  <button className="flex items-center gap-2 h-9 px-2 hover:bg-[#111625] rounded-[3px] transition-colors outline-none">
- <div
- className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-[#c9a84c]"
- style={{
- background: "rgba(201,168,76,0.12)",
- border: "0.5px solid rgba(201,168,76,0.22)",
- }}
- >
- {currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={currentUser.avatarUrl}
+ avatarInitial={currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
+ size="sm"
+ />
  <div className="hidden md:flex flex-col items-start">
  <span className="text-sm font-semibold text-[#f0e8d4] leading-tight">{currentUser.fullName}</span>
  <span className="text-[11px] text-[#a8997e] capitalize">{currentUser.role}</span>
@@ -196,12 +193,11 @@ export default function Navbar() {
  {/* User info */}
  <div className="px-6 py-4 border-b border-[rgba(201,168,76,0.22)]">
  <div className="flex items-center gap-3">
- <div
- className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-[#c9a84c] shrink-0"
- style={{ background: "rgba(201,168,76,0.12)", border: "0.5px solid rgba(201,168,76,0.22)" }}
- >
- {currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={currentUser.avatarUrl}
+ avatarInitial={currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
+ size="md"
+ />
  <div>
  <p className="text-sm font-semibold text-[#f0e8d4]">{currentUser.fullName}</p>
  <p className="text-xs text-[#a8997e] capitalize">{currentUser.role} · {currentUser.email}</p>

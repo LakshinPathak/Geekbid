@@ -192,6 +192,8 @@ export async function registerUser(
  availability: "available",
  hourlyRateMin: 0,
  hourlyRateMax: 0,
+ avatarUrl: "",
+ avatarPublicId: "",
  createdAt: new Date().toISOString(),
  };
 

@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, type Job, type User } from "@/lib/utils";
 import { Clock, TrendingDown, Eye, Zap, ArrowDown } from "lucide-react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 type Props = {
  job: Job; now: Date; client?: User;
@@ -26,9 +27,11 @@ export function JobCard({ job, now, client, onAccept, onWatch, isWatching, isFre
  <div className="flex items-start justify-between mb-3">
  <div className="flex items-center gap-2">
  {client && (
- <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(201,168,76,0.12)] text-xs font-semibold text-[#c9a84c] border border-[rgba(201,168,76,0.22)]">
- {client.avatarInitial}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={client.avatarUrl}
+ avatarInitial={client.avatarInitial}
+ size="xs"
+ />
  )}
  <div>
  {client && <p className="text-xs text-[#a8997e]">{client.fullName} {client.isVerified && <span className="text-[#c9a84c]">✓</span>}</p>}

@@ -10,6 +10,8 @@ import {
  TrendingDown, Eye, EyeOff, Globe, Lock, X, AlertCircle, Loader2, Activity,
 } from "lucide-react";
 import { getDemandMultiplier } from "@/lib/pricing";
+import AIDescriptionButton from "@/components/ai/AIDescriptionButton";
+import AIPricingAdvisor from "@/components/ai/AIPricingAdvisor";
 
 type Step = 1 | 2 | 3;
 
@@ -516,6 +518,18 @@ export default function PostJobPage() {
  rows={5}
  className="glass-input w-full resize-none"
  />
+ <div className="mt-2">
+ <AIDescriptionButton
+ title={title}
+ skills={skills}
+ category={category}
+ estimatedHours={estimatedHours}
+ onApply={(desc, suggestedSkills) => {
+ setDescription(desc);
+ suggestedSkills.forEach(s => { if (!skills.includes(s)) toggleSkill(s); });
+ }}
+ />
+ </div>
  </div>
 
  <div>
@@ -585,6 +599,18 @@ export default function PostJobPage() {
  {step === 2 && (
  <div className="space-y-6">
  <p className="text-[#c9a84c] text-xs uppercase tracking-wider font-semibold">Pricing</p>
+
+ {/* AI Pricing Advisor */}
+ <AIPricingAdvisor
+ title={title}
+ skills={skills}
+ category={category}
+ estimatedHours={estimatedHours}
+ onApply={(start, floor) => {
+ setStartingPrice(start);
+ setMinimumPrice(floor);
+ }}
+ />
 
  {/* Pricing Mode Toggle */}
  <div>

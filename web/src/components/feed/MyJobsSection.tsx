@@ -10,11 +10,12 @@ import {
  Briefcase, Users, Clock, TrendingDown, ChevronDown,
  Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface User {
  id?: string; _id?: string;
- fullName?: string; avatarInitial?: string;
+ fullName?: string; avatarInitial?: string; avatarUrl?: string;
  geekScore?: number; averageRating?: number;
  totalReviews?: number; plan?: string;
 }
@@ -55,9 +56,11 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  </span>
 
  {/* Avatar */}
- <div className="w-7 h-7 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center text-xs font-bold text-[#c9a84c] shrink-0">
- {user?.avatarInitial ?? user?.fullName?.[0] ?? "?"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={user?.avatarUrl}
+ avatarInitial={user?.avatarInitial ?? user?.fullName?.[0] ?? "?"}
+ size="xs"
+ />
 
  {/* Name + GeekScore */}
  <div className="flex-1 min-w-0">

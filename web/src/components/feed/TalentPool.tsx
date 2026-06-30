@@ -8,11 +8,12 @@ import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSq
 import DirectHireModal from "./DirectHireModal";
 import InviteToBidModal from "./InviteToBidModal";
 import MessageFreelancerModal from "./MessageFreelancerModal";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface User {
   id?: string; _id?: string;
-  fullName?: string; avatarInitial?: string; role?: string;
+  fullName?: string; avatarInitial?: string; avatarUrl?: string; role?: string;
   skills?: string[]; geekScore?: number; averageRating?: number;
   totalReviews?: number; availability?: string;
   hourlyRateMin?: number; hourlyRateMax?: number;
@@ -103,9 +104,11 @@ function FreelancerCard({
 
           {/* Avatar + Name */}
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-[3px] bg-gradient-to-br from-[#c9a84c] to-[#8a6e2f] flex items-center justify-center text-sm font-bold text-[#050810] shrink-0">
-              {freelancer.avatarInitial ?? freelancer.fullName?.[0] ?? "?"}
-            </div>
+            <CloudinaryAvatar
+              avatarUrl={freelancer.avatarUrl}
+              avatarInitial={freelancer.avatarInitial ?? freelancer.fullName?.[0] ?? "?"}
+              size="sm"
+            />
             <h3 className="font-heading text-[15px] font-normal text-[#f0e8d4] leading-snug line-clamp-1 group-hover:text-[#c9a84c] transition-colors">
               {freelancer.fullName ?? "Freelancer"}
             </h3>

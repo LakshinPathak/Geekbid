@@ -9,6 +9,8 @@ import {
  CheckCircle2, Code, Shield, Pencil, GitBranch, Trash2, ChevronDown,
  X, Save, Loader2, AlertTriangle, Share2, Copy, Users,
 } from "lucide-react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import AvatarUploader from "@/components/AvatarUploader";
 
 function GeekScoreRing({ score }: { score: number }) {
  const max = 1000;
@@ -148,9 +150,11 @@ export default function ProfilePage() {
  <div className="profile-card p-6 sm:p-8 animate-fade-in-up">
  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
  {/* Avatar */}
- <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[6px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center shrink-0">
- <span className="font-heading text-3xl font-normal text-[#c9a84c]">{currentUser.avatarInitial}</span>
- </div>
+ <CloudinaryAvatar
+ avatarUrl={currentUser.avatarUrl}
+ avatarInitial={currentUser.avatarInitial}
+ size="xl"
+ />
 
  {/* Info */}
  <div className="flex-1 text-center sm:text-left">
@@ -230,9 +234,11 @@ export default function ProfilePage() {
  <div key={review.id} className="glass-card">
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center gap-2">
- <div className="w-7 h-7 bg-[#c9a84c] text-[#050810] text-xs font-semibold rounded-full flex items-center justify-center">
- {reviewer?.avatarInitial ?? "?"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={reviewer?.avatarUrl}
+ avatarInitial={reviewer?.avatarInitial ?? "?"}
+ size="xs"
+ />
  <div>
  <p className="text-[#f0e8d4] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
  <p className="text-[#a8997e] text-xs capitalize">{review.reviewerRole}</p>
@@ -302,6 +308,25 @@ export default function ProfilePage() {
  <div className="flex items-center gap-2 mb-6">
  <Pencil className="h-4 w-4 text-[#c9a84c]" />
  <h2 className="font-heading text-lg font-semibold text-[#f0e8d4]">Edit Profile</h2>
+ </div>
+
+ {/* Profile Photo */}
+ <div className="mb-6">
+   <p className="text-[#a8997e] text-xs font-medium mb-3">Profile Photo</p>
+   <AvatarUploader
+     currentAvatarUrl={currentUser.avatarUrl}
+     avatarInitial={currentUser.avatarInitial}
+     onUploadSuccess={async ({ url, publicId }) => {
+       const result = await updateProfile({ avatarUrl: url, avatarPublicId: publicId });
+       if (result.ok) toast.success("Profile photo updated!");
+       else toast.error("Failed to update photo");
+     }}
+     onRemove={async () => {
+       const result = await updateProfile({ avatarUrl: "", avatarPublicId: "" });
+       if (result.ok) toast.success("Profile photo removed");
+       else toast.error("Failed to remove photo");
+     }}
+   />
  </div>
 
  {/* Section 1 — Personal Info */}

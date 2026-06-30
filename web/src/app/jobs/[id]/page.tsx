@@ -10,6 +10,8 @@ import {
  Clock, TrendingDown, DollarSign, Zap, ArrowLeft, Eye, Shield, Send,
  MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, User, Activity,
 } from "lucide-react";
+import AIBidStrategist from "@/components/ai/AIBidStrategist";
+import AIBidEvaluator from "@/components/ai/AIBidEvaluator";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id: jobId } = use(params);
@@ -385,6 +387,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {isClient ? (
  /* ── P2: Client Bid Comparison Matrix ── */
  <>
+ {/* AI Bid Evaluator */}
+ {jobBids.length > 0 && (
+ <div className="mb-4">
+ <AIBidEvaluator
+ job={job}
+ bids={jobBids}
+ freelancers={users}
+ onAcceptBid={async (_bid) => {
+ const r = await acceptJob(job.id ?? job._id ?? "");
+ if (!r.ok) toast.error(r.message ?? "Failed to accept");
+ else toast.success("Bid accepted!");
+ }}
+ />
+ </div>
+ )}
  <div className="flex items-center gap-2 mb-4">
  <BarChart3 className="h-4 w-4 text-[#c9a84c]" />
  <p className="text-[#f0e8d4] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
@@ -925,6 +942,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  </div>
  )
+ )}
+
+ {/* AI Bid Strategist — freelancers only */}
+ {isFreelancer && isOpen && (
+ <AIBidStrategist
+ job={job}
+ currentPrice={current}
+ competitorBids={jobBids.map(b => ({ bidPrice: b.bidPrice }))}
+ onApplyBid={(amount) => setCounterPrice(String(amount))}
+ />
  )}
 
  {isClient && isOpen && (

@@ -8,6 +8,7 @@ import {
  TrendingDown, Clock, Database, Zap, Eye, Loader2, X,
  MessageSquare, ChevronDown,
 } from "lucide-react";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 export default function AdminPage() {
  const { jobs, users, disputes, transactions, bids, now, mounted, currentUser, releaseEscrow, seedDatabase } = useApp();
@@ -240,9 +241,11 @@ export default function AdminPage() {
  return (
  <div key={u.id} className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-5 py-3.5 border-b border-[rgba(201,168,76,0.22)]/50 tx-row transition-colors">
  <div className="flex items-center gap-3 min-w-0">
- <div className="h-8 w-8 rounded-[3px] bg-[rgba(201,168,76,0.12)] flex items-center justify-center text-[#c9a84c] text-xs font-bold shrink-0">
- {u.avatarInitial}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={u.avatarUrl}
+ avatarInitial={u.avatarInitial}
+ size="sm"
+ />
  <div className="min-w-0">
  <p className="text-sm font-medium text-[#f0e8d4] truncate">{u.fullName}</p>
  <div className="flex gap-1 mt-0.5">

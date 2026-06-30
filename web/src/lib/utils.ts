@@ -57,9 +57,11 @@ export type User = {
  averageRating?: number; totalReviews?: number;
  githubVerified?: boolean; githubData?: { publicRepos: number; followers: number; profileUrl: string; verifiedAt: string };
  referralCode?: string; referredBy?: string; referralCredits?: number;
- plan?: 'free' | 'pro' | 'enterprise'; planLimits?: { jobsPostedThisMonth: number; bidsPlacedThisMonth: number; monthResetAt: string };
+ plan?: 'free' | 'pro' | 'enterprise'; planLimits?: { jobsPostedThisMonth: number; bidsPlacedThisMonth: number; aiBidUsesThisMonth?: number; monthResetAt: string };
  teamId?: string; teamRole?: 'owner' | 'member';
  verifiedSkills?: string[];
+ avatarUrl?: string;
+ avatarPublicId?: string;
 };
 
 export type JobCategory = 'ai_ml' | 'web_dev' | 'mobile' | 'devops' | 'security' | 'data_eng' | 'blockchain' | 'design' | 'qa' | 'other';

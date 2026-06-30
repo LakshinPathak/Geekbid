@@ -8,6 +8,7 @@ import {
  MessageSquare, Send, Search, ArrowLeft, Users, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 function InboxContent() {
  const { chatRooms, chatMessages, sendMessage, currentUser, users, jobs, mounted, fetchChatMessages } = useApp();
@@ -125,13 +126,11 @@ function InboxContent() {
  >
  <div className="flex items-start gap-3">
  {/* Avatar */}
- <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold ${
- isSelected
- ? "bg-[#c9a84c] text-[#050810]"
- : "bg-[#0d1120] text-[#a8997e] border border-[rgba(201,168,76,0.22)]"
- }`}>
- {otherUser?.avatarInitial ?? "?"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={otherUser?.avatarUrl}
+ avatarInitial={otherUser?.avatarInitial ?? "?"}
+ size="md"
+ />
  <div className="flex-1 min-w-0">
  <div className="flex items-center justify-between">
  <p className="text-sm font-medium truncate text-[#f0e8d4]">
@@ -178,9 +177,11 @@ function InboxContent() {
  >
  <ArrowLeft className="h-4 w-4" />
  </button>
- <div className="h-10 w-10 rounded-full bg-[#c9a84c] text-[#050810] flex items-center justify-center text-sm font-bold">
- {getOtherUser(activeRoom!)?.avatarInitial ?? "?"}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={getOtherUser(activeRoom!)?.avatarUrl}
+ avatarInitial={getOtherUser(activeRoom!)?.avatarInitial ?? "?"}
+ size="md"
+ />
  <div>
  <p className="font-heading text-base font-semibold text-[#f0e8d4]">
  {getOtherUser(activeRoom!)?.fullName ?? "Unknown"}

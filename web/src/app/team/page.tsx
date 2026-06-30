@@ -8,10 +8,11 @@ import {
  Users, Plus, Mail, CheckCircle2, ArrowLeft, Briefcase, DollarSign, Activity,
 } from "lucide-react";
 import Link from "next/link";
+import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 type TeamData = {
  id: string; name: string; ownerId: string;
- members: { id: string; fullName: string; avatarInitial: string; email: string; role: string }[];
+ members: { id: string; fullName: string; avatarInitial: string; avatarUrl?: string; email: string; role: string }[];
  invites: { email: string; status: string; invitedAt: string }[];
  analytics: { totalJobs: number; activeJobs: number; totalSpend: number };
 };
@@ -141,9 +142,11 @@ export default function TeamPage() {
  <div className="space-y-3">
  {team.members.map(m => (
  <div key={m.id} className="flex items-center gap-3 bg-[#0d1120] border border-[rgba(201,168,76,0.22)] rounded-[6px] p-3 tx-row">
- <div className="w-9 h-9 bg-[rgba(201,168,76,0.12)] text-[#c9a84c] text-xs font-semibold rounded-full flex items-center justify-center border border-[rgba(201,168,76,0.30)]">
- {m.avatarInitial}
- </div>
+ <CloudinaryAvatar
+ avatarUrl={m.avatarUrl}
+ avatarInitial={m.avatarInitial}
+ size="md"
+ />
  <div className="flex-1">
  <p className="text-[#f0e8d4] text-sm font-medium">{m.fullName}</p>
  <p className="text-[#a8997e] text-xs">{m.email}</p>
