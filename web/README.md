@@ -1,36 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GeekBid — Web App (Next.js 15)
+
+The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
+
+## Stack
+
+| | |
+|--|--|
+| Framework | Next.js 15 (App Router, Turbopack) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 (`@import "tailwindcss"`) |
+| Design system | Royal Dark — `#080b14` bg · `#c9a84c` gold · `#f0e8d4` ivory · Georgia serif + Inter sans |
+| State | React Context (`src/lib/store.tsx`) |
+| Database | MongoDB Atlas (native driver) |
+| Auth | JWT + bcrypt + Google OAuth 2.0 |
+| Email | Nodemailer |
+| Icons | Lucide React |
+| Toasts | Sonner |
 
 ## Getting Started
 
-First, run the development server:
+### 1. Environment
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Create `web/.env.local`:
+
+```env
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/geekbid?retryWrites=true&w=majority
+NEXTAUTH_SECRET=any-random-32-char-string
+NEXTAUTH_URL=http://localhost:3000
+
+# Optional
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+RAZORPAY_KEY_ID=rzp_test_xxx
+RAZORPAY_KEY_SECRET=xxx
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install & run
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev      # http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Seed test data
 
-## Learn More
+```bash
+curl -X POST http://localhost:3000/api/seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+Test accounts: `maya@startup.io` / `arjun@devmail.io` — password `password123`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/
+│   ├── page.tsx                  Landing page (animations, carousel, scroll triggers)
+│   ├── feed/page.tsx             Role-based feed router
+│   ├── login/page.tsx            Login + register
+│   ├── post-job/page.tsx         Job creation wizard
+│   ├── jobs/[id]/page.tsx        Job detail + bid interface
+│   ├── inbox/page.tsx            Chat rooms
+│   ├── profile/page.tsx          User profile
+│   ├── notifications/page.tsx
+│   ├── payments/page.tsx
+│   ├── earnings/page.tsx         Freelancer only
+│   ├── admin/page.tsx            Admin only
+│   └── api/                      45 REST API routes (see root README)
+│
+├── components/
+│   ├── feed/
+│   │   ├── ClientFeed.tsx        "Procurement Terminal" — client role
+│   │   ├── FreelancerFeed.tsx    "Mission Control" — freelancer role
+│   │   ├── MyJobsSection.tsx     Job carousel with inline bid panels
+│   │   ├── TalentPool.tsx        Freelancer browse for clients
+│   │   ├── SpendAnalytics.tsx
+│   │   ├── FreelancerStats.tsx
+│   │   ├── RecommendedCarousel.tsx
+│   │   ├── ActiveBidsTracker.tsx
+│   │   ├── MarketIntel.tsx
+│   │   ├── CompetitorAnalysis.tsx
+│   │   ├── DirectHireModal.tsx   GeekScore > 500 gate
+│   │   ├── InviteToBidModal.tsx
+│   │   ├── MessageFreelancerModal.tsx
+│   │   ├── FreelancerJobCard.tsx
+│   │   └── ClientJobCard.tsx
+│   ├── modals/
+│   │   └── AuctionVictoryModal.tsx
+│   ├── navbar.tsx
+│   ├── mobile-bottom-nav.tsx
+│   └── job-card.tsx
+│
+└── lib/
+    ├── store.tsx       Context + all store actions (acceptJob, counterBid, cancelJob, completeJob, …)
+    ├── auth.ts         authenticateRequest, JWT helpers
+    ├── pricing.ts      getAdaptivePrice — demand-aware decay formula
+    ├── mongodb.ts      Atlas connection singleton
+    ├── email.ts        Nodemailer — 10 transactional templates
+    ├── utils.ts        getCurrentPrice, formatMoney, SKILL_TAXONOMY, JOB_CATEGORIES
+    └── data.ts         Static seed/reference data
+```
 
-## Deploy on Vercel
+## Key Store Actions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+const {
+  // Jobs
+  postJob,       // POST /api/jobs
+  acceptJob,     // PATCH /api/jobs/[id] — freelancer: accept price · client: award best bid
+  cancelJob,     // PATCH /api/jobs/[id]/cancel
+  completeJob,   // PATCH /api/jobs/[id]/complete
+  counterBid,    // POST /api/bids — 30-min cooldown enforced client-side + server-side
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+  // Chat
+  createChatRoom,  // POST /api/chat/rooms
+  sendMessage,     // POST /api/chat/messages
+
+  // Offers & invites (called directly via fetch in modals)
+  createDirectOffer,  // POST /api/jobs/direct-offer
+
+  // Notifications
+  markNotificationRead,
+  markAllRead,
+} = useApp();
+```
+
+## API Routes
+
+All 45 routes are documented in the root [README.md](../README.md#api-reference).
+
+## Design Tokens
+
+```css
+/* Backgrounds */
+--bg-base:    #080b14   /* page background */
+--bg-panel:   #0d1120   /* glass panel */
+--bg-card:    #0a0d18   /* card surface */
+--bg-input:   #111625   /* input field */
+
+/* Text */
+--text-primary: #f0e8d4  /* ivory — headings and body */
+--text-muted:   #a8997e  /* warm gray — labels, hints */
+
+/* Accent */
+--gold:       #c9a84c   /* gold — CTAs, prices, active states */
+--gold-dim:   rgba(201,168,76,0.22)  /* border default */
+--gold-hover: rgba(201,168,76,0.35)  /* border hover */
+
+/* Status */
+--success:    #4caf7d
+--danger:     #e57373
+--info:       #60a5fa
+```
+
+## CSS Animation Classes (globals.css)
+
+| Class | Effect |
+|-------|--------|
+| `animate-fade-in-up` | Blur-to-clear + slide up |
+| `animate-fade-in-right` | Slide in from right |
+| `animate-subtle-float` | Gentle vertical float loop |
+| `animate-marquee` | Horizontal scroll (social proof) |
+| `animate-card-border-glow` | Pulsing gold border |
+| `animate-live-breathe` | Opacity oscillation |
+| `animate-price-tick` | Green flash on price change |
+| `progress-shimmer` | Shimmer sweep on progress bar |
+| `hero-scan-line` | CRT scan-line sweep |
+| `animate-hero-grid` | Dot-grid fade-in |
+| `animate-spark` | Ember particle float |

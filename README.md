@@ -3,22 +3,7 @@
 > **The world's first reverse-auction platform for tech talent.**  
 > Clients post jobs. Prices decay over time. Freelancers bid the price **down**. Best value wins.
 
-**Current version: v7** — Royal Dark design system, horizontal carousel feeds, full mobile responsiveness.
-
----
-
-## What's New in v7
-
-| Area | Change |
-|------|--------|
-| **Royal Dark design system** | All pages migrated to `#080b14` background, `#c9a84c` gold accent, `#f0e8d4` ivory text. No white backgrounds anywhere. |
-| **Horizontal carousel feeds** | "Recommended For You" (freelancer) and "My Posted Jobs" (client) use scroll-snap carousels with left/right arrows, drag-to-scroll, fade edges, and dot indicators. |
-| **Landing page fixes** | Stats counters animate on scroll (lowered IntersectionObserver threshold). Hero padding tightened. Step numbers positioned correctly inside glass cards. Price decay card visible with proper border. |
-| **Navbar** | Flat sticky bar at `h-14`, text-only UPPERCASE links, "G" logo mark replacing icon. |
-| **Progress bars** | All decay bars are flat `h-0.5` (2px) — no rounded pills. |
-| **Font rule** | Headings: `font-serif font-normal` (Georgia). UI text: `font-sans` (Inter). |
-| **Mobile responsiveness** | Full responsive layout from 320px to 1440px across all pages. |
-| **Contrast** | All text colors pass WCAG AA (minimum 4.5:1 against dark backgrounds). |
+**Current version: v9** — Role-based feeds, premium landing page animations, full CRUD pipeline, Royal Dark design system.
 
 ---
 
@@ -47,55 +32,72 @@ $400 ─────────────────────────
 
 ---
 
+## What's New in v9
+
+| Area | Change |
+|------|--------|
+| **Role-based feed router** | `/feed` auto-routes: clients → Procurement Terminal, freelancers → Mission Control |
+| **Procurement Terminal** | SpendAnalytics, MyJobsSection carousel, MarketIntel, TalentPool panels |
+| **Mission Control** | FreelancerStats, RecommendedCarousel, ActiveBidsTracker, full job grid with advanced filters |
+| **Landing page animations** | Staggered hero entrance, price decay card glow + particle sparks, scan-line, dot-grid, section scroll-triggers |
+| **Testimonials carousel** | Infinite auto-scroll, real randomuser.me photos, gradient fade masks, nav dots |
+| **Modals** | DirectHireModal (GeekScore gate), InviteToBidModal, MessageFreelancerModal |
+| **CRUD bug fixes** | Client "Accept Best" → award job to lowest bidder; notification count field fixed; bid update ObjectId safety; cancelJob / completeJob store actions added |
+| **Invite tracking** | `/api/invites` — GET / POST / PATCH with notification side-effects |
+| **Chat** | `/api/chat/rooms` + `/api/chat/messages` fully wired to inbox deep-link |
+
+---
+
 ## Features
 
 ### For Clients
-- Post jobs in 3 steps with a **live price decay preview**
-- Set adaptive pricing — demand slows the decay automatically (more bidders = slower drop)
-- View a **bid comparison matrix** — score, price, and skills side by side
-- **Escrow payments** via Razorpay — funds held until you release them
-- Accept bids directly from the feed or the job detail page
-- Real-time notifications when new bids arrive
+- Post jobs in 3 steps with a live price decay preview and adaptive pricing toggle
+- **Procurement Terminal feed** — scrollable carousel of your active jobs with per-job bid panels
+- **Spend Analytics bar** — budget posted, average bid, decay rate, savings from price drop
+- **Accept Best Bid** — one click awards the job to the lowest bidder, creates escrow, fires emails
+- **Invite to Bid** — invite specific freelancers from the Talent Pool
+- **Direct Hire** — send a fixed-price offer directly to any freelancer with GeekScore > 500
+- **Market Intelligence** — average starting prices, decay rates, time-to-first-bid in your categories
+- **Escrow payments** — funds held until you release or mark complete
 
 ### For Freelancers
-- **Live feed** with single, double, and triple column views
-- **Match scoring** — each job shows your skill match percentage
-- **Smart counter-bid assistant** — suggested aggressive / competitive / market-rate prices
-- **Interactive price slider** — drag to your bid price, see hourly rate in real time
-- **30-minute bid cooldown** shown as a depleting SVG ring timer
-- Price trajectory indicators (Dropping Fast / Steady Decline / Holding Steady)
-- GeekScore reputation system that grows with successful jobs
+- **Mission Control feed** — KPI bar (matches, bids used, win rate, earning potential)
+- **Recommended carousel** — top 5 skill-matched open jobs
+- **Active Bids Tracker** — live rank, current price, cooldown timer
+- **Smart filters** — search, category, budget range, competition level, $/hr floor, multi-skill picker
+- **Sort modes** — Best Match, Price: Low→High, High→Low, Newest, Fewest Bids, Skill Match %
+- **Quick Bid** — 2% below current price in one click
+- **GeekScore** — reputation that grows with successful jobs and received ratings
 
-### Auction Experience
-- Live price ticker with 30-second delta (↓ -$0.42 in last 30s)
-- 5-stage urgency countdown (calm → yellow → orange → red → shaking)
-- Ember particle effects on hot jobs (5+ bidders)
-- Real-time bid toast notifications
-- Forward price projection chart (what happens if 0 vs +3 more bids)
-- Animated bid activity feed
+### Auction Engine
+- Fixed and adaptive pricing modes (demand slows decay)
+- Live price ticker with 30-second delta
+- 5-stage urgency countdown and ember particle effects
+- 30-minute per-user bid cooldown (anti-freeze)
+- Price history log on every job
 
 ---
 
 ## Pages
 
-| # | Page | Route | Who sees it |
-|---|------|-------|-------------|
-| — | Landing | `/` | Everyone |
-| 1 | Login / Register | `/login` | Everyone |
-| 2 | Job Feed | `/feed` | Logged-in users |
-| 3 | Job Detail | `/jobs/[id]` | Logged-in users |
-| 4 | Post Job | `/post-job` | Clients only |
-| 5 | My Jobs | `/my-jobs` | Logged-in users |
-| 6 | Inbox | `/inbox` | Logged-in users |
-| 7 | Payments | `/payments` | Logged-in users |
-| 8 | Earnings | `/earnings` | Freelancers |
-| 9 | Notifications | `/notifications` | Logged-in users |
-| 10 | Profile | `/profile` | Logged-in users |
-| 11 | Admin Dashboard | `/admin` | Admins only |
-| 12 | Settings | `/settings` | Logged-in users |
-| 13 | Pricing | `/pricing` | Everyone |
-| 14 | Team | `/team` | Clients |
-| 15 | Assessments | `/assessments` | Freelancers |
+| Route | Page | Access |
+|-------|------|--------|
+| `/` | Landing | Public |
+| `/login` | Login / Register | Public |
+| `/feed` | Role-based Feed | Logged in |
+| `/jobs/[id]` | Job Detail | Logged in |
+| `/post-job` | Post a Job | Clients |
+| `/my-jobs` | My Jobs | Logged in |
+| `/inbox` | Chat Inbox | Logged in |
+| `/payments` | Payments | Logged in |
+| `/earnings` | Earnings | Freelancers |
+| `/notifications` | Notifications | Logged in |
+| `/profile` | Profile | Logged in |
+| `/admin` | Admin Dashboard | Admins |
+| `/settings` | Settings | Logged in |
+| `/pricing` | Pricing Plans | Public |
+| `/team` | Team Members | Clients |
+| `/assessments` | Skill Assessments | Freelancers |
 
 ---
 
@@ -103,15 +105,16 @@ $400 ─────────────────────────
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 15, React 19, TypeScript |
-| **Styling** | Tailwind CSS v4, Royal Dark design system, Georgia + Inter fonts |
-| **UI Components** | Radix UI, Lucide Icons, Sonner toasts |
-| **Auth** | JWT (jose), bcrypt (12 rounds), Google OAuth 2.0 |
-| **Database** | MongoDB Atlas (native driver) |
-| **Payments** | Razorpay (escrow, orders, webhook verification) |
+| **Frontend** | Next.js 15 (App Router), React 19, TypeScript |
+| **Styling** | Tailwind CSS v4, Royal Dark design system, Georgia serif + Inter sans |
+| **UI Components** | Radix UI primitives, Lucide icons, Sonner toasts |
+| **State** | React Context + useCallback (no external state library) |
+| **Auth** | JWT (jose), bcrypt 12 rounds, Google OAuth 2.0, HttpOnly refresh cookies |
+| **Database** | MongoDB Atlas (native driver, no ORM) |
+| **Payments** | Razorpay escrow (order → verify → release flow) |
+| **Email** | Nodemailer — job posted, bid received, accepted, cancelled, completed |
 | **Real-time** | Socket.IO (bid decay broadcast + chat) |
-| **Backend** | Express.js, 7 Node.js microservices |
-| **Deployment** | Docker + Docker Compose |
+| **Backend** | Express.js microservices |
 
 ---
 
@@ -119,23 +122,43 @@ $400 ─────────────────────────
 
 ```
 GeekBid/
-├── web/                        ← Next.js app (port 3000)
-│   ├── src/app/                  App Router — 15 pages
-│   ├── src/app/api/              REST API routes (auth, jobs, bids, payments, chat …)
-│   ├── src/components/           Navbar, mobile bottom nav, job cards, modals
-│   └── src/lib/                  Auth helpers, MongoDB client, pricing engine, store
+├── web/                          ← Next.js 15 app (port 3000)
+│   ├── src/app/                    App Router — 16 pages
+│   │   └── api/                    45 REST API routes
+│   ├── src/components/
+│   │   ├── feed/                   12 feed components (role-split)
+│   │   │   ├── ClientFeed.tsx        Procurement Terminal
+│   │   │   ├── FreelancerFeed.tsx    Mission Control
+│   │   │   ├── MyJobsSection.tsx     Client job carousel + bid panels
+│   │   │   ├── TalentPool.tsx        Freelancer browse for clients
+│   │   │   ├── SpendAnalytics.tsx    Client KPI bar
+│   │   │   ├── FreelancerStats.tsx   Freelancer KPI bar
+│   │   │   ├── RecommendedCarousel.tsx
+│   │   │   ├── ActiveBidsTracker.tsx
+│   │   │   ├── MarketIntel.tsx
+│   │   │   ├── CompetitorAnalysis.tsx
+│   │   │   ├── DirectHireModal.tsx
+│   │   │   ├── InviteToBidModal.tsx
+│   │   │   └── MessageFreelancerModal.tsx
+│   │   └── modals/
+│   │       └── AuctionVictoryModal.tsx
+│   └── src/lib/
+│       ├── store.tsx               App-wide context + all store actions
+│       ├── auth.ts                 JWT helpers + authenticateRequest
+│       ├── pricing.ts              Adaptive price formula
+│       ├── mongodb.ts              Atlas connection singleton
+│       └── email.ts                Nodemailer transactional emails
 │
-├── backend/                    ← Node.js microservices
-│   ├── services/gateway/         API Gateway (port 3000)
-│   ├── services/auth-service/    JWT, Google OAuth (port 3001)
-│   ├── services/job-service/     Job CRUD, search (port 3003)
-│   ├── services/bidding-service/ Counter-bids, Socket.IO price decay (port 3004)
-│   ├── services/payment-service/ Razorpay escrow (port 3005)
-│   ├── services/notification-service/ (port 3006)
-│   ├── services/chat-service/    Rooms, messages, Socket.IO (port 3007)
-│   └── common/                   Shared auth middleware, rate limiting, DB
+├── backend/                      ← Express microservices
+│   ├── services/gateway/           Port 3000
+│   ├── services/auth-service/      Port 3001
+│   ├── services/job-service/       Port 3003
+│   ├── services/bidding-service/   Port 3004 (Socket.IO)
+│   ├── services/payment-service/   Port 3005
+│   ├── services/notification-service/ Port 3006
+│   └── services/chat-service/      Port 3007 (Socket.IO)
 │
-└── docker-compose.yml          ← Runs everything with one command
+└── docker-compose.yml
 ```
 
 ### Price Decay Formula
@@ -150,313 +173,243 @@ currentPrice = max(startingPrice − decayRate × elapsedHours, minimumPrice)
 effectiveRate = decayRate × demandMultiplier(bidderCount)
 currentPrice  = max(startingPrice − effectiveRate × elapsedHours, minimumPrice)
 
-demandMultiplier: 0 bids → 1.0×  |  1-2 bids → 0.85×  |  3-4 bids → 0.7×  |  5+ bids → 0.55×
+demandMultiplier:  0 bids → 1.0×  |  1-2 → 0.85×  |  3-4 → 0.7×  |  5+ → 0.55×
 ```
 
 More competition = slower decay = more time for quality bids.
 
 ---
 
-## Quick Start (Local Dev — Recommended)
+## Quick Start
 
 ### Prerequisites
 
-- **Node.js** 18 or higher — [nodejs.org](https://nodejs.org)
-- **MongoDB Atlas** free account — [cloud.mongodb.com](https://cloud.mongodb.com) (or use the connection string from your team)
+- **Node.js** 18+
+- **MongoDB Atlas** free account (or use the project connection string)
 - **Git**
 
-### 1. Clone the repo
+### 1. Clone & checkout
 
 ```bash
 git clone https://github.com/LakshinPathak/Geekbid.git
 cd Geekbid
-git checkout v7
+git checkout main   # main = v9
 ```
 
-### 2. Set up environment variables
+### 2. Environment variables
 
 ```bash
 cd web
-cp .env.example .env.local    # if .env.example exists, otherwise create .env.local
 ```
 
-Create `web/.env.local` with the following content:
+Create `web/.env.local`:
 
 ```env
 # Required
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/geekbid?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://lakshin25:<password>@cluster0.wpsakax.mongodb.net/geekbid?retryWrites=true&w=majority
 NEXTAUTH_SECRET=any-random-string-at-least-32-chars
 NEXTAUTH_URL=http://localhost:3000
 
-# Optional — needed only for Google Login
+# Optional — Google Login
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your-secret
 
-# Optional — needed only for payments
+# Optional — Payments
 RAZORPAY_KEY_ID=rzp_test_your_key
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 ```
 
-> **Important:** `NEXTAUTH_URL` must be exactly `http://localhost:3000` — no trailing slash.
-
-### 3. Install dependencies
+### 3. Install & run
 
 ```bash
-# From the /web directory
 npm install
-```
-
-### 4. Start the development server
-
-```bash
 npm run dev
-# → App running at http://localhost:3000
+# → http://localhost:3000
 ```
 
-> The dev script is pinned to port 3000 (`next dev --port 3000`). If port 3000 is already in use, you'll get a clear error — free the port before starting.
-
-### 5. Seed the database
-
-The first time (or to reset to fresh test data):
+### 4. Seed the database
 
 ```bash
 curl -X POST http://localhost:3000/api/seed
 ```
 
-You'll get back a list of seeded records and test credentials.
-
-### 6. Log in with a test account
+### 5. Test accounts
 
 | Role | Email | Password |
 |------|-------|----------|
 | Client | `maya@startup.io` | `password123` |
 | Client | `derek@fintech.co` | `password123` |
-| Client | `sarah@edtech.dev` | `password123` |
 | Freelancer | `arjun@devmail.io` | `password123` |
 | Freelancer | `priya@secmail.io` | `password123` |
-| Freelancer | `leo@geekhub.dev` | `password123` |
 | Admin | `admin@geekbid.io` | `admin123` |
-
----
-
-## Docker Setup (Runs Everything)
-
-If you want to run the full stack — MongoDB + backend microservices + web — in one command:
-
-### Prerequisites
-
-- **Docker** and **Docker Compose** — [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)
-
-### Start everything
-
-```bash
-# From the repo root
-docker-compose up
-```
-
-| Service | URL |
-|---------|-----|
-| Web app | http://localhost:3002 |
-| Backend gateway | http://localhost:3000 |
-| MongoDB | localhost:27017 |
-
-> **Note on Docker ports:** The backend gateway occupies port 3000, so the web app is served on port **3002** in Docker. For Google OAuth with Docker, add `http://localhost:3002/api/auth/google/callback` to your Google Cloud Console authorized redirect URIs.
-
-### Stop everything
-
-```bash
-docker-compose down          # stop containers
-docker-compose down -v       # stop + wipe database
-```
-
-### Environment variables in Docker
-
-Create a `.env` file in the repo root (next to `docker-compose.yml`):
-
-```env
-NEXTAUTH_SECRET=your-secret-here
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSPX-your-secret
-RAZORPAY_KEY_ID=rzp_test_your_key
-RAZORPAY_KEY_SECRET=your_secret
-```
-
-Docker Compose will pick these up automatically.
-
----
-
-## Google OAuth Setup
-
-To enable "Continue with Google" login:
-
-1. Go to [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials)
-2. Create an **OAuth 2.0 Client ID** (Web application)
-3. Add **Authorized JavaScript Origins:**
-   - `http://localhost:3000` (local dev)
-   - `http://localhost:3002` (Docker)
-4. Add **Authorized Redirect URIs:**
-   - `http://localhost:3000/api/auth/google/callback` (local dev)
-   - `http://localhost:3002/api/auth/google/callback` (Docker)
-5. Copy the **Client ID** and **Client Secret** into your `.env.local`
 
 ---
 
 ## API Reference
 
-All endpoints are Next.js API routes under `/api/`. Authenticated routes require an `Authorization: Bearer <token>` header.
+All routes live under `/api/`. Protected routes require `Authorization: Bearer <token>`.
 
 ### Auth
 
-| Method | Endpoint | Auth | Body / Params |
-|--------|----------|------|---------------|
-| POST | `/api/auth` | No | `{action:"register", name, email, password, role}` or `{action:"login", email, password}` |
-| GET | `/api/auth/me` | Bearer | — |
-| POST | `/api/auth/refresh` | Cookie | — (uses `gb_refresh_token` cookie) |
-| POST | `/api/auth/logout` | Bearer | — |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| POST | `/api/auth` | No | `{action:"register"\|"login", ...}` |
+| GET | `/api/auth/me` | Bearer | Current user profile |
+| POST | `/api/auth/refresh` | Cookie | Silent token refresh |
+| POST | `/api/auth/logout` | Bearer | Clears refresh cookie |
 | GET | `/api/auth/google` | No | `?role=freelancer\|client` |
-| GET | `/api/auth/google/callback` | No | Handled by Google redirect |
+| GET | `/api/auth/google/callback` | No | OAuth redirect handler |
 
 ### Jobs
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/jobs` | No | List all open jobs |
-| POST | `/api/jobs` | Bearer (client) | Create a job |
-| GET | `/api/jobs/[id]` | No | Get a single job |
-| GET | `/api/jobs/recommended` | Bearer | Personalized recommendations |
-| GET | `/api/jobs/pricing-hint?skills=React` | No | Market rate hint for given skills |
-| PATCH | `/api/jobs/feature` | Bearer (client) | Toggle featured status |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/jobs` | No | `?category=` filter, sorted by featured then newest |
+| POST | `/api/jobs` | Client | Plan limit enforced (free: 3/month) |
+| GET | `/api/jobs/[id]` | No | Single job with ObjectId fallback |
+| PATCH | `/api/jobs/[id]` | Bearer | `action`: `accept` (freelancer) / `accept_best` (client) / `cancel` / `complete` |
+| PATCH | `/api/jobs/[id]/cancel` | Client | Cancels open job, notifies all bidders |
+| PATCH | `/api/jobs/[id]/complete` | Client | Marks accepted/in-progress job complete |
+| GET | `/api/jobs/recommended` | Freelancer | Top 10 skill-matched open jobs |
+| GET | `/api/jobs/pricing-hint` | No | `?skills=React,Node.js` — market rate from historical data |
+| POST | `/api/jobs/direct-offer` | Client | Fixed-price offer to freelancer with GeekScore > 500 |
+| PATCH | `/api/jobs/offer-response` | Freelancer | `{jobId, response:"accepted"\|"declined"}` |
+| PATCH | `/api/jobs/feature` | Client | Toggle featured status |
 
 ### Bids
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/bids` | No | List all bids |
-| GET | `/api/bids?jobId=xxx` | No | Bids for a specific job |
-| POST | `/api/bids` | Bearer (freelancer) | Place a counter-bid — 30min cooldown enforced |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/bids` | No | `?jobId=` filter |
+| POST | `/api/bids` | Freelancer | 30-min cooldown per job; plan limit enforced |
+| GET | `/api/bids/my` | Freelancer | Own bid history with joined job details |
 
-### Users
+### Freelancer Dashboard
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/users` | Bearer | List all users |
-| GET | `/api/user` | Bearer | Get your own profile |
-| PATCH | `/api/user` | Bearer | Update your profile |
-| POST | `/api/user/verify-github` | Bearer | Link GitHub account |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/freelancer/dashboard` | Freelancer | KPIs: matched jobs, bids used, win rate, earning potential |
+| GET | `/api/freelancer/bid-tracker` | Freelancer | Active bids with rank, current price, cooldown |
+| GET | `/api/freelancer/earnings` | Freelancer | Transaction history + totals |
+| GET | `/api/freelancer/match-radar` | Freelancer | Skill gap analysis |
+| GET | `/api/freelancer/price-alerts` | Freelancer | Jobs nearing floor price |
+
+### Client Dashboard
+
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/client/dashboard` | Client | KPIs: jobs, budget, savings, avg bid |
+| GET | `/api/client/market-intel` | Client | `?category=` — market avg prices, top skills, time-to-bid |
+| GET | `/api/client/activity-feed` | Client | Recent bid activity on own jobs |
+| GET | `/api/client/job-health` | Client | Health matrix for open jobs |
+| GET | `/api/client/spend-analytics` | Client | Spend breakdown by category |
+
+### Invites
+
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/invites` | Bearer | Role-filtered: client sees sent, freelancer sees received |
+| POST | `/api/invites` | Client | `{freelancerId, jobId}` — creates notification |
+| PATCH | `/api/invites` | Freelancer | `{inviteId, response:"accepted"\|"declined"}` |
 
 ### Chat
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/chat/rooms` | Bearer | List your chat rooms |
-| POST | `/api/chat/rooms` | Bearer | `{jobId, participantIds[]}` |
-| GET | `/api/chat/messages?roomId=xxx` | Bearer | Get messages in a room |
-| POST | `/api/chat/messages` | Bearer | `{roomId, text}` — send a message |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/chat/rooms` | Bearer | Rooms where user is a participant |
+| POST | `/api/chat/rooms` | Bearer | `{jobId, participantIds[]}` — idempotent |
+| GET | `/api/chat/messages` | Bearer | `?roomId=` — 500 messages max |
+| POST | `/api/chat/messages` | Bearer | `{roomId, text}` |
+
+### Notifications
+
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET | `/api/notifications` | Bearer | Last 100, sorted newest first |
+| POST | `/api/notifications` | Bearer | Create a notification (internal use) |
+| PATCH | `/api/notifications` | Bearer | `{notificationId}` or `{markAll:true}` |
+| GET | `/api/notifications/count` | Bearer | `{unread: N}` for navbar badge |
 
 ### Payments & Transactions
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order create, verify, config |
-| GET | `/api/transactions` | Bearer | List your transactions |
-| POST | `/api/transactions` | Bearer (client) | Release escrow payment |
+| Method | Endpoint | Auth | Notes |
+|--------|----------|------|-------|
+| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify, webhook |
+| GET | `/api/transactions` | Bearer | Own transactions |
+| PATCH | `/api/transactions` | Client | Release or dispute escrow |
 
 ### Other
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /api/notifications` | List your notifications |
-| `PATCH /api/notifications` | Mark as read |
-| `GET /api/milestones?jobId=xxx` | List milestones |
-| `GET /api/disputes` | List disputes |
-| `GET/POST /api/keys` | Manage API keys |
-| `GET /api/v1/jobs` | Public API (requires `X-API-Key` header) |
-| `POST /api/seed` | Reset database with fresh test data |
+| `GET /api/users` | List users (logged-in) |
+| `GET /api/users/[id]` | Public profile |
+| `GET /api/user` | Own full profile |
+| `PATCH /api/user` | Update own profile |
+| `POST /api/user/verify-github` | Link GitHub handle |
+| `GET /api/milestones?jobId=` | Job milestones |
+| `GET /api/disputes` | Disputes |
+| `GET /api/reviews` | Reviews |
+| `GET /api/referrals` | Referral stats |
+| `GET /api/teams` | Client teams |
+| `GET /api/assessments` | Skill assessments |
+| `GET /api/keys` | API key management |
+| `GET /api/v1/jobs` | Public API (`X-API-Key` required) |
+| `POST /api/email-logs` | Email delivery log |
+| `POST /api/seed` | Reset DB with test data |
 
 ---
 
-## Environment Variables Reference
+## Environment Variables
 
 ### `web/.env.local`
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `MONGODB_URI` | Yes | MongoDB Atlas connection string |
-| `NEXTAUTH_SECRET` | Yes | JWT signing secret — any random 32+ char string |
-| `NEXTAUTH_URL` | Yes | Must be `http://localhost:3000` for local dev |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth — enables "Continue with Google" |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
-| `RAZORPAY_KEY_ID` | No | Razorpay test key — app works without this (mock mode) |
-| `RAZORPAY_KEY_SECRET` | No | Razorpay test secret |
-
-> **Port rule:** `NEXTAUTH_URL` must always match the port the server is actually running on. `npm run dev` is pinned to port 3000. If you change ports, update this variable to match.
-
-### `backend/.env` (microservices)
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `MONGODB_URI` | Yes | — | MongoDB connection string |
-| `JWT_SECRET` | Yes | `geekbid-dev-secret` | Must match web's `NEXTAUTH_SECRET` if both services share users |
-| `RAZORPAY_KEY_ID` | No | `rzp_test_placeholder` | Payment processing |
-| `RAZORPAY_KEY_SECRET` | No | `secret_placeholder` | |
-| `GATEWAY_PORT` | No | `3000` | |
-| `AUTH_PORT` | No | `3001` | |
-| `JOB_PORT` | No | `3003` | |
-| `BIDDING_PORT` | No | `3004` | |
-| `PAYMENT_PORT` | No | `3005` | |
-| `NOTIFICATION_PORT` | No | `3006` | |
-| `CHAT_PORT` | No | `3007` | |
+| `NEXTAUTH_SECRET` | Yes | JWT signing secret (32+ chars) |
+| `NEXTAUTH_URL` | Yes | `http://localhost:3000` for local dev |
+| `GOOGLE_CLIENT_ID` | No | Enables Google Login |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
+| `RAZORPAY_KEY_ID` | No | Payments (app works without — mock mode) |
+| `RAZORPAY_KEY_SECRET` | No | Razorpay secret |
 
 ---
 
-## Security
+## Docker Setup
 
-- **JWT access tokens** expire in 15 minutes; **refresh tokens** last 7 days with automatic rotation
-- **Refresh token theft detection** — compromised token revokes the entire session family
-- **bcrypt** password hashing (12 salt rounds)
-- **HttpOnly cookies** for refresh tokens — JavaScript cannot read them
-- **Helmet** security headers on all backend services
-- **Rate limiting:** 100 requests/15min (API), 10 requests/15min (auth endpoints)
-- **NoSQL injection prevention** — strips `$` operator keys from all inputs
-- **XSS prevention** — strips HTML tags from string inputs
-- **CORS** configured per environment
-- **Google OAuth credentials** excluded from git via `.gitignore` pattern `client_secret*.json`
+```bash
+# From repo root
+docker-compose up
+```
+
+| Service | URL |
+|---------|-----|
+| Web app | http://localhost:3002 |
+| Gateway | http://localhost:3000 |
+| MongoDB | localhost:27017 |
 
 ---
 
 ## Troubleshooting
 
-### "token_exchange_failed" on Google Login
-The most common cause is a port mismatch. Make sure:
-- `NEXTAUTH_URL` in `.env.local` matches the port your server is actually running on
-- Run the server with `npm run dev` (pinned to port 3000) — never with `--port 3100` or other ports
-- Google Cloud Console has `http://localhost:3000/api/auth/google/callback` in Authorized Redirect URIs
-
-### Port 3000 already in use
-```bash
-# Find and kill the process on port 3000
-lsof -ti:3000 | xargs kill -9
-# Then start normally
-npm run dev
-```
-
-### MongoDB connection errors
-- Check your `MONGODB_URI` includes the database name: `.../geekbid?retryWrites=...`
-- Whitelist your IP in MongoDB Atlas: Network Access → Add IP Address → Add Current IP
-- Test the connection: `mongosh "your-connection-string"`
-
-### Empty feed after login
-The database might be empty. Seed it:
+**Empty feed after login** — seed the DB:
 ```bash
 curl -X POST http://localhost:3000/api/seed
 ```
 
-### Build errors after pulling latest
+**"Only freelancers can accept jobs" for clients** — fixed in v9 (use latest main branch).
+
+**Notification badge always 0** — fixed in v9 (`isRead` field query corrected).
+
+**Port 3000 in use:**
 ```bash
-cd web
-rm -rf .next node_modules
-npm install
-npm run build
+lsof -ti:3000 | xargs kill -9 && npm run dev
+```
+
+**Build errors after pull:**
+```bash
+cd web && rm -rf .next node_modules && npm install && npm run dev
 ```
 
 ---
@@ -465,11 +418,11 @@ npm run build
 
 | Branch | Description |
 |--------|-------------|
-| `main` | Stable base |
-| `v2` | Full platform with dark+green design system |
-| `v3` | 13 zero-dependency features |
+| `main` | **v9** — Current stable (role-based feeds, animations, CRUD fixes) |
+| `v9` | Same as main |
+| `v7` | Royal Dark design system, horizontal carousels |
+| `v5` | Mobile responsiveness, port pinning |
 | `v4` | Live auction UX, feed differentiation, Docker |
-| `v5` | Design audit fixes, mobile responsiveness, port pinning ← **latest** |
 
 ---
 
