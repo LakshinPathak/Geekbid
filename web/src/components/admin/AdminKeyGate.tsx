@@ -66,15 +66,15 @@ export default function AdminKeyGate({ onVerified }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+          <div className="flex items-center gap-2.5 glass-input rounded-[6px] px-3 py-3">
+            <Lock className="h-4 w-4 text-[#a8997e] shrink-0" />
             <input
               type="password"
               value={key}
               onChange={e => setKey(e.target.value)}
               placeholder="Enter your secret admin key"
               autoFocus
-              className="glass-input w-full pl-10 pr-4 py-3 rounded-[6px] text-sm text-[#f0e8d4] placeholder:text-[#a8997e]/50"
+              className="flex-1 bg-transparent text-sm text-[#f0e8d4] placeholder:text-[#a8997e]/50 outline-none border-none"
             />
           </div>
 
