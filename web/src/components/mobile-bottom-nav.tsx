@@ -29,6 +29,7 @@ export default function MobileBottomNav() {
 
  if (!mounted || !currentUser) return null;
  if (HIDDEN_ROUTES.includes(pathname)) return null;
+ if (pathname.startsWith("/admin")) return null;
 
  const isClient = currentUser.role === "client";
 

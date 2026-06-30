@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Brain, Loader2, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { useApp } from "@/lib/store";
 
 type Evaluation = {
   index: number;
@@ -41,6 +42,7 @@ const VERDICT_CONFIG = {
 };
 
 export default function AIBidEvaluator({ job, bids, freelancers, onAcceptBid }: Props) {
+  const { auth } = useApp();
   const [result, setResult] = useState<EvalResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,10 @@ export default function AIBidEvaluator({ job, bids, freelancers, onAcceptBid }: 
     try {
       const res = await fetch("/api/ai/evaluate-bids", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({ job, bids, freelancers }),
       });

@@ -775,6 +775,13 @@ input:focus, textarea:focus, select:focus { outline: none; }
   border-radius: 6px 6px 6px 2px;
 }
 
+/* ── Scale-in (modal/card entrance) ─────────────────────── */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in { animation: scale-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* ── Admin ───────────────────────────────────────────────── */
 .admin-header {
   background: #0d1120;

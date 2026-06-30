@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DollarSign, Loader2, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import { useApp } from "@/lib/store";
 
 type PricingResult = {
   recommendedStartingPrice: number;
@@ -30,6 +31,7 @@ const STRATEGY_COLOR: Record<string, string> = {
 };
 
 export default function AIPricingAdvisor({ title, skills, category, estimatedHours, recentJobs, onApply }: Props) {
+  const { auth } = useApp();
   const [result, setResult] = useState<PricingResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,10 @@ export default function AIPricingAdvisor({ title, skills, category, estimatedHou
     try {
       const res = await fetch("/api/ai/pricing-advisor", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({ title, skills, category, estimatedHours, recentJobs }),
       });

@@ -30,7 +30,7 @@ const CONFIDENCE_COLOR = {
 };
 
 export default function AIBidStrategist({ job, currentPrice, competitorBids, onApplyBid }: Props) {
-  const { currentUser } = useApp();
+  const { currentUser, auth } = useApp();
   const [result, setResult] = useState<StrategyResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,10 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
     try {
       const res = await fetch("/api/ai/bid-strategy", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({
           job,

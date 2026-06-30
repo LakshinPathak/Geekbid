@@ -1,4 +1,4 @@
-# Claude Code Prompt: Cloudinary Image Integration for GeekBid
+Claude Code Prompt: Cloudinary Image Integration for GeekBid
 
 **Task:** Integrate Cloudinary as the image CDN and upload service across the entire GeekBid platform. This covers user avatars (profile photos), testimonial images, and future portfolio/attachment support. The integration should use `next-cloudinary` for the frontend and the `cloudinary` Node.js SDK for server-side signed uploads.
 
@@ -51,6 +51,7 @@ NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=geekbid_unsigned
 ### 1C. Cloudinary Account Configuration
 
 On your Cloudinary dashboard:
+
 1. Create an **upload preset** named `geekbid_unsigned` (for simple widget uploads) — set to "Unsigned"
 2. Create a **folder** structure: `geekbid/avatars/`, `geekbid/portfolios/`, `geekbid/attachments/`
 3. Enable **eager transformations** for avatars: `c_fill,w_200,h_200,g_face,r_max,q_auto,f_auto`
@@ -110,6 +111,7 @@ Response: { signature, timestamp, cloudName, apiKey, folder }
 ```
 
 Implementation requirements:
+
 - Authenticate the request using `authenticateRequest()` from `@/lib/auth`
 - Use `cloudinary.utils.api_sign_request()` to generate the signature
 - Include `folder`, `timestamp`, and any transformation params
@@ -120,6 +122,7 @@ Implementation requirements:
 **File:** `web/src/app/api/user/route.ts` (modify existing)
 
 Currently at line 51-59, the `allowedFields` array is:
+
 ```typescript
 const allowedFields = [
   "fullName", "bio", "skills", "company",
@@ -128,6 +131,7 @@ const allowedFields = [
 ```
 
 Add these fields:
+
 ```typescript
 const allowedFields = [
   "fullName", "bio", "skills", "company",
@@ -163,6 +167,7 @@ Body: { publicId: "geekbid/avatars/user123_abc" }
 A drop-in replacement for all the current initials-based avatar circles throughout the app.
 
 **Props:**
+
 ```typescript
 type CloudinaryAvatarProps = {
   avatarUrl?: string | null;       // Cloudinary URL (if uploaded)
@@ -175,6 +180,7 @@ type CloudinaryAvatarProps = {
 ```
 
 **Behavior:**
+
 - If `avatarUrl` exists → render `CldImage` (from next-cloudinary) with face-detection crop, rounded-full
 - If no `avatarUrl` → fallback to current initials circle (gold gradient on dark bg)
 - Sizes: xs=24px, sm=28px, md=44px, lg=80px, xl=96px
@@ -182,6 +188,7 @@ type CloudinaryAvatarProps = {
 - Use `CldImage` props: `width`, `height`, `crop="fill"`, `gravity="face"`, `quality="auto"`, `format="auto"`
 
 **Size map:**
+
 ```typescript
 const SIZES = {
   xs: { px: 24, text: 'text-[10px]', icon: 'h-3 w-3' },
@@ -199,6 +206,7 @@ const SIZES = {
 A profile photo upload widget using `CldUploadWidget` from next-cloudinary.
 
 **Props:**
+
 ```typescript
 type AvatarUploaderProps = {
   currentAvatarUrl?: string | null;
@@ -209,6 +217,7 @@ type AvatarUploaderProps = {
 ```
 
 **Behavior:**
+
 - Show current avatar (using `CloudinaryAvatar` component) with an overlay camera icon on hover
 - Click opens `CldUploadWidget` with:
   - `uploadPreset`: `geekbid_unsigned` (or signed mode)
@@ -233,11 +242,13 @@ Replace every initials-only avatar with `<CloudinaryAvatar>`. Here's every locat
 **Lines 106 and 203** — User avatar in the top-right navigation bar
 
 Current:
+
 ```tsx
 {currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
 ```
 
 Replace with:
+
 ```tsx
 <CloudinaryAvatar
   avatarUrl={currentUser.avatarUrl}
@@ -251,6 +262,7 @@ Replace with:
 **Line 151-153** — Large avatar on own profile header
 
 Current:
+
 ```tsx
 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[6px] bg-[rgba(201,168,76,0.12)] ...">
   <span className="font-heading text-3xl ...">{currentUser.avatarInitial}</span>
@@ -258,6 +270,7 @@ Current:
 ```
 
 Replace with:
+
 ```tsx
 <CloudinaryAvatar
   avatarUrl={currentUser.avatarUrl}
@@ -267,6 +280,7 @@ Replace with:
 ```
 
 **Add AvatarUploader** in the Edit Profile section (after line 308):
+
 ```tsx
 <AvatarUploader
   currentAvatarUrl={currentUser.avatarUrl}
@@ -349,6 +363,7 @@ Replace with `<CloudinaryAvatar size="xs">`.
 **File:** `web/src/lib/utils.ts` (line 52-63)
 
 Add to the `User` type:
+
 ```typescript
 export type User = {
   // ... existing fields
@@ -372,6 +387,7 @@ The `updateProfile` action already sends a PATCH to `/api/user`. Just ensure the
 **File:** `web/src/lib/data.ts` (lines 10-15)
 
 Add `avatarUrl: ""` and `avatarPublicId: ""` to each seed user so the type is consistent:
+
 ```typescript
 { id: "u-client-1", ..., avatarUrl: "", avatarPublicId: "", ... },
 ```
@@ -381,6 +397,7 @@ Add `avatarUrl: ""` and `avatarPublicId: ""` to each seed user so the type is co
 **File:** `web/src/lib/auth.ts`
 
 In `registerUser()` (line 175-196), add:
+
 ```typescript
 const user = {
   // ... existing fields
@@ -416,6 +433,7 @@ const TESTIMONIALS = [
 **File:** `web/src/app/page.tsx` (line 705-706)
 
 Replace the current initials circle with `<CloudinaryAvatar>`:
+
 ```tsx
 <CloudinaryAvatar
   avatarUrl={t.imageUrl}
@@ -431,6 +449,7 @@ Replace the current initials circle with `<CloudinaryAvatar>`:
 ### 7A. Portfolio Images (Freelancer)
 
 Add a portfolio gallery to freelancer profiles:
+
 - New collection: `portfolios` in MongoDB
 - Schema: `{ userId, title, description, imageUrl, publicId, createdAt }`
 - Upload via `CldUploadWidget` with folder `geekbid/portfolios/{userId}`
@@ -440,6 +459,7 @@ Add a portfolio gallery to freelancer profiles:
 ### 7B. Job Attachments
 
 Allow clients to attach reference images/docs to job postings:
+
 - New field on `Job` type: `attachments: { url: string; publicId: string; name: string; type: string }[]`
 - Upload folder: `geekbid/jobs/{jobId}/attachments`
 - Display in job detail page
@@ -448,6 +468,7 @@ Allow clients to attach reference images/docs to job postings:
 ### 7C. Chat Image Messages
 
 Allow image sharing in chat:
+
 - Upload folder: `geekbid/chat/{roomId}`
 - New message type: `{ type: 'image', imageUrl: string, publicId: string }`
 - Inline preview in chat with lightbox on click
@@ -456,32 +477,32 @@ Allow image sharing in chat:
 
 ## Key Files Summary
 
-| File | Action | Description |
-|------|--------|-------------|
-| `web/package.json` | Modify | Add `next-cloudinary` and `cloudinary` |
-| `web/next.config.ts` | Modify | Add Cloudinary image domain |
-| `web/.env.local` | Create/Modify | Add Cloudinary env vars |
-| `web/src/lib/cloudinary.ts` | **CREATE** | Cloudinary server-side config |
-| `web/src/app/api/upload/sign/route.ts` | **CREATE** | Signed upload endpoint |
-| `web/src/app/api/upload/delete/route.ts` | **CREATE** | Image deletion endpoint |
-| `web/src/app/api/user/route.ts` | Modify | Add `avatarUrl`, `avatarPublicId` to allowedFields |
-| `web/src/components/CloudinaryAvatar.tsx` | **CREATE** | Reusable avatar component |
-| `web/src/components/AvatarUploader.tsx` | **CREATE** | Upload widget component |
-| `web/src/lib/utils.ts` | Modify | Add avatar fields to User type |
-| `web/src/lib/store.tsx` | Modify | Flow avatar fields through updateProfile |
-| `web/src/lib/auth.ts` | Modify | Add default avatar fields on registration |
-| `web/src/lib/data.ts` | Modify | Add avatar fields to seed data |
-| `web/src/components/navbar.tsx` | Modify | Replace initials with CloudinaryAvatar |
-| `web/src/app/profile/page.tsx` | Modify | Replace avatar + add uploader |
-| `web/src/app/profile/[id]/page.tsx` | Modify | Replace avatar |
-| `web/src/app/inbox/page.tsx` | Modify | Replace chat avatars |
-| `web/src/components/job-card.tsx` | Modify | Replace client avatar |
-| `web/src/app/jobs/[id]/page.tsx` | Modify | Replace 3 avatar locations |
-| `web/src/components/feed/TalentPool.tsx` | Modify | Replace freelancer avatar |
-| `web/src/components/feed/MyJobsSection.tsx` | Modify | Replace user avatar |
-| `web/src/app/team/page.tsx` | Modify | Replace team member avatar |
-| `web/src/app/admin/page.tsx` | Modify | Replace admin list avatar |
-| `web/src/app/page.tsx` | Modify | Testimonial avatars |
+| File                                          | Action           | Description                                           |
+| --------------------------------------------- | ---------------- | ----------------------------------------------------- |
+| `web/package.json`                          | Modify           | Add`next-cloudinary` and `cloudinary`             |
+| `web/next.config.ts`                        | Modify           | Add Cloudinary image domain                           |
+| `web/.env.local`                            | Create/Modify    | Add Cloudinary env vars                               |
+| `web/src/lib/cloudinary.ts`                 | **CREATE** | Cloudinary server-side config                         |
+| `web/src/app/api/upload/sign/route.ts`      | **CREATE** | Signed upload endpoint                                |
+| `web/src/app/api/upload/delete/route.ts`    | **CREATE** | Image deletion endpoint                               |
+| `web/src/app/api/user/route.ts`             | Modify           | Add`avatarUrl`, `avatarPublicId` to allowedFields |
+| `web/src/components/CloudinaryAvatar.tsx`   | **CREATE** | Reusable avatar component                             |
+| `web/src/components/AvatarUploader.tsx`     | **CREATE** | Upload widget component                               |
+| `web/src/lib/utils.ts`                      | Modify           | Add avatar fields to User type                        |
+| `web/src/lib/store.tsx`                     | Modify           | Flow avatar fields through updateProfile              |
+| `web/src/lib/auth.ts`                       | Modify           | Add default avatar fields on registration             |
+| `web/src/lib/data.ts`                       | Modify           | Add avatar fields to seed data                        |
+| `web/src/components/navbar.tsx`             | Modify           | Replace initials with CloudinaryAvatar                |
+| `web/src/app/profile/page.tsx`              | Modify           | Replace avatar + add uploader                         |
+| `web/src/app/profile/[id]/page.tsx`         | Modify           | Replace avatar                                        |
+| `web/src/app/inbox/page.tsx`                | Modify           | Replace chat avatars                                  |
+| `web/src/components/job-card.tsx`           | Modify           | Replace client avatar                                 |
+| `web/src/app/jobs/[id]/page.tsx`            | Modify           | Replace 3 avatar locations                            |
+| `web/src/components/feed/TalentPool.tsx`    | Modify           | Replace freelancer avatar                             |
+| `web/src/components/feed/MyJobsSection.tsx` | Modify           | Replace user avatar                                   |
+| `web/src/app/team/page.tsx`                 | Modify           | Replace team member avatar                            |
+| `web/src/app/admin/page.tsx`                | Modify           | Replace admin list avatar                             |
+| `web/src/app/page.tsx`                      | Modify           | Testimonial avatars                                   |
 
 ## Rules
 
@@ -492,3 +513,4 @@ Allow image sharing in chat:
 - Keep the Royal Dark theme consistent on upload widget (use dark theme option)
 - The `CloudinaryAvatar` component must be a single source of truth — no inline avatar rendering anywhere
 - Maintain backwards compatibility — existing users with no `avatarUrl` should continue to see initials
+
