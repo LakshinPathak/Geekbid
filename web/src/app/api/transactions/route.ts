@@ -70,6 +70,11 @@ export async function PATCH(req: NextRequest) {
  );
  }
 
+ const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
+ if (tx.clientId.toString() !== auth.payload.userId) {
+ return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+ }
+
  await db.collection("transactions").updateOne(
  { _id: new ObjectId(transactionId) },
  {
@@ -82,7 +87,6 @@ export async function PATCH(req: NextRequest) {
  );
 
  // Fire-and-forget: notify freelancer about payment release
- const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
  const job = tx?.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
  if (tx?.freelancerId) {
  const freelancer = await db.collection("users").findOne(
@@ -117,11 +121,16 @@ export async function PATCH(req: NextRequest) {
  }
 
  if (action === "dispute") {
+ const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
+ const isParty = tx.clientId.toString() === auth.payload.userId ||
+ tx.freelancerId?.toString() === auth.payload.userId;
+ if (!isParty) {
+ return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+ }
  await db.collection("transactions").updateOne(
  { _id: new ObjectId(transactionId) },
  { $set: { escrowStatus: "disputed" } }
  );
- const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
  await db.collection("disputes").insertOne({
  transactionId,
  raisedBy: auth.payload.userId,

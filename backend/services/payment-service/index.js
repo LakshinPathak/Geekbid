@@ -33,7 +33,7 @@ const app = createApp();
 
 // --- Transaction History (from MongoDB) ---
 
-app.get('/v1/payments/history', asyncHandler(async (_req, res) => {
+app.get('/v1/payments/history', requireAuth, asyncHandler(async (_req, res) => {
   const db = await getDb();
   const transactions = await db.collection('transactions')
     .find({})
@@ -82,7 +82,7 @@ app.get('/v1/payments/transactions/:id', asyncHandler(async (req, res) => {
 
 // --- READ: List disputes ---
 
-app.get('/v1/disputes', asyncHandler(async (req, res) => {
+app.get('/v1/disputes', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
   const { status } = req.query || {};
 
@@ -177,7 +177,7 @@ app.post('/v1/payments/dispute/:transactionId', requireAuth, asyncHandler(async 
   // Create a dispute record in the disputes collection
   const dispute = {
     transactionId: tx._id.toString(),
-    raisedBy: 'unknown', // needs real auth
+    raisedBy: req.user.userId,
     reason: (req.body || {}).reason || '',
     status: 'open',
     createdAt: new Date().toISOString(),

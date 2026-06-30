@@ -167,7 +167,7 @@ export async function registerUser(
  if (existing) return { error: "Email already registered" };
 
  if (password.length < 6) return { error: "Password must be at least 6 characters" };
- if (!["freelancer", "client", "admin"].includes(role)) {
+ if (!["freelancer", "client"].includes(role)) {
  return { error: "Invalid role. Must be freelancer, client, or admin" };
  }
 
@@ -241,7 +241,7 @@ export async function googleLoginUser(profile: GoogleProfile) {
  password: null, // No password for OAuth users
  googleId,
  avatarUrl: avatarUrl || "",
- role: ["freelancer", "client", "admin"].includes(role) ? role : "freelancer",
+ role: ["freelancer", "client"].includes(role) ? role : "freelancer",
  avatarInitial: name
  .trim()
  .split(" ")

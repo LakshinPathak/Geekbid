@@ -3,15 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { hashSync } from "bcryptjs";
-
-function generateApiKey(): string {
- const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
- let key = "gbk_";
- for (let i = 0; i < 32; i++) {
- key += chars.charAt(Math.floor(Math.random() * chars.length));
- }
- return key;
-}
+import crypto from "crypto";
 
 // GET /api/keys — list user's API keys (masked)
 export async function GET(req: NextRequest) {
@@ -57,7 +49,7 @@ export async function POST(req: NextRequest) {
 
  if (!name) return NextResponse.json({ error: "Key name required" }, { status: 400 });
 
- const rawKey = generateApiKey();
+ const rawKey = crypto.randomBytes(32).toString("hex");
  const hashedKey = hashSync(rawKey, 10);
  const prefix = rawKey.slice(0, 8) + "...";
 

@@ -23,7 +23,7 @@ const toObjectId = (id) => {
 
 // --- READ: List chat rooms ---
 
-app.get('/v1/chat/rooms', asyncHandler(async (req, res) => {
+app.get('/v1/chat/rooms', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
   const { userId } = req.query || {};
 
@@ -79,7 +79,7 @@ app.post('/v1/chat/rooms', requireAuth, asyncHandler(async (req, res) => {
 
 // --- READ: Get messages for a room ---
 
-app.get('/v1/chat/:roomId/messages', asyncHandler(async (req, res) => {
+app.get('/v1/chat/:roomId/messages', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
   const { roomId } = req.params;
   const { page = '1', limit = '50' } = req.query || {};

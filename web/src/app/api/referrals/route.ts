@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import crypto from "crypto";
 
 // GET /api/referrals — get user's referral stats + code
 export async function GET(req: NextRequest) {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
  // Generate referral code if not exists
  let referralCode = user.referralCode;
  if (!referralCode) {
- referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+ referralCode = crypto.randomBytes(8).toString("hex");
  await db.collection("users").updateOne(
  { _id: new ObjectId(auth.payload.userId) },
  { $set: { referralCode, referralCredits: 0 } }

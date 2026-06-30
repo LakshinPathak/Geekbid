@@ -19,12 +19,12 @@ const toObjectId = (id) => {
 
 // --- READ: List notifications (with optional filters) ---
 
-app.get('/v1/notifications', asyncHandler(async (req, res) => {
+app.get('/v1/notifications', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { userId, unread, type, page = '1', limit = '50' } = req.query || {};
+  const { unread, type, page = '1', limit = '50' } = req.query || {};
 
   const filter = {};
-  if (userId) filter.userId = toObjectId(userId);
+  filter.userId = toObjectId(req.user.userId);
   if (unread === 'true') filter.isRead = false;
   if (type) filter.type = type;
 
@@ -142,11 +142,8 @@ app.delete('/v1/notifications/:id', requireAuth, asyncHandler(async (req, res) =
 // --- DELETE: Clear all notifications for a user ---
 
 app.delete('/v1/notifications', requireAuth, asyncHandler(async (req, res) => {
-  const { userId } = req.query || {};
-  if (!userId) return fail(res, 'ERR_VALIDATION', 'userId query param is required', 400);
-
   const db = await getDb();
-  const result = await db.collection('notifications').deleteMany({ userId: toObjectId(userId) });
+  const result = await db.collection('notifications').deleteMany({ userId: toObjectId(req.user.userId) });
 
   return ok(res, { deleted: result.deletedCount });
 }));

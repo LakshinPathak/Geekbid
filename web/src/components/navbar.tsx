@@ -185,6 +185,7 @@ export default function Navbar() {
  <button
  className="h-8 w-8 flex items-center justify-center rounded-[3px] text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors"
  onClick={() => setMobileOpen(false)}
+ aria-label="Close menu"
  >
  <X className="h-4 w-4" />
  </button>

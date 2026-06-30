@@ -946,22 +946,8 @@ export async function POST() {
  milestones: milestones.length,
  assessments: assessments.length,
  },
- credentials: {
- clients: [
- { email: "maya@startup.io", password: "password123" },
- { email: "derek@fintech.co", password: "password123" },
- { email: "sarah@edtech.dev", password: "password123" },
- ],
- freelancers: [
- { email: "arjun@devmail.io", password: "password123" },
- { email: "priya@secmail.io", password: "password123" },
- { email: "leo@web3mail.io", password: "password123" },
- { email: "mira@dataeng.io", password: "password123" },
- { email: "jake@mobiledev.co", password: "password123" },
- ],
- admin: { email: "admin@geekbid.io", password: "admin123" },
- },
  });
+
  } catch (err) {
  console.error("[Seed Error]", err);
  return NextResponse.json(

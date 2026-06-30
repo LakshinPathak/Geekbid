@@ -11,6 +11,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const folder = body.folder ?? "geekbid/avatars";
+    const ALLOWED_FOLDERS = ["geekbid/avatars", "geekbid/portfolio", "geekbid/jobs"];
+    if (folder && !ALLOWED_FOLDERS.includes(folder)) {
+      return NextResponse.json({ error: "Invalid upload folder" }, { status: 400 });
+    }
     const timestamp = Math.round(Date.now() / 1000);
 
     const signature = cloudinary.utils.api_sign_request(
@@ -22,7 +26,6 @@ export async function POST(req: NextRequest) {
       signature,
       timestamp,
       cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      apiKey: process.env.CLOUDINARY_API_KEY,
       folder,
     });
   } catch (err) {

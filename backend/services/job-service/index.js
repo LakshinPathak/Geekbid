@@ -79,7 +79,7 @@ app.post('/v1/jobs', requireAuth, asyncHandler(async (req, res) => {
 
   const db = await getDb();
   const doc = {
-    clientId: payload.clientId || req.user.userId,
+    clientId: req.user.userId,
     title: stripHtml(payload.title),
     description: stripHtml(payload.description || ''),
     skillsRequired: Array.isArray(payload.skillsRequired) ? payload.skillsRequired : [],
@@ -110,6 +110,9 @@ app.patch('/v1/jobs/:id', requireAuth, asyncHandler(async (req, res) => {
   const job = await db.collection('jobs').findOne(filter);
   if (!job) return fail(res, 'ERR_NOT_FOUND', 'Job not found', 404);
   if (job.status !== 'open') return fail(res, 'ERR_INVALID_STATE', 'Cannot edit a non-open job', 409);
+  if (req.user.role !== 'admin' && job.clientId.toString() !== req.user.userId) {
+    return fail(res, 'ERR_FORBIDDEN', 'Cannot edit another user\'s job', 403);
+  }
 
   const allowedFields = [
     'title', 'description', 'skillsRequired', 'startingPrice',
@@ -149,6 +152,9 @@ app.delete('/v1/jobs/:id', requireAuth, asyncHandler(async (req, res) => {
   const job = await db.collection('jobs').findOne(filter);
   if (!job) return fail(res, 'ERR_NOT_FOUND', 'Job not found', 404);
   if (job.status !== 'open') return fail(res, 'ERR_INVALID_STATE', 'Cannot delete a non-open job', 409);
+  if (req.user.role !== 'admin' && job.clientId.toString() !== req.user.userId) {
+    return fail(res, 'ERR_FORBIDDEN', 'Cannot delete another user\'s job', 403);
+  }
 
   await db.collection('jobs').deleteOne(filter);
 

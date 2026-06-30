@@ -52,18 +52,18 @@ export async function POST(req: NextRequest) {
  }
 
  const body = await req.json();
- const { userId, type, title, body: notifBody, jobId } = body;
+ const { type, title, body: notifBody, jobId } = body;
 
- if (!userId || !title) {
+ if (!title) {
  return NextResponse.json(
- { error: "userId and title are required" },
+ { error: "title is required" },
  { status: 400 }
  );
  }
 
  const db = await getDb();
  const notification = {
- userId,
+ userId: auth.payload.userId,
  type: type ?? "general",
  title,
  body: notifBody ?? "",

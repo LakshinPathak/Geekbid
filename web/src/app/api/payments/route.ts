@@ -114,10 +114,6 @@ export async function PATCH(req: NextRequest) {
 
  let verified = false;
 
- // Mock order: auto-verify
- if (razorpay_order_id.startsWith("order_mock_")) {
- verified = true;
- } else {
  // Real signature verification
  if (!razorpay_signature) {
  return NextResponse.json(
@@ -132,7 +128,6 @@ export async function PATCH(req: NextRequest) {
  .digest("hex");
 
  verified = expectedSignature === razorpay_signature;
- }
 
  if (!verified) {
  return NextResponse.json(
