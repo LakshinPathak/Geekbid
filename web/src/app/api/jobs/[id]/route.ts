@@ -104,7 +104,59 @@ export async function PATCH(
  return NextResponse.json({ ok: true, message: "Job completed and escrow released" });
  }
 
- // ── ACCEPT (default) ─────────────────────────────────────────────────────
+ // ── ACCEPT_BEST (client awards job to lowest bidder) ─────────────────────
+ if (action === "accept_best") {
+ if (auth.payload.role !== "client") {
+ return NextResponse.json({ error: "Only clients can award jobs" }, { status: 403 });
+ }
+ const db = await getDb();
+ let awardJob: any;
+ try { awardJob = await db.collection("jobs").findOne({ _id: new ObjectId(id) }); }
+ catch { awardJob = await db.collection("jobs").findOne({ id }); }
+ if (!awardJob) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+ if (awardJob.clientId !== auth.payload.userId) {
+ return NextResponse.json({ error: "You can only award your own jobs" }, { status: 403 });
+ }
+ if (awardJob.status !== "open") return NextResponse.json({ error: "Job is not open" }, { status: 400 });
+ const lowestBid = await db.collection("bids").findOne({ jobId: id }, { sort: { bidPrice: 1 } });
+ if (!lowestBid) return NextResponse.json({ error: "No bids on this job yet" }, { status: 400 });
+ const finalPrice = Number(Number(lowestBid.bidPrice).toFixed(2));
+ const acceptedAt = new Date().toISOString();
+ const freelancerId = lowestBid.freelancerId;
+ const awardFilter = awardJob._id ? { _id: awardJob._id } : { id };
+ await db.collection("jobs").updateOne(awardFilter, {
+ $set: { status: "accepted", acceptedBy: freelancerId, finalPrice, acceptedAt },
+ $push: { priceHistory: { price: finalPrice, at: acceptedAt, event: "accepted" } } as any,
+ });
+ const fee = Number((finalPrice * 0.1).toFixed(2));
+ await db.collection("transactions").insertOne({
+ jobId: id, clientId: awardJob.clientId, freelancerId,
+ grossAmount: finalPrice, platformFee: fee,
+ netAmount: Number((finalPrice - fee).toFixed(2)),
+ escrowStatus: "held", createdAt: acceptedAt,
+ });
+ const [awardClient, awardFreelancer] = await Promise.all([
+ db.collection("users").findOne({ _id: new ObjectId(awardJob.clientId) }, { projection: { email: 1, name: 1, fullName: 1 } }),
+ db.collection("users").findOne({ _id: new ObjectId(freelancerId) }, { projection: { email: 1, name: 1, fullName: 1 } }).catch(() => null),
+ ]);
+ if (awardClient?.email) {
+ sendJobAcceptedEmail(
+ awardClient.email, awardClient.fullName ?? awardClient.name ?? "Client",
+ awardFreelancer?.fullName ?? awardFreelancer?.name ?? "Freelancer",
+ awardJob.title ?? "Untitled Job", finalPrice, id
+ ).catch(() => {});
+ }
+ if (awardFreelancer?.email) {
+ sendBookingConfirmationEmail(
+ awardFreelancer.email, awardFreelancer.fullName ?? awardFreelancer.name ?? "Freelancer",
+ awardClient?.fullName ?? awardClient?.name ?? "Client",
+ awardJob.title ?? "Untitled Job", finalPrice, finalPrice, id
+ ).catch(() => {});
+ }
+ return NextResponse.json({ ok: true, finalPrice, freelancerId });
+ }
+
+ // ── ACCEPT (default — freelancer accepts at current decay price) ──────────
  if (auth.payload.role !== "freelancer") {
  return NextResponse.json(
  { error: "Only freelancers can accept jobs" },

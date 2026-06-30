@@ -114,12 +114,18 @@ export async function POST(req: NextRequest) {
  };
 
  // Track lowest counter-bid for price pull effect
- const jobDoc = await db
- .collection("jobs")
- .findOne(
+ let jobDoc = null;
+ try {
+ jobDoc = await db.collection("jobs").findOne(
  { _id: new ObjectId(jobId) },
  { projection: { lowestCounterBid: 1, clientId: 1, title: 1, minimumPrice: 1 } }
  );
+ } catch {
+ jobDoc = await db.collection("jobs").findOne(
+ { id: jobId },
+ { projection: { lowestCounterBid: 1, clientId: 1, title: 1, minimumPrice: 1 } }
+ );
+ }
  if (
  jobDoc &&
  (jobDoc.lowestCounterBid === null ||
@@ -137,9 +143,11 @@ export async function POST(req: NextRequest) {
  (updateOps.$set as Record<string, unknown>).uniqueBidderCount =
  uniqueBidders.length;
 
- await db
- .collection("jobs")
- .updateOne({ _id: new ObjectId(jobId) }, updateOps);
+ try {
+ await db.collection("jobs").updateOne({ _id: new ObjectId(jobId) }, updateOps);
+ } catch {
+ await db.collection("jobs").updateOne({ id: jobId }, updateOps);
+ }
 
  // Fire-and-forget: notify the client about the new bid
  if (jobDoc?.clientId) {

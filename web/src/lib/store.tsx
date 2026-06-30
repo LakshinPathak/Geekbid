@@ -69,6 +69,8 @@ type AppState = {
  message?: string
  ) => Promise<ActionResult>;
  postJob: (input: Partial<Job>) => Promise<ActionResult>;
+ cancelJob: (jobId: string) => Promise<ActionResult>;
+ completeJob: (jobId: string) => Promise<ActionResult>;
  toggleWatch: (jobId: string) => void;
  releaseEscrow: (txId: string) => Promise<ActionResult>;
  raiseDispute: (txId: string, reason: string) => Promise<ActionResult>;
@@ -807,25 +809,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
  if (!job || job.status !== "open" || !currentUser)
  return { ok: false, message: "Job not available" };
 
- const finalPrice = Number(getCurrentPrice(job, now).toFixed(2));
  const token = await getValidToken();
  if (!token) return { ok: false, message: "Not authenticated" };
+
+ // Clients award the best (lowest) bid; freelancers accept at current decay price
+ const isClient = currentUser.role === "client";
+ const body = isClient
+ ? { action: "accept_best" }
+ : { finalPrice: Number(getCurrentPrice(job, now).toFixed(2)) };
 
  try {
  const res = await apiRequest(`/api/jobs/${jobId}`, {
  method: "PATCH",
- body: JSON.stringify({ finalPrice }),
+ body: JSON.stringify(body),
  accessToken: token,
  });
 
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
 
- // Refresh data from DB
  await Promise.all([fetchJobs(), fetchBids(), fetchTransactions()]);
  return {
  ok: true,
- message: `Accepted at $${finalPrice.toFixed(2)}`,
+ message: isClient
+ ? `Job awarded at $${(data.finalPrice ?? 0).toFixed(2)}`
+ : `Accepted at $${(data.finalPrice ?? Number(body.finalPrice) ?? 0).toFixed(2)}`,
  };
  } catch {
  return { ok: false, message: "Failed to accept job" };
@@ -902,6 +910,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
  }
  },
  [currentUser, getValidToken, fetchJobs]
+ );
+
+ // ── Cancel Job (client only) ──────────────────────────────
+ const cancelJob = useCallback(
+ async (jobId: string): Promise<ActionResult> => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, message: "Not authenticated" };
+ try {
+ const res = await apiRequest(`/api/jobs/${jobId}/cancel`, {
+ method: "PATCH",
+ body: JSON.stringify({}),
+ accessToken: token,
+ });
+ const data = await res.json();
+ if (data.error) return { ok: false, message: data.error };
+ await fetchJobs();
+ return { ok: true, message: "Job cancelled" };
+ } catch {
+ return { ok: false, message: "Failed to cancel job" };
+ }
+ },
+ [getValidToken, fetchJobs]
+ );
+
+ // ── Complete Job (client only) ────────────────────────────
+ const completeJob = useCallback(
+ async (jobId: string): Promise<ActionResult> => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, message: "Not authenticated" };
+ try {
+ const res = await apiRequest(`/api/jobs/${jobId}/complete`, {
+ method: "PATCH",
+ body: JSON.stringify({}),
+ accessToken: token,
+ });
+ const data = await res.json();
+ if (data.error) return { ok: false, message: data.error };
+ await Promise.all([fetchJobs(), fetchTransactions()]);
+ return { ok: true, message: "Job marked complete" };
+ } catch {
+ return { ok: false, message: "Failed to complete job" };
+ }
+ },
+ [getValidToken, fetchJobs, fetchTransactions]
  );
 
  const toggleWatch = useCallback((jobId: string) => {
@@ -1154,6 +1206,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
  acceptJob,
  counterBid,
  postJob,
+ cancelJob,
+ completeJob,
  toggleWatch,
  releaseEscrow,
  raiseDispute,
@@ -1213,6 +1267,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
  acceptJob,
  counterBid,
  postJob,
+ cancelJob,
+ completeJob,
  toggleWatch,
  releaseEscrow,
  raiseDispute,

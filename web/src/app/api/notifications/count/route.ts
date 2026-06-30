@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
  const unread = await db.collection("notifications").countDocuments({
  userId: payload.userId,
- read: { $ne: true },
+ isRead: { $ne: true },
  });
 
  return NextResponse.json({ unread });
