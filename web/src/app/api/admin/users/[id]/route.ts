@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { sanitizeObjectId } from "@/lib/sanitize";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -21,10 +22,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = sanitizeObjectId(rawId);
+  if (!id) return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+
   const db = await getDb();
   const user = await db.collection("users").findOne(
-    { _id: ObjectId.createFromHexString(id) },
+    { _id: new ObjectId(id) },
     { projection: { password: 0 } }
   );
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -36,8 +40,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = sanitizeObjectId(rawId);
+  if (!id) return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+
   const body = await req.json();
+  // Allowlist prevents field injection — only these fields can be updated by admin
   const allowed = ["role", "geekScore", "isVerified", "suspended", "bio", "skills", "fullName"];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
@@ -49,7 +57,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const db = await getDb();
   const result = await db.collection("users").updateOne(
-    { _id: ObjectId.createFromHexString(id) },
+    { _id: new ObjectId(id) },
     { $set: { ...update, updatedAt: new Date().toISOString() } }
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -62,12 +70,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = sanitizeObjectId(rawId);
+  if (!id) return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+
   const { reason } = await req.json().catch(() => ({ reason: "" }));
 
   const db = await getDb();
   const result = await db.collection("users").updateOne(
-    { _id: ObjectId.createFromHexString(id) },
+    { _id: new ObjectId(id) },
     { $set: { deleted: true, deletedAt: new Date().toISOString(), deleteReason: reason ?? "" } }
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "User not found" }, { status: 404 });

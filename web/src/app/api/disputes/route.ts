@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendDisputeResolvedEmail } from "@/lib/email";
+import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
 
 /**
  * GET /api/disputes — list disputes (protected)
@@ -60,26 +61,34 @@ export async function PATCH(req: NextRequest) {
  );
  }
 
- const { disputeId, resolution, status: newStatus } = await req.json();
- if (!disputeId || !newStatus) {
- return NextResponse.json(
- { error: "disputeId and status required" },
- { status: 400 }
- );
+ const body = await req.json();
+ // Validate ObjectId before passing to MongoDB — malformed hex crashes ObjectId constructor
+ const disputeId = sanitizeObjectId(body.disputeId);
+ const resolution = sanitizeString(body.resolution);
+ const newStatus = sanitizeString(body.status);
+
+ if (!disputeId) {
+ return NextResponse.json({ error: "Invalid or missing disputeId" }, { status: 400 });
+ }
+ if (!newStatus) {
+ return NextResponse.json({ error: "status is required" }, { status: 400 });
  }
 
  const db = await getDb();
- await db.collection("disputes").updateOne(
+ const result = await db.collection("disputes").updateOne(
  { _id: new ObjectId(disputeId) },
  {
  $set: {
  status: newStatus,
- resolution: resolution ?? "",
+ resolution,
  resolvedAt: new Date().toISOString(),
  resolvedBy: auth.payload.userId,
  },
  }
  );
+ if (result.matchedCount === 0) {
+ return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+ }
 
  // Fire-and-forget: notify the user who raised the dispute
  const dispute = await db.collection("disputes").findOne({ _id: new ObjectId(disputeId) });
@@ -93,7 +102,7 @@ export async function PATCH(req: NextRequest) {
  raiser.email,
  raiser.name ?? "User",
  dispute.jobTitle ?? "a project",
- resolution ?? newStatus,
+ resolution || newStatus,
  dispute.transactionId
  ).catch(() => {});
  }

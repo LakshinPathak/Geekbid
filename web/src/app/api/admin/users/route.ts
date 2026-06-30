@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { hashSync } from "bcryptjs";
+import { sanitizeSearchRegex, sanitizePagination, sanitizeString } from "@/lib/sanitize";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -17,15 +18,18 @@ async function logAction(adminId: string, action: string, detail: string) {
   });
 }
 
+const ALLOWED_ROLES = ["freelancer", "client", "admin", "all"];
+
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(req.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-  const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20"));
-  const search = searchParams.get("search") ?? "";
-  const role = searchParams.get("role") ?? "";
+  const { page, limit } = sanitizePagination(searchParams.get("page"), searchParams.get("limit"));
+  // Escape regex metacharacters to prevent ReDoS attacks
+  const search = sanitizeSearchRegex(searchParams.get("search"));
+  const roleRaw = sanitizeString(searchParams.get("role"));
+  const role = ALLOWED_ROLES.includes(roleRaw) ? roleRaw : "";
 
   const db = await getDb();
   const filter: Record<string, unknown> = {};
@@ -59,7 +63,12 @@ export async function POST(req: NextRequest) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { name, email, password, adminKey } = await req.json();
+  const body = await req.json();
+  // Force strings — blocks object injection in adminKey comparison
+  const name = sanitizeString(body.name);
+  const email = sanitizeString(body.email).toLowerCase();
+  const password = sanitizeString(body.password);
+  const adminKey = String(body.adminKey ?? "");
 
   if (adminKey !== process.env.ADMIN_SECRET_KEY) {
     return NextResponse.json({ error: "Admin key required to create admin users" }, { status: 403 });
@@ -69,16 +78,16 @@ export async function POST(req: NextRequest) {
   }
 
   const db = await getDb();
-  const existing = await db.collection("users").findOne({ email: email.toLowerCase() });
+  const existing = await db.collection("users").findOne({ email });
   if (existing) return NextResponse.json({ error: "Email already registered" }, { status: 409 });
 
   const hashed = hashSync(password, 12);
   const user = {
-    fullName: name.trim(),
-    email: email.toLowerCase().trim(),
+    fullName: name,
+    email,
     password: hashed,
     role: "admin",
-    avatarInitial: name.trim().split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2),
+    avatarInitial: name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2),
     geekScore: 0,
     skills: [],
     bio: "",

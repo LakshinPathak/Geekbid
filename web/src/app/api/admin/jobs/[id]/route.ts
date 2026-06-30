@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { sanitizeObjectId } from "@/lib/sanitize";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -21,7 +22,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = sanitizeObjectId(rawId);
+  if (!id) return NextResponse.json({ error: "Invalid job ID" }, { status: 400 });
   const body = await req.json();
   const allowed = ["title", "description", "status", "startingPrice", "minimumPrice", "decayRatePerHour", "featured", "skillsRequired", "category"];
   const update: Record<string, unknown> = {};
@@ -44,7 +47,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = sanitizeObjectId(rawId);
+  if (!id) return NextResponse.json({ error: "Invalid job ID" }, { status: 400 });
   const { reason } = await req.json().catch(() => ({ reason: "" }));
 
   const db = await getDb();

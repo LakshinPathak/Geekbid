@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { sanitizeSearchRegex, sanitizePagination, sanitizeString } from "@/lib/sanitize";
+
+const ALLOWED_STATUSES = ["open", "accepted", "completed", "cancelled", "removed", "all"];
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -14,10 +17,11 @@ export async function GET(req: NextRequest) {
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(req.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-  const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20"));
-  const search = searchParams.get("search") ?? "";
-  const status = searchParams.get("status") ?? "";
+  const { page, limit } = sanitizePagination(searchParams.get("page"), searchParams.get("limit"));
+  // Escape regex metacharacters to prevent ReDoS attacks
+  const search = sanitizeSearchRegex(searchParams.get("search"));
+  const statusRaw = sanitizeString(searchParams.get("status"));
+  const status = ALLOWED_STATUSES.includes(statusRaw) ? statusRaw : "";
 
   const db = await getDb();
   const filter: Record<string, unknown> = {};
@@ -41,8 +45,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     jobs: jobs.map(j => ({ ...j, _id: j._id.toString(), id: j._id.toString() })),
-    total,
-    page,
+    total, page,
     pages: Math.ceil(total / limit),
   });
 }

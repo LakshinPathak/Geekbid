@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendEscrowReleasedEmail, sendDisputeEmail, sendJobCompletedEmail } from "@/lib/email";
+import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
 
 // GET /api/transactions (protected)
 export async function GET(req: NextRequest) {
@@ -50,13 +51,16 @@ export async function PATCH(req: NextRequest) {
  return NextResponse.json({ error: auth.error }, { status: auth.status });
  }
 
- const { transactionId, action, reason } = await req.json();
+ const body = await req.json();
+ const transactionId = sanitizeObjectId(body.transactionId);
+ const action = sanitizeString(body.action);
+ const reason = sanitizeString(body.reason);
 
- if (!transactionId || !action) {
- return NextResponse.json(
- { error: "transactionId and action are required" },
- { status: 400 }
- );
+ if (!transactionId) {
+ return NextResponse.json({ error: "Invalid or missing transactionId" }, { status: 400 });
+ }
+ if (!action) {
+ return NextResponse.json({ error: "action is required" }, { status: 400 });
  }
 
  const db = await getDb();
@@ -71,7 +75,9 @@ export async function PATCH(req: NextRequest) {
  }
 
  const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
- if (tx.clientId.toString() !== auth.payload.userId) {
+ // Null check — tx not found means invalid/unauthorized transactionId
+ if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+ if (auth.payload.role !== "admin" && tx.clientId?.toString() !== auth.payload.userId) {
  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
  }
 
@@ -87,8 +93,8 @@ export async function PATCH(req: NextRequest) {
  );
 
  // Fire-and-forget: notify freelancer about payment release
- const job = tx?.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
- if (tx?.freelancerId) {
+ const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
+ if (tx.freelancerId) {
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(tx.freelancerId) },
  { projection: { email: 1, name: 1 } }
@@ -122,7 +128,9 @@ export async function PATCH(req: NextRequest) {
 
  if (action === "dispute") {
  const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
- const isParty = tx.clientId.toString() === auth.payload.userId ||
+ // Null check — crash was: tx.clientId.toString() without null guard
+ if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+ const isParty = tx.clientId?.toString() === auth.payload.userId ||
  tx.freelancerId?.toString() === auth.payload.userId;
  if (!isParty) {
  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -134,14 +142,13 @@ export async function PATCH(req: NextRequest) {
  await db.collection("disputes").insertOne({
  transactionId,
  raisedBy: auth.payload.userId,
- reason: reason ?? "Quality dispute",
+ reason: reason || "Quality dispute",
  status: "open",
- jobTitle: tx?.jobId ? (await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }))?.title : undefined,
+ jobTitle: tx.jobId ? (await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }))?.title : undefined,
  createdAt: new Date().toISOString(),
  });
 
  // Fire-and-forget: notify the other party
- if (tx) {
  const otherId = tx.clientId === auth.payload.userId ? tx.freelancerId : tx.clientId;
  if (otherId) {
  const other = await db.collection("users").findOne(
@@ -153,10 +160,9 @@ export async function PATCH(req: NextRequest) {
  sendDisputeEmail(
  other.email, other.name ?? "User",
  job?.title ?? "a project",
- reason ?? "Quality dispute",
+ reason || "Quality dispute",
  transactionId
  ).catch(() => {});
- }
  }
  }
 

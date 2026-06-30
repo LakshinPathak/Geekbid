@@ -5,12 +5,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { ObjectId } from "mongodb";
 
 // ─── Token Configuration ───────────────────────────────────────
-const ACCESS_SECRET = new TextEncoder().encode(
- process.env.NEXTAUTH_SECRET ?? "fallback-secret-not-for-production"
-);
-const REFRESH_SECRET = new TextEncoder().encode(
- (process.env.NEXTAUTH_SECRET ?? "fallback-secret") + "-refresh"
-);
+if (!process.env.NEXTAUTH_SECRET) throw new Error("NEXTAUTH_SECRET env var is not set");
+const ACCESS_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
+const REFRESH_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET + "-refresh");
 
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = "7d"; // 7 days
@@ -157,34 +154,38 @@ export async function authenticateRequest(
 
 // ─── User Registration ─────────────────────────────────────────
 export async function registerUser(
- name: string,
- email: string,
- password: string,
- role: string
+ name: unknown,
+ email: unknown,
+ password: unknown,
+ role: unknown
 ) {
+ // Force string types — blocks NoSQL operator injection
+ const nameStr = String(name ?? "").trim();
+ const emailStr = String(email ?? "").toLowerCase().trim();
+ const passwordStr = String(password ?? "");
+ const roleStr = String(role ?? "freelancer");
  const db = await getDb();
- const existing = await db.collection("users").findOne({ email });
+ const existing = await db.collection("users").findOne({ email: emailStr });
  if (existing) return { error: "Email already registered" };
 
- if (password.length < 6) return { error: "Password must be at least 6 characters" };
- if (!["freelancer", "client"].includes(role)) {
- return { error: "Invalid role. Must be freelancer, client, or admin" };
+ if (passwordStr.length < 6) return { error: "Password must be at least 6 characters" };
+ if (!["freelancer", "client"].includes(roleStr)) {
+ return { error: "Invalid role. Must be freelancer or client" };
  }
 
- const hashed = hashSync(password, 12);
+ const hashed = hashSync(passwordStr, 12);
  const user = {
- fullName: name.trim(),
- email: email.toLowerCase().trim(),
+ fullName: nameStr,
+ email: emailStr,
  password: hashed,
- role,
- avatarInitial: name
- .trim()
+ role: roleStr,
+ avatarInitial: nameStr
  .split(" ")
  .map((w) => w[0])
  .join("")
  .toUpperCase()
  .slice(0, 2),
- geekScore: role === "freelancer" ? 100 : 0,
+ geekScore: roleStr === "freelancer" ? 100 : 0,
  skills: [],
  bio: "",
  isVerified: false,
@@ -200,7 +201,7 @@ export async function registerUser(
  const result = await db.collection("users").insertOne(user);
  const userId = result.insertedId.toString();
 
- const { accessToken, refreshToken } = await createTokenPair(userId, role, user.email);
+ const { accessToken, refreshToken } = await createTokenPair(userId, roleStr, user.email);
  await storeRefreshToken(userId, refreshToken);
 
  const safeUser = { ...user, _id: userId, id: userId, password: undefined };
@@ -284,13 +285,17 @@ export async function googleLoginUser(profile: GoogleProfile) {
 }
 
 // ─── User Login ────────────────────────────────────────────────
-export async function loginUser(email: string, password: string) {
+export async function loginUser(email: unknown, password: unknown) {
+ // Force string types — blocks NoSQL operator injection ({ "$gt": "" })
+ const emailStr = String(email ?? "").toLowerCase().trim();
+ const passwordStr = String(password ?? "");
+ if (!emailStr || !passwordStr) return { error: "Invalid email or password" };
  const db = await getDb();
  const user = await db
  .collection("users")
- .findOne({ email: email.toLowerCase().trim() });
+ .findOne({ email: emailStr });
  if (!user) return { error: "Invalid email or password" };
- if (!compareSync(password, user.password))
+ if (!compareSync(passwordStr, user.password))
  return { error: "Invalid email or password" };
 
  const userId = user._id.toString();

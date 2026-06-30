@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { registerUser, loginUser, setRefreshCookie } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { sendWelcomeEmail, sendReferralSignupEmail } from "@/lib/email";
+import { checkRateLimit, getClientIp, sanitizeString } from "@/lib/sanitize";
 
 export async function POST(req: NextRequest) {
  try {
+ // Rate limit: 10 login/register attempts per IP per 15 minutes
+ const ip = getClientIp(req);
+ if (!checkRateLimit(`auth:${ip}`, 10, 15 * 60 * 1000)) {
+ return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+ }
+
  const body = await req.json();
- const { action, name, email, password, role, referralCode } = body;
+ const action = sanitizeString(body.action);
+ const { name, email, password, role, referralCode } = body;
 
  // ─── REGISTER ────────────────────────────────────────────
  if (action === "register") {
