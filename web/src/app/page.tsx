@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
 import {
  Zap, ArrowRight, TrendingDown, Shield, Users, Code, Clock,
  DollarSign, Star, ChevronRight, Sparkles, BarChart3, Lock,
@@ -34,13 +34,31 @@ function useCountUp(end: number, duration = 2000, start = 0, enabled = true) {
 function useInView(threshold = 0.15) {
  const ref = useRef<HTMLDivElement>(null);
  const [inView, setInView] = useState(false);
+
+ // Observer: tries to observe the element. On first render the component
+ // may return null (mounted=false), so ref.current is null and the effect
+ // exits early. The observer is still set up correctly if the element
+ // exists (e.g. on subsequent renders that change threshold).
  useEffect(() => {
  const el = ref.current;
  if (!el) return;
- const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+ const obs = new IntersectionObserver(
+  ([e]) => { if (e.isIntersecting) setInView(true); },
+  { threshold, rootMargin: '100px 0px' }
+ );
  obs.observe(el);
  return () => obs.disconnect();
  }, [threshold]);
+
+ // Safety net (separate effect, always runs on mount regardless of el):
+ // If the observer never fires — because the element wasn't available on
+ // the first render (deferred mount via useApp) or the user fast-scrolled
+ // — force every section visible after 800 ms so nothing stays hidden.
+ useEffect(() => {
+ const t = setTimeout(() => setInView(true), 800);
+ return () => clearTimeout(t);
+ }, []);
+
  return { ref, inView };
 }
 
@@ -230,12 +248,13 @@ const COMPARISONS = [
 ];
 
 const TESTIMONIALS = [
- {
+{
  quote: "The escrow and dispute resolution gave us confidence to try GeekBid for our entire engineering pipeline. We've saved 40% on average.",
  name: "Derek Olsen",
  title: "VP Engineering",
  company: "FinScale",
  avatar: "DO",
+ photo: "https://randomuser.me/api/portraits/men/32.jpg",
  avatarGrad: "from-blue-500/40 to-blue-900/60",
  ring: "shadow-[0_0_0_2px_rgba(96,165,250,0.4)]",
  accent: "text-blue-400",
@@ -250,6 +269,7 @@ const TESTIMONIALS = [
  title: "Senior Full-Stack Developer",
  company: "Independent",
  avatar: "PS",
+ photo: "https://randomuser.me/api/portraits/women/44.jpg",
  avatarGrad: "from-[#c9a84c]/40 to-[#8a6e2f]/60",
  ring: "shadow-[0_0_0_2px_rgba(201,168,76,0.5)]",
  accent: "text-[#c9a84c]",
@@ -264,6 +284,7 @@ const TESTIMONIALS = [
  title: "CTO",
  company: "LaunchPad AI",
  avatar: "MC",
+ photo: "https://randomuser.me/api/portraits/men/75.jpg",
  avatarGrad: "from-emerald-500/40 to-emerald-900/60",
  ring: "shadow-[0_0_0_2px_rgba(52,211,153,0.4)]",
  accent: "text-emerald-400",
@@ -274,6 +295,7 @@ const TESTIMONIALS = [
  },
 ];
 
+/* ─── JOB_ROWS ───────────────────────────────────────────── */
 const JOB_ROWS = [
  { title: "AI Chatbot with RAG Pipeline", price: "$2,450", decay: "$18/hr", skills: ["React", "FastAPI", "LLM"], time: "14h 22m", bids: 5 },
  { title: "Kubernetes Cluster Hardening", price: "$1,100", decay: "$20/hr", skills: ["K8s", "AWS", "Security"], time: "8h 45m", bids: 3 },
@@ -567,8 +589,8 @@ export default function LandingPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-start">
   {STEPS.map((s, idx) => (
-   <>
-   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden" style={{ opacity: howItWorksSection.inView ? 1 : 0, transform: howItWorksSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.6s ease ${200 + idx * 80}ms, transform 0.6s ease ${200 + idx * 80}ms` }}>
+   <Fragment key={s.num}>
+   <div className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden" style={{ opacity: howItWorksSection.inView ? 1 : 0, transform: howItWorksSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.6s ease ${200 + idx * 80}ms, transform 0.6s ease ${200 + idx * 80}ms` }}>
     <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#c9a84c] border border-[rgba(201,168,76,0.28)] bg-[rgba(201,168,76,0.06)] px-1.5 py-0.5 rounded-[2px] tracking-wider">{s.num}</span>
     <div className="relative z-10">
      <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
@@ -583,7 +605,7 @@ export default function LandingPage() {
      <div className="w-full border-t border-dashed border-[rgba(201,168,76,0.28)]" />
     </div>
    )}
-   </>
+   </Fragment>
   ))}
  </div>
 
@@ -777,10 +799,10 @@ export default function LandingPage() {
 
  {/* Attribution */}
  <div className="flex items-center gap-3">
- {/* Image placeholder with User icon */}
- <div className="relative shrink-0">
- <div className="h-[60px] w-[60px] rounded-full bg-gradient-to-br from-[rgba(201,168,76,0.15)] to-[rgba(201,168,76,0.05)] border border-[rgba(201,168,76,0.25)] flex items-center justify-center">
- <User className="h-7 w-7 text-[#a8997e]" />
+  {/* Avatar photo */}
+  <div className="relative shrink-0">
+  <div className="h-[60px] w-[60px] rounded-full border border-[rgba(201,168,76,0.25)] overflow-hidden">
+  <img src={t.photo} alt={t.name} className="h-full w-full object-cover" />
  </div>
  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-[#0a0d18]" />
  </div>
