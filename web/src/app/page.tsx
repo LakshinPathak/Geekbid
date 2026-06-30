@@ -8,7 +8,7 @@ import {
  DollarSign, Star, ChevronRight, Sparkles, BarChart3, Lock,
  Globe, CheckCircle2, ArrowUpRight, Target, Award, Play,
  MessageSquare, Bell, CreditCard, Eye, Gauge, Timer,
- ArrowDown, ChevronDown, Minus, Plus, X, Check,
+ ArrowDown, ChevronDown, Minus, Plus, X, Check, User,
 } from "lucide-react";
 
 /* ─── Animated counter hook ──────────────────────────────── */
@@ -48,6 +48,10 @@ function useInView(threshold = 0.15) {
 function PriceDecayDemo() {
  const [price, setPrice] = useState(2400);
  const [elapsed, setElapsed] = useState(0);
+ const [flashCount, setFlashCount] = useState(0);
+ const [sparks, setSparks] = useState<Array<{id: number; x: number}>>([]);
+ const sparkIdRef = useRef(0);
+ const tickRef = useRef(0);
  const MIN = 800;
  const DECAY = 25;
 
@@ -57,6 +61,13 @@ function PriceDecayDemo() {
  const next = prev + 1;
  const newPrice = Math.max(2400 - DECAY * next, MIN);
  setPrice(newPrice);
+ setFlashCount(n => n + 1);
+ tickRef.current += 1;
+ if (tickRef.current % 3 === 0) {
+ const ids = [sparkIdRef.current++, sparkIdRef.current++];
+ setSparks(p => [...p, ...ids.map(sid => ({ id: sid, x: (Math.random() - 0.5) * 60 }))]);
+ setTimeout(() => setSparks(p => p.filter(s => !ids.includes(s.id))), 1400);
+ }
  if (newPrice <= MIN) { clearInterval(id); return prev; }
  return next;
  });
@@ -67,20 +78,28 @@ function PriceDecayDemo() {
  const pct = ((2400 - price) / (2400 - MIN)) * 100;
 
  return (
- <div className="card">
+ <div className="card animate-card-border-glow">
  {/* Header */}
  <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(201,168,76,0.22)]">
  <div>
  <p className="text-[9px] font-sans uppercase tracking-[0.12em] text-[#a8997e]">Live Price Decay</p>
  <p className="text-xs text-[#a8997e] mt-0.5 font-sans">AI Chatbot Development</p>
  </div>
- <span className="text-[9px] font-bold tracking-[0.09em] uppercase font-sans px-2 py-1 rounded-[2px] bg-[#c9a84c] text-[#050810]">LIVE</span>
+ <span className="text-[9px] font-bold tracking-[0.09em] uppercase font-sans px-2 py-1 rounded-[2px] bg-[#c9a84c] text-[#050810] animate-live-breathe">LIVE</span>
  </div>
 
  {/* Price */}
- <div className="px-4 py-4">
+ <div className="px-4 py-4 relative">
+ {/* Sparkle particles */}
+ {sparks.map(s => (
+ <div
+ key={s.id}
+ className="absolute animate-spark pointer-events-none"
+ style={{ left: `calc(40% + ${s.x}px)`, bottom: '65%', width: 3, height: 3, borderRadius: '50%', background: '#c9a84c', zIndex: 20 }}
+ />
+ ))}
  <div className="flex items-baseline gap-2 mb-3">
- <span className="text-4xl sm:text-5xl font-serif font-normal text-[#f0e8d4] tabular-nums">
+ <span key={flashCount} className="text-4xl sm:text-5xl font-serif font-normal tabular-nums animate-price-tick" style={{ display: 'inline-block' }}>
  ${price.toLocaleString()}
  </span>
  <span className="text-sm text-[#c9a84c] font-sans">↘ -${DECAY}/hr</span>
@@ -89,7 +108,7 @@ function PriceDecayDemo() {
  {/* Progress bar: flat 2px track per Royal spec */}
  <div className="h-0.5 bg-[#1a1f30] mb-1.5">
  <div
- className="h-0.5 bg-[#c9a84c] transition-all duration-150 ease-linear"
+ className="h-0.5 transition-all duration-150 ease-linear progress-shimmer"
  style={{ width: `${100 - pct}%` }}
  />
  </div>
@@ -268,6 +287,14 @@ export default function LandingPage() {
  const router = useRouter();
  const statsSection = useInView(0.1);
  const testimonialsSection = useInView(0.1);
+ const productSection = useInView(0.1);
+ const howItWorksSection = useInView(0.08);
+ const featuresSection = useInView(0.08);
+ const comparisonSection = useInView(0.08);
+ const carouselRef = useRef<HTMLDivElement>(null);
+ const carouselPausedRef = useRef(false);
+ const [activeDot, setActiveDot] = useState(0);
+ const lastDotRef = useRef(0);
  const stat0 = useCountUp(STATS[0].value, 2000, 0, statsSection.inView);
  const stat1 = useCountUp(12, 2000, 0, statsSection.inView);
  const stat2 = useCountUp(STATS[2].value, 2000, 0, statsSection.inView);
@@ -277,6 +304,21 @@ export default function LandingPage() {
  useEffect(() => {
  if (mounted && currentUser) router.replace("/feed");
  }, [mounted, currentUser, router]);
+
+ useEffect(() => {
+ const el = carouselRef.current;
+ if (!el) return;
+ const id = setInterval(() => {
+ if (carouselPausedRef.current) return;
+ const mid = el.scrollWidth / 2;
+ if (!mid) return;
+ el.scrollLeft += 1;
+ if (el.scrollLeft >= mid) el.scrollLeft -= mid;
+ const newDot = Math.floor((el.scrollLeft / mid) * TESTIMONIALS.length) % TESTIMONIALS.length;
+ if (newDot !== lastDotRef.current) { lastDotRef.current = newDot; setActiveDot(newDot); }
+ }, 30);
+ return () => clearInterval(id);
+ }, []);
 
  if (!mounted || currentUser) return null;
 
@@ -310,43 +352,60 @@ export default function LandingPage() {
 
  {/* ═══ HERO ═══ */}
  <section className="relative min-h-[85vh] flex items-center justify-center px-6 lg:px-8 pt-12 pb-12">
- {/* Ambient glows */}
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#c9a84c]/[0.06] rounded-full blur-[160px] pointer-events-none" />
- <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/[0.04] rounded-full blur-[130px] pointer-events-none" />
- <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[110px] pointer-events-none" />
+ {/* Animated subtle dot-grid background */}
+ <div
+ className="absolute inset-0 pointer-events-none animate-hero-grid"
+ style={{ backgroundImage: 'radial-gradient(circle, rgba(201,168,76,0.04) 1px, transparent 1px)', backgroundSize: '32px 32px' }}
+ />
+ {/* Scan-line — subtle CRT sweep */}
+ <div className="absolute inset-0 overflow-hidden pointer-events-none">
+ <div className="hero-scan-line" />
+ </div>
+ {/* Ambient glows with breathing animation */}
+ <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#c9a84c]/[0.06] rounded-full blur-[160px] pointer-events-none" style={{ animation: 'breathe 10s ease-in-out infinite' }} />
+ <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/[0.04] rounded-full blur-[130px] pointer-events-none" style={{ animation: 'breathe 12s ease-in-out infinite 2s' }} />
+ <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[110px] pointer-events-none" style={{ animation: 'breathe 8s ease-in-out infinite 4s' }} />
  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.3)] to-transparent pointer-events-none" />
 
  <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
- {/* Left: Copy */}
- <div className="text-center lg:text-left animate-fade-in-up">
+ {/* Left: Copy — staggered entrance */}
+ <div className="text-center lg:text-left">
  {/* Badge */}
+ <div className="animate-fade-in-up" style={{ animationDelay: '0ms' }}>
  <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#c9a84c] border border-[rgba(201,168,76,0.22)] px-3 py-1.5 rounded-[2px] mb-6 font-sans cursor-default">
  <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse inline-block" />
  Live · Reverse Auction Platform
  </div>
+ </div>
 
  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-normal leading-[1.18] mb-5">
- Hire engineers<br />
+ <span className="block animate-fade-in-up" style={{ animationDelay: '150ms' }}>Hire engineers</span>
+ <span className="block animate-fade-in-up" style={{ animationDelay: '300ms' }}>
  <em className="text-[#c9a84c] not-italic">at the right price</em>
+ </span>
  </h1>
 
- <p className="text-lg sm:text-xl text-[#a8997e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0">
+ <p className="text-lg sm:text-xl text-[#a8997e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: '450ms' }}>
  The world&apos;s first reverse-auction marketplace for tech talent. Post a job, watch prices automatically decay, and hire when it hits your sweet spot.
  </p>
 
  {/* CTAs */}
  <div className="flex flex-col sm:flex-row gap-3 mt-0 justify-center lg:justify-start">
+ <div className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
  <Link href="/login?tab=register&role=client">
  <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
  Start Hiring Free
  <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
  </button>
  </Link>
+ </div>
+ <div className="animate-fade-in-up" style={{ animationDelay: '750ms' }}>
  <Link href="/login?tab=register&role=freelancer">
  <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
  <Code className="h-4 w-4" /> Join as Freelancer
  </button>
  </Link>
+ </div>
  </div>
 
  {/* Trust badges */}
@@ -356,8 +415,8 @@ export default function LandingPage() {
    { icon: "⚡", text: "< 4hr Match Time" },
    { icon: "🛡️", text: "Dispute Resolution" },
    { icon: "✨", text: "No Upfront Fees" },
-  ].map(b => (
-   <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#a8997e]">
+  ].map((b, i) => (
+   <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#a8997e] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
     <span>{b.icon}</span>
     <span>{b.text}</span>
    </div>
@@ -366,7 +425,7 @@ export default function LandingPage() {
  </div>
 
  {/* Right: Live Price Decay Demo */}
- <div className="animate-fade-in-up flex justify-center" style={{ animationDelay: "0.12s" }}>
+ <div className="animate-fade-in-right flex justify-center" style={{ animationDelay: "500ms" }}>
  <div className="w-full max-w-sm">
  <PriceDecayDemo />
  </div>
@@ -377,8 +436,14 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ SOCIAL PROOF STRIP ═══ */}
- <div className="border-y border-[rgba(201,168,76,0.15)] bg-[#050810] py-3 overflow-hidden">
- <div className="flex items-center gap-12 animate-marquee whitespace-nowrap" style={{ animation: "marquee 28s linear infinite" }}>
+ <div className="border-y border-[rgba(201,168,76,0.15)] bg-[#050810] py-3 overflow-hidden relative">
+ {/* Left gradient fade mask */}
+ <div className="absolute left-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: 'linear-gradient(to right, #050810, transparent)' }} />
+ {/* Center glow highlight — items brighten as they pass center */}
+ <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 40% 100% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%)', zIndex: 5 }} />
+ {/* Right gradient fade mask */}
+ <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: 'linear-gradient(to left, #050810, transparent)' }} />
+ <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
  {[
  { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
  { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
@@ -400,13 +465,12 @@ export default function LandingPage() {
  </span>
  ))}
  </div>
- <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
  </div>
 
  {/* ═══ PRODUCT SHOWCASE ═══ */}
- <section className="relative py-16 sm:py-24 bg-[#050810]">
+ <section ref={productSection.ref} className="relative py-16 sm:py-24 bg-[#050810]">
  <div className="mx-auto max-w-6xl px-5">
- <div className="text-center mb-12">
+ <div className="text-center mb-12" style={{ opacity: productSection.inView ? 1 : 0, transform: productSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 0ms, transform 0.7s ease 0ms' }}>
  <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Preview</p>
  <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
  Your auction feed.<br /><em className="text-[#c9a84c] not-italic">Reimagined.</em>
@@ -414,7 +478,7 @@ export default function LandingPage() {
  </div>
 
  {/* Browser mockup */}
- <div className="relative">
+ <div className="relative" style={{ opacity: productSection.inView ? 1 : 0, transform: productSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 150ms, transform 0.7s ease 150ms' }}>
  <div className="absolute -inset-1 /[0.06] rounded-[6px]" />
  <div className="relative rounded-[6px] border border-[rgba(201,168,76,0.15)] bg-[#050810] overflow-hidden ">
  {/* Chrome bar */}
@@ -489,9 +553,9 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ HOW IT WORKS ═══ */}
- <section id="how-it-works" className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
+ <section id="how-it-works" ref={howItWorksSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
  <div className="mx-auto max-w-6xl px-5 sm:px-8">
- <div className="text-center mb-16 sm:mb-20">
+ <div className="text-center mb-16 sm:mb-20" style={{ opacity: howItWorksSection.inView ? 1 : 0, transform: howItWorksSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 0ms, transform 0.7s ease 0ms' }}>
  <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">How It Works</p>
  <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
  From posting to payment in four simple steps
@@ -504,7 +568,7 @@ export default function LandingPage() {
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-start">
   {STEPS.map((s, idx) => (
    <>
-   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden">
+   <div key={s.num} className="group glass-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden" style={{ opacity: howItWorksSection.inView ? 1 : 0, transform: howItWorksSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.6s ease ${200 + idx * 80}ms, transform 0.6s ease ${200 + idx * 80}ms` }}>
     <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#c9a84c] border border-[rgba(201,168,76,0.28)] bg-[rgba(201,168,76,0.06)] px-1.5 py-0.5 rounded-[2px] tracking-wider">{s.num}</span>
     <div className="relative z-10">
      <div className={`h-10 w-10 rounded-[6px] border ${s.accent} flex items-center justify-center mb-5`}>
@@ -544,9 +608,9 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ FEATURES ═══ */}
- <section id="features" className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
+ <section id="features" ref={featuresSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
  <div className="mx-auto max-w-6xl px-5 sm:px-8">
- <div className="text-center mb-16">
+ <div className="text-center mb-16" style={{ opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 0ms, transform 0.7s ease 0ms' }}>
  <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Features</p>
  <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
  Everything you need to hire and deliver, built in
@@ -554,8 +618,8 @@ export default function LandingPage() {
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {FEATURES.map(f => (
- <div key={f.title} className="group job-card p-8 relative hover:border-[rgba(201,168,76,0.32)] transition-all duration-300">
+ {FEATURES.map((f, fi) => (
+ <div key={f.title} className="group job-card p-8 relative hover:border-[rgba(201,168,76,0.32)] transition-all duration-300" style={{ opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.6s ease ${150 + fi * 80}ms, transform 0.6s ease ${150 + fi * 80}ms` }}>
  <div className="relative z-10">
  <div className={`h-14 w-14 rounded-[6px] ${f.iconBg} border ${f.iconBorder} flex items-center justify-center mb-6 transition-colors`}>
  <f.icon className={`h-6 w-6 ${f.iconColor}`} />
@@ -570,9 +634,9 @@ export default function LandingPage() {
  </section>
 
  {/* ═══ COMPARISON ═══ */}
- <section id="compare" className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
+ <section id="compare" ref={comparisonSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
  <div className="mx-auto max-w-4xl px-5 sm:px-8">
- <div className="text-center mb-16">
+ <div className="text-center mb-16" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 0ms, transform 0.7s ease 0ms' }}>
  <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Why GeekBid</p>
  <h2 className="text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
  Traditional hiring is broken
@@ -583,7 +647,7 @@ export default function LandingPage() {
  </div>
 
  <div className="overflow-x-auto">
- <div className="glass-panel overflow-hidden min-w-[500px]">
+ <div className="glass-panel overflow-hidden min-w-[500px]" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 150ms, transform 0.7s ease 150ms' }}>
  {/* Header */}
  <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[rgba(201,168,76,0.22)]">
  <div className="p-4 sm:p-5 text-sm font-semibold text-[#a8997e]" />
@@ -600,7 +664,7 @@ export default function LandingPage() {
 
  {/* Rows */}
  {COMPARISONS.map((c, i) => (
-  <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] hover:bg-[rgba(201,168,76,0.04)] transition-colors ${i < COMPARISONS.length - 1 ? "border-b border-[rgba(201,168,76,0.22)]" : ""}`}>
+  <div key={c.feature} className={`grid grid-cols-[1fr_1fr_1fr] hover:bg-[rgba(201,168,76,0.04)] transition-colors ${i < COMPARISONS.length - 1 ? "border-b border-[rgba(201,168,76,0.22)]" : ""}`} style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? 'translateY(0)' : 'translateY(12px)', transition: `opacity 0.5s ease ${300 + i * 60}ms, transform 0.5s ease ${300 + i * 60}ms` }}>
    <div className="p-4 sm:p-5 text-sm sm:text-base font-medium text-[#a8997e]">{c.feature}</div>
    <div className="p-4 sm:p-5 text-center border-x border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.03)]">
     <div className="flex items-start justify-center gap-2">
@@ -658,17 +722,28 @@ export default function LandingPage() {
  <p className="text-base text-[#a8997e] max-w-md mx-auto mt-4">Real results from real people using GeekBid to hire and get hired.</p>
  </div>
 
- {/* 3-col card grid */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
- {TESTIMONIALS.map((t, i) => (
+ {/* Auto-scrolling carousel */}
+ <div className="relative -mx-5">
+ {/* Left fade mask */}
+ <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, #080b14, transparent)' }} />
+ {/* Right fade mask */}
+ <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, #080b14, transparent)' }} />
+
  <div
- key={t.name}
- className="group relative rounded-[8px] p-px overflow-hidden"
+ ref={carouselRef}
+ className="flex gap-5 overflow-x-auto scrollbar-hide pb-2 px-5"
+ style={{ opacity: testimonialsSection.inView ? 1 : 0, transform: testimonialsSection.inView ? 'translateY(0)' : 'translateY(24px)', transition: 'opacity 0.7s ease 0ms, transform 0.7s ease 0ms' }}
+ onMouseEnter={() => { carouselPausedRef.current = true; }}
+ onMouseLeave={() => { carouselPausedRef.current = false; }}
+ >
+ {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+ <div
+ key={`${t.name}-${i}`}
+ className="group relative rounded-[8px] p-px overflow-hidden flex-shrink-0"
  style={{
+ minWidth: '340px',
+ maxWidth: '400px',
  background: "linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.04) 50%, rgba(201,168,76,0.12))",
- opacity: testimonialsSection.inView ? 1 : 0,
- transform: testimonialsSection.inView ? "translateY(0)" : "translateY(32px)",
- transition: `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`,
  }}
  >
  {/* inner card */}
@@ -702,8 +777,11 @@ export default function LandingPage() {
 
  {/* Attribution */}
  <div className="flex items-center gap-3">
- <div className={`relative h-11 w-11 rounded-full bg-gradient-to-br ${t.avatarGrad} ${t.ring} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
- {t.avatar}
+ {/* Image placeholder with User icon */}
+ <div className="relative shrink-0">
+ <div className="h-[60px] w-[60px] rounded-full bg-gradient-to-br from-[rgba(201,168,76,0.15)] to-[rgba(201,168,76,0.05)] border border-[rgba(201,168,76,0.25)] flex items-center justify-center">
+ <User className="h-7 w-7 text-[#a8997e]" />
+ </div>
  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-[#0a0d18]" />
  </div>
  <div>
@@ -713,6 +791,20 @@ export default function LandingPage() {
  </div>
  </div>
  </div>
+ ))}
+ </div>
+ </div>
+
+ {/* Navigation dots */}
+ <div className="flex justify-center gap-2 mt-6">
+ {TESTIMONIALS.map((_, i) => (
+ <button
+ key={i}
+ aria-label={`Testimonial ${i + 1}`}
+ onClick={() => { if (carouselRef.current) { const mid = carouselRef.current.scrollWidth / 2; carouselRef.current.scrollLeft = (mid / TESTIMONIALS.length) * i; } }}
+ className="rounded-full transition-all duration-300"
+ style={{ width: activeDot === i ? 20 : 6, height: 6, background: activeDot === i ? '#c9a84c' : 'rgba(168,153,126,0.35)' }}
+ />
  ))}
  </div>
 
