@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Document, type WithId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
 
 // GET /api/bids?jobId=xxx (public)
@@ -50,8 +50,21 @@ export async function POST(req: NextRequest) {
 
  const db = await getDb();
 
+ // A bid can only land on a job that's still open — otherwise a direct
+ // request could bid on an already-accepted/cancelled job.
+ let targetJob: WithId<Document> | null;
+ try { targetJob = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) }); }
+ catch { targetJob = await db.collection("jobs").findOne({ id: jobId }); }
+ if (!targetJob) {
+ return NextResponse.json({ error: "Job not found" }, { status: 404 });
+ }
+ if (targetJob.status !== "open") {
+ return NextResponse.json({ error: "This job is no longer open for bidding" }, { status: 400 });
+ }
+
  // Plan limit enforcement for freelancers
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ let bidQuotaReserved = false;
  if (user) {
  const plan = user.plan ?? "free";
  if (plan === "free") {
@@ -60,9 +73,23 @@ export async function POST(req: NextRequest) {
  await db.collection("users").updateOne({ _id: user._id }, {
  $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
  });
- } else if (limits.bidsPlacedThisMonth >= 10) {
+ }
+ // Atomic check-and-increment so two concurrent requests can't both
+ // read "under the cap" before either write lands.
+ const capped = await db.collection("users").findOneAndUpdate(
+ {
+ _id: user._id,
+ $or: [
+ { "planLimits.bidsPlacedThisMonth": { $lt: 10 } },
+ { "planLimits.bidsPlacedThisMonth": { $exists: false } },
+ ],
+ },
+ { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
+ );
+ if (!capped) {
  return NextResponse.json({ error: "Free plan limit: 10 bids/month. Upgrade to Pro for unlimited." }, { status: 403 });
  }
+ bidQuotaReserved = true;
  }
  }
 
@@ -113,19 +140,9 @@ export async function POST(req: NextRequest) {
  },
  };
 
- // Track lowest counter-bid for price pull effect
- let jobDoc = null;
- try {
- jobDoc = await db.collection("jobs").findOne(
- { _id: new ObjectId(jobId) },
- { projection: { lowestCounterBid: 1, clientId: 1, title: 1, minimumPrice: 1 } }
- );
- } catch {
- jobDoc = await db.collection("jobs").findOne(
- { id: jobId },
- { projection: { lowestCounterBid: 1, clientId: 1, title: 1, minimumPrice: 1 } }
- );
- }
+ // Reuse the job we already fetched above for the status check — no need
+ // to query it a second time.
+ const jobDoc = targetJob;
  if (
  jobDoc &&
  (jobDoc.lowestCounterBid === null ||
@@ -182,7 +199,9 @@ export async function POST(req: NextRequest) {
  }
  }
 
- await db.collection("users").updateOne(
+ // Free-plan counter was already incremented atomically above alongside the
+ // cap check; only non-free plans still need a plain increment here.
+ if (!bidQuotaReserved) await db.collection("users").updateOne(
  { _id: new ObjectId(auth.payload.userId) },
  { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
  );

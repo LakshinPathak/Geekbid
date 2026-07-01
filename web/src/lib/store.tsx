@@ -256,7 +256,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
  // ── Data Fetching (all from MongoDB) ──────────────────────
  const fetchJobs = useCallback(async () => {
  try {
- const res = await apiRequest("/api/jobs");
+ // Stays public for logged-out browsing, but passes the token when we have
+ // one so the server can show a client their own invite-only jobs (and a
+ // freelancer any job they were specifically invited to).
+ const res = await apiRequest("/api/jobs", {
+ accessToken: auth.accessToken,
+ });
  if (res.ok) {
  const data = await res.json();
  if (Array.isArray(data)) setJobs(data);
@@ -264,7 +269,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch (err) {
  console.error("[fetchJobs]", err);
  }
- }, []);
+ }, [auth.accessToken]);
 
  const fetchBids = useCallback(async () => {
  try {
@@ -537,13 +542,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
  });
  const d = await res.json();
  if (d.error) return { ok: false, message: d.error };
- await Promise.all([fetchJobs(), fetchTransactions()]);
+ await Promise.all([fetchJobs(), fetchTransactions(), fetchChatRooms()]);
  return { ok: true, message: response === "accepted" ? "Offer accepted!" : "Offer declined" };
  } catch {
  return { ok: false, message: "Failed to respond" };
  }
  },
- [getValidToken, fetchJobs, fetchTransactions]
+ [getValidToken, fetchJobs, fetchTransactions, fetchChatRooms]
  );
 
  const verifyGithub = useCallback(
@@ -828,7 +833,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
 
- await Promise.all([fetchJobs(), fetchBids(), fetchTransactions()]);
+ await Promise.all([fetchJobs(), fetchBids(), fetchTransactions(), fetchChatRooms()]);
  return {
  ok: true,
  message: isClient
@@ -839,7 +844,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  return { ok: false, message: "Failed to accept job" };
  }
  },
- [jobs, now, currentUser, getValidToken, fetchJobs, fetchBids, fetchTransactions]
+ [jobs, now, currentUser, getValidToken, fetchJobs, fetchBids, fetchTransactions, fetchChatRooms]
  );
 
  // ── Counter Bid (with DB call) ────────────────────────────
@@ -1146,10 +1151,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
  [getValidToken, currentUser]
  );
 
- // ── Seed Database ─────────────────────────────────────────
+ // ── Seed Database (admin only) ────────────────────────────
  const seedDatabase = useCallback(async (): Promise<ActionResult> => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, message: "Not authenticated" };
  try {
- const res = await apiRequest("/api/seed", { method: "POST" });
+ const res = await apiRequest("/api/seed", { method: "POST", accessToken: token });
  const data = await res.json();
  if (data.ok) {
  // Reload all data after seeding
@@ -1159,11 +1166,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
  message: `Seeded ${data.seeded.users} users, ${data.seeded.jobs} jobs, ${data.seeded.bids} bids`,
  };
  }
- return { ok: false, message: "Seed failed" };
+ return { ok: false, message: data.error ?? "Seed failed" };
  } catch {
  return { ok: false, message: "Connection failed" };
  }
- }, [loadAllData]);
+ }, [getValidToken, loadAllData]);
 
  // ── Context value ─────────────────────────────────────────
  const value = useMemo(

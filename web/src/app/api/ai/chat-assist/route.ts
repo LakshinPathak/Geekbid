@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { generateText, isAIAvailable } from "@/lib/ai";
+import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
@@ -11,6 +12,11 @@ export async function POST(req: NextRequest) {
     const auth = await authenticateRequest(req);
     if ("error" in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.error }, { status: 429 });
     }
 
     const body = await req.json();

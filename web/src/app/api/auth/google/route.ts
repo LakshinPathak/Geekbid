@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { generateOAuthNonce, setOAuthStateCookie } from "@/lib/oauth-state";
 
 /**
  * GET /api/auth/google
@@ -20,6 +21,13 @@ export async function GET(req: Request) {
 
  const redirectUri = `${process.env.NEXTAUTH_URL}/api/auth/google/callback`;
 
+ // Random per-flow nonce, stored in a short-lived httpOnly cookie and echoed
+ // back through `state`. The callback rejects the flow unless they match —
+ // otherwise an attacker could start the flow under their own account, hand
+ // the resulting code to a victim, and log the victim into the attacker's
+ // GeekBid account (login-CSRF / session fixation).
+ const nonce = generateOAuthNonce();
+
  const params = new URLSearchParams({
  client_id: clientId,
  redirect_uri: redirectUri,
@@ -27,10 +35,11 @@ export async function GET(req: Request) {
  scope: "openid email profile",
  access_type: "offline",
  prompt: "consent",
- state: role, // Pass role through OAuth state
+ state: `${nonce}.${role}`,
  });
 
  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
- return NextResponse.redirect(googleAuthUrl);
+ const response = NextResponse.redirect(googleAuthUrl);
+ return setOAuthStateCookie(response, nonce);
 }

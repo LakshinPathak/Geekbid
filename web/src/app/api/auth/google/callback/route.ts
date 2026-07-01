@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { googleLoginUser, setRefreshCookie } from "@/lib/auth";
+import { OAUTH_STATE_COOKIE, clearOAuthStateCookie, createExchangeCode } from "@/lib/oauth-state";
 
 /**
  * GET /api/auth/google/callback
  *
  * Handles the OAuth callback from Google:
- * 1. Exchanges the authorization code for tokens
- * 2. Fetches user profile from Google
- * 3. Creates or finds the user in our DB
- * 4. Issues our own JWT access + refresh token pair
- * 5. Redirects to /feed with tokens saved
+ * 1. Validates the CSRF state nonce against the cookie set when the flow started
+ * 2. Exchanges the authorization code for tokens
+ * 3. Fetches user profile from Google
+ * 4. Creates or finds the user in our DB
+ * 5. Issues our own JWT access + refresh token pair
+ * 6. Redirects to /login with a one-time exchange code (never the token itself)
  */
 export async function GET(req: NextRequest) {
  try {
  const { searchParams } = new URL(req.url);
  const code = searchParams.get("code");
- const role = searchParams.get("state") || "freelancer";
+ const state = searchParams.get("state") || "";
+ const [nonce, role = "freelancer"] = state.split(".");
  const errorParam = searchParams.get("error");
 
  if (errorParam) {
@@ -28,6 +31,14 @@ export async function GET(req: NextRequest) {
  return NextResponse.redirect(
  `${process.env.NEXTAUTH_URL}/login?error=no_code`
  );
+ }
+
+ const expectedNonce = req.cookies.get(OAUTH_STATE_COOKIE)?.value;
+ if (!nonce || !expectedNonce || nonce !== expectedNonce) {
+ const response = NextResponse.redirect(
+ `${process.env.NEXTAUTH_URL}/login?error=invalid_state`
+ );
+ return clearOAuthStateCookie(response);
  }
 
  // 1. Exchange code for Google tokens
@@ -81,15 +92,15 @@ export async function GET(req: NextRequest) {
  );
  }
 
- // 4. Redirect to /feed with access token + user data in URL fragment
- // (fragment is never sent to server, stays client-side only)
- const userData = encodeURIComponent(JSON.stringify(result.user));
+ // 4. Hand off the access token + user via a one-time exchange code instead
+ // of putting them directly in the redirect URL — a URL query string ends
+ // up in browser history, server/proxy access logs, and Referer headers.
+ const exchangeCode = createExchangeCode(result.accessToken, result.user, 900);
  const redirectUrl = new URL("/login", process.env.NEXTAUTH_URL!);
- redirectUrl.searchParams.set("google_token", result.accessToken);
- redirectUrl.searchParams.set("google_user", userData);
- redirectUrl.searchParams.set("expires_in", "900");
+ redirectUrl.searchParams.set("google_exchange", exchangeCode);
 
  const response = NextResponse.redirect(redirectUrl.toString());
+ clearOAuthStateCookie(response);
  return setRefreshCookie(response, result.refreshToken);
  } catch (err) {
  console.error("[Google Callback Error]", err);

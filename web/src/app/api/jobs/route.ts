@@ -16,6 +16,28 @@ export async function GET(req: NextRequest) {
  filter.category = category;
  }
 
+ // Invite-only jobs must not show up in the public feed for everyone —
+ // only the client who posted it, an invited freelancer, or an admin.
+ // The endpoint itself stays public/unauthenticated for open jobs.
+ const auth = await authenticateRequest(req);
+ const callerId = "error" in auth ? null : auth.payload.userId;
+ const isAdmin = "error" in auth ? false : auth.payload.role === "admin";
+
+ if (!isAdmin) {
+ const orClauses: Record<string, unknown>[] = [{ visibility: { $ne: "invite_only" } }];
+ if (callerId) {
+ orClauses.push({ visibility: "invite_only", clientId: callerId });
+ const invitedJobIds = await db.collection("invites").distinct("jobId", { freelancerId: callerId });
+ const invitedObjectIds = invitedJobIds
+ .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ if (invitedObjectIds.length > 0) {
+ orClauses.push({ visibility: "invite_only", _id: { $in: invitedObjectIds } });
+ }
+ }
+ filter.$or = orClauses;
+ }
+
  const jobs = await db
  .collection("jobs")
  .find(filter)
@@ -79,6 +101,7 @@ export async function POST(req: NextRequest) {
 
  // Plan limit enforcement
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ let jobQuotaReserved = false;
  if (user) {
  const plan = user.plan ?? "free";
  if (plan === "free") {
@@ -87,9 +110,23 @@ export async function POST(req: NextRequest) {
  await db.collection("users").updateOne({ _id: user._id }, {
  $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
  });
- } else if (limits.jobsPostedThisMonth >= 3) {
+ }
+ // Atomic check-and-increment so two concurrent requests can't both
+ // read "under the cap" before either write lands.
+ const capped = await db.collection("users").findOneAndUpdate(
+ {
+ _id: user._id,
+ $or: [
+ { "planLimits.jobsPostedThisMonth": { $lt: 3 } },
+ { "planLimits.jobsPostedThisMonth": { $exists: false } },
+ ],
+ },
+ { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
+ );
+ if (!capped) {
  return NextResponse.json({ error: "Free plan limit: 3 jobs/month. Upgrade to Pro for unlimited." }, { status: 403 });
  }
+ jobQuotaReserved = true;
  }
  }
  const now = new Date().toISOString();
@@ -123,12 +160,14 @@ export async function POST(req: NextRequest) {
 
  const result = await db.collection("jobs").insertOne(job);
  const jobId = result.insertedId.toString();
-
- // Increment plan counter
+ // Free-plan counter was already incremented atomically above alongside the
+ // cap check; only non-free plans still need a plain increment here.
+ if (!jobQuotaReserved) {
  await db.collection("users").updateOne(
  { _id: new ObjectId(auth.payload.userId) },
  { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
  );
+ }
 
  // Fire-and-forget: send job posted confirmation to client
  const poster = await db.collection("users").findOne(

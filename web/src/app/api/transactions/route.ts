@@ -81,8 +81,8 @@ export async function PATCH(req: NextRequest) {
  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
  }
 
- await db.collection("transactions").updateOne(
- { _id: new ObjectId(transactionId) },
+ const releasedTx = await db.collection("transactions").findOneAndUpdate(
+ { _id: new ObjectId(transactionId), escrowStatus: "held" },
  {
  $set: {
  escrowStatus: "released",
@@ -91,6 +91,12 @@ export async function PATCH(req: NextRequest) {
  },
  }
  );
+ if (!releasedTx) {
+ return NextResponse.json(
+ { error: "Transaction is not in a releasable state (already released or under dispute)" },
+ { status: 409 }
+ );
+ }
 
  // Fire-and-forget: notify freelancer about payment release
  const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
@@ -104,7 +110,7 @@ export async function PATCH(req: NextRequest) {
  freelancer.email, freelancer.name ?? "Freelancer",
  tx.netAmount ?? tx.grossAmount ?? 0,
  job?.title ?? "Your project", transactionId
- ).catch(() => {});
+ ).catch((err) => console.error("[Email Failed] escrowReleased:", err));
  }
 
  // Also send job completed summary to the client
@@ -119,7 +125,7 @@ export async function PATCH(req: NextRequest) {
  job?.title ?? "Your project",
  tx.grossAmount ?? 0, tx.platformFee ?? 0,
  transactionId
- ).catch(() => {});
+ ).catch((err) => console.error("[Email Failed] jobCompleted:", err));
  }
  }
 
@@ -135,10 +141,16 @@ export async function PATCH(req: NextRequest) {
  if (!isParty) {
  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
  }
- await db.collection("transactions").updateOne(
- { _id: new ObjectId(transactionId) },
+ const disputedTx = await db.collection("transactions").findOneAndUpdate(
+ { _id: new ObjectId(transactionId), escrowStatus: "held" },
  { $set: { escrowStatus: "disputed" } }
  );
+ if (!disputedTx) {
+ return NextResponse.json(
+ { error: "Transaction is not in a disputable state (already released or already disputed)" },
+ { status: 409 }
+ );
+ }
  await db.collection("disputes").insertOne({
  transactionId,
  raisedBy: auth.payload.userId,
@@ -162,7 +174,7 @@ export async function PATCH(req: NextRequest) {
  job?.title ?? "a project",
  reason || "Quality dispute",
  transactionId
- ).catch(() => {});
+ ).catch((err) => console.error("[Email Failed] dispute:", err));
  }
  }
 

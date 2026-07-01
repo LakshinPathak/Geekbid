@@ -4,7 +4,7 @@ import { Brain, Loader2, CheckCircle, XCircle, AlertCircle, ChevronDown, Chevron
 import { useApp } from "@/lib/store";
 
 type Evaluation = {
-  index: number;
+  bidId: string;
   score: number;
   verdict: "hire" | "consider" | "pass";
   pros: string[];
@@ -12,7 +12,7 @@ type Evaluation = {
 };
 
 type EvalResult = {
-  bestBidIndex: number;
+  bestBidId: string;
   summary: string;
   evaluations: Evaluation[];
   recommendationReason: string;
@@ -29,7 +29,7 @@ type Freelancer = {
 };
 
 type Props = {
-  job: { title: string; description?: string; skillsRequired: string[]; startingPrice: number; minimumPrice: number; estimatedHours?: number };
+  jobId: string;
   bids: Bid[];
   freelancers: Freelancer[];
   onAcceptBid?: (bid: Bid) => void;
@@ -41,7 +41,7 @@ const VERDICT_CONFIG = {
   pass: { label: "Pass", cls: "text-[#e57373] bg-[rgba(192,57,43,0.12)] border-[rgba(192,57,43,0.3)]", icon: XCircle },
 };
 
-export default function AIBidEvaluator({ job, bids, freelancers, onAcceptBid }: Props) {
+export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }: Props) {
   const { auth } = useApp();
   const [result, setResult] = useState<EvalResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ export default function AIBidEvaluator({ job, bids, freelancers, onAcceptBid }: 
           ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
         },
         credentials: "include",
-        body: JSON.stringify({ job, bids, freelancers }),
+        body: JSON.stringify({ jobId }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -100,23 +100,23 @@ export default function AIBidEvaluator({ job, bids, freelancers, onAcceptBid }: 
 
           <div className="space-y-3">
             {result.evaluations.map((ev) => {
-              const bid = bids[ev.index];
+              const bid = bids.find(b => (b.id ?? b._id) === ev.bidId);
               if (!bid) return null;
               const freelancer = freelancers.find(f => (f.id ?? f._id) === bid.freelancerId);
               const cfg = VERDICT_CONFIG[ev.verdict as keyof typeof VERDICT_CONFIG] ?? VERDICT_CONFIG.consider;
               const Icon = cfg.icon;
-              const isBest = ev.index === result.bestBidIndex;
+              const isBest = ev.bidId === result.bestBidId;
 
               return (
                 <div
-                  key={ev.index}
+                  key={ev.bidId}
                   className={`rounded-[4px] border p-3 ${isBest ? "border-[rgba(201,168,76,0.4)] bg-[rgba(201,168,76,0.06)]" : "border-[rgba(201,168,76,0.12)] bg-[#080b14]"}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {isBest && <span className="text-[9px] font-bold text-[#c9a84c] uppercase tracking-wider bg-[rgba(201,168,76,0.12)] px-1.5 py-0.5 rounded-[2px]">Best</span>}
                       <span className="text-sm font-semibold text-[#f0e8d4]">
-                        {freelancer?.fullName ?? `Bid #${ev.index + 1}`}
+                        {freelancer?.fullName ?? "Freelancer"}
                       </span>
                       <span className="text-sm text-[#c9a84c]">${bid.bidPrice.toLocaleString()}</span>
                     </div>

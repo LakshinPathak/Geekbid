@@ -17,10 +17,12 @@ export async function GET(req: NextRequest) {
  const filter: Record<string, unknown> = {};
  if (role) filter.role = role;
 
+ // Email is also the login credential — only admins get it in bulk. Everyone
+ // else gets a public-profile view (no email, no OAuth id).
  const projection =
  auth.payload.role === "admin"
  ? { password: 0 }
- : { password: 0, googleId: 0 };
+ : { password: 0, googleId: 0, email: 0 };
 
  const users = await db
  .collection("users")

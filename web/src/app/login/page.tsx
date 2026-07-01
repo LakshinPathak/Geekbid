@@ -82,9 +82,7 @@ function LoginPageContent() {
  }, [charIndex, isDeleting, phraseIndex]);
 
  useEffect(() => {
- const googleToken = params.get("google_token");
- const googleUser = params.get("google_user");
- const expiresIn = params.get("expires_in");
+ const exchangeCode = params.get("google_exchange");
  const googleError = params.get("error");
 
  if (googleError) {
@@ -92,15 +90,23 @@ function LoginPageContent() {
  return;
  }
 
- if (googleToken && googleUser && expiresIn) {
+ if (exchangeCode) {
+ (async () => {
  try {
- const user = JSON.parse(decodeURIComponent(googleUser));
- googleAuth(googleToken, Number(expiresIn), user);
+ const res = await fetch("/api/auth/google/exchange", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ code: exchangeCode }),
+ });
+ const data = await res.json();
+ if (data.error) throw new Error(data.error);
+ googleAuth(data.accessToken, data.expiresIn, data.user);
  setSuccess("Signed in with Google!");
  setTimeout(() => router.replace("/feed"), 300);
  } catch {
  setError("Failed to process Google login");
  }
+ })();
  }
  }, [params, router, googleAuth]);
 

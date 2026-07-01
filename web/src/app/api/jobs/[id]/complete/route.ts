@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendJobCompletedSummaryEmail } from "@/lib/email";
+import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
 
 // PATCH /api/jobs/[id]/complete — Client marks job as completed
 export async function PATCH(
@@ -46,6 +47,20 @@ export async function PATCH(
  { _id: job._id },
  { $set: { status: "completed", completedAt: new Date().toISOString() } }
  );
+
+ // Release escrow — this is the route the frontend actually calls
+ // (store.tsx completeJob), so this must happen here, not only in the
+ // PATCH-action version of this endpoint.
+ await db.collection("transactions").updateOne(
+ { jobId: job._id.toString(), escrowStatus: "held" },
+ { $set: { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: payload.userId } }
+ );
+
+ if (job.acceptedBy) {
+ creditReferralOnFirstJobCompletion(job.acceptedBy).catch((err) =>
+ console.error("[Referral Credit Failed]", err)
+ );
+ }
 
  // Send summary emails to both parties
  const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) }).catch(() => null);

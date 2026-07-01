@@ -17,8 +17,14 @@ export async function POST(req: NextRequest) {
     }
     const timestamp = Math.round(Date.now() / 1000);
 
+    // Restrict to safe image formats — baked into the signature so the client
+    // can't request a different format without invalidating it. Cloudinary's
+    // upload API doesn't take a per-request max-file-size signed param; that
+    // has to be enforced via account/upload-preset settings on Cloudinary's side.
+    const allowedFormats = "jpg,jpeg,png,webp,gif";
+
     const signature = cloudinary.utils.api_sign_request(
-      { folder, timestamp },
+      { folder, timestamp, allowed_formats: allowedFormats },
       process.env.CLOUDINARY_API_SECRET!
     );
 
@@ -27,6 +33,7 @@ export async function POST(req: NextRequest) {
       timestamp,
       cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
       folder,
+      allowedFormats,
     });
   } catch (err) {
     console.error("[Upload Sign Error]", err);

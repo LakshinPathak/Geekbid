@@ -80,6 +80,25 @@ export async function POST(req: NextRequest) {
  }
 
  const db = await getDb();
+
+ // Verify the caller is a participant of this room before allowing a write —
+ // otherwise any authenticated user could inject messages into a conversation
+ // that isn't theirs.
+ const { ObjectId: ChatRoomObjectId } = await import("mongodb");
+ const room = await db.collection("chat_rooms").findOne({
+ $or: [
+ { _id: (() => { try { return new ChatRoomObjectId(roomId); } catch { return roomId; } })() },
+ { id: roomId },
+ ],
+ participantIds: auth.payload.userId,
+ });
+ if (!room) {
+ return NextResponse.json(
+ { error: "Room not found or access denied" },
+ { status: 404 }
+ );
+ }
+
  const message = {
  roomId,
  senderId: auth.payload.userId,

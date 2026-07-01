@@ -51,12 +51,14 @@ export async function POST(req: NextRequest) {
 
  const rawKey = crypto.randomBytes(32).toString("hex");
  const hashedKey = hashSync(rawKey, 10);
+ const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
  const prefix = rawKey.slice(0, 8) + "...";
 
  const db = await getDb();
  const doc = {
  userId: auth.payload.userId,
  key: hashedKey,
+ keyHash,
  prefix,
  name: name.trim().slice(0, 50),
  createdAt: new Date().toISOString(),

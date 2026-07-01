@@ -57,7 +57,7 @@ export default function MyJobsPage() {
  const tabs = [
  { key: "all", label: `All (${myJobs.length})` },
  { key: "open", label: `Open (${openCount})` },
- { key: "accepted", label: `Completed (${acceptedCount})` },
+ { key: "accepted", label: `Accepted (${acceptedCount})` },
  ];
 
  if (!mounted) return (

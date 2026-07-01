@@ -25,15 +25,15 @@ export async function GET(req: NextRequest) {
  .limit(100)
  .toArray();
 
- // Join job details for each bid
- const enriched = await Promise.all(
- bids.map(async (bid) => {
- let job = null;
- try {
- job = await db.collection("jobs").findOne({ _id: new ObjectId(bid.jobId) });
- } catch {
- job = await db.collection("jobs").findOne({ id: bid.jobId });
- }
+ // Join job details in a single batched query instead of one findOne per bid
+ const jobObjectIds = [...new Set(bids.map((b) => b.jobId))]
+ .map((jid) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const jobDocs = await db.collection("jobs").find({ _id: { $in: jobObjectIds } }).toArray();
+ const jobsById = new Map(jobDocs.map((j) => [j._id.toString(), j]));
+
+ const enriched = bids.map((bid) => {
+ const job = jobsById.get(bid.jobId);
 
  return {
  ...bid,
@@ -55,8 +55,7 @@ export async function GET(req: NextRequest) {
  }
  : null,
  };
- })
- );
+ });
 
  return NextResponse.json(enriched);
  } catch (err) {

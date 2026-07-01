@@ -136,9 +136,51 @@ export async function PATCH(req: NextRequest) {
  );
  }
 
+ const isMock = razorpay_order_id.startsWith("order_mock_");
+
+ // Never trust the client-supplied amount for a real payment — fetch what
+ // Razorpay actually captured and use that for all ledger math.
+ let grossAmount = amount ? Number(amount) : 0;
+ if (!isMock) {
+ try {
+ const basicAuth = Buffer.from(
+ `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+ ).toString("base64");
+ const rzpRes = await fetch(
+ `https://api.razorpay.com/v1/payments/${razorpay_payment_id}`,
+ { headers: { Authorization: `Basic ${basicAuth}` } }
+ );
+ if (!rzpRes.ok) {
+ return NextResponse.json(
+ { error: "Failed to verify payment with Razorpay" },
+ { status: 400 }
+ );
+ }
+ const rzpPayment = await rzpRes.json();
+ if (rzpPayment.order_id !== razorpay_order_id) {
+ return NextResponse.json(
+ { error: "Payment does not belong to the given order" },
+ { status: 400 }
+ );
+ }
+ if (!["captured", "authorized"].includes(rzpPayment.status)) {
+ return NextResponse.json(
+ { error: "Payment has not been captured" },
+ { status: 400 }
+ );
+ }
+ grossAmount = Number(rzpPayment.amount) / 100;
+ } catch (err) {
+ console.error("[Razorpay Verify Error]", err);
+ return NextResponse.json(
+ { error: "Failed to verify payment with Razorpay" },
+ { status: 502 }
+ );
+ }
+ }
+
  // Save transaction to MongoDB
  const db = await getDb();
- const grossAmount = amount ? Number(amount) : 0;
  const platformFee = Number((grossAmount * 0.1).toFixed(2));
  const netAmount = Number((grossAmount * 0.9).toFixed(2));
 
@@ -158,7 +200,7 @@ export async function PATCH(req: NextRequest) {
  description: description || "",
  createdAt: new Date().toISOString(),
  verified: true,
- mock: razorpay_order_id.startsWith("order_mock_"),
+ mock: isMock,
  };
 
  const result = await db.collection("transactions").insertOne(tx);
@@ -178,8 +220,8 @@ export async function PATCH(req: NextRequest) {
  payer.email, payer.name ?? "Client",
  grossAmount, currency,
  jobDoc?.title ?? description ?? "GeekBid Project",
- txId, razorpay_order_id.startsWith("order_mock_")
- ).catch(() => {});
+ txId, isMock
+ ).catch((err) => console.error("[Email Failed] paymentConfirmation:", err));
  }
 
  return NextResponse.json({

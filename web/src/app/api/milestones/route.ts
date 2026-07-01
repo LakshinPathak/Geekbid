@@ -121,6 +121,41 @@ export async function PATCH(req: NextRequest) {
  { $set: update }
  );
 
+ // ── Partial escrow release for this milestone ──
+ // Approving a milestone is supposed to release its share of the held
+ // escrow (the UI calls this button "Approve & Release"); previously this
+ // only flipped the milestone's status and never touched the transaction.
+ if (action === "approve" && !milestone.escrowReleased) {
+ try {
+ const tx = await db.collection("transactions").findOne({ jobId: milestone.jobId, escrowStatus: "held" });
+ if (tx) {
+ const alreadyReleased = Number(tx.releasedAmount ?? 0);
+ const amountToRelease = Math.min(Number(milestone.amount) || 0, Number(tx.grossAmount) - alreadyReleased);
+ if (amountToRelease > 0) {
+ const newReleasedAmount = Number((alreadyReleased + amountToRelease).toFixed(2));
+ const isFullyReleased = newReleasedAmount >= Number(tx.grossAmount) - 0.01;
+ await db.collection("transactions").updateOne(
+ { _id: tx._id, escrowStatus: "held" },
+ {
+ $set: {
+ releasedAmount: newReleasedAmount,
+ ...(isFullyReleased
+ ? { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId }
+ : {}),
+ },
+ }
+ );
+ await db.collection("milestones").updateOne(
+ { _id: new ObjectId(milestoneId) },
+ { $set: { escrowReleased: true, releasedAmount: amountToRelease, releasedAt: new Date().toISOString() } }
+ );
+ }
+ }
+ } catch (escrowErr) {
+ console.error("[Milestone Escrow Release Failed]", escrowErr);
+ }
+ }
+
  // Fire-and-forget: milestone email notifications
  if (action === "submit" && job.clientId) {
  // Freelancer submitted → notify the client

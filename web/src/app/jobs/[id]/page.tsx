@@ -391,7 +391,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {jobBids.length > 0 && (
  <div className="mb-4">
  <AIBidEvaluator
- job={job}
+ jobId={job.id ?? job._id ?? ""}
  bids={jobBids}
  freelancers={users}
  onAcceptBid={async (_bid) => {
@@ -974,6 +974,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  Accepted by {users.find(u => u.id === job.acceptedBy)?.fullName ?? "Freelancer"}
  </p>
  )}
+ <div className="mt-4 space-y-2">
+ <Link href="/inbox">
+ <button className="btn-primary w-full py-2.5 rounded-[6px] flex items-center justify-center gap-2 text-sm">
+ <MessageSquare className="h-4 w-4" /> Message
+ </button>
+ </Link>
+ <Link href="/my-jobs">
+ <button className="btn-glass w-full py-2.5 rounded-[6px] text-sm mt-2">
+ View My Jobs
+ </button>
+ </Link>
+ </div>
  </div>
  )}
 

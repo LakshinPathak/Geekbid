@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { hashSync } from "bcryptjs";
+import { authenticateRequest } from "@/lib/auth";
 
 /**
  * POST /api/seed
@@ -8,10 +9,20 @@ import { hashSync } from "bcryptjs";
  * Populates all MongoDB collections with production-quality test data.
  * Clears existing data first. Creates proper indexes.
  *
- * ⚠️ SECURITY: This endpoint is disabled in production by default.
- * Set ALLOW_SEED=true in environment variables to enable it.
+ * ⚠️ SECURITY: Requires an authenticated admin, and is additionally disabled
+ * in production unless ALLOW_SEED=true is set. The env flag alone is not a
+ * security boundary — a misconfigured environment must not be enough to let
+ * an unauthenticated caller wipe the database.
  */
-export async function POST() {
+export async function POST(req: NextRequest) {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+ if (auth.payload.role !== "admin") {
+ return NextResponse.json({ error: "Only admins can seed the database" }, { status: 403 });
+ }
+
  // Block seed in production unless explicitly allowed
  const isProduction = process.env.NODE_ENV === "production";
  const seedAllowed = process.env.ALLOW_SEED === "true";
@@ -927,6 +938,7 @@ export async function POST() {
  db.collection("teams").createIndex({ ownerId: 1 }),
  db.collection("teams").createIndex({ memberIds: 1 }),
  db.collection("api_keys").createIndex({ userId: 1 }),
+ db.collection("api_keys").createIndex({ keyHash: 1 }),
  db.collection("invites").createIndex({ clientId: 1, createdAt: -1 }),
  db.collection("invites").createIndex({ freelancerId: 1, status: 1 }),
  db.collection("invites").createIndex({ clientId: 1, freelancerId: 1, jobId: 1 }, { unique: true }),
