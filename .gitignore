@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────
-# GeekBid Mobile — .gitignore
-# Covers: Expo/React-Native, Next.js (web), Node.js (backend)
+# GeekBid — .gitignore
+# Covers: Next.js (web/), Node.js (backend/)
 # ─────────────────────────────────────────────────
 
 # ──── Dependencies ────
@@ -14,40 +14,19 @@ node_modules/
 !.yarn/versions
 
 # ──── Environment Files (NEVER commit secrets) ────
-# Root-level
 .env
 .env.local
 .env.development
 .env.staging
 .env.production
 .env*.local
-
-# All nested .env files (backend/, web/, etc.)
 **/.env
 **/.env.local
 **/.env*.local
 
-# ✅ EXCEPTION: .env.example templates ARE committed
+# .env.example templates ARE committed
 !.env.example
 !**/.env.example
-
-# ──── Expo / React-Native ────
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-.metro-health-check*
-
-# Native build outputs
-/ios/
-/android/
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
 
 # ──── Next.js (web/) ────
 .next/
@@ -68,7 +47,7 @@ next-env.d.ts
 Thumbs.db
 *.pem
 
-# ──── Google OAuth credentials (NEVER commit) ────
+# ──── Security — OAuth credential files ────
 client_secret*.json
 
 # ──── Debug Logs ────
@@ -87,6 +66,3 @@ yarn-error.*
 
 # ──── Docker ────
 docker-compose.override.yml
-
-# ──── Production env examples (committed for reference) ────
-!.env.production.example
