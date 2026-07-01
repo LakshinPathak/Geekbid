@@ -9,21 +9,14 @@ import { authenticateRequest } from "@/lib/auth";
  * Populates all MongoDB collections with production-quality test data.
  * Clears existing data first. Creates proper indexes.
  *
- * ⚠️ SECURITY: Requires an authenticated admin, and is additionally disabled
- * in production unless ALLOW_SEED=true is set. The env flag alone is not a
- * security boundary — a misconfigured environment must not be enough to let
- * an unauthenticated caller wipe the database.
+ * ⚠️ SECURITY: Requires an authenticated admin — except for the one-time
+ * bootstrap case of a completely empty (zero-user) non-production database,
+ * where there is no admin yet to authenticate as. Once any user exists, the
+ * admin check applies unconditionally. Production is additionally gated on
+ * ALLOW_SEED=true, but that env flag alone was never meant to be a security
+ * boundary by itself — hence the admin check on top of it.
  */
 export async function POST(req: NextRequest) {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
- if (auth.payload.role !== "admin") {
- return NextResponse.json({ error: "Only admins can seed the database" }, { status: 403 });
- }
-
- // Block seed in production unless explicitly allowed
  const isProduction = process.env.NODE_ENV === "production";
  const seedAllowed = process.env.ALLOW_SEED === "true";
 
@@ -37,8 +30,20 @@ export async function POST(req: NextRequest) {
  );
  }
 
- try {
  const db = await getDb();
+ const isEmptyDatabase = !isProduction && (await db.collection("users").countDocuments({}, { limit: 1 })) === 0;
+
+ if (!isEmptyDatabase) {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+ if (auth.payload.role !== "admin") {
+ return NextResponse.json({ error: "Only admins can seed the database" }, { status: 403 });
+ }
+ }
+
+ try {
  const now = Date.now();
  const h = 3600000;
  const m = 60000;

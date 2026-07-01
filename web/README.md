@@ -2,6 +2,8 @@
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
+**v11** — Job acceptance/escrow/chat/OAuth security hardening. See [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md) (v11 addendum) and [`../geekbid_bid_acceptance_and_system_audit.md`](../geekbid_bid_acceptance_and_system_audit.md) for the full write-up.
+
 **v10** — Cloudinary image CDN + Gemini AI features.
 
 ## Stack
@@ -63,6 +65,8 @@ npm run dev      # http://localhost:3000
 ```bash
 curl -X POST http://localhost:3000/api/seed
 ```
+
+This works without auth only on a fresh, empty database (it's what creates the seeded admin account). Re-seeding an already-populated database requires that admin's Bearer token — see the root [README's seed instructions](../README.md#4-seed-the-database).
 
 Test accounts: `maya@startup.io` / `arjun@devmail.io` — password `password123`
 

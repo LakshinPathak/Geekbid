@@ -5,7 +5,7 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v10** — Admin panel · Cloudinary image CDN · Gemini AI features · Full security hardening
+**Current version: v11** — Critical security & payment-integrity hardening across job acceptance, escrow, chat, and auth
 
 ---
 
@@ -31,6 +31,24 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v11
+
+A full audit of the bid → accept → escrow → chat pipeline, plus a system-wide pass over auth, payments, and AI routes. Full write-up: [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md). Highlights:
+
+| Area | Fix |
+|------|-----|
+| **Job ownership (critical)** | `PATCH /api/jobs/[id]` (`cancel`/`complete`) now checks `job.clientId === userId` — previously any client could cancel or force-complete *another* client's job and force-release their escrow |
+| **Escrow integrity** | Job acceptance (`accept`, `accept_best`) and escrow `release`/`dispute` are now atomic (`findOneAndUpdate` with a state-guard filter) instead of read-then-write, closing double-transaction and dispute-override races |
+| **Payments** | Payment amounts are now verified against Razorpay's actual captured amount server-side, not trusted from the client |
+| **Chat authorization** | `/api/chat/rooms` and `/api/chat/messages` now require the caller to be a participant — previously any authenticated user could join or write into any conversation |
+| **OAuth security** | Google login now validates a CSRF `state` nonce and hands off tokens via a one-time exchange code instead of putting them in the redirect URL |
+| **Seed endpoint** | `/api/seed` now requires an authenticated admin, not just an environment flag |
+| **Public API (v1)** | API-key lookup is now O(1) (indexed hash) instead of bcrypt-scanning every key; `/api/v1/jobs` enforces the same category/plan-limit rules as the internal API |
+| **Escrow/payout completeness** | The job-completion route the frontend actually calls now releases escrow (it previously didn't); milestone approval now does a real partial escrow release; referral credits now actually accrue |
+| **Notifications** | Losing bidders and clients whose direct offer was declined now get an in-app notification, not just an email that can silently fail |
+| **Plan limits & AI quotas** | Free-plan job/bid caps are now atomic (unracable); all AI routes now share a rate limit, not just bid-strategy |
+| **Bid evaluator** | `POST /api/ai/evaluate-bids` now takes `{jobId}` and re-fetches bids/freelancers server-side instead of trusting client-submitted data |
 
 ## What's in v10
 
@@ -224,9 +242,23 @@ npm run dev
 
 ### 4. Seed the database
 
+`/api/seed` requires an authenticated admin (as of v11 — it used to be gated only by an env flag, with no auth check at all). The one exception is a completely empty local database: since registration can't create an admin account directly (`role` is restricted to `freelancer`/`client`), the very first seed on a fresh, non-production database is allowed without auth so it can create the seeded `admin@geekbid.io` account. Every seed after that requires that admin's token.
+
 ```bash
+# First time on a fresh database — no auth needed, this is what creates admin@geekbid.io
 curl -X POST http://localhost:3000/api/seed
+
+# Any time after that, log in as the seeded admin and re-seed with its token
+curl -X POST http://localhost:3000/api/auth \
+  -H "Content-Type: application/json" \
+  -d '{"action":"login","email":"admin@geekbid.io","password":"admin123"}'
+# → copy "accessToken" from the response
+
+curl -X POST http://localhost:3000/api/seed \
+  -H "Authorization: Bearer <accessToken>"
 ```
+
+In production, `/api/seed` is disabled outright unless `ALLOW_SEED=true` is set — and even then still requires an admin token once any user exists.
 
 ### 5. Test accounts
 
@@ -265,33 +297,43 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth` | No | `{action:"register"|"login", ...}` |
+| POST | `/api/auth` | No | `{action:"register"|"login", ...}` — `register` only allows `role: freelancer|client` |
 | GET | `/api/auth/me` | Bearer | Current user profile |
 | POST | `/api/auth/refresh` | Cookie | Silent token refresh |
 | POST | `/api/auth/logout` | Bearer | Clears refresh cookie |
-| GET | `/api/auth/google` | No | `?role=freelancer|client` |
-| GET | `/api/auth/google/callback` | No | OAuth redirect handler |
+| GET | `/api/auth/google` | No | `?role=freelancer|client` — sets a CSRF state cookie before redirecting to Google |
+| GET | `/api/auth/google/callback` | No | Validates the CSRF state, then redirects with a one-time `?google_exchange=` code (never the token itself) |
+| POST | `/api/auth/google/exchange` | No | `{code}` → `{accessToken, user, expiresIn}` — redeems the one-time code from the callback; single-use, 60s TTL |
 
 ### Jobs
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/api/jobs` | No | `?category=` filter |
-| POST | `/api/jobs` | Client | Plan limit enforced (free: 3/month) |
+| GET | `/api/jobs` | Optional | `?category=` filter. Invite-only jobs are hidden unless you're the client, an invited freelancer, or admin — pass a token to see your own |
+| POST | `/api/jobs` | Client | Plan limit enforced atomically (free: 3/month) |
 | GET | `/api/jobs/[id]` | No | Single job |
-| PATCH | `/api/jobs/[id]` | Bearer | `action`: accept / accept_best / cancel / complete |
+| PATCH | `/api/jobs/[id]` | Bearer | `action`: `accept` / `accept_best` / `cancel` / `complete`. `accept`/`accept_best` are atomic — return `409` if the job was already accepted by another request. `cancel`/`complete` verify `job.clientId === userId` |
 | GET | `/api/jobs/recommended` | Freelancer | Top 10 skill-matched open jobs |
 | GET | `/api/jobs/pricing-hint` | No | `?skills=` — market rate data |
 | POST | `/api/jobs/direct-offer` | Client | Fixed-price offer to freelancer |
-| PATCH | `/api/jobs/offer-response` | Freelancer | Accept or decline direct offer |
+| PATCH | `/api/jobs/offer-response` | Freelancer | Accept or decline direct offer; declining now also creates an in-app notification for the client |
 
 ### Bids
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/bids` | No | `?jobId=` filter |
-| POST | `/api/bids` | Freelancer | 30-min cooldown; plan limit enforced |
-| GET | `/api/bids/my` | Freelancer | Own bid history with job details |
+| POST | `/api/bids` | Freelancer | Rejects bids on jobs that aren't `open`; 30-min cooldown; plan limit enforced atomically |
+| GET | `/api/bids/my` | Freelancer | Own bid history with job details (batched job lookup) |
+
+### Public API (v1 — API key auth)
+
+For third-party integrations. Requires an `X-API-Key` header (generated via `/api/keys`), not a JWT.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/jobs` | `?status=&category=&page=&limit=` — paginated job list |
+| POST | `/api/v1/jobs` | Create a job. Enforces the same category whitelist and free-plan job cap as the internal API |
 
 ### Freelancer Dashboard
 
@@ -316,18 +358,27 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify, webhook |
+| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify. `PATCH` re-fetches the captured amount from Razorpay server-side rather than trusting the client |
 | GET | `/api/transactions` | Bearer | Own transactions |
-| PATCH | `/api/transactions` | Client | Release or dispute escrow |
+| PATCH | `/api/transactions` | Client | Release or dispute escrow — both are atomic and only succeed if the transaction is currently `held` |
 | GET | `/api/disputes` | Bearer | Own disputes |
 | PATCH | `/api/disputes` | Admin | Resolve dispute |
+
+### Milestones & Referrals
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/milestones` | No | `?jobId=` — list milestones for a job |
+| POST | `/api/milestones` | Client | Create milestones for a job |
+| PATCH | `/api/milestones` | Bearer | `action`: `start` / `submit` (freelancer) / `approve` (client) — approving now does a real partial escrow release matching the milestone's amount |
+| GET | `/api/referrals` | Bearer | Referral code + stats. Credits now actually accrue when a referred freelancer completes their first job |
 
 ### Chat & Notifications
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET/POST /api/chat/rooms` | Chat rooms |
-| `GET/POST /api/chat/messages` | Messages in a room |
+| `GET/POST /api/chat/rooms` | Chat rooms — creating one now requires you to be one of the two participants, and both participants must be associated with the job |
+| `GET/POST /api/chat/messages` | Messages in a room — posting now requires you to be a participant of that room |
 | `GET/PATCH /api/notifications` | Notifications list + mark read |
 | `GET /api/notifications/count` | `{unread: N}` for badge |
 
@@ -335,17 +386,17 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/upload/sign` | Bearer | Cloudinary signed upload params |
+| POST | `/api/upload/sign` | Bearer | Cloudinary signed upload params, restricted to image formats. Not used by the actual avatar upload flow, which uses an unsigned Cloudinary preset directly from the browser |
 | DELETE | `/api/upload/delete` | Bearer | Delete image (ownership-verified) |
 
 ### AI Routes
 
-All require `Authorization: Bearer <token>`. Gemini key is server-side only.
+All require `Authorization: Bearer <token>` and share one free-plan rate limit (bid-strategy has its own, stricter one). Gemini key is server-side only.
 
 | Endpoint | Description |
 |----------|-------------|
 | `POST /api/ai/bid-strategy` | `{jobId}` → optimal bid, win%, timing, risks |
-| `POST /api/ai/evaluate-bids` | `{job, bids[]}` → value scores, recommended bid |
+| `POST /api/ai/evaluate-bids` | `{jobId}` → value scores, recommended bid. Re-fetches bids/freelancer profiles server-side rather than trusting client-submitted data |
 | `POST /api/ai/generate-description` | `{title, category, skills}` → job description |
 | `POST /api/ai/pricing-advisor` | `{title, category, skills}` → starting price, floor, decay |
 | `POST /api/ai/summarize-reviews` | `{reviews[]}` → summary + strengths + improvements |
@@ -368,6 +419,14 @@ All require `Authorization: Bearer <token>`. Gemini key is server-side only.
 | `GET/PATCH /api/admin/config` | Platform config read/write |
 | `GET /api/admin/config/env-status` | Env var presence check |
 | `POST /api/admin/verify-key` | Verify admin panel key (rate-limited: 5/15min) |
+
+### Other
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/seed` | Admin* | Wipes and reseeds all collections. *No auth required only on a completely empty, non-production database — see [Seed the database](#4-seed-the-database) |
+| GET | `/api/users` | Bearer | List users. Non-admin callers no longer receive `email` in the response |
+| POST/DELETE | `/api/keys` | Bearer | Generate/revoke a personal API key for `/api/v1/*` routes |
 
 ---
 
@@ -392,35 +451,39 @@ All require `Authorization: Bearer <token>`. Gemini key is server-side only.
 | `RAZORPAY_KEY_ID` | No | Payments (mock mode if absent) |
 | `RAZORPAY_KEY_SECRET` | No | Razorpay secret |
 | `RESEND_API_KEY` | No | Transactional email |
+| `ALLOW_SEED` | No | Set to `true` to allow `/api/seed` in production. Never a substitute for admin auth — see [Seed the database](#4-seed-the-database) |
 
 ---
 
 ## Security
 
-See [`web/SECURITY_AUDIT.md`](web/SECURITY_AUDIT.md) for the full audit report.
+Two audit reports:
+- [`web/SECURITY_AUDIT.md`](web/SECURITY_AUDIT.md) — NoSQL injection, ReDoS, brute-force, IDOR sweep (v10)
+- [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md) — job acceptance, escrow, chat, OAuth, and payment-integrity sweep (v11)
 
 Summary of protections in place:
 
 | Layer | Protection |
 |-------|-----------|
 | Auth | JWT (jose), bcrypt 12 rounds, HttpOnly refresh cookies |
-| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min |
+| OAuth | CSRF `state` nonce validated on Google login callback; tokens handed off via one-time exchange code, never a URL query string |
+| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; shared quota across all AI routes |
 | Input sanitization | `sanitizeString`, `sanitizeObjectId`, `sanitizeSearchRegex` on all user input |
 | NoSQL injection | `$`-prefix keys stripped; all inputs forced to primitive types before DB queries |
 | ReDoS | `sanitizeSearchRegex()` escapes all regex metacharacters before `$regex` use |
-| IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT) |
+| IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT), including job cancel/complete |
+| Chat authorization | `/api/chat/rooms` and `/api/chat/messages` require the caller to be a participant |
+| Escrow integrity | Job acceptance and escrow release/dispute use atomic, state-guarded updates — no read-then-write races |
+| Payment verification | Payment amounts are verified against Razorpay's captured amount server-side, never trusted from the client |
 | ObjectId | All `new ObjectId()` calls guarded by `sanitizeObjectId()` — returns 400 not 500 |
-| Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA) |
+| Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA); `/api/seed` requires admin auth too |
 | Secrets | `NEXTAUTH_SECRET` throws at startup if missing — no hardcoded fallbacks |
 
 ---
 
 ## Troubleshooting
 
-**Empty feed after login**
-```bash
-curl -X POST http://localhost:3000/api/seed
-```
+**Empty feed after login** — see [Seed the database](#4-seed-the-database) above; if the database already has users, you'll need an admin token, not just a bare `curl`.
 
 **Port 3000 in use**
 ```bash
@@ -440,7 +503,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `v10` / `main` / `master` | **Latest** — Admin panel, security hardening, Cloudinary CDN, Gemini AI |
+| `v11` / `main` / `master` | **Latest** — Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |
+| `v10` | Admin panel, initial security hardening, Cloudinary CDN, Gemini AI |
 | `v9` | Role-based feeds, landing page animations, CRUD fixes |
 | `v7` | Royal Dark design system, horizontal carousels |
 | `v5` | Mobile responsiveness, port pinning |
