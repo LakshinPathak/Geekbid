@@ -5,7 +5,7 @@ name: GeekBid CI/CD
 
 on:
   push:
-    branches: ["main", "master", "v10", "staging"]
+    branches: ["main", "master", "v10", "v11", "staging"]
   pull_request:
     branches: ["main", "master", "staging"]
 
@@ -32,11 +32,18 @@ jobs:
       - name: Install web dependencies
         run: npm ci
 
+      # Lint currently has ~50 pre-existing errors in the codebase (mostly
+      # `no-explicit-any` in older routes) that predate this pipeline fix and
+      # aren't part of this change. continue-on-error keeps the failure
+      # visible in the Actions UI (unlike `|| true`, which hid it entirely)
+      # without blocking build/backend/docker on a backlog this task didn't
+      # introduce. Remove continue-on-error once that backlog is cleared.
       - name: Lint
-        run: npm run lint || true
+        run: npm run lint
+        continue-on-error: true
 
       - name: Typecheck
-        run: npx tsc --noEmit || true
+        run: npx tsc --noEmit
 
   # ── Stage 2: Build Validation ───────────────────
   build:
@@ -100,26 +107,48 @@ jobs:
         run: npm ci
 
       - name: Validate backend syntax
-        run: node --check services/gateway/index.js || true
+        run: |
+          for f in services/*/index.js; do
+            echo "Checking $f"
+            node --check "$f"
+          done
 
-  # ── Stage 4: Docker Build (main/master only) ────
+  # ── Stage 4: Docker Build (main/master/staging only) ────
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [build, backend]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging'
     steps:
       - uses: actions/checkout@v4
 
       - name: Build backend Docker image
         run: docker build -t geekbid-backend ./backend
 
+      # Build-args must cover every env var web/Dockerfile declares an ARG
+      # for (which in turn covers everything the app reads via process.env —
+      # see the comment above those ARGs). This mirrors the `build` job's
+      # env block above so both build paths exercise the same inputs.
       - name: Build web Docker image
         run: |
           docker build -t geekbid-web ./web \
             --build-arg MONGODB_URI=mongodb://localhost:27017/geekbid \
-            --build-arg NEXTAUTH_SECRET=ci-build-secret \
-            --build-arg NEXTAUTH_URL=http://localhost:3000
+            --build-arg NEXTAUTH_SECRET=ci-test-secret-placeholder-at-least-32-characters \
+            --build-arg NEXTAUTH_URL=http://localhost:3000 \
+            --build-arg GOOGLE_CLIENT_ID=placeholder.apps.googleusercontent.com \
+            --build-arg GOOGLE_CLIENT_SECRET=placeholder \
+            --build-arg RAZORPAY_KEY_ID=rzp_test_placeholder \
+            --build-arg RAZORPAY_KEY_SECRET=placeholder \
+            --build-arg NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_placeholder \
+            --build-arg CLOUDINARY_CLOUD_NAME=placeholder \
+            --build-arg CLOUDINARY_API_KEY=000000000000000 \
+            --build-arg CLOUDINARY_API_SECRET=placeholder \
+            --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=placeholder \
+            --build-arg NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=geekbid_unsigned \
+            --build-arg GEMINI_API_KEY=placeholder \
+            --build-arg AI_MODEL=gemini-2.0-flash \
+            --build-arg ADMIN_SECRET_KEY=ci-test-admin-key \
+            --build-arg RESEND_API_KEY=placeholder
 
   # ── Stage 5: Deploy to Staging ──────────────────
   deploy-staging:

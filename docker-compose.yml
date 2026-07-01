@@ -59,7 +59,9 @@ services:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:3000/health || exit 1
+      # 127.0.0.1, not localhost — see the note on the web service's
+      # healthcheck below for why this matters on Alpine images.
+      test: wget -q --spider http://127.0.0.1:3000/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
@@ -75,15 +77,35 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+      # Must cover every ARG web/Dockerfile declares, or those vars are
+      # empty during `next build` — NEXTAUTH_SECRET in particular throws at
+      # module-load time if missing, which fails the build outright.
       args:
         MONGODB_URI: mongodb://mongodb:27017/geekbid
         NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
         NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3002}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+        RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+        RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+        NEXT_PUBLIC_RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+        CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
+        CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-000000000000000}
+        CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-placeholder}
+        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-geekbid_unsigned}
+        GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder}
+        AI_MODEL: ${AI_MODEL:-gemini-2.0-flash}
+        ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key-change-me}
+        RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
     container_name: geekbid-web
     restart: unless-stopped
     ports:
       - "3002:3000"   # 3000 is taken by backend gateway; web is on 3002
     environment:
+      # These are also needed at request time by server-side route handlers
+      # (not just baked into the build), so they're repeated here — a value
+      # only passed via `build.args` never reaches the running container.
       NODE_ENV: development
       MONGODB_URI: mongodb://mongodb:27017/geekbid
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
@@ -92,11 +114,24 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-000000000000000}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-placeholder}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-geekbid_unsigned}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder}
+      AI_MODEL: ${AI_MODEL:-gemini-2.0-flash}
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key-change-me}
+      RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
     depends_on:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:3000/ || exit 1
+      # 127.0.0.1, not localhost: the Next.js standalone server binds only
+      # the IPv4 wildcard (HOSTNAME=0.0.0.0 in the Dockerfile), but Alpine's
+      # musl resolver tries localhost's IPv6 (::1) record first — wget gets
+      # an immediate connection refused on IPv6 with no fallback to IPv4,
+      # so the container reports unhealthy even though the app is fine.
+      test: wget -q --spider http://127.0.0.1:3000/ || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
