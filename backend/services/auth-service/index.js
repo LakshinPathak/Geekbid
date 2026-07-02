@@ -195,7 +195,9 @@ app.get('/v1/auth/me', requireAuth, asyncHandler(async (req, res) => {
   return ok(res, { user: safeUser(user) });
 }));
 
-// --- READ: Get user by ID ---
+// --- READ: Get user by ID (public profile) ---
+// Public projection: email is also the login credential and OAuth id is
+// sensitive, so neither is exposed on a public profile lookup.
 
 app.get('/v1/users/:id', asyncHandler(async (req, res) => {
   const db = await getDb();
@@ -208,29 +210,35 @@ app.get('/v1/users/:id', asyncHandler(async (req, res) => {
   }
 
   const user = await db.collection('users').findOne(filter, {
-    projection: PASSWORD_PROJECTION,
+    projection: { password: 0, passwordHash: 0, email: 0, googleId: 0, refreshToken: 0 },
   });
 
   if (!user) return fail(res, 'ERR_NOT_FOUND', 'User not found', 404);
   return ok(res, { user: safeUser(user) });
 }));
 
-// --- READ: List users (with optional role filter) ---
+// --- READ: List users (protected; admins see email, others get public view) ---
 
-app.get('/v1/users', asyncHandler(async (req, res) => {
+app.get('/v1/users', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { role, page = '1', limit = '20' } = req.query || {};
+  const { role, page = '1', limit = '200' } = req.query || {};
 
   const filter = {};
   if (role) filter.role = role;
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
+  const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
   const skip = (pageNum - 1) * limitNum;
+
+  // Email is a login credential — only admins get it in bulk.
+  const projection =
+    req.user.role === 'admin'
+      ? { password: 0, passwordHash: 0 }
+      : { password: 0, passwordHash: 0, googleId: 0, email: 0 };
 
   const [users, total] = await Promise.all([
     db.collection('users')
-      .find(filter, { projection: PASSWORD_PROJECTION })
+      .find(filter, { projection })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
@@ -263,6 +271,7 @@ app.patch('/v1/users/:id', requireAuth, asyncHandler(async (req, res) => {
   const allowedFields = [
     'fullName', 'bio', 'skills', 'company', 'availability',
     'hourlyRateMin', 'hourlyRateMax', 'githubUsername',
+    'avatarUrl', 'avatarPublicId',
   ];
 
   const safeUpdates = {};

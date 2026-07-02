@@ -1,0 +1,12 @@
+{
+  "name": "geekbid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeekBid — full-stack freelance auction platform (Next.js BFF + Express microservices)",
+  "scripts": {
+    "dev": "node scripts/dev-all.js",
+    "dev:backend": "npm --prefix backend start",
+    "dev:web": "npm --prefix web run dev",
+    "install:all": "npm --prefix backend install && npm --prefix web install"
+  }
+}

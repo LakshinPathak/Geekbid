@@ -40,34 +40,59 @@ const computeCurrentPrice = (job) => {
   );
 };
 
-// --- READ: Get all bids for a job ---
+// --- READ: bids (protected — bids carry freelancer ids + private messages) ---
 
-app.get('/v1/bids', asyncHandler(async (req, res) => {
+app.get('/v1/bids', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { jobId, freelancerId, page = '1', limit = '20' } = req.query || {};
+  const { jobId } = req.query || {};
+  const filter = jobId ? { jobId } : {};
 
-  const filter = {};
-  if (jobId) filter.jobId = jobId;
-  if (freelancerId) filter.freelancerId = freelancerId;
+  const bids = await db.collection('bids')
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .limit(200)
+    .toArray();
 
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
-  const skip = (pageNum - 1) * limitNum;
+  const normalized = bids.map((b) => ({ ...b, id: b._id.toString(), _id: b._id.toString() }));
+  return ok(res, { bids: normalized });
+}));
 
-  const [bids, total] = await Promise.all([
-    db.collection('bids').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).toArray(),
-    db.collection('bids').countDocuments(filter),
-  ]);
+// --- READ: the caller's own bid history, with job details joined ---
 
-  const normalized = bids.map((b) => ({
-    ...b,
-    id: b._id.toString(),
-    _id: b._id.toString(),
-    jobId: b.jobId?.toString(),
-    freelancerId: b.freelancerId?.toString(),
-  }));
+app.get('/v1/bids/my', requireAuth, asyncHandler(async (req, res) => {
+  if (req.user.role !== 'freelancer' && req.user.role !== 'admin') {
+    return fail(res, 'ERR_FORBIDDEN', 'Only freelancers can view their bid history', 403);
+  }
+  const db = await getDb();
+  const bids = await db.collection('bids')
+    .find({ freelancerId: req.user.userId })
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .toArray();
 
-  return ok(res, { bids: normalized }, { page: pageNum, limit: limitNum, total });
+  const jobObjectIds = [...new Set(bids.map((b) => b.jobId))]
+    .map((jid) => { try { return new ObjectId(jid); } catch { return null; } })
+    .filter(Boolean);
+  const jobDocs = await db.collection('jobs').find({ _id: { $in: jobObjectIds } }).toArray();
+  const jobsById = new Map(jobDocs.map((j) => [j._id.toString(), j]));
+
+  const enriched = bids.map((bid) => {
+    const job = jobsById.get(bid.jobId);
+    return {
+      ...bid,
+      _id: bid._id.toString(),
+      id: bid._id.toString(),
+      job: job ? {
+        _id: job._id.toString(), id: job._id.toString(),
+        title: job.title, status: job.status, category: job.category,
+        skillsRequired: job.skillsRequired, acceptedBy: job.acceptedBy,
+        startingPrice: job.startingPrice, minimumPrice: job.minimumPrice,
+        postedAt: job.postedAt, deadlineAt: job.deadlineAt,
+      } : null,
+    };
+  });
+
+  return ok(res, { bids: enriched });
 }));
 
 // --- READ: Get single bid by ID ---

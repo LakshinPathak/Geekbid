@@ -1,6 +1,15 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'geekbid-dev-secret-change-in-production';
+// Must equal the web app's NEXTAUTH_SECRET so access tokens minted by the
+// Next.js BFF (jose, HS256) verify here (jsonwebtoken, HS256) with identical
+// claims. No dev fallback: a missing secret is a hard misconfiguration, not
+// something to paper over with a guessable default.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error(
+    'JWT_SECRET env var is not set. It must match the web app NEXTAUTH_SECRET.'
+  );
+}
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
 

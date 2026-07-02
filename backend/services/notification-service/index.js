@@ -17,40 +17,65 @@ const toObjectId = (id) => {
   }
 };
 
-// --- READ: List notifications (with optional filters) ---
+// NOTE: the app persists notification.userId as a STRING (not ObjectId) — see
+// the Next.js writers (job accept, bids, etc.). All queries here match on the
+// string userId so results align with what the app actually stored.
+
+// --- READ: List notifications (admin sees all, else own; scoped by token) ---
 
 app.get('/v1/notifications', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { unread, type, page = '1', limit = '50' } = req.query || {};
+  const filter = req.user.role === 'admin' ? {} : { userId: req.user.userId };
 
-  const filter = {};
-  filter.userId = toObjectId(req.user.userId);
-  if (unread === 'true') filter.isRead = false;
-  if (type) filter.type = type;
-
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
-  const skip = (pageNum - 1) * limitNum;
-
-  const [notifications, total] = await Promise.all([
-    db.collection('notifications')
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .toArray(),
-    db.collection('notifications').countDocuments(filter),
-  ]);
+  const notifications = await db.collection('notifications')
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .toArray();
 
   const normalized = notifications.map((n) => ({
     ...n,
     id: n._id.toString(),
     _id: n._id.toString(),
-    userId: n.userId?.toString(),
-    jobId: n.jobId?.toString(),
   }));
 
-  return ok(res, { notifications: normalized }, { page: pageNum, limit: limitNum, total });
+  return ok(res, { notifications: normalized });
+}));
+
+// --- READ: Unread count for the navbar badge ---
+
+app.get('/v1/notifications/count', requireAuth, asyncHandler(async (req, res) => {
+  const db = await getDb();
+  const unread = await db.collection('notifications').countDocuments({
+    userId: req.user.userId,
+    isRead: { $ne: true },
+  });
+  return ok(res, { unread });
+}));
+
+// --- UPDATE: mark read — body { notificationId } or { markAll } (matches app) ---
+
+app.patch('/v1/notifications', requireAuth, asyncHandler(async (req, res) => {
+  const { notificationId, markAll } = req.body || {};
+  const db = await getDb();
+
+  if (markAll) {
+    await db.collection('notifications').updateMany(
+      { userId: req.user.userId, isRead: false },
+      { $set: { isRead: true } }
+    );
+    return ok(res, { message: 'All marked read' });
+  }
+
+  if (notificationId) {
+    await db.collection('notifications').updateOne(
+      { _id: toObjectId(notificationId), userId: req.user.userId },
+      { $set: { isRead: true } }
+    );
+    return ok(res, { ok: true });
+  }
+
+  return fail(res, 'ERR_VALIDATION', 'Provide notificationId or markAll', 400);
 }));
 
 // --- READ: Get single notification ---
@@ -74,26 +99,20 @@ app.get('/v1/notifications/:id', asyncHandler(async (req, res) => {
 // --- CREATE: Create a notification ---
 
 app.post('/v1/notifications', requireAuth, asyncHandler(async (req, res) => {
-  const { userId, title, body, type, jobId } = req.body || {};
-
-  if (!userId) return fail(res, 'ERR_VALIDATION', 'userId is required', 400);
-
-  const titleCheck = validateString(title, 'Title', { minLength: 1, maxLength: 200 });
-  if (!titleCheck.valid) return fail(res, 'ERR_VALIDATION', titleCheck.error, 400);
-
-  const bodyCheck = validateString(body, 'Body', { minLength: 1, maxLength: 1000 });
-  if (!bodyCheck.valid) return fail(res, 'ERR_VALIDATION', bodyCheck.error, 400);
+  const { title, body, type, jobId } = req.body || {};
+  // App semantics: a caller creates a notification for THEMSELVES; only title
+  // is required. userId is the string token id to stay schema-consistent.
+  if (!title) return fail(res, 'ERR_VALIDATION', 'title is required', 400);
 
   const db = await getDb();
   const doc = {
-    userId: toObjectId(userId),
-    title: stripHtml(title),
-    body: stripHtml(body),
+    userId: req.user.userId,
     type: type || 'general',
-    jobId: jobId ? toObjectId(jobId) : undefined,
+    title,
+    body: body || '',
+    jobId: jobId ?? null,
     isRead: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
   };
 
   const result = await db.collection('notifications').insertOne(doc);

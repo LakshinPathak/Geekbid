@@ -1,48 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/mongodb";
-import { authenticateRequest } from "@/lib/auth";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend";
 
 /**
- * GET /api/users — list users (protected, admin sees all, others see public profiles)
+ * GET /api/users — list users (protected; admin sees email, others public view).
+ * BFF proxy → gateway → auth-service GET /v1/users. The service enforces auth +
+ * the admin/public projection, so behavior matches the former direct handler; we
+ * just unwrap the `{ users: [...] }` envelope back to the bare array the UI expects.
  */
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const db = await getDb();
- const role = req.nextUrl.searchParams.get("role");
- const filter: Record<string, unknown> = {};
- if (role) filter.role = role;
-
- // Email is also the login credential — only admins get it in bulk. Everyone
- // else gets a public-profile view (no email, no OAuth id).
- const projection =
- auth.payload.role === "admin"
- ? { password: 0 }
- : { password: 0, googleId: 0, email: 0 };
-
- const users = await db
- .collection("users")
- .find(filter, { projection })
- .sort({ createdAt: -1 })
- .limit(200)
- .toArray();
-
- return NextResponse.json(
- users.map((u) => ({
- ...u,
- _id: u._id.toString(),
- id: u._id.toString(),
- }))
- );
- } catch (err) {
- console.error("[Users GET Error]", err);
- return NextResponse.json(
- { error: "Failed to fetch users" },
- { status: 500 }
- );
- }
+  const role = req.nextUrl.searchParams.get("role");
+  const qs = role ? `?role=${encodeURIComponent(role)}&limit=200` : `?limit=200`;
+  return proxyToBackend(req, `/v1/users${qs}`, { unwrapKey: "users" });
 }

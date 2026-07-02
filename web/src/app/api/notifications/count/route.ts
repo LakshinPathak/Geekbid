@@ -1,26 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/mongodb";
-import { authenticateRequest } from "@/lib/auth";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend";
 
-// GET /api/notifications/count — Returns { unread: number } for navbar badge
+// GET /api/notifications/count → notification-service (returns { unread }).
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const { payload } = auth;
- const db = await getDb();
-
- const unread = await db.collection("notifications").countDocuments({
- userId: payload.userId,
- isRead: { $ne: true },
- });
-
- return NextResponse.json({ unread });
- } catch (err) {
- console.error("[Notifications/count GET Error]", err);
- return NextResponse.json({ error: "Failed to fetch count" }, { status: 500 });
- }
+  return proxyToBackend(req, "/v1/notifications/count");
 }

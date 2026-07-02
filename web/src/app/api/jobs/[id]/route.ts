@@ -5,36 +5,17 @@ import { authenticateRequest } from "@/lib/auth";
 import { getAdaptivePrice } from "@/lib/pricing";
 import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
+import { proxyToBackend } from "@/lib/backend";
 
-// GET /api/jobs/[id] — public
+// GET /api/jobs/[id] — public single job. BFF proxy → gateway → job-service.
+// PATCH (accept/cancel/complete/award pipeline) stays in the BFF: it fires
+// Resend emails and creates chat rooms/notifications coupled to the web runtime.
 export async function GET(
- _req: NextRequest,
+ req: NextRequest,
  { params }: { params: Promise<{ id: string }> }
 ) {
- try {
  const { id } = await params;
- const db = await getDb();
-
- let job;
- try {
- job = await db.collection("jobs").findOne({ _id: new ObjectId(id) });
- } catch {
- job = await db.collection("jobs").findOne({ id });
- }
-
- if (!job) {
- return NextResponse.json({ error: "Job not found" }, { status: 404 });
- }
-
- return NextResponse.json({
- ...job,
- _id: job._id.toString(),
- id: job._id.toString(),
- });
- } catch (err) {
- console.error("[Job GET Error]", err);
- return NextResponse.json({ error: "Failed to fetch job" }, { status: 500 });
- }
+ return proxyToBackend(req, `/v1/jobs/${encodeURIComponent(id)}`, { unwrapKey: "job" });
 }
 
 // PATCH /api/jobs/[id] — accept | cancel | complete job (protected)

@@ -2,39 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { proxyToBackend } from "@/lib/backend";
 
-// GET /api/user — get authenticated user's profile
+// GET /api/user — authenticated user's own profile.
+// BFF proxy → gateway → auth-service GET /v1/auth/me (self view, includes email).
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const db = await getDb();
- const user = await db
- .collection("users")
- .findOne(
- { _id: new ObjectId(auth.payload.userId) },
- { projection: { password: 0 } }
- );
-
- if (!user) {
- return NextResponse.json({ error: "User not found" }, { status: 404 });
- }
-
- return NextResponse.json({
- ...user,
- _id: user._id.toString(),
- id: user._id.toString(),
- });
- } catch (err) {
- console.error("[User GET Error]", err);
- return NextResponse.json(
- { error: "Failed to fetch user" },
- { status: 500 }
- );
- }
+ return proxyToBackend(req, "/v1/auth/me", { unwrapKey: "user" });
 }
 
 // PATCH /api/user — update user profile

@@ -21,135 +21,119 @@ const toObjectId = (id) => {
   }
 };
 
-// --- READ: List chat rooms ---
+// SCHEMA NOTE: the app stores chat under `chat_rooms` + `chat_messages`
+// (underscore) with STRING roomId/senderId/participantIds. These handlers match
+// that exactly so they operate on the same data the Next.js app wrote.
+
+/** Resolve a room by string id or ObjectId, scoped to a participant. */
+async function findParticipantRoom(db, roomId, userId) {
+  return db.collection('chat_rooms').findOne({
+    $or: [{ _id: toObjectId(roomId) }, { id: roomId }],
+    participantIds: userId,
+  });
+}
+
+// --- READ: List the caller's chat rooms (scoped by token) ---
 
 app.get('/v1/chat/rooms', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { userId } = req.query || {};
-
-  const filter = {};
-  if (userId) filter.participantIds = userId;
-
   const rooms = await db.collection('chat_rooms')
-    .find(filter)
+    .find({ participantIds: req.user.userId })
     .sort({ updatedAt: -1 })
     .limit(50)
     .toArray();
 
-  const normalized = rooms.map((r) => ({
-    ...r,
-    id: r._id.toString(),
-    _id: r._id.toString(),
-  }));
-
+  const normalized = rooms.map((r) => ({ ...r, id: r._id.toString(), _id: r._id.toString() }));
   return ok(res, { rooms: normalized });
 }));
 
-// --- CREATE: Create a chat room ---
+// --- CREATE: Create a chat room (caller + job-association authorization) ---
 
 app.post('/v1/chat/rooms', requireAuth, asyncHandler(async (req, res) => {
   const { jobId, participantIds } = req.body || {};
-
-  if (!jobId) return fail(res, 'ERR_VALIDATION', 'jobId is required', 400);
-  if (!Array.isArray(participantIds) || participantIds.length < 2) {
-    return fail(res, 'ERR_VALIDATION', 'participantIds must be an array with at least 2 users', 400);
+  if (!jobId || !Array.isArray(participantIds) || participantIds.length !== 2) {
+    return fail(res, 'ERR_VALIDATION', 'jobId and exactly two participantIds are required', 400);
+  }
+  if (!participantIds.includes(req.user.userId)) {
+    return fail(res, 'ERR_FORBIDDEN', 'You must be one of the room participants', 403);
   }
 
   const db = await getDb();
+  let job;
+  try { job = await db.collection('jobs').findOne({ _id: new ObjectId(jobId) }); }
+  catch { job = await db.collection('jobs').findOne({ id: jobId }); }
+  if (!job) return fail(res, 'ERR_NOT_FOUND', 'Job not found', 404);
 
-  // Check if a room already exists for this job + participants
-  const existing = await db.collection('chat_rooms').findOne({ jobId });
-  if (existing) {
-    return ok(res, {
-      room: { ...existing, id: existing._id.toString(), _id: existing._id.toString() },
-    });
+  // Every participant must be tied to the job: client, accepted freelancer, or bidder.
+  const isAssociated = async (uid) => {
+    if (job.clientId === uid || job.acceptedBy === uid) return true;
+    return !!(await db.collection('bids').findOne({ jobId, freelancerId: uid }));
+  };
+  for (const uid of participantIds) {
+    if (!(await isAssociated(uid))) {
+      return fail(res, 'ERR_FORBIDDEN', 'All participants must be associated with this job', 403);
+    }
   }
 
-  const doc = {
-    jobId,
-    participantIds,
-    updatedAt: new Date().toISOString(),
-  };
+  const existing = await db.collection('chat_rooms').findOne({
+    jobId, participantIds: { $all: participantIds },
+  });
+  if (existing) {
+    return ok(res, { room: { ...existing, id: existing._id.toString(), _id: existing._id.toString() } });
+  }
 
+  const doc = { jobId, participantIds, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() };
   const result = await db.collection('chat_rooms').insertOne(doc);
   const room = { ...doc, id: result.insertedId.toString(), _id: result.insertedId.toString() };
-
   return ok(res, { room }, undefined, 201);
 }));
 
-// --- READ: Get messages for a room ---
+// --- READ: messages for a room (?roomId=...) — participant-gated ---
 
-app.get('/v1/chat/:roomId/messages', requireAuth, asyncHandler(async (req, res) => {
+app.get('/v1/chat/messages', requireAuth, asyncHandler(async (req, res) => {
+  const { roomId } = req.query || {};
+  if (!roomId) return fail(res, 'ERR_VALIDATION', 'roomId query parameter required', 400);
+
   const db = await getDb();
-  const { roomId } = req.params;
-  const { page = '1', limit = '50' } = req.query || {};
+  const room = await findParticipantRoom(db, roomId, req.user.userId);
+  if (!room) return fail(res, 'ERR_NOT_FOUND', 'Room not found or access denied', 404);
 
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
-  const skip = (pageNum - 1) * limitNum;
+  const messages = await db.collection('chat_messages')
+    .find({ roomId: room._id.toString() })
+    .sort({ createdAt: 1 })
+    .limit(500)
+    .toArray();
 
-  const roomObjId = toObjectId(roomId);
-
-  const [messages, total] = await Promise.all([
-    db.collection('chatmessages')
-      .find({ roomId: roomObjId })
-      .sort({ createdAt: 1 })
-      .skip(skip)
-      .limit(limitNum)
-      .toArray(),
-    db.collection('chatmessages').countDocuments({ roomId: roomObjId }),
-  ]);
-
-  const normalized = messages.map((m) => ({
-    ...m,
-    id: m._id.toString(),
-    _id: m._id.toString(),
-    senderId: m.senderId?.toString(),
-    roomId: m.roomId?.toString(),
-  }));
-
-  return ok(res, { messages: normalized }, { page: pageNum, limit: limitNum, total });
+  const normalized = messages.map((m) => ({ ...m, id: m._id.toString(), _id: m._id.toString() }));
+  return ok(res, { messages: normalized });
 }));
 
-// --- CREATE: Send a message ---
+// --- CREATE: send a message (body { roomId, text }) — participant-gated ---
 
-app.post('/v1/chat/:roomId/messages', requireAuth, asyncHandler(async (req, res) => {
-  const textCheck = validateString((req.body || {}).text, 'Message', { minLength: 1, maxLength: 2000 });
-  if (!textCheck.valid) return fail(res, 'ERR_VALIDATION', textCheck.error, 422);
+app.post('/v1/chat/messages', requireAuth, asyncHandler(async (req, res) => {
+  const { roomId, text } = req.body || {};
+  if (!roomId || !text || !String(text).trim()) {
+    return fail(res, 'ERR_VALIDATION', 'roomId and text are required', 400);
+  }
 
   const db = await getDb();
-  const { roomId } = req.params;
-  const { text } = req.body;
-  const cleanText = stripHtml(text.trim());
-
-  const roomObjId = toObjectId(roomId);
-  const senderObjId = toObjectId(req.user.userId);
+  const room = await findParticipantRoom(db, roomId, req.user.userId);
+  if (!room) return fail(res, 'ERR_NOT_FOUND', 'Room not found or access denied', 404);
 
   const doc = {
-    roomId: roomObjId,
-    senderId: senderObjId,
-    text: cleanText,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    roomId,
+    senderId: req.user.userId,
+    text: String(text).trim(),
+    createdAt: new Date().toISOString(),
   };
+  const result = await db.collection('chat_messages').insertOne(doc);
 
-  const result = await db.collection('chatmessages').insertOne(doc);
-
-  // Update room's last activity timestamp
   await db.collection('chat_rooms').updateOne(
-    { _id: roomObjId },
+    { _id: room._id },
     { $set: { updatedAt: new Date().toISOString() } }
   );
 
-  const message = {
-    id: result.insertedId.toString(),
-    _id: result.insertedId.toString(),
-    roomId: roomId,
-    senderId: senderObjId.toString(),
-    text: cleanText,
-    createdAt: doc.createdAt.toISOString(),
-  };
-
+  const message = { ...doc, id: result.insertedId.toString(), _id: result.insertedId.toString() };
   io.to(roomId).emit('chat_message', message);
   return ok(res, { message }, undefined, 201);
 }));

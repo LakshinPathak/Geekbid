@@ -31,12 +31,34 @@ if (!IS_MOCK) {
 
 const app = createApp();
 
-// --- Transaction History (from MongoDB) ---
+// --- Transactions (IDOR-scoped: admin sees all, else only own) ---
+// Matches the app's /api/transactions GET. userIds are stored as strings.
 
-app.get('/v1/payments/history', requireAuth, asyncHandler(async (_req, res) => {
+app.get('/v1/transactions', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
+  const filter = req.user.role === 'admin'
+    ? {}
+    : { $or: [{ clientId: req.user.userId }, { freelancerId: req.user.userId }] };
+
   const transactions = await db.collection('transactions')
-    .find({})
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .toArray();
+
+  const normalized = transactions.map((t) => ({ ...t, id: t._id.toString(), _id: t._id.toString() }));
+  return ok(res, { transactions: normalized });
+}));
+
+// --- Transaction History (kept; now IDOR-scoped too) ---
+
+app.get('/v1/payments/history', requireAuth, asyncHandler(async (req, res) => {
+  const db = await getDb();
+  const filter = req.user.role === 'admin'
+    ? {}
+    : { $or: [{ clientId: req.user.userId }, { freelancerId: req.user.userId }] };
+  const transactions = await db.collection('transactions')
+    .find(filter)
     .sort({ createdAt: -1 })
     .limit(50)
     .toArray();
@@ -45,9 +67,6 @@ app.get('/v1/payments/history', requireAuth, asyncHandler(async (_req, res) => {
     ...t,
     id: t._id.toString(),
     _id: t._id.toString(),
-    jobId: t.jobId?.toString(),
-    clientId: t.clientId?.toString(),
-    freelancerId: t.freelancerId?.toString(),
   }));
 
   return ok(res, { transactions: normalized });
@@ -84,10 +103,8 @@ app.get('/v1/payments/transactions/:id', asyncHandler(async (req, res) => {
 
 app.get('/v1/disputes', requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { status } = req.query || {};
-
-  const filter = {};
-  if (status) filter.status = status;
+  // Match the app: admins see all disputes, everyone else only ones they raised.
+  const filter = req.user.role === 'admin' ? {} : { raisedBy: req.user.userId };
 
   const disputes = await db.collection('disputes')
     .find(filter)

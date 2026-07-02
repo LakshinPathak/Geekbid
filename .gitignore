@@ -66,3 +66,6 @@ yarn-error.*
 
 # ──── Docker ────
 docker-compose.override.yml
+
+# Vendored codebase-memory MCP tool (not part of the app)
+codebase-memory-mcp-main/

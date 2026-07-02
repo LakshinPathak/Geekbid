@@ -4,44 +4,12 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendDisputeResolvedEmail } from "@/lib/email";
 import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
+import { proxyToBackend } from "@/lib/backend";
 
-/**
- * GET /api/disputes — list disputes (protected)
- */
+// GET /api/disputes — BFF proxy → gateway → payment-service (admin all / else own).
+// PATCH (admin resolve) stays in the BFF: it fires a Resend email.
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const db = await getDb();
- const filter =
- auth.payload.role === "admin"
- ? {}
- : { raisedBy: auth.payload.userId };
-
- const disputes = await db
- .collection("disputes")
- .find(filter)
- .sort({ createdAt: -1 })
- .limit(100)
- .toArray();
-
- return NextResponse.json(
- disputes.map((d) => ({
- ...d,
- _id: d._id.toString(),
- id: d._id.toString(),
- }))
- );
- } catch (err) {
- console.error("[Disputes GET Error]", err);
- return NextResponse.json(
- { error: "Failed to fetch disputes" },
- { status: 500 }
- );
- }
+ return proxyToBackend(req, "/v1/disputes", { unwrapKey: "disputes" });
 }
 
 /**

@@ -4,43 +4,12 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendEscrowReleasedEmail, sendDisputeEmail, sendJobCompletedEmail } from "@/lib/email";
 import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
+import { proxyToBackend } from "@/lib/backend";
 
-// GET /api/transactions (protected)
+// GET /api/transactions — BFF proxy → gateway → payment-service (IDOR-scoped).
+// PATCH (release/dispute) stays in the BFF: it fires Resend emails.
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const db = await getDb();
- const filter =
- auth.payload.role === "admin"
- ? {}
- : {
- $or: [
- { clientId: auth.payload.userId },
- { freelancerId: auth.payload.userId },
- ],
- };
-
- const txs = await db
- .collection("transactions")
- .find(filter)
- .sort({ createdAt: -1 })
- .limit(100)
- .toArray();
-
- return NextResponse.json(
- txs.map((t) => ({ ...t, _id: t._id.toString(), id: t._id.toString() }))
- );
- } catch (err) {
- console.error("[Transactions GET Error]", err);
- return NextResponse.json(
- { error: "Failed to fetch transactions" },
- { status: 500 }
- );
- }
+ return proxyToBackend(req, "/v1/transactions", { unwrapKey: "transactions" });
 }
 
 // PATCH /api/transactions — release or dispute escrow (protected)

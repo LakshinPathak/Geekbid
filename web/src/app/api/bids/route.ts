@@ -3,32 +3,13 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId, type Document, type WithId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
+import { proxyToBackend } from "@/lib/backend";
 
-// GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
-// private bid messages, so an anonymous caller must not be able to dump them)
+// GET /api/bids?jobId=xxx — BFF proxy → gateway → bidding-service (protected).
+// POST stays in the BFF: it fires Resend emails + enforces plan limits that are
+// coupled to the web runtime.
 export async function GET(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
-
- const jobId = req.nextUrl.searchParams.get("jobId");
- const db = await getDb();
- const filter = jobId ? { jobId } : {};
- const bids = await db
- .collection("bids")
- .find(filter)
- .sort({ createdAt: -1 })
- .limit(200)
- .toArray();
- return NextResponse.json(
- bids.map((b) => ({ ...b, _id: b._id.toString(), id: b._id.toString() }))
- );
- } catch (err) {
- console.error("[Bids GET Error]", err);
- return NextResponse.json({ error: "Failed to fetch bids" }, { status: 500 });
- }
+ return proxyToBackend(req, `/v1/bids${req.nextUrl.search}`, { unwrapKey: "bids" });
 }
 
 // POST /api/bids — place a counter-bid (protected, freelancer only)
