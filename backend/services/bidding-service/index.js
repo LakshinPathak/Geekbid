@@ -173,33 +173,88 @@ app.post('/v1/bids/accept', requireAuth, asyncHandler(async (req, res) => {
 // --- CREATE: Counter bid ---
 
 app.post('/v1/bids/counter', requireAuth, asyncHandler(async (req, res) => {
+  // Full parity with the app's POST /api/bids counter-bid pipeline:
+  // freelancer-only, job-open check, atomic free-plan cap (10/mo), 30-min
+  // cooldown, demand-signal update. The BFF fires the Resend emails from the
+  // returned bid + job info.
+  if (req.user.role !== 'freelancer') {
+    return fail(res, 'ERR_FORBIDDEN', 'Only freelancers can place bids', 403);
+  }
   const payload = req.body || {};
   const jobId = payload.job_id || payload.jobId;
   const bidPrice = payload.bid_price ?? payload.bidPrice;
-
-  if (!jobId) return fail(res, 'ERR_VALIDATION', 'job_id is required', 400);
+  if (!jobId || bidPrice == null) return fail(res, 'ERR_VALIDATION', 'jobId and bidPrice are required', 400);
 
   const priceCheck = validatePositiveNumber(bidPrice, 'Bid price');
   if (!priceCheck.valid) return fail(res, 'ERR_VALIDATION', priceCheck.error, 422);
 
   const db = await getDb();
-  const job = await db.collection('jobs').findOne(toObjectIdFilter(jobId));
-  if (!job) return fail(res, 'ERR_NOT_FOUND', 'Job not found', 404);
+  const targetJob = await db.collection('jobs').findOne(toObjectIdFilter(jobId));
+  if (!targetJob) return fail(res, 'ERR_NOT_FOUND', 'Job not found', 404);
+  if (targetJob.status !== 'open') return fail(res, 'ERR_INVALID_STATE', 'This job is no longer open for bidding', 400);
+
+  // Free-plan cap: 10 bids/month, atomic check-and-increment.
+  const user = await db.collection('users').findOne({ _id: new ObjectId(req.user.userId) });
+  let bidQuotaReserved = false;
+  if (user && (user.plan ?? 'free') === 'free') {
+    const limits = user.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+    if (new Date(limits.monthResetAt) < new Date()) {
+      await db.collection('users').updateOne({ _id: user._id }, {
+        $set: { 'planLimits.jobsPostedThisMonth': 0, 'planLimits.bidsPlacedThisMonth': 0, 'planLimits.monthResetAt': new Date(Date.now() + 30 * 24 * 3600000).toISOString() },
+      });
+    }
+    const capped = await db.collection('users').findOneAndUpdate(
+      { _id: user._id, $or: [{ 'planLimits.bidsPlacedThisMonth': { $lt: 10 } }, { 'planLimits.bidsPlacedThisMonth': { $exists: false } }] },
+      { $inc: { 'planLimits.bidsPlacedThisMonth': 1 } }
+    );
+    if (!capped) return fail(res, 'ERR_FORBIDDEN', 'Free plan limit: 10 bids/month. Upgrade to Pro for unlimited.', 403);
+    bidQuotaReserved = true;
+  }
+
+  // 30-min per-user-per-job cooldown.
+  const lastBid = await db.collection('bids').findOne(
+    { jobId, freelancerId: req.user.userId },
+    { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
+  );
+  if (lastBid) {
+    const mins = (Date.now() - new Date(lastBid.createdAt).getTime()) / 60000;
+    if (mins < 30) return fail(res, 'ERR_RATE_LIMITED', `Wait ${Math.ceil(30 - mins)} min before bidding again on this job`, 429);
+  }
 
   const bid = {
-    jobId: jobId,
+    jobId,
     freelancerId: req.user.userId,
     bidType: 'counter',
     bidPrice: Number(bidPrice),
     message: stripHtml(payload.message || ''),
     createdAt: new Date().toISOString(),
   };
-
   const result = await db.collection('bids').insertOne(bid);
-  bid._id = result.insertedId.toString();
-  bid.id = bid._id;
 
-  return ok(res, { bid }, undefined, 201);
+  // Demand signals on the job.
+  const uniqueBidders = await db.collection('bids').distinct('freelancerId', { jobId });
+  const setOps = { lastBidAt: bid.createdAt, uniqueBidderCount: uniqueBidders.length };
+  if (targetJob.lowestCounterBid == null || Number(bidPrice) < targetJob.lowestCounterBid) {
+    setOps.lowestCounterBid = Number(bidPrice);
+  }
+  const updateOps = {
+    $set: setOps,
+    $inc: { bidCount: 1 },
+    $push: { priceHistory: { $each: [{ price: Number(bidPrice), at: bid.createdAt, event: 'counter_bid' }], $slice: -50 } },
+  };
+  try { await db.collection('jobs').updateOne({ _id: new ObjectId(jobId) }, updateOps); }
+  catch { await db.collection('jobs').updateOne({ id: jobId }, updateOps); }
+
+  if (!bidQuotaReserved) {
+    await db.collection('users').updateOne({ _id: new ObjectId(req.user.userId) }, { $inc: { 'planLimits.bidsPlacedThisMonth': 1 } });
+  }
+
+  const created = { ...bid, _id: result.insertedId.toString(), id: result.insertedId.toString() };
+  // Return job info the BFF needs to send new-bid + price-target emails.
+  return ok(res, {
+    bid: created,
+    job: { clientId: targetJob.clientId, title: targetJob.title, minimumPrice: targetJob.minimumPrice },
+  }, undefined, 201);
 }));
 
 // --- UPDATE: Update a bid (only counter bids, before acceptance) ---

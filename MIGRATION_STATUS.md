@@ -41,7 +41,7 @@
 |---|---|---|---|
 | PATCH /api/transactions (release/dispute) | ✅ payment-service PATCH /v1/transactions (atomic guards) | ✅ done | ✅ 409 double-release, 403 non-owner |
 | PATCH /api/disputes (admin resolve) | ✅ payment-service PATCH /v1/disputes | ✅ done | ✅ 403 non-admin, 404 missing |
-| POST /api/bids (counter) | ⬜ TODO (plan-limit + cooldown + demand signals) | ⬜ | ⬜ |
+| POST /api/bids (counter) | ✅ bidding-service POST /v1/bids/counter (plan-limit + cooldown + demand signals) | ✅ done | ✅ client→403, freelancer→201, cooldown→429, negative→422 |
 | PATCH /api/jobs/[id] cancel | ⬜ TODO | ⬜ | ⬜ |
 | PATCH /api/jobs/[id] complete | ⬜ TODO (escrow release) | ⬜ | ⬜ |
 | PATCH /api/jobs/[id] accept/accept_best | ⬜ TODO (needs pricing.ts port + chat/notif/escrow) | ⬜ | ⬜ |

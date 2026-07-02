@@ -1,203 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { authenticateRequest } from "@/lib/auth";
-import { ObjectId, type Document, type WithId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
-import { proxyToBackend } from "@/lib/backend";
+import { backendFetch, proxyToBackend, tokenFromRequest } from "@/lib/backend";
 
 // GET /api/bids?jobId=xxx — BFF proxy → gateway → bidding-service (protected).
-// POST stays in the BFF: it fires Resend emails + enforces plan limits that are
-// coupled to the web runtime.
 export async function GET(req: NextRequest) {
- return proxyToBackend(req, `/v1/bids${req.nextUrl.search}`, { unwrapKey: "bids" });
+  return proxyToBackend(req, `/v1/bids${req.nextUrl.search}`, { unwrapKey: "bids" });
 }
 
-// POST /api/bids — place a counter-bid (protected, freelancer only)
+// POST /api/bids — counter-bid. The full pipeline (freelancer-only, job-open,
+// atomic plan-limit, 30-min cooldown, demand signals) runs in bidding-service;
+// the BFF fires the new-bid + price-target Resend emails from the result.
 export async function POST(req: NextRequest) {
- try {
- const auth = await authenticateRequest(req);
- if ("error" in auth) {
- return NextResponse.json({ error: auth.error }, { status: auth.status });
- }
+  try {
+    const body = await req.json().catch(() => ({}));
+    const { jobId, bidPrice, message } = body;
+    if (!jobId || bidPrice == null) {
+      return NextResponse.json({ error: "jobId and bidPrice are required" }, { status: 400 });
+    }
 
- if (auth.payload.role !== "freelancer") {
- return NextResponse.json(
- { error: "Only freelancers can place bids" },
- { status: 403 }
- );
- }
+    const result = await backendFetch<{
+      bid: Record<string, unknown>;
+      job: { clientId?: string; title?: string; minimumPrice?: number };
+    }>("/v1/bids/counter", {
+      method: "POST",
+      token: tokenFromRequest(req),
+      body: { jobId, bidPrice, message },
+    });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+    const { bid, job } = result.data;
 
- const { jobId, bidPrice, message } = await req.json();
- if (!jobId || !bidPrice) {
- return NextResponse.json(
- { error: "jobId and bidPrice are required" },
- { status: 400 }
- );
- }
+    // ── Emails (best-effort, from the web runtime) ──
+    try {
+      if (job?.clientId) {
+        const db = await getDb();
+        const client = await db.collection("users").findOne(
+          { _id: new ObjectId(job.clientId) },
+          { projection: { email: 1, name: 1 } }
+        );
+        if (client?.email) {
+          const freelancer = await db.collection("users").findOne(
+            { _id: new ObjectId(bid.freelancerId as string) },
+            { projection: { name: 1 } }
+          );
+          sendNewBidEmail(
+            client.email, client.name ?? "Client",
+            freelancer?.name ?? "A freelancer",
+            job.title ?? "Untitled Job", Number(bidPrice), jobId
+          ).catch(() => {});
+          if (job.minimumPrice && Number(bidPrice) <= job.minimumPrice * 1.1) {
+            sendPriceTargetAlertEmail(
+              client.email, client.name ?? "Client",
+              freelancer?.name ?? "A freelancer",
+              job.title ?? "Untitled Job",
+              Number(bidPrice), job.minimumPrice, jobId, bid._id as string
+            ).catch(() => {});
+          }
+        }
+      }
+    } catch (emailErr) {
+      console.error("[Bids POST email lookup failed]", emailErr);
+    }
 
- const db = await getDb();
-
- // A bid can only land on a job that's still open — otherwise a direct
- // request could bid on an already-accepted/cancelled job.
- let targetJob: WithId<Document> | null;
- try { targetJob = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) }); }
- catch { targetJob = await db.collection("jobs").findOne({ id: jobId }); }
- if (!targetJob) {
- return NextResponse.json({ error: "Job not found" }, { status: 404 });
- }
- if (targetJob.status !== "open") {
- return NextResponse.json({ error: "This job is no longer open for bidding" }, { status: 400 });
- }
-
- // Plan limit enforcement for freelancers
- const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
- let bidQuotaReserved = false;
- if (user) {
- const plan = user.plan ?? "free";
- if (plan === "free") {
- const limits = user.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
- if (new Date(limits.monthResetAt) < new Date()) {
- await db.collection("users").updateOne({ _id: user._id }, {
- $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
- });
- }
- // Atomic check-and-increment so two concurrent requests can't both
- // read "under the cap" before either write lands.
- const capped = await db.collection("users").findOneAndUpdate(
- {
- _id: user._id,
- $or: [
- { "planLimits.bidsPlacedThisMonth": { $lt: 10 } },
- { "planLimits.bidsPlacedThisMonth": { $exists: false } },
- ],
- },
- { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
- );
- if (!capped) {
- return NextResponse.json({ error: "Free plan limit: 10 bids/month. Upgrade to Pro for unlimited." }, { status: 403 });
- }
- bidQuotaReserved = true;
- }
- }
-
- // 30-minute per-user bid cooldown (anti-spam / anti-freeze)
- const lastBidByUser = await db.collection("bids").findOne(
- { jobId, freelancerId: auth.payload.userId },
- { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
- );
- if (lastBidByUser) {
- const minutesSinceLast =
- (Date.now() - new Date(lastBidByUser.createdAt).getTime()) / 60000;
- if (minutesSinceLast < 30) {
- return NextResponse.json(
- {
- error: `Wait ${Math.ceil(30 - minutesSinceLast)} min before bidding again on this job`,
- },
- { status: 429 }
- );
- }
- }
-
- const bid = {
- jobId,
- freelancerId: auth.payload.userId,
- bidType: "counter",
- bidPrice: Number(bidPrice),
- message: message ?? "",
- createdAt: new Date().toISOString(),
- };
-
- const result = await db.collection("bids").insertOne(bid);
-
- // ── Update job demand signals ──
- const updateOps: Record<string, unknown> = {
- $set: { lastBidAt: bid.createdAt },
- $inc: { bidCount: 1 },
- $push: {
- priceHistory: {
- $each: [
- {
- price: Number(bidPrice),
- at: bid.createdAt,
- event: "counter_bid",
- },
- ],
- $slice: -50, // keep last 50 entries max
- },
- },
- };
-
- // Reuse the job we already fetched above for the status check — no need
- // to query it a second time.
- const jobDoc = targetJob;
- if (
- jobDoc &&
- (jobDoc.lowestCounterBid === null ||
- jobDoc.lowestCounterBid === undefined ||
- Number(bidPrice) < jobDoc.lowestCounterBid)
- ) {
- (updateOps.$set as Record<string, unknown>).lowestCounterBid =
- Number(bidPrice);
- }
-
- // Count unique bidders (anti-gaming: one person can't inflate demand)
- const uniqueBidders = await db
- .collection("bids")
- .distinct("freelancerId", { jobId });
- (updateOps.$set as Record<string, unknown>).uniqueBidderCount =
- uniqueBidders.length;
-
- try {
- await db.collection("jobs").updateOne({ _id: new ObjectId(jobId) }, updateOps);
- } catch {
- await db.collection("jobs").updateOne({ id: jobId }, updateOps);
- }
-
- // Fire-and-forget: notify the client about the new bid
- if (jobDoc?.clientId) {
- const client = await db.collection("users").findOne(
- { _id: new ObjectId(jobDoc.clientId) },
- { projection: { email: 1, name: 1 } }
- );
- if (client?.email) {
- const freelancerUser = await db.collection("users").findOne(
- { _id: new ObjectId(auth.payload.userId) },
- { projection: { name: 1 } }
- );
- sendNewBidEmail(
- client.email,
- client.name ?? "Client",
- freelancerUser?.name ?? "A freelancer",
- jobDoc.title ?? "Untitled Job",
- Number(bidPrice),
- jobId
- ).catch(() => {});
-
- // Price target alert: if bid is within 110% of floor price
- if (jobDoc.minimumPrice && Number(bidPrice) <= jobDoc.minimumPrice * 1.1) {
- sendPriceTargetAlertEmail(
- client.email, client.name ?? "Client",
- freelancerUser?.name ?? "A freelancer",
- jobDoc.title ?? "Untitled Job",
- Number(bidPrice), jobDoc.minimumPrice,
- jobId, result.insertedId.toString()
- ).catch(() => {});
- }
- }
- }
-
- // Free-plan counter was already incremented atomically above alongside the
- // cap check; only non-free plans still need a plain increment here.
- if (!bidQuotaReserved) await db.collection("users").updateOne(
- { _id: new ObjectId(auth.payload.userId) },
- { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
- );
- return NextResponse.json(
- { ...bid, _id: result.insertedId.toString(), id: result.insertedId.toString() },
- { status: 201 }
- );
- } catch (err) {
- console.error("[Bids POST Error]", err);
- return NextResponse.json({ error: "Failed to place bid" }, { status: 500 });
- }
+    return NextResponse.json(bid, { status: 201 });
+  } catch (err) {
+    console.error("[Bids POST Error]", err);
+    return NextResponse.json({ error: "Failed to place bid" }, { status: 500 });
+  }
 }
