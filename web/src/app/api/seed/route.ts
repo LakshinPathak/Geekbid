@@ -966,9 +966,10 @@ export async function POST(req: NextRequest) {
  });
 
  } catch (err) {
+ // Log server-side only — don't leak internal error detail to the client.
  console.error("[Seed Error]", err);
  return NextResponse.json(
- { error: "Failed to seed database", details: String(err) },
+ { error: "Failed to seed database" },
  { status: 500 }
  );
  }

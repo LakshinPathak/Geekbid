@@ -5,6 +5,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { getAdaptivePrice } from "@/lib/pricing";
 import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
+import { splitEscrow } from "@/lib/money";
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -139,11 +140,11 @@ export async function PATCH(
  if (!awardedJob) {
  return NextResponse.json({ error: "Job was already accepted by another request" }, { status: 409 });
  }
- const fee = Number((finalPrice * 0.1).toFixed(2));
+ const escrow = splitEscrow(finalPrice);
  await db.collection("transactions").insertOne({
  jobId: id, clientId: awardJob.clientId, freelancerId,
- grossAmount: finalPrice, platformFee: fee,
- netAmount: Number((finalPrice - fee).toFixed(2)),
+ grossAmount: escrow.gross, platformFee: escrow.platformFee,
+ netAmount: escrow.netAmount,
  escrowStatus: "held", createdAt: acceptedAt,
  });
  const [awardClient, awardFreelancer] = await Promise.all([
@@ -348,14 +349,14 @@ export async function PATCH(
  });
 
  // Create escrow transaction
- const fee = Number((finalPrice * 0.1).toFixed(2));
+ const escrow = splitEscrow(finalPrice);
  await db.collection("transactions").insertOne({
  jobId: id,
  clientId: job.clientId,
  freelancerId: auth.payload.userId,
- grossAmount: finalPrice,
- platformFee: fee,
- netAmount: Number((finalPrice - fee).toFixed(2)),
+ grossAmount: escrow.gross,
+ platformFee: escrow.platformFee,
+ netAmount: escrow.netAmount,
  escrowStatus: "held",
  createdAt: acceptedAt,
  });

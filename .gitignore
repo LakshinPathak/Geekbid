@@ -66,3 +66,6 @@ yarn-error.*
 
 # ──── Docker ────
 docker-compose.override.yml
+
+Geekbid-12/
+codebase-memory-mcp-main/

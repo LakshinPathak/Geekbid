@@ -5,7 +5,7 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v12** — Follow-up security audit: admin-key exposure, payment replay protection, direct-offer race, and API auth gaps
+**Current version: v14** — Correctness & reliability fixes over v12 (exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks). Full write-up: [`V14_FIXES.md`](V14_FIXES.md).
 
 ---
 
@@ -31,6 +31,17 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v14
+
+Correctness & reliability hardening of the live Next.js app — **no feature or architecture changes**. (The microservice-migration experiment lives on the separate `v13_with_microservice_half_code` branch.) Full detail: [`V14_FIXES.md`](V14_FIXES.md).
+
+| Area | Fix |
+|------|-----|
+| **Money math (correctness)** | New `web/src/lib/money.ts` computes every escrow split in **integer cents**, guaranteeing `platformFee + netAmount === gross`. Wired into job accept / accept-best, direct-offer acceptance, Razorpay verify, and milestone partial release (exact fully-released check — the old `>= gross - 0.01` fudge is gone). Chained float math like `458 * 0.1 === 45.800000000000004` no longer reaches the ledger |
+| **Cross-tab auth sync** | `store.tsx` now listens for `storage` events — logging in/out in one tab updates every open tab instead of leaving them stale |
+| **Mongo connection singleton** | `getDb()` caches the connect *promise* on `globalThis` (not just the resolved Db), so concurrent cold starts / HMR reloads reuse one client instead of churning connections; a failed connect isn't cached |
+| **No error leaks** | `POST /api/seed` no longer returns raw `details: String(err)` to the client; `team/page.tsx` no longer swallows load errors in an empty `catch {}` |
 
 ## What's in v12
 
@@ -517,7 +528,9 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `v12` / `main` / `master` | **Latest** — Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
+| `v14` | **Latest** — correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
+| `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only, not the recommended path) |
+| `v12` / `main` / `master` | Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
 | `v11` | Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |
 | `v10` | Admin panel, initial security hardening, Cloudinary CDN, Gemini AI |
 | `v9` | Role-based feeds, landing page animations, CRUD fixes |

@@ -672,6 +672,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, []);
 
+ // ── Cross-tab auth sync ───────────────────────────────────
+ // A login or logout in another tab writes/clears these localStorage keys.
+ // The `storage` event only fires in *other* tabs, so mirror that change into
+ // this tab's state — otherwise a logout in one tab leaves the others logged in.
+ useEffect(() => {
+ const onStorage = (e: StorageEvent) => {
+ // Only react to our auth keys (e.key is null when localStorage.clear() ran).
+ if (e.key !== null && e.key !== STORAGE_KEY_TOKEN) return;
+
+ const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+ const savedExpires = localStorage.getItem(STORAGE_KEY_EXPIRES);
+ const savedUser = localStorage.getItem(STORAGE_KEY_USER);
+
+ if (token && savedExpires && savedUser && Date.now() < Number(savedExpires)) {
+ try {
+ const expiresAt = Number(savedExpires);
+ setAuth({ isLoggedIn: true, accessToken: token, expiresAt });
+ setCurrentUser(JSON.parse(savedUser) as User);
+ scheduleRefresh(expiresAt);
+ return;
+ } catch {
+ /* corrupted storage — fall through to clearing local state */
+ }
+ }
+
+ // Token missing/expired → reflect the logout locally.
+ if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+ setAuth({ isLoggedIn: false, accessToken: null, expiresAt: null });
+ setCurrentUser(null);
+ };
+
+ window.addEventListener("storage", onStorage);
+ return () => window.removeEventListener("storage", onStorage);
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, []);
+
  // ── Fetch data when auth state changes ────────────────────
  useEffect(() => {
  if (mounted) {

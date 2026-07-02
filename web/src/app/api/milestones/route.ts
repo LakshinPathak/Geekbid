@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendMilestoneSubmittedEmail, sendMilestoneApprovedEmail } from "@/lib/email";
+import { toCents, toDollars } from "@/lib/money";
 
 // GET /api/milestones?jobId=xxx
 export async function GET(req: NextRequest) {
@@ -137,16 +138,19 @@ export async function PATCH(req: NextRequest) {
  try {
  const tx = await db.collection("transactions").findOne({ jobId: milestone.jobId, escrowStatus: "held" });
  if (tx) {
- const alreadyReleased = Number(tx.releasedAmount ?? 0);
- const amountToRelease = Math.min(Number(milestone.amount) || 0, Number(tx.grossAmount) - alreadyReleased);
- if (amountToRelease > 0) {
- const newReleasedAmount = Number((alreadyReleased + amountToRelease).toFixed(2));
- const isFullyReleased = newReleasedAmount >= Number(tx.grossAmount) - 0.01;
+ // Exact integer-cent math: no float drift, and the "fully released" check is
+ // an exact comparison instead of the old `>= gross - 0.01` fudge.
+ const alreadyReleasedCents = toCents(tx.releasedAmount ?? 0);
+ const grossCents = toCents(tx.grossAmount);
+ const amountToReleaseCents = Math.min(toCents(milestone.amount || 0), grossCents - alreadyReleasedCents);
+ if (amountToReleaseCents > 0) {
+ const newReleasedCents = alreadyReleasedCents + amountToReleaseCents;
+ const isFullyReleased = newReleasedCents >= grossCents;
  await db.collection("transactions").updateOne(
  { _id: tx._id, escrowStatus: "held" },
  {
  $set: {
- releasedAmount: newReleasedAmount,
+ releasedAmount: toDollars(newReleasedCents),
  ...(isFullyReleased
  ? { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId }
  : {}),
@@ -155,7 +159,7 @@ export async function PATCH(req: NextRequest) {
  );
  await db.collection("milestones").updateOne(
  { _id: new ObjectId(milestoneId) },
- { $set: { escrowReleased: true, releasedAmount: amountToRelease, releasedAt: new Date().toISOString() } }
+ { $set: { escrowReleased: true, releasedAmount: toDollars(amountToReleaseCents), releasedAt: new Date().toISOString() } }
  );
  }
  }

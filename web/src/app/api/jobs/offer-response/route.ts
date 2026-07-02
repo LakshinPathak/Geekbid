@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendOfferResponseEmail, sendBookingConfirmationEmail } from "@/lib/email";
+import { splitEscrow } from "@/lib/money";
 
 // PATCH /api/jobs/offer-response — freelancer accepts/declines a direct offer
 export async function PATCH(req: NextRequest) {
@@ -53,14 +54,14 @@ export async function PATCH(req: NextRequest) {
  }
 
  if (response === "accepted") {
- const fee = Number((job.startingPrice * 0.1).toFixed(2));
+ const escrow = splitEscrow(job.startingPrice);
  await db.collection("transactions").insertOne({
  jobId,
  clientId: job.clientId,
  freelancerId: auth.payload.userId,
- grossAmount: job.startingPrice,
- platformFee: fee,
- netAmount: Number((job.startingPrice - fee).toFixed(2)),
+ grossAmount: escrow.gross,
+ platformFee: escrow.platformFee,
+ netAmount: escrow.netAmount,
  escrowStatus: "held",
  createdAt: new Date().toISOString(),
  });

@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import crypto from "crypto";
 import { sendPaymentConfirmationEmail } from "@/lib/email";
+import { splitEscrow } from "@/lib/money";
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "secret_placeholder";
@@ -206,8 +207,9 @@ export async function PATCH(req: NextRequest) {
  });
  }
 
- const platformFee = Number((grossAmount * 0.1).toFixed(2));
- const netAmount = Number((grossAmount * 0.9).toFixed(2));
+ const escrow = splitEscrow(grossAmount);
+ const platformFee = escrow.platformFee;
+ const netAmount = escrow.netAmount;
 
  const tx = {
  jobId: jobId || "",

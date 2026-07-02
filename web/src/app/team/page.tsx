@@ -38,7 +38,7 @@ export default function TeamPage() {
  const data = await res.json();
  setTeam(data);
  }
- } catch {} finally { setLoading(false); }
+ } catch (err) { console.error("[loadTeam]", err); } finally { setLoading(false); }
  }, []);
 
  useEffect(() => { if (mounted && currentUser) loadTeam(); }, [mounted, currentUser, loadTeam]);
