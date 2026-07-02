@@ -75,6 +75,20 @@ Backend restart after service edits: kill ports 8080/3001/3003-3007, `npm --pref
 4. Restart backend, test `/v1` via gateway, then `/api` via Next. Then **update this file**.
 
 ## Commits on v13 so far
-1. Phase 0 + read/transactional flips
+1. Phase 0 (gateway proxy, JWT unify, BFF client, dev orchestration) + read/transactional flips
 2. job create/list + profile update writes
-3. (pending) transactions/disputes PATCH writes
+3. escrow release/dispute + dispute-resolve writes (payment-service) + this tracker
+4. counter-bid write (bidding-service)
+
+## ⏸️ STOPPED HERE — resume pointer
+All work above is committed + pushed to `origin/v13` and verified. Nothing half-done.
+**Next items to migrate (in order), all "service DB write + BFF email" pattern:**
+1. `PATCH /api/jobs/[id]` cancel  — job-service; notify bidders (email).
+2. `PATCH /api/jobs/[id]` complete — job-service; escrow release + summary email.
+3. `PATCH /api/jobs/[id]` accept/accept_best — HARDEST: needs `web/src/lib/pricing.ts`
+   (getAdaptivePrice) ported to backend + escrow tx + chat room + notifications + emails.
+   Consider leaving in BFF if risk/effort not worth it.
+4. `/api/jobs/[id]/cancel`, `/api/jobs/[id]/complete` (separate route files).
+5. `PATCH /api/milestones` — payment-service or job-service; partial escrow release + email.
+Everything in the 🔵 list stays in the BFF by design (do not migrate).
+To resume: read this file + `HANDOFF_ANTIGRAVITY.md`, `npm run dev`, follow the flip recipe above.
