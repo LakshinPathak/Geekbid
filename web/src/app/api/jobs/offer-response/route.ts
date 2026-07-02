@@ -38,8 +38,21 @@ export async function PATCH(req: NextRequest) {
  update.acceptedBy = auth.payload.userId;
  update.acceptedAt = new Date().toISOString();
  update.finalPrice = job.startingPrice;
+ } else {
+ update.status = "cancelled";
+ }
 
- // Create escrow transaction
+ // Atomically claim the pending offer — two concurrent responses can't both
+ // pass the read check above, so only the winner creates the escrow row.
+ const claimedJob = await db.collection("jobs").findOneAndUpdate(
+ { _id: new ObjectId(jobId), offerStatus: "pending" },
+ { $set: update }
+ );
+ if (!claimedJob) {
+ return NextResponse.json({ error: "Offer already responded to" }, { status: 409 });
+ }
+
+ if (response === "accepted") {
  const fee = Number((job.startingPrice * 0.1).toFixed(2));
  await db.collection("transactions").insertOne({
  jobId,
@@ -51,11 +64,7 @@ export async function PATCH(req: NextRequest) {
  escrowStatus: "held",
  createdAt: new Date().toISOString(),
  });
- } else {
- update.status = "cancelled";
  }
-
- await db.collection("jobs").updateOne({ _id: new ObjectId(jobId) }, { $set: update });
 
  // Fire-and-forget: notify client about offer response
  const client = await db.collection("users").findOne(

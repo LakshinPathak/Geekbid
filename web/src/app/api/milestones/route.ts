@@ -7,6 +7,11 @@ import { sendMilestoneSubmittedEmail, sendMilestoneApprovedEmail } from "@/lib/e
 // GET /api/milestones?jobId=xxx
 export async function GET(req: NextRequest) {
  try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
  const { searchParams } = new URL(req.url);
  const jobId = searchParams.get("jobId");
  if (!jobId) {
@@ -99,6 +104,9 @@ export async function PATCH(req: NextRequest) {
  const update: Record<string, unknown> = {};
 
  if (action === "start") {
+ if (job.acceptedBy !== auth.payload.userId) {
+ return NextResponse.json({ error: "Only the assigned freelancer can start a milestone" }, { status: 403 });
+ }
  update.status = "in_progress";
  } else if (action === "submit") {
  if (job.acceptedBy !== auth.payload.userId) {

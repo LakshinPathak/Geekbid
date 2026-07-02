@@ -223,7 +223,7 @@ export default function AdminConfigPage() {
           {[
             { label: "Platform", value: "GeekBid v10" },
             { label: "Environment", value: process.env.NODE_ENV ?? "development" },
-            { label: "Admin Key", value: "lakshin123 (masked)" },
+            { label: "Admin Key", value: "••••••••" },
           ].map(i => (
             <div key={i.label} className="p-2.5 bg-[#111625] rounded-[6px]">
               <p className="text-[#a8997e] mb-0.5">{i.label}</p>

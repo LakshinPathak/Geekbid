@@ -273,7 +273,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
  const fetchBids = useCallback(async () => {
  try {
- const res = await apiRequest("/api/bids");
+ const token = await getValidToken();
+ if (!token) return;
+ const res = await apiRequest("/api/bids", { accessToken: token });
  if (res.ok) {
  const data = await res.json();
  if (Array.isArray(data)) setBids(data);
@@ -281,7 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch (err) {
  console.error("[fetchBids]", err);
  }
- }, []);
+ }, [getValidToken]);
 
  const fetchTransactions = useCallback(async () => {
  try {
@@ -456,7 +458,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
  const fetchMilestones = useCallback(async (jobId: string) => {
  try {
- const res = await apiRequest(`/api/milestones?jobId=${jobId}`);
+ const token = await getValidToken();
+ if (!token) return;
+ const res = await apiRequest(`/api/milestones?jobId=${encodeURIComponent(jobId)}`, { accessToken: token });
  if (res.ok) {
  const data = await res.json();
  if (Array.isArray(data)) setMilestones(data);
@@ -464,7 +468,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch (err) {
  console.error("[fetchMilestones]", err);
  }
- }, []);
+ }, [getValidToken]);
 
  const createMilestones = useCallback(
  async (jobId: string, ms: { title: string; description?: string; amount: number }[]): Promise<ActionResult> => {

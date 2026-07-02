@@ -138,6 +138,16 @@ export async function PATCH(req: NextRequest) {
 
  const isMock = razorpay_order_id.startsWith("order_mock_");
 
+ // Mock verification trusts the client-supplied amount, so it must never be
+ // reachable in production — a forged order_mock_ id would otherwise let a
+ // caller mint arbitrary-value transactions.
+ if (isMock && process.env.NODE_ENV === "production") {
+ return NextResponse.json(
+ { error: "Mock payments are not allowed in production" },
+ { status: 400 }
+ );
+ }
+
  // Never trust the client-supplied amount for a real payment — fetch what
  // Razorpay actually captured and use that for all ledger math.
  let grossAmount = amount ? Number(amount) : 0;
@@ -181,6 +191,21 @@ export async function PATCH(req: NextRequest) {
 
  // Save transaction to MongoDB
  const db = await getDb();
+
+ // Idempotency: a given Razorpay payment can only ever fund one transaction —
+ // replaying the same verified payload must not mint duplicate escrow rows.
+ const existingTx = await db.collection("transactions").findOne({
+ razorpayPaymentId: razorpay_payment_id,
+ });
+ if (existingTx) {
+ const existingId = existingTx._id.toString();
+ return NextResponse.json({
+ verified: true,
+ transactionId: existingId,
+ transaction: { ...existingTx, _id: existingId, id: existingId },
+ });
+ }
+
  const platformFee = Number((grossAmount * 0.1).toFixed(2));
  const netAmount = Number((grossAmount * 0.9).toFixed(2));
 

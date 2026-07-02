@@ -4,9 +4,15 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId, type Document, type WithId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
 
-// GET /api/bids?jobId=xxx (public)
+// GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
+// private bid messages, so an anonymous caller must not be able to dump them)
 export async function GET(req: NextRequest) {
  try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
  const jobId = req.nextUrl.searchParams.get("jobId");
  const db = await getDb();
  const filter = jobId ? { jobId } : {};
