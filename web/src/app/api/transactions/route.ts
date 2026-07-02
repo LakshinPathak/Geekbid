@@ -4,15 +4,16 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendEscrowReleasedEmail, sendDisputeEmail, sendJobCompletedEmail } from "@/lib/email";
 import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
-import { proxyToBackend } from "@/lib/backend";
+import { backendFetch, proxyToBackend, tokenFromRequest } from "@/lib/backend";
 
 // GET /api/transactions — BFF proxy → gateway → payment-service (IDOR-scoped).
-// PATCH (release/dispute) stays in the BFF: it fires Resend emails.
 export async function GET(req: NextRequest) {
  return proxyToBackend(req, "/v1/transactions", { unwrapKey: "transactions" });
 }
 
-// PATCH /api/transactions — release or dispute escrow (protected)
+// PATCH /api/transactions — release / dispute escrow. The atomic escrow state
+// transition runs in payment-service; the BFF fires the Resend emails from the
+// service response (parties + job title looked up here, where Resend lives).
 export async function PATCH(req: NextRequest) {
  try {
  const auth = await authenticateRequest(req);
@@ -24,65 +25,35 @@ export async function PATCH(req: NextRequest) {
  const transactionId = sanitizeObjectId(body.transactionId);
  const action = sanitizeString(body.action);
  const reason = sanitizeString(body.reason);
+ if (!transactionId) return NextResponse.json({ error: "Invalid or missing transactionId" }, { status: 400 });
+ if (!action) return NextResponse.json({ error: "action is required" }, { status: 400 });
 
- if (!transactionId) {
- return NextResponse.json({ error: "Invalid or missing transactionId" }, { status: 400 });
+ const result = await backendFetch<{ message: string; transaction: Record<string, unknown>; otherId?: string }>(
+ "/v1/transactions",
+ { method: "PATCH", token: tokenFromRequest(req), body: { transactionId, action, reason } }
+ );
+ if (!result.ok) {
+ return NextResponse.json({ error: result.error }, { status: result.status });
  }
- if (!action) {
- return NextResponse.json({ error: "action is required" }, { status: 400 });
- }
+ const tx = result.data.transaction;
 
+ // ── Emails (best-effort, from the web runtime) ──
+ try {
  const db = await getDb();
+ const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId as string) }) : null;
 
- if (action === "release") {
- // Only client or admin can release
- if (!["client", "admin"].includes(auth.payload.role)) {
- return NextResponse.json(
- { error: "Only clients or admins can release escrow" },
- { status: 403 }
- );
- }
-
- const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
- // Null check — tx not found means invalid/unauthorized transactionId
- if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
- if (auth.payload.role !== "admin" && tx.clientId?.toString() !== auth.payload.userId) {
- return NextResponse.json({ error: "Forbidden" }, { status: 403 });
- }
-
- const releasedTx = await db.collection("transactions").findOneAndUpdate(
- { _id: new ObjectId(transactionId), escrowStatus: "held" },
- {
- $set: {
- escrowStatus: "released",
- releasedAt: new Date().toISOString(),
- releasedBy: auth.payload.userId,
- },
- }
- );
- if (!releasedTx) {
- return NextResponse.json(
- { error: "Transaction is not in a releasable state (already released or under dispute)" },
- { status: 409 }
- );
- }
-
- // Fire-and-forget: notify freelancer about payment release
- const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
- if (tx.freelancerId) {
+ if (action === "release" && tx.freelancerId) {
  const freelancer = await db.collection("users").findOne(
- { _id: new ObjectId(tx.freelancerId) },
+ { _id: new ObjectId(tx.freelancerId as string) },
  { projection: { email: 1, name: 1 } }
  );
  if (freelancer?.email) {
  sendEscrowReleasedEmail(
  freelancer.email, freelancer.name ?? "Freelancer",
- tx.netAmount ?? tx.grossAmount ?? 0,
+ (tx.netAmount as number) ?? (tx.grossAmount as number) ?? 0,
  job?.title ?? "Your project", transactionId
  ).catch((err) => console.error("[Email Failed] escrowReleased:", err));
  }
-
- // Also send job completed summary to the client
  const client = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
  { projection: { email: 1, name: 1 } }
@@ -90,72 +61,29 @@ export async function PATCH(req: NextRequest) {
  if (client?.email) {
  sendJobCompletedEmail(
  client.email, client.name ?? "Client",
- freelancer?.name ?? "Freelancer",
- job?.title ?? "Your project",
- tx.grossAmount ?? 0, tx.platformFee ?? 0,
- transactionId
+ freelancer?.name ?? "Freelancer", job?.title ?? "Your project",
+ (tx.grossAmount as number) ?? 0, (tx.platformFee as number) ?? 0, transactionId
  ).catch((err) => console.error("[Email Failed] jobCompleted:", err));
  }
- }
-
- return NextResponse.json({ ok: true, message: "Escrow released" });
- }
-
- if (action === "dispute") {
- const tx = await db.collection("transactions").findOne({ _id: new ObjectId(transactionId) });
- // Null check — crash was: tx.clientId.toString() without null guard
- if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
- const isParty = tx.clientId?.toString() === auth.payload.userId ||
- tx.freelancerId?.toString() === auth.payload.userId;
- if (!isParty) {
- return NextResponse.json({ error: "Forbidden" }, { status: 403 });
- }
- const disputedTx = await db.collection("transactions").findOneAndUpdate(
- { _id: new ObjectId(transactionId), escrowStatus: "held" },
- { $set: { escrowStatus: "disputed" } }
- );
- if (!disputedTx) {
- return NextResponse.json(
- { error: "Transaction is not in a disputable state (already released or already disputed)" },
- { status: 409 }
- );
- }
- await db.collection("disputes").insertOne({
- transactionId,
- raisedBy: auth.payload.userId,
- reason: reason || "Quality dispute",
- status: "open",
- jobTitle: tx.jobId ? (await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }))?.title : undefined,
- createdAt: new Date().toISOString(),
- });
-
- // Fire-and-forget: notify the other party
- const otherId = tx.clientId === auth.payload.userId ? tx.freelancerId : tx.clientId;
- if (otherId) {
+ } else if (action === "dispute" && result.data.otherId) {
  const other = await db.collection("users").findOne(
- { _id: new ObjectId(otherId) },
+ { _id: new ObjectId(result.data.otherId) },
  { projection: { email: 1, name: 1 } }
  );
- const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
  if (other?.email) {
  sendDisputeEmail(
- other.email, other.name ?? "User",
- job?.title ?? "a project",
- reason || "Quality dispute",
- transactionId
+ other.email, other.name ?? "User", job?.title ?? "a project",
+ reason || "Quality dispute", transactionId
  ).catch((err) => console.error("[Email Failed] dispute:", err));
  }
  }
-
- return NextResponse.json({ ok: true, message: "Dispute raised" });
+ } catch (emailErr) {
+ console.error("[Transactions PATCH email lookup failed]", emailErr);
  }
 
- return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+ return NextResponse.json({ ok: true, message: result.data.message });
  } catch (err) {
  console.error("[Transactions PATCH Error]", err);
- return NextResponse.json(
- { error: "Failed to update transaction" },
- { status: 500 }
- );
+ return NextResponse.json({ error: "Failed to update transaction" }, { status: 500 });
  }
 }
