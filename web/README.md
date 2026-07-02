@@ -2,6 +2,8 @@
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
+**v12** — Follow-up security pass: admin-key removed from client bundle, payment verification made idempotent (no replay), direct-offer accept made atomic, `GET /api/bids` + `GET /api/milestones` now require auth, all AI routes quota-capped. See [`../geekbid_review_2026-07-02.md`](../geekbid_review_2026-07-02.md).
+
 **v11** — Job acceptance/escrow/chat/OAuth security hardening. See [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md) (v11 addendum) and [`../geekbid_bid_acceptance_and_system_audit.md`](../geekbid_bid_acceptance_and_system_audit.md) for the full write-up.
 
 **v10** — Cloudinary image CDN + Gemini AI features.

@@ -5,7 +5,7 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v11** — Critical security & payment-integrity hardening across job acceptance, escrow, chat, and auth
+**Current version: v12** — Follow-up security audit: admin-key exposure, payment replay protection, direct-offer race, and API auth gaps
 
 ---
 
@@ -31,6 +31,19 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v12
+
+A verification pass over all 22 issues from the v11 audit (21 confirmed fixed) plus 8 new findings, all fixed. Full write-up: [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md). Highlights:
+
+| Area | Fix |
+|------|-----|
+| **Admin key exposure (critical)** | The admin panel config page rendered the real `ADMIN_SECRET_KEY` value in a client component — it shipped in the JS bundle. Now masked; rotate the key in your deployment |
+| **Payment replay** | `PATCH /api/payments` is now idempotent on `razorpayPaymentId` — replaying a verified payment payload can no longer mint duplicate escrow transactions |
+| **Direct-offer race** | Offer accept/decline now claims `offerStatus: "pending"` atomically (`findOneAndUpdate`, 409 on lost race); escrow is created only after a successful claim |
+| **API auth gaps** | `GET /api/bids` and `GET /api/milestones` now require authentication (they leaked bid messages and milestone financials to anonymous callers); milestone `start` now requires the assigned freelancer |
+| **AI quota** | `summarize-reviews` was the last AI route without a usage cap — now on the shared quota |
+| **Mock payments** | Mock payment verification (client-trusted amounts) is now rejected outright when `NODE_ENV === "production"` |
 
 ## What's in v11
 
@@ -316,13 +329,13 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 | GET | `/api/jobs/recommended` | Freelancer | Top 10 skill-matched open jobs |
 | GET | `/api/jobs/pricing-hint` | No | `?skills=` — market rate data |
 | POST | `/api/jobs/direct-offer` | Client | Fixed-price offer to freelancer |
-| PATCH | `/api/jobs/offer-response` | Freelancer | Accept or decline direct offer; declining now also creates an in-app notification for the client |
+| PATCH | `/api/jobs/offer-response` | Freelancer | Accept or decline direct offer — atomic as of v12, returns `409` if the offer was already responded to; declining also creates an in-app notification for the client |
 
 ### Bids
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/api/bids` | No | `?jobId=` filter |
+| GET | `/api/bids` | Bearer | `?jobId=` filter — protected as of v12 (bids include freelancer IDs and private messages) |
 | POST | `/api/bids` | Freelancer | Rejects bids on jobs that aren't `open`; 30-min cooldown; plan limit enforced atomically |
 | GET | `/api/bids/my` | Freelancer | Own bid history with job details (batched job lookup) |
 
@@ -358,7 +371,7 @@ For third-party integrations. Requires an `X-API-Key` header (generated via `/ap
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify. `PATCH` re-fetches the captured amount from Razorpay server-side rather than trusting the client |
+| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify. `PATCH` re-fetches the captured amount from Razorpay server-side, is idempotent on `razorpayPaymentId`, and rejects mock orders in production |
 | GET | `/api/transactions` | Bearer | Own transactions |
 | PATCH | `/api/transactions` | Client | Release or dispute escrow — both are atomic and only succeed if the transaction is currently `held` |
 | GET | `/api/disputes` | Bearer | Own disputes |
@@ -368,9 +381,9 @@ For third-party integrations. Requires an `X-API-Key` header (generated via `/ap
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/api/milestones` | No | `?jobId=` — list milestones for a job |
+| GET | `/api/milestones` | Bearer | `?jobId=` — list milestones for a job (protected as of v12) |
 | POST | `/api/milestones` | Client | Create milestones for a job |
-| PATCH | `/api/milestones` | Bearer | `action`: `start` / `submit` (freelancer) / `approve` (client) — approving now does a real partial escrow release matching the milestone's amount |
+| PATCH | `/api/milestones` | Bearer | `action`: `start` / `submit` (assigned freelancer) / `approve` (client) — approving does a real partial escrow release matching the milestone's amount |
 | GET | `/api/referrals` | Bearer | Referral code + stats. Credits now actually accrue when a referred freelancer completes their first job |
 
 ### Chat & Notifications
@@ -391,7 +404,7 @@ For third-party integrations. Requires an `X-API-Key` header (generated via `/ap
 
 ### AI Routes
 
-All require `Authorization: Bearer <token>` and share one free-plan rate limit (bid-strategy has its own, stricter one). Gemini key is server-side only.
+All require `Authorization: Bearer <token>` and every route is quota-capped on the free plan (bid-strategy has its own, stricter cap). Gemini key is server-side only.
 
 | Endpoint | Description |
 |----------|-------------|
@@ -457,9 +470,10 @@ All require `Authorization: Bearer <token>` and share one free-plan rate limit (
 
 ## Security
 
-Two audit reports:
+Three audit reports:
 - [`web/SECURITY_AUDIT.md`](web/SECURITY_AUDIT.md) — NoSQL injection, ReDoS, brute-force, IDOR sweep (v10)
 - [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md) — job acceptance, escrow, chat, OAuth, and payment-integrity sweep (v11)
+- [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md) — verification of all v11 fixes + admin-key exposure, payment replay, offer race, and API auth gaps (v12)
 
 Summary of protections in place:
 
@@ -503,7 +517,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `v11` / `main` / `master` | **Latest** — Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |
+| `v12` / `main` / `master` | **Latest** — Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
+| `v11` | Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |
 | `v10` | Admin panel, initial security hardening, Cloudinary CDN, Gemini AI |
 | `v9` | Role-based feeds, landing page animations, CRUD fixes |
 | `v7` | Royal Dark design system, horizontal carousels |

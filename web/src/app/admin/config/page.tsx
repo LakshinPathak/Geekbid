@@ -221,7 +221,7 @@ export default function AdminConfigPage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
           {[
-            { label: "Platform", value: "GeekBid v10" },
+            { label: "Platform", value: "GeekBid v12" },
             { label: "Environment", value: process.env.NODE_ENV ?? "development" },
             { label: "Admin Key", value: "••••••••" },
           ].map(i => (
