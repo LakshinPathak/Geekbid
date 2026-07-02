@@ -17,36 +17,43 @@ const toObjectIdFilter = (id) => {
   }
 };
 
-// --- READ: List jobs (with filtering, sorting, pagination) ---
+// --- READ: List jobs (public feed; invite-only jobs hidden from outsiders) ---
+// optionalAuth: anonymous callers see only public jobs; a signed-in caller also
+// sees their own invite-only jobs and any they were invited to; admins see all.
 
-app.get('/v1/jobs', asyncHandler(async (req, res) => {
+app.get('/v1/jobs', optionalAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
-  const { status, skills, clientId, sort, page = '1', limit = '20' } = req.query || {};
+  const { category } = req.query || {};
 
   const filter = {};
-  if (status) filter.status = status;
-  if (clientId) filter.clientId = clientId;
-  if (skills) {
-    const skillList = Array.isArray(skills) ? skills : skills.split(',');
-    filter.skillsRequired = { $in: skillList };
+  if (category && category !== 'all') filter.category = category;
+
+  const callerId = req.user ? req.user.userId : null;
+  const isAdmin = req.user ? req.user.role === 'admin' : false;
+
+  if (!isAdmin) {
+    const orClauses = [{ visibility: { $ne: 'invite_only' } }];
+    if (callerId) {
+      orClauses.push({ visibility: 'invite_only', clientId: callerId });
+      const invitedJobIds = await db.collection('invites').distinct('jobId', { freelancerId: callerId });
+      const invitedObjectIds = invitedJobIds
+        .map((jid) => { try { return new ObjectId(jid); } catch { return null; } })
+        .filter(Boolean);
+      if (invitedObjectIds.length > 0) {
+        orClauses.push({ visibility: 'invite_only', _id: { $in: invitedObjectIds } });
+      }
+    }
+    filter.$or = orClauses;
   }
 
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
-  const skip = (pageNum - 1) * limitNum;
-
-  let sortObj = { postedAt: -1 };
-  if (sort === 'price_high') sortObj = { startingPrice: -1 };
-  if (sort === 'price_low') sortObj = { startingPrice: 1 };
-  if (sort === 'deadline') sortObj = { deadlineAt: 1 };
-
-  const [jobs, total] = await Promise.all([
-    db.collection('jobs').find(filter).sort(sortObj).skip(skip).limit(limitNum).toArray(),
-    db.collection('jobs').countDocuments(filter),
-  ]);
+  const jobs = await db.collection('jobs')
+    .find(filter)
+    .sort({ featured: -1, postedAt: -1 })
+    .limit(100)
+    .toArray();
 
   const normalized = jobs.map((j) => ({ ...j, id: j._id.toString(), _id: j._id.toString() }));
-  return ok(res, { jobs: normalized }, { page: pageNum, limit: limitNum, total });
+  return ok(res, { jobs: normalized });
 }));
 
 // --- READ: Get single job by ID ---
@@ -59,45 +66,72 @@ app.get('/v1/jobs/:id', asyncHandler(async (req, res) => {
   return ok(res, { job: { ...job, id: job._id.toString(), _id: job._id.toString() } });
 }));
 
-// --- CREATE: Post a new job ---
+// --- CREATE: Post a new job (client-only; plan-limit enforced atomically) ---
+// Parity with the app's POST /api/jobs. The BFF fires the "job posted" email
+// from the returned job; the transactional write lives here.
+
+const VALID_CATEGORIES = ['ai_ml', 'web_dev', 'mobile', 'devops', 'security', 'data_eng', 'blockchain', 'design', 'qa', 'other'];
 
 app.post('/v1/jobs', requireAuth, asyncHandler(async (req, res) => {
-  const payload = req.body || {};
-
-  const titleCheck = validateString(payload.title, 'Title', { minLength: 5, maxLength: 200 });
-  if (!titleCheck.valid) return fail(res, 'ERR_VALIDATION', titleCheck.error, 422);
-
-  if (payload.description) {
-    const descCheck = validateString(payload.description, 'Description', { minLength: 0, maxLength: 5000 });
-    if (!descCheck.valid) return fail(res, 'ERR_VALIDATION', descCheck.error, 422);
+  if (req.user.role !== 'client') {
+    return fail(res, 'ERR_FORBIDDEN', 'Only clients can post jobs', 403);
   }
+  const body = req.body || {};
+  if (!body.title) return fail(res, 'ERR_VALIDATION', 'Title required', 400);
 
-  if (payload.startingPrice) {
-    const priceCheck = validatePositiveNumber(payload.startingPrice, 'Starting price');
-    if (!priceCheck.valid) return fail(res, 'ERR_VALIDATION', priceCheck.error, 422);
-  }
-
+  const jobCategory = VALID_CATEGORIES.includes(body.category) ? body.category : 'other';
   const db = await getDb();
+
+  // Plan-limit: free plan = 3 jobs/month, enforced with an atomic cap-and-increment.
+  const user = await db.collection('users').findOne({ _id: new ObjectId(req.user.userId) });
+  let jobQuotaReserved = false;
+  if (user && (user.plan ?? 'free') === 'free') {
+    const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+    if (new Date(limits.monthResetAt) < new Date()) {
+      await db.collection('users').updateOne({ _id: user._id }, {
+        $set: { 'planLimits.jobsPostedThisMonth': 0, 'planLimits.bidsPlacedThisMonth': 0, 'planLimits.monthResetAt': new Date(Date.now() + 30 * 24 * 3600000).toISOString() },
+      });
+    }
+    const capped = await db.collection('users').findOneAndUpdate(
+      { _id: user._id, $or: [{ 'planLimits.jobsPostedThisMonth': { $lt: 3 } }, { 'planLimits.jobsPostedThisMonth': { $exists: false } }] },
+      { $inc: { 'planLimits.jobsPostedThisMonth': 1 } }
+    );
+    if (!capped) return fail(res, 'ERR_FORBIDDEN', 'Free plan limit: 3 jobs/month. Upgrade to Pro for unlimited.', 403);
+    jobQuotaReserved = true;
+  }
+
+  const now = new Date().toISOString();
+  const validVisibility = ['public', 'invite_only'];
   const doc = {
     clientId: req.user.userId,
-    title: stripHtml(payload.title),
-    description: stripHtml(payload.description || ''),
-    skillsRequired: Array.isArray(payload.skillsRequired) ? payload.skillsRequired : [],
-    startingPrice: Number(payload.startingPrice || 0),
-    minimumPrice: Number(payload.minimumPrice || 0),
-    decayRatePerHour: Number(payload.decayRatePerHour || 0),
-    postedAt: new Date().toISOString(),
-    deadlineAt: payload.deadlineAt || new Date().toISOString(),
-    estimatedHours: Number(payload.estimatedHours || 0),
+    title: body.title,
+    description: body.description ?? '',
+    skillsRequired: body.skillsRequired ?? [],
+    startingPrice: Number(body.startingPrice),
+    minimumPrice: Number(body.minimumPrice),
+    decayRatePerHour: Number(body.decayRatePerHour),
+    estimatedHours: Number(body.estimatedHours),
+    postedAt: now,
+    deadlineAt: body.deadlineAt ?? new Date(Date.now() + 48 * 3600000).toISOString(),
     status: 'open',
-    visibility: payload.visibility || 'public',
-    createdAt: new Date().toISOString(),
+    category: jobCategory,
+    featured: false,
+    visibility: validVisibility.includes(body.visibility) ? body.visibility : 'public',
+    pricingMode: body.pricingMode === 'fixed' ? 'fixed' : 'adaptive',
+    bidCount: 0,
+    uniqueBidderCount: 0,
+    lastBidAt: null,
+    lowestCounterBid: null,
+    priceHistory: [{ price: Number(body.startingPrice), at: now, event: 'posted' }],
   };
 
   const result = await db.collection('jobs').insertOne(doc);
-  const created = { ...doc, id: result.insertedId.toString(), _id: result.insertedId.toString() };
+  const jobId = result.insertedId.toString();
+  if (!jobQuotaReserved) {
+    await db.collection('users').updateOne({ _id: new ObjectId(req.user.userId) }, { $inc: { 'planLimits.jobsPostedThisMonth': 1 } });
+  }
 
-  return ok(res, { job: created }, undefined, 201);
+  return ok(res, { job: { ...doc, id: jobId, _id: jobId } }, undefined, 201);
 }));
 
 // --- UPDATE: Edit job (title, description, skills, deadline — only if still open) ---
