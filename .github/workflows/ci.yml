@@ -1,0 +1,181 @@
+# ─────────────────────────────────────────────────
+# GeekBid — CI/CD Pipeline
+# ─────────────────────────────────────────────────
+name: GeekBid CI/CD
+
+on:
+  push:
+    branches: ["main", "master", "v10", "v11", "staging"]
+  pull_request:
+    branches: ["main", "master", "staging"]
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # ── Stage 1: Lint + Typecheck (Web only) ────────
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm ci
+
+      # Lint currently has ~50 pre-existing errors in the codebase (mostly
+      # `no-explicit-any` in older routes) that predate this pipeline fix and
+      # aren't part of this change. continue-on-error keeps the failure
+      # visible in the Actions UI (unlike `|| true`, which hid it entirely)
+      # without blocking build/backend/docker on a backlog this task didn't
+      # introduce. Remove continue-on-error once that backlog is cleared.
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+  # ── Stage 2: Build Validation ───────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+        env:
+          MONGODB_URI: mongodb://localhost:27017/geekbid
+          NEXTAUTH_SECRET: ci-test-secret-placeholder-at-least-32-characters
+          NEXTAUTH_URL: http://localhost:3000
+          RAZORPAY_KEY_ID: rzp_test_placeholder
+          RAZORPAY_KEY_SECRET: placeholder
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: rzp_test_placeholder
+          CLOUDINARY_CLOUD_NAME: placeholder
+          CLOUDINARY_API_KEY: "000000000000000"
+          CLOUDINARY_API_SECRET: placeholder
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: placeholder
+          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: geekbid_unsigned
+          GEMINI_API_KEY: placeholder
+          AI_MODEL: gemini-2.0-flash
+          ADMIN_SECRET_KEY: ci-test-admin-key
+          GOOGLE_CLIENT_ID: placeholder.apps.googleusercontent.com
+          GOOGLE_CLIENT_SECRET: placeholder
+          RESEND_API_KEY: placeholder
+
+  # ── Stage 3: Backend Validation ─────────────────
+  backend:
+    name: Backend Check
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Validate backend syntax
+        run: |
+          for f in services/*/index.js; do
+            echo "Checking $f"
+            node --check "$f"
+          done
+
+  # ── Stage 4: Docker Build (main/master/staging only) ────
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [build, backend]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        run: docker build -t geekbid-backend ./backend
+
+      # Build-args must cover every env var web/Dockerfile declares an ARG
+      # for (which in turn covers everything the app reads via process.env —
+      # see the comment above those ARGs). This mirrors the `build` job's
+      # env block above so both build paths exercise the same inputs.
+      - name: Build web Docker image
+        run: |
+          docker build -t geekbid-web ./web \
+            --build-arg MONGODB_URI=mongodb://localhost:27017/geekbid \
+            --build-arg NEXTAUTH_SECRET=ci-test-secret-placeholder-at-least-32-characters \
+            --build-arg NEXTAUTH_URL=http://localhost:3000 \
+            --build-arg GOOGLE_CLIENT_ID=placeholder.apps.googleusercontent.com \
+            --build-arg GOOGLE_CLIENT_SECRET=placeholder \
+            --build-arg RAZORPAY_KEY_ID=rzp_test_placeholder \
+            --build-arg RAZORPAY_KEY_SECRET=placeholder \
+            --build-arg NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_placeholder \
+            --build-arg CLOUDINARY_CLOUD_NAME=placeholder \
+            --build-arg CLOUDINARY_API_KEY=000000000000000 \
+            --build-arg CLOUDINARY_API_SECRET=placeholder \
+            --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=placeholder \
+            --build-arg NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=geekbid_unsigned \
+            --build-arg GEMINI_API_KEY=placeholder \
+            --build-arg AI_MODEL=gemini-2.0-flash \
+            --build-arg ADMIN_SECRET_KEY=ci-test-admin-key \
+            --build-arg RESEND_API_KEY=placeholder
+
+  # ── Stage 5: Deploy to Staging ──────────────────
+  deploy-staging:
+    name: Deploy Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to staging
+        run: |
+          echo "Deploy to staging — add Railway/Render/Fly.io commands here"
+          # npx @railway/cli@latest up --service web --environment staging
+          # npx @railway/cli@latest up --service backend --environment staging
+
+  # ── Stage 6: Deploy to Production ───────────────
+  deploy-production:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to production
+        run: |
+          echo "Deploy to production — add Railway/Render/Fly.io commands here"
+          # npx @railway/cli@latest up --service web --environment production
+          # npx @railway/cli@latest up --service backend --environment production

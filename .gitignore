@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────
+# GeekBid — .gitignore
+# Covers: Next.js (web/), Node.js (backend/)
+# ─────────────────────────────────────────────────
+
+# ──── Dependencies ────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ──── Environment Files (NEVER commit secrets) ────
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env*.local
+**/.env
+**/.env.local
+**/.env*.local
+
+# .env.example templates ARE committed
+!.env.example
+!**/.env.example
+
+# ──── Next.js (web/) ────
+.next/
+out/
+build/
+.vercel
+
+# ──── Testing / Coverage ────
+coverage/
+__snapshots__/
+
+# ──── TypeScript ────
+*.tsbuildinfo
+next-env.d.ts
+
+# ──── OS Files ────
+.DS_Store
+Thumbs.db
+*.pem
+
+# ──── Security — OAuth credential files ────
+client_secret*.json
+
+# ──── Debug Logs ────
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.pnpm-debug.log*
+*.log
+
+# ──── IDE / Editor ────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ──── Docker ────
+docker-compose.override.yml
+
+Geekbid-12/
+codebase-memory-mcp-main/
