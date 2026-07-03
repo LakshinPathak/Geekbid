@@ -5,7 +5,7 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v14** — Correctness & reliability fixes over v12 (exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks). Full write-up: [`V14_FIXES.md`](V14_FIXES.md).
+**Current version: v15** — Fixes every High/Medium finding from a full codebase audit that could be verified in-repo: atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting on all 8 AI routes + token refresh + the public v1 API, a token-refresh race fix, and a data-fetch waterfall removed. Full write-up: [`V15_FIXES.md`](V15_FIXES.md).
 
 ---
 
@@ -31,6 +31,22 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v15
+
+A full audit (security, bugs, architecture, feature-completeness, CI/CD) with every
+verifiable High/Medium finding fixed — **no feature or architecture changes**. Full
+detail: [`V15_FIXES.md`](V15_FIXES.md).
+
+| Area | Fix |
+|------|-----|
+| **AI quota race** | `checkAndConsumeAiQuota` and `bid-strategy`'s own counter now use one atomic `findOneAndUpdate` instead of read-then-write — closes a race that let concurrent requests exceed the free-plan AI cap |
+| **Milestone escrow race** | `PATCH /api/milestones` (`approve`) now atomically claims the milestone's release right before touching the transaction — closes a race that could double-release the same milestone's escrow |
+| **Rate limiting** | Added to all 8 `/api/ai/*` routes (per-user), `/api/auth/refresh` (per-IP), and the public `/api/v1/jobs` (per-API-key) — previously only login and admin-key-verify were throttled |
+| **Token refresh race** | `store.tsx`'s `silentRefresh()` now shares its in-flight promise instead of returning `null` to any request that raced the refresh window |
+| **Data-fetch waterfall** | `loadAllData()` no longer awaits `fetchJobs()`/`fetchBids()` sequentially before the parallel batch |
+| **`.env.example` drift** | Regenerated to match every var `web/Dockerfile` and CI actually require (was missing Cloudinary, Gemini, admin key, Resend) |
+| **No error boundary** | Added `web/src/app/error.tsx` + `loading.tsx` — previously zero existed anywhere in the app |
 
 ## What's in v14
 
@@ -139,7 +155,7 @@ A full audit of the bid → accept → escrow → chat pipeline, plus a system-w
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 15 (App Router), React 19, TypeScript |
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
 | **Styling** | Tailwind CSS v4, Royal Dark design system, Georgia serif + Inter sans |
 | **UI Components** | Radix UI primitives, Lucide icons, Sonner toasts |
 | **State** | React Context + useCallback (no external state library) |
@@ -159,7 +175,7 @@ A full audit of the bid → accept → escrow → chat pipeline, plus a system-w
 
 ```
 GeekBid/
-├── web/                          ← Next.js 15 app (port 3000)
+├── web/                          ← Next.js 16 app (port 3000)
 │   ├── src/app/                    16 pages + ~50 API routes
 │   │   ├── admin/                  Admin panel (7 sections)
 │   │   └── api/                    REST API routes
@@ -226,7 +242,7 @@ cd Geekbid
 
 ```bash
 cd web
-cp .env.local.example .env.local   # or create manually
+cp .env.example .env.local   # then fill in the values below
 ```
 
 `web/.env.local`:
@@ -474,6 +490,7 @@ All require `Authorization: Bearer <token>` and every route is quota-capped on t
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
 | `RAZORPAY_KEY_ID` | No | Payments (mock mode if absent) |
 | `RAZORPAY_KEY_SECRET` | No | Razorpay secret |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | No | Same value as `RAZORPAY_KEY_ID`, exposed to the browser for Razorpay Checkout |
 | `RESEND_API_KEY` | No | Transactional email |
 | `ALLOW_SEED` | No | Set to `true` to allow `/api/seed` in production. Never a substitute for admin auth — see [Seed the database](#4-seed-the-database) |
 
@@ -481,10 +498,11 @@ All require `Authorization: Bearer <token>` and every route is quota-capped on t
 
 ## Security
 
-Three audit reports:
+Four audit reports:
 - [`web/SECURITY_AUDIT.md`](web/SECURITY_AUDIT.md) — NoSQL injection, ReDoS, brute-force, IDOR sweep (v10)
 - [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md) — job acceptance, escrow, chat, OAuth, and payment-integrity sweep (v11)
 - [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md) — verification of all v11 fixes + admin-key exposure, payment replay, offer race, and API auth gaps (v12)
+- [`V15_FIXES.md`](V15_FIXES.md) — full security/bug/architecture/feature/CI-CD audit; atomic quota & escrow races closed, rate limiting extended (v15)
 
 Summary of protections in place:
 
@@ -492,13 +510,14 @@ Summary of protections in place:
 |-------|-----------|
 | Auth | JWT (jose), bcrypt 12 rounds, HttpOnly refresh cookies |
 | OAuth | CSRF `state` nonce validated on Google login callback; tokens handed off via one-time exchange code, never a URL query string |
-| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; shared quota across all AI routes |
+| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; 10/min per user on every AI route; 20/15min per IP on token refresh; 60/min per key on the public v1 API |
 | Input sanitization | `sanitizeString`, `sanitizeObjectId`, `sanitizeSearchRegex` on all user input |
 | NoSQL injection | `$`-prefix keys stripped; all inputs forced to primitive types before DB queries |
 | ReDoS | `sanitizeSearchRegex()` escapes all regex metacharacters before `$regex` use |
 | IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT), including job cancel/complete |
 | Chat authorization | `/api/chat/rooms` and `/api/chat/messages` require the caller to be a participant |
-| Escrow integrity | Job acceptance and escrow release/dispute use atomic, state-guarded updates — no read-then-write races |
+| Escrow integrity | Job acceptance, escrow release/dispute, and milestone partial-release all use atomic, state-guarded updates — no read-then-write races |
+| Quota integrity | Free-plan AI, job, and bid caps are all atomic `findOneAndUpdate` checks — no read-then-write races |
 | Payment verification | Payment amounts are verified against Razorpay's captured amount server-side, never trusted from the client |
 | ObjectId | All `new ObjectId()` calls guarded by `sanitizeObjectId()` — returns 400 not 500 |
 | Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA); `/api/seed` requires admin auth too |
@@ -528,7 +547,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `v14` | **Latest** — correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
+| `v15` | **Latest** — audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
+| `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
 | `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only, not the recommended path) |
 | `v12` / `main` / `master` | Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
 | `v11` | Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |

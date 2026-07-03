@@ -1,6 +1,8 @@
-# GeekBid — Web App (Next.js 15)
+# GeekBid — Web App (Next.js 16)
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
+
+**v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
 
 **v12** — Follow-up security pass: admin-key removed from client bundle, payment verification made idempotent (no replay), direct-offer accept made atomic, `GET /api/bids` + `GET /api/milestones` now require auth, all AI routes quota-capped. See [`../geekbid_review_2026-07-02.md`](../geekbid_review_2026-07-02.md).
 
@@ -12,7 +14,7 @@ The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
 | | |
 |--|--|
-| Framework | Next.js 15 (App Router, Turbopack) |
+| Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 (`@import "tailwindcss"`) |
 | Design system | Royal Dark — `#080b14` bg · `#c9a84c` gold · `#f0e8d4` ivory · Georgia serif + Inter sans |
@@ -35,6 +37,7 @@ Create `web/.env.local`:
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/geekbid?retryWrites=true&w=majority
 NEXTAUTH_SECRET=any-random-32-char-string
 NEXTAUTH_URL=http://localhost:3000
+ADMIN_SECRET_KEY=any-random-string             # gates /admin and creating new admin users
 
 # Cloudinary (v10) — create free account at cloudinary.com
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -51,7 +54,11 @@ GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxx
 RAZORPAY_KEY_ID=rzp_test_xxx
 RAZORPAY_KEY_SECRET=xxx
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
+RESEND_API_KEY=re_your_key                     # transactional email
 ```
+
+> This file must stay in sync with `web/.env.example`, `web/Dockerfile`'s `ARG` list, and the `build` job env block in `.github/workflows/ci.yml` — see the note at the bottom of `.env.example`.
 
 > **Cloudinary setup:** Create an upload preset named `geekbid_unsigned` (unsigned mode) on your Cloudinary dashboard.
 
@@ -140,7 +147,8 @@ src/
     ├── mongodb.ts      Atlas connection singleton
     ├── email.ts        Nodemailer — 10 transactional templates
     ├── utils.ts        getCurrentPrice, formatMoney, SKILL_TAXONOMY, JOB_CATEGORIES
-    └── data.ts         Static seed/reference data
+    ├── ai-plan-limit.ts  Atomic free-plan AI usage quota (v15)
+    └── sanitize.ts     Input sanitization + rate limiting (checkRateLimit, sanitizeObjectId, …)
 ```
 
 ## v10 Feature Details
