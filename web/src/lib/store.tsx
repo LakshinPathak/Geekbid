@@ -182,6 +182,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  localStorage.removeItem(STORAGE_KEY_TOKEN);
  localStorage.removeItem(STORAGE_KEY_EXPIRES);
  localStorage.removeItem(STORAGE_KEY_USER);
+ // Otherwise a different admin logging into the same browser tab bypasses
+ // AdminKeyGate — this flag is per-login, not per-browser-session.
+ sessionStorage.removeItem("admin_verified");
  setAuth({ isLoggedIn: false, accessToken: null, expiresAt: null });
  setCurrentUser(null);
  if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
