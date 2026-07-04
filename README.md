@@ -5,7 +5,7 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v15** — Fixes every High/Medium finding from a full codebase audit that could be verified in-repo: atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting on all 8 AI routes + token refresh + the public v1 API, a token-refresh race fix, and a data-fetch waterfall removed. Full write-up: [`V15_FIXES.md`](V15_FIXES.md).
+**Current version: v16** — Premium visual overhaul of the landing page and both feed dashboards, dual-role accounts (one login can be both a client and a freelancer), an OAuth sign-in bug fix, and a round of bug fixes found via live testing (job detail layout, QuickBid floor violation, a feed duplicate-key crash). See [What's in v16](#whats-in-v16) below.
 
 ---
 
@@ -31,6 +31,71 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v16
+
+Three threads: a premium visual redesign of the landing page and both feed dashboards,
+a new dual-role account feature, and a batch of bug fixes found by actually clicking
+through the app after the redesign (screenshots + live Playwright verification, not just
+`tsc`/lint).
+
+### Dual-role accounts + OAuth sign-in fix
+
+Previously an account was locked to a single role forever — registering (password or
+Google) with an email that already had an account always failed or, for Google sign-in,
+silently logged you into your *original* role with zero warning, even if you'd deliberately
+picked the other one.
+
+| Change | Detail |
+|---|---|
+| **`User.roles: Role[]`** | New array alongside the existing `role` (the *active* role). Registering — by password or Google — with an email that already has an account now **adds** the newly-requested role instead of erroring or silently ignoring it, when it isn't already one of the account's roles |
+| **Ownership check on the password path** | Adding a role to an existing password account requires that account's correct password — otherwise anyone could bolt a role onto a stranger's account just by knowing their email |
+| **`POST /api/auth/switch-role`** | Flips which role is active for an account holding more than one, and mints a fresh token pair for it (the JWT bakes `role` in at sign time, so this can't be a bare DB update) |
+| **Navbar role switcher** | Shows a "Switch to {role}" item once an account holds more than one role |
+| **Fixed a related crash risk** | Password login against a Google-only account (`password: null`) now returns a clean error instead of throwing inside bcrypt's `compareSync` |
+
+Full research trail (JWT/auth internals, every one of the 30+ backend role checks and
+17+ frontend role branches touched by this) is in [`oauthfix_plan.md`](oauthfix_plan.md).
+
+### Landing page & feed dashboard redesign
+
+- Landing page (`web/src/app/page.tsx`, split from a 998-line monolith into ~15 focused
+  components under `web/src/components/landing/`): gradient-mesh hero, 3D tilt product
+  cards, glassmorphism panels, scroll progress bar, slot-machine stat counters, FAQ
+  accordion. A "magnetic button" hover effect was built, then removed after it produced a
+  janky rubber-band wobble in testing — plain buttons instead.
+- Both feed dashboards (17 files under `web/src/components/feed/`) — glass-panel cards
+  with tilt/glow effects, animated KPI count-up counters, skeleton loading states, empty
+  states, a sliding tab indicator, GeekScore rings, medal rank badges, an advanced-filter
+  drawer, and header ambient effects.
+- Modal exit animations (`DirectHireModal`, `InviteToBidModal`, `MessageFreelancerModal`)
+  — a real closing transition instead of an instant vanish, using new CSS keyframes and an
+  `isClosing` state flag (no new dependency).
+- All of it is CSS + `useRef`-driven (custom properties written imperatively, never React
+  state, for 60fps) rather than a new animation library — see
+  [`UI_ENHANCEMENT_PLAN.md`](UI_ENHANCEMENT_PLAN.md) for the bklit/motion.dev/Anime.js
+  research behind that call (verdict: add a charting library only if real charts are
+  needed later; skip the animation libraries, the hand-rolled approach already covers it).
+
+### Bug fixes
+
+| Bug | Fix |
+|---|---|
+| **QuickBid could violate the price floor** | `handleQuickBid` computed 2% below the *current* decayed price with no floor clamp — on a job already at/near its floor this asked for a price below `minimumPrice` and got rejected. Now clamps to the floor client-side, **and** `POST /api/bids` now enforces the same floor/ceiling server-side (previously unenforced there at all — a direct API call could place a bid below the client's floor) |
+| **Counter-Bid panel looked broken at the floor price** | Once a job decays to its floor, `current === minimumPrice`, collapsing the Aggressive/Competitive suggestions, slider, and position bar to one meaningless point. Now shows a plain explanatory message and keeps just the price input live (a counter-bid at the floor is still a distinct action from Accept) |
+| **`$` overlapping the counter-bid input** | A plain CSS rule's specificity was beating the Tailwind padding utility — forced with `pl-8!` |
+| **Feed filter dropdowns didn't close** | Skills/Sort dropdowns on the freelancer feed had no outside-click or Escape handling at all |
+| **Job detail page too narrow** | Container widened (`max-w-6xl` → `max-w-[1600px]`) to use the available width instead of leaving large dead margins on wide screens |
+| **Duplicate-key React crash on the feed** | `ActiveBidsTracker`'s client-side fallback mapped every individual bid to a row without deduplicating by job — two bids on the same job (e.g. after using AI Bid Strategist's "Apply" suggestion) produced two rows sharing one React key. Now dedupes to one row per job, matching the server route's existing behavior |
+| **`admin_verified` not cleared on logout** | A different client logging into the same browser tab could inherit the previous session's admin-panel gate bypass |
+
+### Planning docs (not yet implemented)
+
+Two larger initiatives were researched and scoped but intentionally left as review-first
+plans rather than shipped code: [`SAAS_SUBSCRIPTION_PLAN.md`](SAAS_SUBSCRIPTION_PLAN.md) +
+[`SAAS_CRUD_IMPLEMENTATION.md`](SAAS_CRUD_IMPLEMENTATION.md) (a proposed Free/Plus/Premium
+subscription-tier redesign with full schema/route-level implementation detail) and the
+UI-library research above. Both need a decision before any of it lands in code.
 
 ## What's in v15
 
@@ -337,13 +402,14 @@ All routes live under `/api/`. Protected routes require `Authorization: Bearer <
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth` | No | `{action:"register"|"login", ...}` — `register` only allows `role: freelancer|client` |
+| POST | `/api/auth` | No | `{action:"register"|"login", ...}` — `register` only allows `role: freelancer|client`. Registering with an email that already has an account **adds** the requested role to it (password must match) instead of erroring, if that role isn't already on the account |
 | GET | `/api/auth/me` | Bearer | Current user profile |
 | POST | `/api/auth/refresh` | Cookie | Silent token refresh |
 | POST | `/api/auth/logout` | Bearer | Clears refresh cookie |
+| POST | `/api/auth/switch-role` | Bearer | `{role}` — flips the active role for an account holding more than one, mints a fresh token pair for it. `403` if the account doesn't have that role |
 | GET | `/api/auth/google` | No | `?role=freelancer|client` — sets a CSRF state cookie before redirecting to Google |
 | GET | `/api/auth/google/callback` | No | Validates the CSRF state, then redirects with a one-time `?google_exchange=` code (never the token itself) |
-| POST | `/api/auth/google/exchange` | No | `{code}` → `{accessToken, user, expiresIn}` — redeems the one-time code from the callback; single-use, 60s TTL |
+| POST | `/api/auth/google/exchange` | No | `{code}` → `{accessToken, user, expiresIn, roleAdded}` — redeems the one-time code from the callback; single-use, 60s TTL. `roleAdded` is `true` if this sign-in just added a new role to an existing account rather than switching to one already held |
 
 ### Jobs
 
@@ -547,7 +613,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch | Description |
 |--------|-------------|
-| `v15` | **Latest** — audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
+| `v16` | **Latest** — landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
+| `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
 | `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only, not the recommended path) |
 | `v12` / `main` / `master` | Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |

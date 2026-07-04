@@ -2,6 +2,8 @@
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
+**v16** — Landing page + feed dashboard visual redesign (glass panels, tilt effects, animated counters, skeleton/empty states), dual-role accounts (`User.roles[]` + `POST /api/auth/switch-role`, so one login can be both a client and a freelancer), an OAuth sign-in bug fix (Google login no longer silently mislogs you into the wrong role), and bug fixes found via live testing: QuickBid could ask for a price below the job floor (now clamped client-side and enforced server-side in `POST /api/bids`), a feed duplicate-key React crash, and the job detail page's layout. Full write-up: [`../README.md`](../README.md#whats-in-v16), research trail: [`../oauthfix_plan.md`](../oauthfix_plan.md).
+
 **v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
 
 **v12** — Follow-up security pass: admin-key removed from client bundle, payment verification made idempotent (no replay), direct-offer accept made atomic, `GET /api/bids` + `GET /api/milestones` now require auth, all AI routes quota-capped. See [`../geekbid_review_2026-07-02.md`](../geekbid_review_2026-07-02.md).
