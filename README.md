@@ -25,11 +25,13 @@ OAuth sign-in bug fix, and a round of bug fixes found via live testing. See
 9. [Quick Start](#quick-start)
 10. [Docker](#docker)
 11. [Microservice Backend (experimental)](#microservice-backend-experimental)
-12. [Environment Variables](#environment-variables)
-13. [Security](#security)
-14. [Troubleshooting](#troubleshooting)
-15. [Version History](#version-history)
-16. [License](#license)
+12. [Deployment (Vercel)](#deployment-vercel)
+13. [CI/CD Pipeline](#cicd-pipeline)
+14. [Environment Variables](#environment-variables)
+15. [Security](#security)
+16. [Troubleshooting](#troubleshooting)
+17. [Version History](#version-history)
+18. [License](#license)
 
 ---
 
@@ -673,6 +675,52 @@ npm run start:chat
 | Payments | 3005 |
 | Notifications | 3006 |
 | Chat (Socket.IO) | 3007 |
+
+---
+
+## Deployment (Vercel)
+
+The live app is `web/` — a standard Next.js project living in a subdirectory of this
+monorepo. Vercel is the recommended host: connecting its GitHub App means every push to
+`main`/`master` auto-deploys to production and every pull request gets its own preview
+URL, with no custom deploy scripting or GitHub Actions secrets required for deployment
+itself (see [CI/CD Pipeline](#cicd-pipeline) below for why that workflow file has no
+deploy job).
+
+**One-time setup:**
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import the `LakshinPathak/Geekbid` GitHub repo (installs Vercel's GitHub App the first time — this is the "necessary GitHub-side" step; it can't be scripted from the repo itself, it's a one-time OAuth grant through Vercel's UI).
+2. In the import screen, set **Root Directory** to `web` (this is a monorepo — the Next.js app isn't at the repo root). Vercel auto-detects the framework and build/output settings correctly once the root is set.
+3. Add every variable from [Environment Variables](#environment-variables) under Project Settings → Environment Variables, for both **Production** and **Preview**. Two need real (not localhost) values once deployed:
+   - `NEXTAUTH_URL` → your production domain, e.g. `https://geekbid.vercel.app`
+   - If using Google login, add the deployed callback URL to Google Cloud Console → Credentials → Authorized redirect URIs: `https://<your-domain>/api/auth/google/callback`
+4. Click Deploy. From then on:
+   - Push to `main`/`master` → production deploy
+   - Open a PR → preview deploy with its own URL, posted as a PR comment
+
+No Vercel API token or project ID needs to live in this repo or in GitHub Actions
+secrets — the GitHub App integration handles the connection entirely on Vercel's side.
+
+---
+
+## CI/CD Pipeline
+
+`.github/workflows/ci.yml` runs on every push to `main`/`master`/`v*` and every PR
+targeting `main`/`master`. It's a quality gate that runs independently of the Vercel
+deploy above — Vercel does its own build/deploy on push regardless of whether this
+workflow passes, so treat a red check here as "don't merge this," not "the site is down."
+
+| Job | What it checks |
+|---|---|
+| **Code Quality** | `npm run lint` (currently non-blocking — see the file's comment on the pre-existing lint backlog) and `npx tsc --noEmit` |
+| **Build** | A real `next build` against placeholder env values, to catch build-time regressions (missing imports, broken routes, etc.) before they reach Vercel |
+| **Backend Check** | `node --check` syntax validation on every experimental microservice's entry file |
+| **Docker Build** | Builds both the `web` and `backend` Docker images (main/master only) — a sanity check that Docker-based self-hosting stays possible, not part of the actual deploy path |
+
+To require these checks before merging (branch protection), go to the repo's Settings →
+Branches → Add rule for `main`, and require the `Code Quality` / `Build` / `Docker Build`
+status checks to pass. Not enabled by default today — direct pushes to `main` are still
+allowed.
 
 ---
 
