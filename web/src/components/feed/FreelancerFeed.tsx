@@ -372,7 +372,7 @@ export default function FreelancerFeed() {
  <div className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] mb-5 overflow-visible">
 
  {/* Main row */}
- <div className="flex items-center gap-2 px-4 py-3">
+ <div className="flex flex-wrap items-center gap-2 px-4 py-3">
 
  {/* Search */}
  <div className="relative flex-1 min-w-0">
