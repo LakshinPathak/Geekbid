@@ -162,7 +162,7 @@ export default function ClientFeed() {
  <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
  <div className="feed-header-mesh" aria-hidden="true" />
  <div className="feed-header-shimmer-line" aria-hidden="true" />
- <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
+ <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
  <div>
  <div className="flex items-center gap-2.5 mb-1">
  <Settings className="h-5 w-5 text-[#c9a84c]" />
@@ -195,7 +195,7 @@ export default function ClientFeed() {
  </div>
 
  {/* ── Body ────────────────────────────────────────────────── */}
- <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+ <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-8">
 
  {/* 1. Spend Analytics */}
  <SpendAnalytics
