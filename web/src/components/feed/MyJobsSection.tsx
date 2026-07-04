@@ -7,10 +7,12 @@ import {
 } from "@/lib/utils";
 import { getJobHealth, getCompetitionBadge } from "./feed-helpers";
 import {
- Briefcase, Users, Clock, TrendingDown, ChevronDown,
+ Users, Clock, TrendingDown, ChevronDown,
  Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import EmptyState from "./EmptyState";
+import { usePointerFine, useTilt3D } from "@/components/landing/hooks";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface User {
@@ -110,6 +112,9 @@ function MyJobCard({
  job: Job; bids: Bid[]; users: User[]; now: Date; onAcceptBest: (id: string) => void;
 }) {
  const [bidsOpen, setBidsOpen] = useState(false);
+ const cardRef = useRef<HTMLDivElement>(null);
+ const isPointerFine = usePointerFine();
+ useTilt3D(cardRef, isPointerFine);
  const jobId = job.id ?? job._id ?? "";
  const current = getCurrentPrice(job, now);
  const savings = Math.max(0, job.startingPrice - current);
@@ -139,7 +144,13 @@ function MyJobCard({
  "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]";
 
  return (
- <div className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-all duration-200 overflow-hidden">
+ <div
+ ref={cardRef}
+ className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate rounded-[6px] border border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-all duration-200 overflow-hidden relative"
+ >
+ {job.status === "open" && (
+ <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#4caf7d] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
+ )}
 
  {/* ── Card body (links to job detail) ───────────────────── */}
  <Link href={`/jobs/${jobId}`} className="block p-5">
@@ -284,6 +295,8 @@ function MyJobCard({
 // ── Main: My Posted Jobs section ───────────────────────────────────
 export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: Props) {
  const [filter, setFilter] = useState<"all" | "hot" | "nobids">("all");
+ const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+ const [indicator, setIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
  const scrollRef = useRef<HTMLDivElement>(null);
  const [canScrollLeft, setCanScrollLeft] = useState(false);
  const [canScrollRight, setCanScrollRight] = useState(false);
@@ -327,6 +340,11 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  scrollRef.current?.scrollBy({ left: dir === "right" ? CARD_W * 2 : -CARD_W * 2, behavior: "smooth" });
  };
 
+ useEffect(() => {
+ const el = tabRefs.current[filter];
+ if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+ }, [filter, jobs.length]);
+
  const onMouseDown = (e: React.MouseEvent) => {
  const el = scrollRef.current; if (!el) return;
  setIsDragging(true);
@@ -348,16 +366,12 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  <span className="w-3 h-px bg-[#c9a84c] inline-block" />
  My Posted Jobs
  </h2>
- <div className="card border-dashed p-10 flex flex-col items-center justify-center gap-4 text-center">
- <div className="w-14 h-14 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center">
- <Briefcase className="h-6 w-6 text-[#c9a84c]" />
- </div>
- <div>
- <p className="font-serif font-normal text-base text-[#f0e8d4] mb-1">No active jobs yet</p>
- <p className="text-[12px] text-[#a8997e] max-w-xs font-sans">
- Post your first job and freelancers will start bidding immediately.
- </p>
- </div>
+ <div className="card border-dashed flex flex-col items-center gap-2 pb-8">
+ <EmptyState
+ variant="jobs"
+ title="No active jobs yet"
+ subtitle="Post your first job and freelancers will start bidding immediately."
+ />
  <Link href="/post-job">
  <button className="flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
  <Plus className="h-4 w-4" />
@@ -431,7 +445,12 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  </div>
 
  {/* ── Filter tabs ─────────────────────────────────────────── */}
- <div className="flex items-center gap-2">
+ <div className="relative flex items-center gap-2">
+ <span
+ className="feed-tab-indicator absolute rounded-[3px] bg-[#c9a84c] -z-0"
+ style={{ left: indicator.left, width: indicator.width, top: 0, bottom: 0 }}
+ aria-hidden="true"
+ />
  {[
  { key: "all", label: `All (${jobs.length})` },
  { key: "hot", label: `🔥 Hot (${hotCount})` },
@@ -439,10 +458,11 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  ].map(tab => (
  <button
  key={tab.key}
+ ref={(el) => { tabRefs.current[tab.key] = el; }}
  onClick={() => { setFilter(tab.key as typeof filter); scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" }); }}
- className={`px-3 py-1.5 rounded-[3px] text-[11px] font-sans font-semibold transition-colors border ${
+ className={`relative z-10 px-3 py-1.5 rounded-[3px] text-[11px] font-sans font-semibold transition-colors border ${
  filter === tab.key
- ? "bg-[#c9a84c] text-[#080b14] border-transparent"
+ ? "text-[#080b14] border-transparent"
  : "bg-transparent text-[#a8997e] border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c]"
  }`}
  >
@@ -511,7 +531,12 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  )}
  </div>
  ) : (
- <p className="text-center text-sm text-[#a8997e] py-6 font-sans">No jobs match this filter.</p>
+ <EmptyState
+ variant="jobs"
+ title="No jobs match this filter"
+ ctaLabel="Reset filter"
+ onCta={() => setFilter("all")}
+ />
  )}
  </div>
  );

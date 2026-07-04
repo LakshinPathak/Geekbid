@@ -22,7 +22,7 @@ export default function MarketIntel({
  if (jobCount === 0) return null;
 
  return (
- <div className="glass-panel p-4">
+ <div className="glass-panel feed-glass-card p-4">
  <div className="flex items-center gap-2 mb-3">
  <TrendingUp className="h-4 w-4 text-[#c9a84c]" />
  <h2 className="text-xs font-semibold text-[#a8997e] uppercase tracking-wider">

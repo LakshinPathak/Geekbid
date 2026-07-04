@@ -43,7 +43,7 @@ export default function JobHealthMatrix({ jobs, now, onAccept }: JobHealthMatrix
 
  return (
  <Link key={jobId} href={`/jobs/${jobId}`} className="shrink-0 w-[140px] group">
- <div className={`glass-panel rounded-[3px] p-3.5 border ${borderColor} transition-all flex flex-col gap-2`}>
+ <div className={`glass-panel feed-glass-card rounded-[3px] p-3.5 border ${borderColor} transition-all flex flex-col gap-2`}>
  {/* Health dot + label */}
  <div className="flex items-center gap-1.5">
  <span className={`w-2 h-2 rounded-full ${health.dot}`} />

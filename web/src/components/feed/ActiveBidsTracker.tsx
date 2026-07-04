@@ -29,7 +29,7 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  <span className="text-[11px] text-[#a8997e] font-medium">{bids.length} pending</span>
  </div>
 
- <div className="glass-panel rounded-[3px] overflow-hidden divide-y divide-[rgba(201,168,76,0.15)]">
+ <div className="glass-panel feed-glass-card rounded-[3px] overflow-hidden divide-y divide-[rgba(201,168,76,0.15)]">
  {bids.map(bid => {
  const statusConfig =
  bid.status === "winning" ? {
@@ -58,7 +58,13 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  : 0;
 
  return (
- <Link key={bid.jobId} href={`/jobs/${bid.jobId}`} className="flex items-center gap-4 px-4 py-3.5 hover:bg-[#111625] transition-colors group">
+ <Link
+ key={bid.jobId}
+ href={`/jobs/${bid.jobId}`}
+ className={`flex items-center gap-4 px-4 py-3.5 hover:bg-[#111625] transition-colors group ${
+ bid.status === "winning" ? "feed-pulse-win" : bid.status === "outbid" ? "feed-shake-outbid" : ""
+ }`}
+ >
  {/* Status icon */}
  <div className={`w-7 h-7 rounded-[3px] ${statusConfig.bg} border ${statusConfig.border} flex items-center justify-center shrink-0`}>
  <statusConfig.icon className={`h-3.5 w-3.5 ${statusConfig.color}`} />
@@ -72,7 +78,11 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  <div className="flex items-center gap-2 mt-0.5">
  <span className={`text-[10px] font-semibold ${statusConfig.color}`}>{statusConfig.label}</span>
  <span className="text-[10px] text-[#a8997e]">·</span>
- <span className="text-[10px] text-[#a8997e] font-medium">Rank #{bid.rank}</span>
+ <span className={`text-[10px] font-semibold ${
+ bid.rank === 1 ? "text-[#c9a84c]" : bid.rank === 2 ? "text-[#d8d8d8]" : bid.rank === 3 ? "text-[#e0a06e]" : "text-[#a8997e] font-medium"
+ }`}>
+ {bid.rank === 1 ? "🥇 " : bid.rank === 2 ? "🥈 " : bid.rank === 3 ? "🥉 " : ""}Rank #{bid.rank}
+ </span>
  {cooldownMins > 0 && (
  <>
  <span className="text-[10px] text-[#a8997e]">·</span>

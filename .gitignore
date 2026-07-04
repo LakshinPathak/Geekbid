@@ -69,3 +69,7 @@ docker-compose.override.yml
 
 Geekbid-12/
 codebase-memory-mcp-main/
+
+# ──── Local verification scratch (screenshots, MCP tool output) ────
+.playwright-mcp/
+/*.png

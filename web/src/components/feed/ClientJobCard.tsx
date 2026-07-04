@@ -48,7 +48,10 @@ export default function ClientJobCard({ job, now, topBidders = [], isOwn = false
 
  return (
  <Link href={`/jobs/${jobId}`} className="block group">
- <div className="glass-panel p-5 transition-all duration-200 h-full flex flex-col gap-4">
+ <div className="glass-panel feed-glass-card feed-card-border-rotate p-5 transition-all duration-200 h-full flex flex-col gap-4 relative">
+ {job.status === "open" && (
+ <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#4caf7d] animate-pulse" aria-hidden="true" />
+ )}
 
  {/* ── Header: badges + title ─────────────────────────────────────── */}
  <div>

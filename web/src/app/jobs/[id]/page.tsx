@@ -215,6 +215,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  // P1: Smart bid suggestions
  const aggressiveBid = Math.round(job.minimumPrice + (current - job.minimumPrice) * 0.3);
  const competitiveBid = Math.round(job.minimumPrice + (current - job.minimumPrice) * 0.6);
+ // Once the price has decayed to the floor, current === minimumPrice, so every
+ // suggestion/slider/position-bar computation above collapses to the same single
+ // point — there's no room left to counter below the accept price. Show a plain
+ // message instead of a form that looks interactive but can't actually do anything.
+ const atFloor = current <= job.minimumPrice;
 
  // P0: Cooldown SVG ring
  const RING_R = 28;
@@ -290,7 +295,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {victoryData && (
  <AuctionVictoryModal data={victoryData} onClose={() => setVictoryData(null)} />
  )}
- <div className="bg-[#080b14] max-w-6xl mx-auto px-4 sm:px-6 py-8">
+ <div className="bg-[#080b14] max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
  <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Feed
  </Link>
@@ -856,6 +861,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <MessageSquare className="h-4 w-4 text-[#c9a84c]" /> Counter-Bid
  </p>
 
+ {atFloor ? (
+ <p className="text-[#a8997e] text-[13px] leading-relaxed p-3 rounded-[6px] bg-[#0d1120] border border-[rgba(201,168,76,0.15)]">
+ This job has decayed to its floor price of <span className="text-[#c9a84c] font-medium">{formatMoney(job.minimumPrice)}</span> — accepting and countering at the floor now do the same thing. You can still submit a counter-bid at the floor below if you&apos;d rather have the client review it instead of accepting outright.
+ </p>
+ ) : (
+ <>
  {/* P5: Smart bid suggestion chips */}
  <div>
  <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
@@ -921,16 +932,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  </div>
  )}
+ </>
+ )}
 
  {/* Price text input */}
  <div className="relative">
- <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#a8997e] text-sm">$</span>
+ <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#a8997e] text-sm pointer-events-none">$</span>
  <input
  type="number"
  placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
  value={counterPrice}
  onChange={e => { setCounterPrice(e.target.value); setCounterError(""); }}
- className="glass-input w-full h-11 pl-8 pr-4 font-heading text-lg"
+ className="glass-input w-full h-11 pl-8! pr-4 font-heading text-lg"
  />
  </div>
 

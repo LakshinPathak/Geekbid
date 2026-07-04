@@ -163,6 +163,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
 
             const isHighMatch = matchScore >= 75;
             const isMidMatch = matchScore >= 50;
+            const isNew = elapsedHrs < 24;
 
             // Decay progress
             const priceRange = job.startingPrice - job.minimumPrice;
@@ -176,7 +177,12 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                 style={{ width: 272, scrollSnapAlign: "start" }}
                 draggable={false}
               >
-                <div className="card h-full flex flex-col gap-3 p-4 hover:border-[rgba(201,168,76,0.40)] transition-colors duration-200">
+                <div className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(201,168,76,0.40)] transition-colors duration-200 relative">
+                  {isNew && (
+                    <span className="absolute -top-1.5 -right-1.5 h-5 px-1.5 rounded-[3px] bg-[#c9a84c] text-[#050810] text-[9px] font-bold flex items-center justify-center feed-badge-pop z-10">
+                      NEW
+                    </span>
+                  )}
 
                   {/* Row 1: match badge + comp label */}
                   <div className="flex items-center justify-between">

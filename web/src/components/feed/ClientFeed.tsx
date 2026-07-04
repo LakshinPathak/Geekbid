@@ -49,6 +49,7 @@ export default function ClientFeed() {
  const [dashboard, setDashboard] = useState<ClientDashboard | null>(null);
  const [marketIntel, setMarketIntel] = useState<MarketIntelData | null>(null);
  const [loading, setLoading] = useState(true);
+ const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
  // ── Auth guard ────────────────────────────────────────────────
  useEffect(() => {
@@ -69,6 +70,7 @@ export default function ClientFeed() {
  // silent — falls back to local computation
  } finally {
  setLoading(false);
+ setLastRefreshed(new Date());
  }
  }, [auth.accessToken]);
 
@@ -149,21 +151,36 @@ export default function ClientFeed() {
  </div>
  );
 
+ const hour = now.getHours();
+ const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+ const firstName = currentUser?.fullName?.split(" ")[0];
+
  return (
  <div className="min-h-screen bg-[#0d1120] grid-bg">
 
  {/* ── Header ──────────────────────────────────────────────── */}
- <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6" style={{ borderRadius: 0 }}>
- <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+ <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
+ <div className="feed-header-mesh" aria-hidden="true" />
+ <div className="feed-header-shimmer-line" aria-hidden="true" />
+ <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
  <div>
  <div className="flex items-center gap-2.5 mb-1">
  <Settings className="h-5 w-5 text-[#c9a84c]" />
  <h1 className="font-heading text-xl font-bold text-[#f0e8d4]">Procurement Terminal</h1>
  </div>
+ {firstName && (
+ <p className="text-[#c9a84c] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
+ )}
  <p className="text-[#a8997e] text-sm">
  {kpis.openJobs} active job{kpis.openJobs !== 1 ? "s" : ""}
  {kpis.totalSavings > 0 && ` · $${Math.round(kpis.totalSavings).toLocaleString()} saved from decay`}
  </p>
+ {lastRefreshed && (
+ <p className="text-[#a8997e]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <span className="h-1.5 w-1.5 rounded-full bg-[#4caf7d] animate-pulse inline-block" />
+ Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+ </p>
+ )}
  </div>
 
  <div className="flex items-center gap-3">
@@ -181,15 +198,14 @@ export default function ClientFeed() {
  <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
 
  {/* 1. Spend Analytics */}
- {!loading && (
  <SpendAnalytics
  totalBudgetPosted={kpis.totalBudgetPosted}
  avgBidPrice={kpis.avgBidPrice}
  totalSavings={kpis.totalSavings}
  avgDecayRate={kpis.avgDecayRate}
  openJobs={kpis.openJobs}
+ loading={loading}
  />
- )}
 
  {/* 2. My Posted Jobs + Active Bids Feed */}
  <MyJobsSection

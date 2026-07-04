@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ArrowRight, Code } from "lucide-react";
 import PriceDecayDemo from "./PriceDecayDemo";
-import MagneticButton from "./MagneticButton";
 import { usePointerFine, useMousePosition } from "./hooks";
 
 /* Fixed, hand-authored particle positions — deterministic (never
@@ -117,23 +116,19 @@ export default function Hero() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 mt-0 justify-center lg:justify-start">
             <div className="animate-fade-in-up" style={{ animationDelay: "600ms" }}>
-              <MagneticButton>
-                <Link href="/login?tab=register&role=client">
-                  <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
-                    Start Hiring Free
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </Link>
-              </MagneticButton>
+              <Link href="/login?tab=register&role=client">
+                <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
+                  Start Hiring Free
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </Link>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: "750ms" }}>
-              <MagneticButton>
-                <Link href="/login?tab=register&role=freelancer">
-                  <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
-                    <Code className="h-4 w-4" /> Join as Freelancer
-                  </button>
-                </Link>
-              </MagneticButton>
+              <Link href="/login?tab=register&role=freelancer">
+                <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
+                  <Code className="h-4 w-4" /> Join as Freelancer
+                </button>
+              </Link>
             </div>
           </div>
 

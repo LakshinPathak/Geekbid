@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Target, Code, CheckCircle2, ArrowRight, ChevronRight } from "lucide-react";
-import MagneticButton from "./MagneticButton";
 
 const CLIENT_BENEFITS = [
   "Post jobs with custom decay rates",
@@ -39,13 +38,11 @@ function DualCTA() {
                   </li>
                 ))}
               </ul>
-              <MagneticButton>
-                <Link href="/login?tab=register&role=client">
-                  <button className="btn-primary text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
-                    Start Hiring <ArrowRight className="h-4 w-4" />
-                  </button>
-                </Link>
-              </MagneticButton>
+              <Link href="/login?tab=register&role=client">
+                <button className="btn-primary text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
+                  Start Hiring <ArrowRight className="h-4 w-4" />
+                </button>
+              </Link>
             </div>
           </div>
 
@@ -65,13 +62,11 @@ function DualCTA() {
                   </li>
                 ))}
               </ul>
-              <MagneticButton>
-                <Link href="/login?tab=register&role=freelancer">
-                  <button className="btn-ghost text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
-                    Join as Freelancer <ArrowRight className="h-4 w-4" />
-                  </button>
-                </Link>
-              </MagneticButton>
+              <Link href="/login?tab=register&role=freelancer">
+                <button className="btn-ghost text-sm px-8 py-3.5 rounded-[3px] w-full justify-center">
+                  Join as Freelancer <ArrowRight className="h-4 w-4" />
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -100,20 +95,16 @@ function FinalCTA() {
           Join thousands of companies using reverse auctions to find the best engineering talent at the right price.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-          <MagneticButton>
-            <Link href="/login?tab=register&role=client">
-              <button className="group btn-primary text-base px-12 py-4 rounded-[3px]">
-                Get Started Free <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </Link>
-          </MagneticButton>
-          <MagneticButton>
-            <Link href="/login?tab=register&role=freelancer">
-              <button className="btn-ghost text-base px-12 py-4 rounded-[3px]">
-                Apply as Freelancer <ChevronRight className="h-4 w-4" />
-              </button>
-            </Link>
-          </MagneticButton>
+          <Link href="/login?tab=register&role=client">
+            <button className="group btn-primary text-base px-12 py-4 rounded-[3px]">
+              Get Started Free <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </Link>
+          <Link href="/login?tab=register&role=freelancer">
+            <button className="btn-ghost text-base px-12 py-4 rounded-[3px]">
+              Apply as Freelancer <ChevronRight className="h-4 w-4" />
+            </button>
+          </Link>
         </div>
         <p className="text-xs text-[#a8997e] mt-6 opacity-60">No credit card required · Free to post · 10% success fee only</p>
       </div>

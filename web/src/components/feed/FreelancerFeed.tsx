@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
@@ -17,6 +17,7 @@ import RecommendedCarousel from "./RecommendedCarousel";
 import ActiveBidsTracker from "./ActiveBidsTracker";
 import FreelancerJobCard from "./FreelancerJobCard";
 import CompetitorAnalysis from "./CompetitorAnalysis";
+import EmptyState from "./EmptyState";
 
 // ── Types ─────────────────────────────────────────────────────────
 interface FreelancerDashboard {
@@ -62,11 +63,47 @@ export default function FreelancerFeed() {
  const [dashboard, setDashboard] = useState<FreelancerDashboard | null>(null);
  const [activeBids, setActiveBids] = useState<ActiveBid[]>([]);
  const [loadingApi, setLoadingApi] = useState(true);
+ const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
+ const searchInputRef = useRef<HTMLInputElement>(null);
+ const sortMenuRef = useRef<HTMLDivElement>(null);
+ const skillPickerRef = useRef<HTMLDivElement>(null);
 
  // ── Auth guard ────────────────────────────────────────────────
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
  }, [mounted, currentUser, router]);
+
+ // ── ⌘K / Ctrl+K focuses search ─────────────────────────────────
+ useEffect(() => {
+ const onKeyDown = (e: KeyboardEvent) => {
+ if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+ e.preventDefault();
+ searchInputRef.current?.focus();
+ }
+ };
+ window.addEventListener("keydown", onKeyDown);
+ return () => window.removeEventListener("keydown", onKeyDown);
+ }, []);
+
+ // ── Close Sort/Skills dropdowns on outside click or Escape ─────
+ useEffect(() => {
+ if (!showSortMenu && !showSkillPicker) return;
+ const onPointerDown = (e: MouseEvent) => {
+ const target = e.target as Node;
+ if (showSortMenu && sortMenuRef.current && !sortMenuRef.current.contains(target)) setShowSortMenu(false);
+ if (showSkillPicker && skillPickerRef.current && !skillPickerRef.current.contains(target)) setShowSkillPicker(false);
+ };
+ const onKeyDown = (e: KeyboardEvent) => {
+ if (e.key === "Escape") { setShowSortMenu(false); setShowSkillPicker(false); }
+ };
+ document.addEventListener("mousedown", onPointerDown);
+ document.addEventListener("keydown", onKeyDown);
+ return () => {
+ document.removeEventListener("mousedown", onPointerDown);
+ document.removeEventListener("keydown", onKeyDown);
+ };
+ }, [showSortMenu, showSkillPicker]);
 
  // ── Fetch API data ────────────────────────────────────────────
  const fetchData = useCallback(async () => {
@@ -98,6 +135,7 @@ export default function FreelancerFeed() {
  // silent fallback
  } finally {
  setLoadingApi(false);
+ setLastRefreshed(new Date());
  }
  }, [auth.accessToken]);
 
@@ -224,7 +262,8 @@ export default function FreelancerFeed() {
  const handleQuickBid = async (jobId: string) => {
  const job = jobs.find(j => (j.id ?? j._id) === jobId);
  if (!job) return;
- const price = Math.floor(getCurrentPrice(job, now) * 0.98); // 2% below current
+ const current = getCurrentPrice(job, now);
+ const price = Math.max(job.minimumPrice, Math.floor(current * 0.98)); // 2% below current, clamped to floor
  const r = await counterBid(jobId, price);
  r.ok
  ? toast.success("Bid placed!", { description: r.message })
@@ -239,20 +278,35 @@ export default function FreelancerFeed() {
  </div>
  );
 
+ const hour = now.getHours();
+ const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+ const firstName = currentUser?.fullName?.split(" ")[0];
+
  return (
  <div className="min-h-screen bg-[#0d1120] grid-bg">
 
  {/* ── Header ──────────────────────────────────────────────── */}
- <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6" style={{ borderRadius: 0 }}>
- <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+ <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
+ <div className="feed-header-mesh" aria-hidden="true" />
+ <div className="feed-header-shimmer-line" aria-hidden="true" />
+ <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
  <div>
  <div className="flex items-center gap-2.5 mb-1">
  <Target className="h-5 w-5 text-[#c9a84c]" />
  <h1 className="font-heading text-xl font-bold text-[#f0e8d4]">Mission Control</h1>
  </div>
+ {firstName && (
+ <p className="text-[#c9a84c] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
+ )}
  <p className="text-[#a8997e] text-sm">
  {kpis.matchedJobs} matches · {kpis.bidsUsed}/{kpis.bidLimit} bids used · {kpis.winRate}% win rate
  </p>
+ {lastRefreshed && (
+ <p className="text-[#a8997e]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <span className="h-1.5 w-1.5 rounded-full bg-[#4caf7d] animate-pulse inline-block" />
+ Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+ </p>
+ )}
  </div>
 
  <div className="flex items-center gap-3">
@@ -269,15 +323,14 @@ export default function FreelancerFeed() {
  <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
 
  {/* 1. Freelancer Stats Bar */}
- {!loadingApi && (
  <FreelancerStats
  matches={kpis.matchedJobs}
  bidsUsed={kpis.bidsUsed}
  bidLimit={kpis.bidLimit}
  winRate={kpis.winRate}
  earningPotential={kpis.earningPotential}
+ loading={loadingApi}
  />
- )}
 
  {/* 2. Recommended Carousel */}
  {recommendedDisplay.length > 0 && (
@@ -313,16 +366,21 @@ export default function FreelancerFeed() {
  <div className="relative flex-1 min-w-0">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#a8997e]" />
  <input
+ ref={searchInputRef}
  type="text"
  placeholder="Search jobs or skills..."
  value={search}
  onChange={e => setSearch(e.target.value)}
- className="w-full h-9 pl-8 pr-8 text-sm bg-[#111625] border border-[rgba(201,168,76,0.22)] rounded-[6px] text-[#f0e8d4] placeholder:text-[#8A9BAA] outline-none focus:border-[rgba(201,168,76,0.35)]/60 transition-colors"
+ className="w-full h-9 pl-8 pr-14 text-sm bg-[#111625] border border-[rgba(201,168,76,0.22)] rounded-[6px] text-[#f0e8d4] placeholder:text-[#8A9BAA] outline-none focus:border-[rgba(201,168,76,0.35)]/60 transition-colors"
  />
- {search && (
+ {search ? (
  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
  <X className="h-3 w-3 text-[#a8997e]" />
  </button>
+ ) : (
+ <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#a8997e]/60 border border-[rgba(201,168,76,0.15)] rounded px-1.5 py-0.5 pointer-events-none">
+ ⌘K
+ </kbd>
  )}
  </div>
 
@@ -348,7 +406,7 @@ export default function FreelancerFeed() {
  <div className="h-6 w-px bg-[rgba(201,168,76,0.22)] shrink-0" />
 
  {/* Sort chip */}
- <div className="relative shrink-0">
+ <div ref={sortMenuRef} className="relative shrink-0">
  <button
  onClick={() => setShowSortMenu(v => !v)}
  className={`h-9 px-3 text-xs font-semibold rounded-[6px] border flex items-center gap-1.5 transition-all ${
@@ -376,7 +434,7 @@ export default function FreelancerFeed() {
  </div>
 
  {/* Skills chip */}
- <div className="relative shrink-0">
+ <div ref={skillPickerRef} className="relative shrink-0">
  <button
  onClick={() => setShowSkillPicker(v => !v)}
  className={`h-9 px-3 text-xs font-semibold rounded-[6px] border flex items-center gap-1.5 transition-all ${
@@ -385,7 +443,7 @@ export default function FreelancerFeed() {
  : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
  }`}
  >
- Skills {filterSkills.length > 0 && <span className="bg-[#c9a84c] text-[#050810] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
+ Skills {filterSkills.length > 0 && <span className="feed-badge-pop bg-[#c9a84c] text-[#050810] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
  <ChevronDown className={`h-3 w-3 transition-transform ${showSkillPicker ? "rotate-180" : ""}`} />
  </button>
  {showSkillPicker && (
@@ -419,13 +477,13 @@ export default function FreelancerFeed() {
  : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
  }`}
  >
- Filters {hasAdvancedFilters && <span className="h-1.5 w-1.5 rounded-full bg-[#c9a84c]" />}
+ Filters {hasAdvancedFilters && <span className="feed-badge-pop h-1.5 w-1.5 rounded-full bg-[#c9a84c]" />}
  <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
  </button>
  </div>
 
  {/* Advanced drawer */}
- {showAdvanced && (
+ <div className={`feed-drawer ${showAdvanced ? "open" : ""}`}>
  <div className="border-t border-[rgba(201,168,76,0.22)]/50 px-4 py-3 flex flex-wrap items-center gap-2">
  <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider mr-1">Advanced:</span>
 
@@ -473,15 +531,21 @@ export default function FreelancerFeed() {
  </button>
  )}
  </div>
- )}
+ </div>
  </div>
 
  {/* Job Grid */}
  {filteredJobs.length === 0 ? (
- <div className="text-center py-16 text-[#a8997e]">
- <p className="text-lg mb-2">No jobs found</p>
- <p className="text-sm">Try adjusting your filters or check back later</p>
- </div>
+ <EmptyState
+ variant="jobs"
+ title="No jobs found"
+ subtitle="Try adjusting your filters or check back later"
+ ctaLabel="Reset filters"
+ onCta={() => {
+ setSearch(""); setFilterSkills([]); setFilterCategory("all");
+ setFilterBudget(""); setFilterCompetition(""); setFilterHourlyRate("");
+ }}
+ />
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
  {filteredJobs.map(job => {

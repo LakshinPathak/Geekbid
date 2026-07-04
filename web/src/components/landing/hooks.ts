@@ -158,43 +158,6 @@ export function useTilt3D<T extends HTMLElement>(
   }, [enabled, ref.current]);
 }
 
-/* ─── Magnetic-hover buttons: small offset toward the cursor within the
-   button's bounds, snapping back on mouseleave via CSS transition. ─── */
-export function useMagneticHover<T extends HTMLElement>(
-  ref: React.RefObject<T | null>,
-  enabled = true,
-  strength = 0.25
-) {
-  const handleMove = useRafThrottle((e: MouseEvent) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) * strength;
-    const y = (e.clientY - rect.top - rect.height / 2) * strength;
-    el.style.setProperty("--mx", `${x}px`);
-    el.style.setProperty("--my", `${y}px`);
-  });
-
-  const handleLeave = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.setProperty("--mx", "0px");
-    el.style.setProperty("--my", "0px");
-  }, [ref]);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !enabled) return;
-    el.addEventListener("mousemove", handleMove);
-    el.addEventListener("mouseleave", handleLeave);
-    return () => {
-      el.removeEventListener("mousemove", handleMove);
-      el.removeEventListener("mouseleave", handleLeave);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, ref.current]);
-}
-
 /* ─── Single shared IntersectionObserver tracking which section anchor
    is currently most in view, for nav scroll-spy highlighting ───────── */
 export function useActiveSection(ids: string[]): string | null {

@@ -3,6 +3,8 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId, type Document, type WithId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
+import { getCurrentPrice } from "@/lib/utils";
+import type { Job } from "@/lib/utils";
 
 // GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
 // private bid messages, so an anonymous caller must not be able to dump them)
@@ -66,6 +68,21 @@ export async function POST(req: NextRequest) {
  }
  if (targetJob.status !== "open") {
  return NextResponse.json({ error: "This job is no longer open for bidding" }, { status: 400 });
+ }
+
+ // Enforce the same floor/ceiling the frontend already checks — a bid
+ // placed directly against the API (bypassing store.tsx) must not be able
+ // to undercut the client's floor price or exceed the current asking price.
+ const currentPrice = getCurrentPrice(targetJob as unknown as Job, new Date());
+ const numericBidPrice = Number(bidPrice);
+ if (!Number.isFinite(numericBidPrice) || numericBidPrice <= 0) {
+ return NextResponse.json({ error: "Invalid bid price" }, { status: 400 });
+ }
+ if (numericBidPrice < targetJob.minimumPrice) {
+ return NextResponse.json({ error: `Must be ≥ floor $${targetJob.minimumPrice}` }, { status: 400 });
+ }
+ if (numericBidPrice > currentPrice) {
+ return NextResponse.json({ error: `Must be ≤ $${currentPrice.toFixed(2)}` }, { status: 400 });
  }
 
  // Plan limit enforcement for freelancers

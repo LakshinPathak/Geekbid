@@ -48,12 +48,12 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-[6px] border p-6 space-y-5"
+        className="w-full max-w-lg rounded-[6px] border p-6 space-y-5 animate-scale-in"
         style={{ background: "#0d1120", borderColor: "rgba(201,168,76,0.22)" }}
         onClick={e => e.stopPropagation()}
       >

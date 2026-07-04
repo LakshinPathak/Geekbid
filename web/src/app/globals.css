@@ -1000,16 +1000,6 @@ input:focus, textarea:focus, select:focus { outline: none; }
   animation: conic-rotate 6s linear infinite;
 }
 
-/* ── Magnetic-hover buttons — disabled on touch/coarse pointers ── */
-.landing-magnetic-btn {
-  transform: translate(var(--mx, 0px), var(--my, 0px));
-  transition: transform 0.25s ease-out;
-  display: inline-flex;
-}
-@media (hover: none), (pointer: coarse) {
-  .landing-magnetic-btn { transform: none !important; }
-}
-
 /* ── Scroll progress bar ──────────────────────────────────────── */
 .landing-scroll-progress {
   position: fixed;
@@ -1126,4 +1116,160 @@ input:focus, textarea:focus, select:focus { outline: none; }
 }
 .faq-item.active .faq-chevron {
   transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FEED PAGES — PREMIUM DASHBOARD REDESIGN (NEW, ADDITIVE)
+   Additive only — .glass-panel/.card/.btn-primary/.btn-glass above
+   are never edited; new looks are new classes layered on via
+   combined className.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-skeleton,
+  .feed-kpi-glow,
+  .feed-pulse-win,
+  .feed-shake-outbid,
+  .feed-badge-pop,
+  .feed-chip-bounce,
+  .feed-tilt-card,
+  .feed-glass-card {
+    animation: none !important;
+  }
+}
+
+/* ── Skeleton shimmer loading screens ─────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.feed-skeleton {
+  background: linear-gradient(90deg, #111625 25%, #1a2035 37%, #111625 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 3px;
+}
+
+/* ── KPI count-up glow (brief flash on value settle) ──────────── */
+@keyframes kpi-count-glow {
+  0%   { text-shadow: 0 0 0 rgba(201,168,76,0); }
+  40%  { text-shadow: 0 0 12px rgba(201,168,76,0.55); }
+  100% { text-shadow: 0 0 0 rgba(201,168,76,0); }
+}
+.feed-kpi-glow { animation: kpi-count-glow 0.8s ease-out; }
+
+/* ── Glassmorphism KPI/job cards (layered on .glass-panel/.card) ── */
+.feed-glass-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(13,17,32,0.55);
+  box-shadow: inset 0 1px 0 rgba(201,168,76,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feed-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(201,168,76,0.12);
+}
+@media (max-width: 767px) {
+  .feed-glass-card { backdrop-filter: none; -webkit-backdrop-filter: none; background: #0d1120; }
+}
+
+/* ── 3D tilt-on-hover job cards — disabled on touch/coarse pointers ── */
+.feed-tilt-card {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.15s ease-out;
+}
+@media (hover: none), (pointer: coarse) {
+  .feed-tilt-card { transform: none !important; }
+}
+
+/* ── Rotating conic-gradient border on card hover ─────────────── */
+.feed-card-border-rotate {
+  position: relative;
+}
+.feed-card-border-rotate::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--angle), transparent, rgba(201,168,76,0.6), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  animation: conic-rotate 4s linear infinite;
+  pointer-events: none;
+}
+.feed-card-border-rotate:hover::before { opacity: 1; }
+
+/* ── Active bid urgency states ─────────────────────────────────── */
+@keyframes pulse-win {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,125,0.35); }
+  50%      { box-shadow: 0 0 0 6px rgba(76,175,125,0); }
+}
+.feed-pulse-win { animation: pulse-win 1.8s ease-in-out infinite; }
+
+@keyframes shake-outbid {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-2px); }
+  40%      { transform: translateX(2px); }
+  60%      { transform: translateX(-1px); }
+  80%      { transform: translateX(1px); }
+}
+.feed-shake-outbid { animation: shake-outbid 0.5s ease-in-out; }
+
+/* ── Filter badge pop-in ───────────────────────────────────────── */
+@keyframes badge-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.feed-badge-pop { animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* ── Skill chip toggle bounce ──────────────────────────────────── */
+@keyframes chip-bounce {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.feed-chip-bounce { animation: chip-bounce 0.25s ease-out; }
+
+/* ── Advanced filter drawer expand/collapse ───────────────────────
+   max-height transition (same proven technique as the landing page's
+   FAQ accordion) — the grid-template-rows: 0fr/1fr trick was tried
+   first but doesn't actually collapse to 0 here: with an auto-height
+   grid container, the browser still sizes the 0fr track from the
+   child's padding/border box rather than 0, leaving a visible sliver. */
+.feed-drawer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.feed-drawer.open { max-height: 200px; }
+
+/* ── Sliding tab indicator (MyJobsSection) ────────────────────── */
+.feed-tab-indicator {
+  position: absolute;
+  background: #c9a84c;
+  transition: left 0.25s ease, width 0.25s ease;
+}
+
+/* ── Header ambient mesh + shimmer line ───────────────────────── */
+.feed-header-mesh {
+  position: absolute;
+  inset: -20% -10%;
+  background:
+    radial-gradient(circle at 15% 40%, rgba(201,168,76,0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(96,165,250,0.05) 0%, transparent 45%);
+  animation: mesh-drift 24s ease-in-out infinite;
+  pointer-events: none;
+}
+.feed-header-shimmer-line {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.7), transparent);
+  background-size: 200% auto;
+  animation: text-shimmer 5s linear infinite;
 }

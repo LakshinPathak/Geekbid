@@ -144,7 +144,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  return (
  <div key={cat.category}
- className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] overflow-hidden"
+ className="glass-panel feed-glass-card rounded-[6px] border border-[rgba(201,168,76,0.22)] overflow-hidden"
  >
  {/* Row */}
  <button
@@ -240,7 +240,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  return (
  <div
  key={skill.skill}
- className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] px-3 py-2.5"
+ className="glass-panel feed-glass-card rounded-[6px] border border-[rgba(201,168,76,0.22)] px-3 py-2.5"
  >
  <div className="flex items-center gap-2 mb-1.5">
  <span className="text-[10px] font-bold text-[#a8997e] w-5 shrink-0">

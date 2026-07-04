@@ -1,9 +1,11 @@
 "use client";
+import { useRef } from "react";
 import Link from "next/link";
 import { getCurrentPrice, getHoursToFloor, formatHoursToFloor, formatMoney, type Job } from "@/lib/utils";
 import { getEffectiveDecayRate } from "@/lib/pricing";
 import { getCompetitionBadge, getPriceTrajectory } from "./feed-helpers";
 import { Clock, Users, ChevronRight, Zap, User } from "lucide-react";
+import { usePointerFine, useTilt3D } from "@/components/landing/hooks";
 
 interface FreelancerJobCardProps {
  job: Job;
@@ -28,6 +30,10 @@ export default function FreelancerJobCard({
  myBidRank,
  onQuickBid,
 }: FreelancerJobCardProps) {
+ const cardRef = useRef<HTMLDivElement>(null);
+ const isPointerFine = usePointerFine();
+ useTilt3D(cardRef, isPointerFine);
+
  const jobId = job.id ?? job._id ?? "";
  const current = getCurrentPrice(job, now);
  const hoursLeft = getHoursToFloor(job, now);
@@ -66,7 +72,10 @@ export default function FreelancerJobCard({
 
  return (
  <Link href={`/jobs/${jobId}`} className="block group">
- <div className="glass-panel p-5 transition-all duration-200 h-full flex flex-col gap-4">
+ <div ref={cardRef} className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate p-5 transition-all duration-200 h-full flex flex-col gap-4 relative">
+ {job.status === "open" && (
+ <span className="absolute top-3 left-3 h-2 w-2 rounded-full bg-[#4caf7d] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
+ )}
 
  {/* ── Header: badges + title ─────────────────────────────────────── */}
  <div>
@@ -81,8 +90,13 @@ export default function FreelancerJobCard({
  {comp.label}
  </span>
  {hasMyBid && myBidRank && myBidRank > 0 && (
- <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)]">
- Rank #{myBidRank}
+ <span className={`px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${
+ myBidRank === 1 ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40" :
+ myBidRank === 2 ? "bg-[#c0c0c0]/15 text-[#d8d8d8] border-[#c0c0c0]/30" :
+ myBidRank === 3 ? "bg-[#cd7f32]/15 text-[#e0a06e] border-[#cd7f32]/30" :
+ "bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border-[rgba(201,168,76,0.22)]"
+ }`}>
+ {myBidRank === 1 ? "🥇" : myBidRank === 2 ? "🥈" : myBidRank === 3 ? "🥉" : ""} Rank #{myBidRank}
  </span>
  )}
  {hasMyBid && (!myBidRank || myBidRank === 0) && (

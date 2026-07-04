@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { type Job, GEEK_TIERS } from "@/lib/utils";
 import { formatMoney } from "@/lib/utils";
@@ -9,6 +9,8 @@ import DirectHireModal from "./DirectHireModal";
 import InviteToBidModal from "./InviteToBidModal";
 import MessageFreelancerModal from "./MessageFreelancerModal";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import EmptyState from "./EmptyState";
+import { usePointerFine, useTilt3D } from "@/components/landing/hooks";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface User {
@@ -44,6 +46,29 @@ function availabilityBadge(avail?: string) {
   return { text: "Busy", bg: "bg-[#c0392b]/12", color: "text-[#e57373]", border: "border-[#c0392b]/22" };
 }
 
+// ── Animated circular GeekScore ring ────────────────────────────────
+function GeekScoreRing({ pct, color }: { pct: number; color: string }) {
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  const [dash, setDash] = useState(c);
+  useEffect(() => {
+    const t = setTimeout(() => setDash(c * (1 - pct / 100)), 50);
+    return () => clearTimeout(t);
+  }, [c, pct]);
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" className="shrink-0 -rotate-90">
+      <circle cx="28" cy="28" r={r} fill="none" stroke="#1a1f30" strokeWidth="5" />
+      <circle
+        className="geekscore-ring"
+        cx="28" cy="28" r={r}
+        stroke={color}
+        strokeDasharray={c}
+        strokeDashoffset={dash}
+      />
+    </svg>
+  );
+}
+
 // ── Single Freelancer Card ─────────────────────────────────────────
 function FreelancerCard({
   freelancer, bids, myJobSkills,
@@ -55,6 +80,9 @@ function FreelancerCard({
   const [showHireModal, setShowHireModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isPointerFine = usePointerFine();
+  useTilt3D(cardRef, isPointerFine);
 
   const fid = freelancer.id ?? freelancer._id ?? "";
   const myBids = bids.filter(b => b.freelancerId === fid);
@@ -76,7 +104,8 @@ function FreelancerCard({
   return (
     <>
       <div
-        className="glass-panel rounded-[3px] p-5 border border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-all duration-200 flex flex-col gap-4 h-full cursor-pointer group"
+        ref={cardRef}
+        className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate rounded-[3px] p-5 border border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-all duration-200 flex flex-col gap-4 h-full cursor-pointer group relative"
         onClick={() => router.push(`/profile/${fid}`)}
       >
 
@@ -103,16 +132,39 @@ function FreelancerCard({
           </div>
 
           {/* Avatar + Name */}
-          <div className="flex items-center gap-2.5 mb-3">
+          <div className="flex items-center gap-3 mb-3">
             <CloudinaryAvatar
               avatarUrl={freelancer.avatarUrl}
               avatarInitial={freelancer.avatarInitial ?? freelancer.fullName?.[0] ?? "?"}
-              size="sm"
+              size="lg"
+              showOnlineIndicator
+              isOnline={freelancer.availability === "available"}
             />
-            <h3 className="font-heading text-[15px] font-normal text-[#f0e8d4] leading-snug line-clamp-1 group-hover:text-[#c9a84c] transition-colors">
+            <h3 className="font-heading text-base font-normal text-[#f0e8d4] leading-snug line-clamp-1 group-hover:text-[#c9a84c] transition-colors">
               {freelancer.fullName ?? "Freelancer"}
             </h3>
           </div>
+
+          {/* Skill match percentage */}
+          {myJobSkills.length > 0 && (freelancer.skills?.length ?? 0) > 0 && (
+            <div className="mb-3 space-y-1">
+              <div className="flex justify-between text-[10px] text-[#a8997e] font-medium">
+                <span>Skill Match</span>
+                <span className="text-[#4caf7d] font-semibold">
+                  {Math.round((matchedSkills.length / (freelancer.skills?.length ?? 1)) * 100)}%
+                </span>
+              </div>
+              <div className="h-1 w-full bg-[#1a1f30] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.round((matchedSkills.length / (freelancer.skills?.length ?? 1)) * 100)}%`,
+                    background: "linear-gradient(to right, #8a6e2f, #c9a84c)",
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Skill chips */}
           <div className="flex flex-wrap gap-1.5">
@@ -128,36 +180,26 @@ function FreelancerCard({
           </div>
         </div>
 
-        {/* ── GeekScore + Avg Bid ──────────────────────────────────── */}
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <div>
-              <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider">GeekScore</span>
-              <p className={`font-heading text-2xl font-normal ${tierStyle.color}`}>
-                {freelancer.geekScore ?? 0}
-              </p>
-            </div>
-            {avgBid && (
-              <div className="text-right">
-                <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider">Avg Bid</span>
-                <p className="font-heading text-lg font-normal text-[#f0e8d4]">{formatMoney(avgBid)}</p>
+        {/* ── GeekScore ring + Avg Bid ─────────────────────────────── */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <GeekScoreRing pct={scorePct} color={tierStyle.rawColor} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`font-heading text-sm font-normal ${tierStyle.color}`}>{freelancer.geekScore ?? 0}</span>
               </div>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <div className="h-0.5 w-full bg-[#1a1f30]">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${scorePct}%`, background: `linear-gradient(to right, ${tierStyle.rawColor}88, ${tierStyle.rawColor})` }}
-              />
             </div>
-            <div className="flex justify-between text-[10px] text-[#a8997e] font-medium">
-              <span>0</span>
-              <span className="font-semibold" style={{ color: tierStyle.rawColor }}>{tier.label}</span>
-              <span>1000</span>
+            <div>
+              <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider block">GeekScore</span>
+              <span className="text-[11px] font-semibold" style={{ color: tierStyle.rawColor }}>{tier.label}</span>
             </div>
           </div>
+          {avgBid && (
+            <div className="text-right">
+              <span className="text-[10px] text-[#a8997e] font-medium uppercase tracking-wider">Avg Bid</span>
+              <p className="font-heading text-lg font-normal text-[#f0e8d4]">{formatMoney(avgBid)}</p>
+            </div>
+          )}
         </div>
 
         {/* ── Hourly rate ──────────────────────────────────────────── */}
@@ -335,7 +377,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
       <div className="flex items-center gap-2 flex-wrap">
         <button
           onClick={() => setActiveSkill("all")}
-          className={`px-3 py-1.5 rounded-[3px] text-[11px] font-semibold transition-colors border cursor-pointer ${
+          className={`px-3 py-1.5 rounded-[3px] text-[11px] font-semibold transition-all border cursor-pointer active:scale-90 feed-chip-bounce ${
             activeSkill === "all"
               ? "bg-[#c9a84c] text-[#050810] border-transparent"
               : "bg-[#111625] text-[#a8997e] border-[rgba(201,168,76,0.15)] hover:border-[#c9a84c]"
@@ -350,7 +392,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
             <button
               key={skill}
               onClick={() => setActiveSkill(skill)}
-              className={`px-3 py-1.5 rounded-[3px] text-[11px] font-semibold transition-colors border cursor-pointer ${
+              className={`px-3 py-1.5 rounded-[3px] text-[11px] font-semibold transition-all border cursor-pointer active:scale-90 feed-chip-bounce ${
                 activeSkill === skill
                   ? "bg-[#c9a84c] text-[#050810] border-transparent"
                   : isMySkill
@@ -377,9 +419,12 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-10 text-[#a8997e] text-sm">
-          No freelancers found for <strong className="text-[#a8997e]">{activeSkill}</strong>.
-        </div>
+        <EmptyState
+          variant="talent"
+          title={`No freelancers found for ${activeSkill}`}
+          ctaLabel="Reset filter"
+          onCta={() => setActiveSkill("all")}
+        />
       )}
     </div>
   );
