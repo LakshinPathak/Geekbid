@@ -61,7 +61,7 @@ type AppState = {
  ) => Promise<ActionResult>;
  logout: () => void;
  googleAuth: (token: string, expiresIn: number, user: User) => void;
- switchRole: (role: Role) => void;
+ switchRole: (role: Role) => Promise<ActionResult>;
  acceptJob: (jobId: string) => Promise<ActionResult>;
  counterBid: (
  jobId: string,
@@ -807,7 +807,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
  persistAuth(data.accessToken, data.expiresIn, data.user as User);
  scheduleRefresh(Date.now() + data.expiresIn * 1000);
  setLoading(false);
- return { ok: true, message: "Account created!" };
+ return {
+ ok: true,
+ message: data.roleAdded ? `${role} role added to your account!` : "Account created!",
+ };
  } catch {
  setLoading(false);
  return { ok: false, message: "Connection failed. Try again." };
@@ -845,21 +848,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
  [persistAuth, scheduleRefresh]
  );
 
- // ── Switch Role (dev/demo helper — logs in as different user) ──
+ // ── Switch Role (for accounts holding more than one role) ──
+ // The JWT bakes `role` in at sign-time, so switching which role is active
+ // requires a fresh token pair from the server, not just a local state flip.
  const switchRole = useCallback(
- (role: Role) => {
- const u = users.find((u) => u.role === role);
- if (u) {
- setCurrentUser(u);
- setAuth({
- isLoggedIn: true,
- accessToken: auth.accessToken,
- expiresAt: auth.expiresAt,
+ async (role: Role): Promise<ActionResult> => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, message: "Not authenticated" };
+ try {
+ const res = await apiRequest("/api/auth/switch-role", {
+ method: "POST",
+ body: JSON.stringify({ role }),
+ accessToken: token,
  });
- localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+ const data = await res.json();
+ if (data.error) return { ok: false, message: data.error };
+
+ persistAuth(data.accessToken, data.expiresIn, data.user as User);
+ scheduleRefresh(Date.now() + data.expiresIn * 1000);
+ return { ok: true, message: `Switched to ${role}` };
+ } catch {
+ return { ok: false, message: "Connection failed" };
  }
  },
- [users, auth.accessToken, auth.expiresAt]
+ [getValidToken, persistAuth, scheduleRefresh]
  );
 
  // ── Accept Job (with DB call) ─────────────────────────────

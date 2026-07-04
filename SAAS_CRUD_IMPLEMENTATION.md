@@ -2,7 +2,8 @@
 
 > **Status:** PLAN ONLY — no code changes yet  
 > **Companion to:** `SAAS_SUBSCRIPTION_PLAN.md` (tier design & billing architecture)  
-> **Scope:** Every database schema change, CRUD operation modification, backend enforcement point, and frontend wiring required to make Free/Plus/Premium tiers real.
+> **Scope:** Every database schema change, CRUD operation modification, backend enforcement point, and frontend wiring required to make Free/Plus/Premium tiers real.  
+> **Validated:** 3-pass codebase audit completed — 3 errors fixed, 10 gaps addressed, 36+ claims verified ✅
 
 ---
 
@@ -15,6 +16,8 @@
 5. [Migration Scripts](#5-migration-scripts)
 6. [New API Routes Required](#6-new-api-routes)
 7. [Dependency Map & Execution Order](#7-dependency-map)
+8. [Validation Log](#8-validation-log)
+9. [Known Risks & Design Decisions](#9-known-risks)
 
 ---
 
@@ -38,6 +41,7 @@
 | Field | Type | Purpose |
 |-------|------|---------|
 | `planLimits.featuredBoostsUsedThisMonth` | `number` | Track included featured boosts for Plus/Premium |
+| `planLimits.invitesSentThisMonth` | `number` | Track monthly invitations sent (for invite cap enforcement, see §3.14) |
 | `subscriptionId` | `string \| null` | Link to `subscriptions` collection |
 | `planExpiresAt` | `string (ISO) \| null` | When current paid period ends (for grace period logic) |
 | `planDowngradedAt` | `string (ISO) \| null` | Timestamp when auto-downgraded from paid → free |
@@ -63,9 +67,11 @@
 ```
 
 **Indexes needed:**
-- `{ userId: 1 }` — unique, one active subscription per user
+- `{ userId: 1 }` — **non-unique** (user may have old cancelled + new active docs; query with `{ userId, status: { $in: ['active', 'created', 'past_due'] } }` to find current)
 - `{ razorpaySubscriptionId: 1 }` — unique, webhook lookups
 - `{ status: 1, gracePeriodEndsAt: 1 }` — cron/lazy-check for expired grace periods
+
+> **⚠️ Design Decision:** The `userId` index is intentionally **non-unique** to preserve subscription history across cancellation/resubscription cycles. Option B (unique + upsert) was rejected because it destroys audit trail data.
 
 ### 1.3 `plan_change_log` Collection — New (Audit Trail)
 
@@ -96,6 +102,7 @@ planLimits?: {
   aiBidUsesThisMonth?: number;
   aiBidMonthResetAt?: string;
   featuredBoostsUsedThisMonth?: number;
+  invitesSentThisMonth?: number;
 };
 subscriptionId?: string | null;
 planExpiresAt?: string | null;
@@ -122,6 +129,8 @@ export interface PlanConfig {
     aiBidStrategyPerMonth: number;
     featuredBoostsPerMonth: number;
     teamSeats: number;
+    invitesPerMonth: number;  // monthly freelancer invite cap
+    maxApiKeys: number;       // max active API keys (0 = no access)
   };
   platformFeePercent: number; // 10, 7, or 5
   hasApiAccess: boolean;
@@ -135,7 +144,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     limits: {
       jobsPerMonth: 3, bidsPerMonth: 10,
       aiGeneralPerMonth: 5, aiBidStrategyPerMonth: 2,
-      featuredBoostsPerMonth: 0, teamSeats: 1,
+      featuredBoostsPerMonth: 0, teamSeats: 0,
+      invitesPerMonth: 5, maxApiKeys: 0,
     },
     platformFeePercent: 10,
     hasApiAccess: false, apiRateLimit: 0,
@@ -147,9 +157,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       jobsPerMonth: 50, bidsPerMonth: 100,
       aiGeneralPerMonth: 50, aiBidStrategyPerMonth: 15,
       featuredBoostsPerMonth: 2, teamSeats: 3,
+      invitesPerMonth: 25, maxApiKeys: 2,
     },
     platformFeePercent: 7,
-    hasApiAccess: true, apiRateLimit: 60,
+    hasApiAccess: true, apiRateLimit: 100,
     badge: 'Plus',
   },
   premium: {
@@ -158,9 +169,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       jobsPerMonth: 500, bidsPerMonth: 500,
       aiGeneralPerMonth: 200, aiBidStrategyPerMonth: 60,
       featuredBoostsPerMonth: 5, teamSeats: 10,
+      invitesPerMonth: Infinity, maxApiKeys: 10,
     },
     platformFeePercent: 5,
-    hasApiAccess: true, apiRateLimit: 120,
+    hasApiAccess: true, apiRateLimit: 500,
     badge: 'Premium',
   },
 };
@@ -178,7 +190,7 @@ export function getPlanConfig(plan?: string): PlanConfig {
 | `api/jobs/route.ts:107-127` | `$lt: 3` (free job cap) | `getPlanConfig(plan).limits.jobsPerMonth` |
 | `api/bids/route.ts:93-113` | `$lt: 10` (free bid cap) | `getPlanConfig(plan).limits.bidsPerMonth` |
 | `api/ai/bid-strategy/route.ts:38` | `FREE_PLAN_AI_BID_MONTHLY_LIMIT = 2` | `getPlanConfig(plan).limits.aiBidStrategyPerMonth` |
-| `lib/ai-plan-limit.ts:20` | `FREE_PLAN_AI_MONTHLY_LIMIT = 5` | `getPlanConfig(plan).limits.aiGeneralPerMonth` |
+| `lib/ai-plan-limit.ts:8` | `FREE_PLAN_AI_MONTHLY_LIMIT = 5` | `getPlanConfig(plan).limits.aiGeneralPerMonth` |
 | `api/v1/jobs/route.ts:136-158` | `$lt: 3` (free job cap, duplicated) | `getPlanConfig(plan).limits.jobsPerMonth` |
 | `api/freelancer/dashboard/route.ts:46` | `plan === "pro" ? 50 : plan === "enterprise" ? 200 : 10` | `getPlanConfig(plan).limits.bidsPerMonth` |
 | `components/feed/FreelancerFeed.tsx:154` | Same ternary chain | `getPlanConfig(plan).limits.bidsPerMonth` |
@@ -214,6 +226,8 @@ const cap = config.limits.jobsPerMonth;
 // atomic findOneAndUpdate with $lt: cap — works for ALL tiers
 ```
 
+> **⚠️ Note:** All error messages currently say `"Upgrade to Pro"` — these must also be updated to dynamic tier-aware messages (e.g., `"Upgrade to Plus"` or `"Upgrade to Premium"` depending on the user's current tier). This applies to error strings in `jobs/route.ts:127`, `bids/route.ts:113`, `v1/jobs/route.ts:158`, `ai-plan-limit.ts:53`, `bid-strategy/route.ts:70`, and `pricing/page.tsx:36`.
+
 ### 3.2 `POST /api/bids` — Bid Placement (Freelancer)
 
 **File:** `web/src/app/api/bids/route.ts`  
@@ -241,13 +255,14 @@ const cap = config.limits.jobsPerMonth;
 2. Use `getPlanConfig(plan).limits.aiGeneralPerMonth` as the cap
 3. Apply to all tiers, not just free
 
-**Affected AI routes (all call `checkAndConsumeAiQuota`):**
+**Affected AI routes (all call `checkAndConsumeAiQuota` — 7 total):**
 - `api/ai/chat-assist/route.ts`
 - `api/ai/evaluate-bids/route.ts`
 - `api/ai/generate-description/route.ts`
 - `api/ai/quality-check/route.ts`
 - `api/ai/pricing-advisor/route.ts`
 - `api/ai/smart-search/route.ts`
+- `api/ai/summarize-reviews/route.ts`
 
 ### 3.5 `POST /api/v1/jobs` — Public API Job Creation
 
@@ -263,18 +278,18 @@ const cap = config.limits.jobsPerMonth;
 
 **File:** `web/src/lib/money.ts`  
 **Current:** Always charges 10% regardless of plan.  
-**Change:**
+**Change:** Keep the existing function signature unchanged (it already accepts `feePercent`). Callers resolve the fee from the plan config:
 
 ```typescript
-// Before
-export function splitEscrow(gross: number, feePercent = 10) { ... }
+// money.ts — NO CHANGES NEEDED (already accepts feePercent param)
+export function splitEscrow(gross: number, feePercent: number = DEFAULT_PLATFORM_FEE_PERCENT) { ... }
 
-// After — callers pass the user's plan
-export function splitEscrow(gross: number, plan?: PlanTier) {
-  const feePercent = getPlanConfig(plan).platformFeePercent;
-  // ... rest unchanged
-}
+// At each call site — resolve fee from plan before calling:
+const feePercent = getPlanConfig(client.plan).platformFeePercent;
+const escrow = splitEscrow(grossAmount, feePercent);
 ```
+
+> This preserves backward compatibility — `money.ts` stays a pure math utility with no plan-awareness coupling.
 
 **All `splitEscrow()` call sites that need updating:**
 
@@ -287,18 +302,21 @@ export function splitEscrow(gross: number, plan?: PlanTier) {
 
 Each call site already has the `job.clientId` available. Add a quick lookup: `const client = await db.collection("users").findOne(...)` → pass `client.plan` to `splitEscrow`.
 
-### 3.7 `POST /api/teams` — Team Creation
+### 3.7 `POST /api/teams` — Team Creation & Seat Enforcement
 
 **File:** `web/src/app/api/teams/route.ts`  
 **Current:** Any user can create a team. No seat cap on invites.  
 **Changes:**
 
-1. **Team creation gate:** Free users → `403 "Teams require Plus or Premium plan"` (if teams are a paid feature; or allow 1-person team for free)
+1. **Team creation gate:** Check `getPlanConfig(plan).limits.teamSeats > 0` before allowing creation. Free users (0 seats) → `403 "Team workspaces require Plus or Premium plan"`
 2. **Invite gate (PATCH action=invite):** Count `team.memberIds.length + 1` (owner). If >= `getPlanConfig(plan).limits.teamSeats` → `403 "Team seat limit reached"`
+3. **Tier-aware error:** `"Plus plan supports up to 3 team members. Upgrade to Premium for 10."`
+
+> **⚠️ Note:** This section supersedes the original §3.7 and the later §3.13 (which were duplicates found across validation passes). The logic is now unified here.
 
 ### 3.8 `PATCH /api/jobs/feature` — Featured Boost
 
-**File:** `web/src/app/api/jobs/route.ts` (or dedicated feature route)  
+**File:** `web/src/app/api/jobs/feature/route.ts`  
 **Current:** Endpoint exists but has no plan gate.  
 **Changes:**
 
@@ -316,12 +334,16 @@ Each call site already has the `job.clientId` available. Add a quick lookup: `co
 ### 3.10 `POST /api/seed` — Seed Data
 
 **File:** `web/src/app/api/seed/route.ts`  
-**Current (line 794):** Sets all users to `plan: "free"` with current `planLimits` shape.  
+**Current (line 794):** Sets all users to `plan: "free"` with current `planLimits` shape. Does NOT include AI quota fields (`aiUsesThisMonth`, `aiBidUsesThisMonth`, etc.) — those are lazily created at runtime.  
 **Changes:**
 
 1. Update plan values to use new tier names
 2. Give some seed users `plan: 'plus'` and `plan: 'premium'` for testing
-3. Add the new `planLimits` fields (`featuredBoostsUsedThisMonth: 0`)
+3. Add the new `planLimits` fields (`featuredBoostsUsedThisMonth: 0`, `invitesSentThisMonth: 0`)
+4. **Pre-populate all AI quota fields** for test coverage: `aiUsesThisMonth: 0`, `aiMonthResetAt: now`, `aiBidUsesThisMonth: 0`, `aiBidMonthResetAt: now`
+5. Give at least one seed user a near-limit count (e.g., `aiUsesThisMonth: 4` on a free user) to test limit-approaching UX
+
+> **Why:** Lazy init works in production, but during QA the AI limit enforcement paths won't trigger without pre-populated quota fields. Pre-populating ensures test coverage of limit-approaching and limit-hit UI states.
 
 ### 3.11 Admin Routes — Plan Management
 
@@ -334,6 +356,67 @@ Each call site already has the `job.clientId` available. Add a quick lookup: `co
 // Body: { plan: 'free' | 'plus' | 'premium' }
 // Writes to plan_change_log with reason: 'admin_override'
 ```
+
+### 3.12 `POST /api/jobs/direct-offer` — Direct Offer Job Quota ⚠️ HIGH
+
+**File:** `web/src/app/api/jobs/direct-offer/route.ts`  
+**Current:** Creates a `type: "direct_offer"` job with no plan check. Inserts directly into `jobs` collection without incrementing `planLimits.jobsPostedThisMonth`. A free user can bypass the 3-job/month cap entirely via direct offers.  
+**Changes:**
+
+1. Apply same `getPlanConfig(plan).limits.jobsPerMonth` enforcement as `POST /api/jobs`
+2. Atomic `findOneAndUpdate` to increment `planLimits.jobsPostedThisMonth`
+3. Month-reset check (same logic as jobs route)
+4. Direct offers count toward the same job quota as auction posts
+
+### 3.13 ~~`POST /api/teams` — Team Creation Plan Gate~~ → Merged into §3.7
+
+> This section was originally added in validation Pass 3 as a separate finding. It has been **merged into §3.7** above to eliminate duplication. The enforcement logic is the same.
+
+### 3.14 `POST /api/invites` — Freelancer Invite Limits
+
+**File:** `web/src/app/api/invites/route.ts`  
+**Current:** Clients can send unlimited invitations to freelancers regardless of tier.  
+**Changes:**
+
+1. Consider adding `invitesPerMonth` to plan config (Free: 5, Plus: 25, Premium: unlimited)
+2. Track in `planLimits.invitesSentThisMonth` (new field)
+3. Atomic increment + cap check on `POST /api/invites`
+
+> **Note:** This is a MEDIUM priority. Invites aren't currently listed as a tier differentiator in `SAAS_SUBSCRIPTION_PLAN.md` but should be considered to prevent spam invitations by free users.
+
+### 3.15 `POST /api/keys` — API Key Generation Plan Gate ⚠️ HIGH
+
+**File:** `web/src/app/api/keys/route.ts`  
+**Current:** Any authenticated user can generate unlimited API keys.  
+**Per SAAS_SUBSCRIPTION_PLAN:** API access is a Premium-tier feature.  
+**Changes:**
+
+1. Check `getPlanConfig(plan).hasApiAccess` before allowing key creation
+2. Free users → 403: `"API access requires Plus or Premium plan"`
+3. Cap total active keys per tier: `getPlanConfig(plan).limits.maxApiKeys` (Free: 0, Plus: 2, Premium: 10)
+4. Frontend: Update `settings/page.tsx` to show upgrade CTA instead of key creation form for free users (see §4.9)
+
+### 3.16 `v1/jobs` Rate Limit — Tier-Aware Throttling
+
+**File:** `web/src/app/api/v1/jobs/route.ts` (line 57)  
+**Current:** `checkRateLimit('v1:${userId}', 60, 60 * 1000)` — flat 60 req/min for everyone.  
+**Changes:**
+
+1. Replace `60` with `getPlanConfig(plan).limits.apiRatePerMinute`
+2. Suggested values: Free: 0 (blocked), Plus: 100/min, Premium: 500/min
+3. This requires fetching the user before rate limiting (currently rate-limits before user lookup — reorder needed)
+
+### 3.17 Admin Config `platformFeePercent` — Conflict Resolution
+
+**File:** `web/src/app/admin/config/page.tsx` (line 11, 21, 69)  
+**Current:** Admin can set a global `platformFeePercent` (default 10%).  
+**Problem:** With per-tier fees (10%/7%/5%), the global override conflicts.  
+**Changes:**
+
+1. Deprecate the single `platformFeePercent` slider
+2. Replace with per-tier fee inputs: Free Fee %, Plus Fee %, Premium Fee %
+3. `getPlanConfig()` should check admin config overrides first, then fall back to code defaults
+4. The API route `PATCH /api/admin/config` needs updated validation for the new shape
 
 ---
 
@@ -361,13 +444,15 @@ Each call site already has the `job.clientId` available. Add a quick lookup: `co
 
 ### 4.3 `AIBidStrategist.tsx` — Limit Reached UX
 
-**Current:** Disables button silently when quota hit.  
+**Current:** Disables button silently when quota hit. The `isFreePlanLimited` check (line 41-44) hardcodes `>= 2` and only checks `=== "free"` — meaning Plus/Premium users never see limits even though they have finite caps.  
 **Changes:**
 
-1. Remove `disabled` for quota case (keep for `loading` only)
-2. On click when quota exhausted → fire `toast.error("AI limit reached", { description: "..." })`
-3. Update inline label from "(Free limit reached)" to dynamic tier-aware message
-4. Import and use `getPlanConfig` for limit display
+1. Replace the hardcoded `>= 2` with `getPlanConfig(currentUser.plan).limits.aiBidStrategyPerMonth`
+2. Remove the `=== "free"` gate — check limits for ALL tiers
+3. Remove `disabled` for quota case (keep for `loading` only)
+4. On click when quota exhausted → fire `toast.error("AI limit reached", { description: "..." })`
+5. Update inline label from "(Free limit reached)" to dynamic tier-aware message
+6. Import and use `getPlanConfig` for limit display
 
 ### 4.4 `profile/[id]/page.tsx` — Plan Badge
 
@@ -400,6 +485,43 @@ A reusable banner/toast component that shows when any limit is approaching (80% 
 - Bid placement modal (freelancer)
 - AI features (all roles)
 
+### 4.9 `settings/page.tsx` — API Key Access Gate
+
+**File:** `web/src/app/settings/page.tsx`  
+**Current:** Shows API key creation form for all authenticated users.  
+**Changes:**
+
+1. Check `getPlanConfig(currentUser?.plan).hasApiAccess` on mount
+2. If `false` → replace the key creation form with an upgrade CTA card:
+   - "API Access requires Plus or Premium plan"
+   - Button: "View Plans" → link to `/pricing`
+3. If `true` → show existing form + add note showing remaining key slots: `"${activeKeys} / ${maxApiKeys} keys used"`
+4. Display current plan badge in the header
+
+### 4.10 `admin/config/page.tsx` — Per-Tier Fee Config
+
+**File:** `web/src/app/admin/config/page.tsx`  
+**Current:** Single `platformFeePercent` slider (global 10%).  
+**Changes:**
+
+1. Replace single slider with 3 inputs: "Free Tier Fee %", "Plus Tier Fee %", "Premium Tier Fee %"
+2. Pre-populate from `getPlanConfig` defaults (10%, 7%, 5%)
+3. Admin overrides persist to the `platform_config` collection
+4. `getPlanConfig()` checks admin config overrides first, then falls back to code defaults
+5. Show a warning if any tier fee is set above 15% or below 3%
+
+### 4.11 `evaluate-bids` AI Prompt — Plan Label Update
+
+**File:** `web/src/app/api/ai/evaluate-bids/route.ts` (lines 92, 115)  
+**Current:** Passes `freelancer.plan` to Gemini prompt as `"Plan: ${b.freelancer.plan ?? 'free'}"`  
+**Change:** No code change needed — after the rename migration, this will automatically show "plus"/"premium" instead of "pro"/"enterprise". Documenting here for awareness only.
+
+### 4.12 `PATCH /api/user` — Security Note
+
+**File:** `web/src/app/api/user/route.ts` (line 51-61)  
+**Current:** `allowedFields` whitelist correctly **excludes** `plan`. This prevents client-side plan escalation via profile PATCH.  
+**Change:** No change needed — this is correct behavior. **Do NOT add `plan` to `allowedFields`**. Plan changes must go through admin override (§3.11) or webhook (§6).
+
 ---
 
 ## 5. Migration Scripts
@@ -430,15 +552,18 @@ console.log(`Renamed: ${result1.modifiedCount} pro→plus, ${result2.modifiedCou
 ```javascript
 await db.collection('users').updateMany(
   { 'planLimits.featuredBoostsUsedThisMonth': { $exists: false } },
-  { $set: { 'planLimits.featuredBoostsUsedThisMonth': 0 } }
+  { $set: {
+    'planLimits.featuredBoostsUsedThisMonth': 0,
+    'planLimits.invitesSentThisMonth': 0,
+  } }
 );
 ```
 
 ### 5.3 Create Indexes for New Collections
 
 ```javascript
-// subscriptions
-await db.collection('subscriptions').createIndex({ userId: 1 }, { unique: true });
+// subscriptions — userId is NON-UNIQUE (preserves history across cancel/resubscribe cycles)
+await db.collection('subscriptions').createIndex({ userId: 1 });
 await db.collection('subscriptions').createIndex({ razorpaySubscriptionId: 1 }, { unique: true });
 await db.collection('subscriptions').createIndex({ status: 1, gracePeriodEndsAt: 1 });
 
@@ -483,10 +608,17 @@ Phase 2 (Depends on: Phase 1)
 ├── Refactor /api/ai/bid-strategy to be tier-aware
 ├── Refactor /api/v1/jobs to gate on API access + use tier caps
 ├── Refactor /api/freelancer/dashboard to use getPlanConfig()
-├── Add team seat enforcement to /api/teams
+├── Add team seat enforcement to /api/teams (§3.7)
+├── Add direct-offer job quota enforcement (§3.12) ⚠️ HIGH
+├── Add invite cap enforcement to /api/invites (§3.14)
+├── Add API key plan gate to /api/keys (§3.15) ⚠️ HIGH
+├── Add tier-aware rate limiting to /api/v1 (§3.16)
 ├── Add featured boost enforcement
 ├── Add admin plan override route
+├── Deprecate admin global fee → per-tier fees (§3.17)
 ├── Update FreelancerFeed.tsx, pricing/page.tsx, badges
+├── Update settings/page.tsx with plan gate (§4.9)
+├── Update admin/config for per-tier fees (§4.10)
 └── Create PlanLimitBanner.tsx component
 
 Phase 3 (Depends on: Phase 1)
@@ -518,14 +650,20 @@ Phase 4 (Depends on: Phase 2, separate project)
 | `web/src/app/api/jobs/route.ts` | 2 | Centralized caps |
 | `web/src/app/api/bids/route.ts` | 2 | Centralized caps |
 | `web/src/app/api/ai/bid-strategy/route.ts` | 2 | Tier-aware caps |
-| `web/src/app/api/v1/jobs/route.ts` | 2 | API access gate + caps |
+| `web/src/app/api/v1/jobs/route.ts` | 2 | API access gate + caps + tier rate limit |
 | `web/src/app/api/payments/route.ts` | 0 | Pass plan to splitEscrow |
 | `web/src/app/api/jobs/[id]/route.ts` | 0 | Pass plan to splitEscrow |
 | `web/src/app/api/jobs/offer-response/route.ts` | 0 | Pass plan to splitEscrow |
+| `web/src/app/api/jobs/direct-offer/route.ts` | 2 | Job quota enforcement (§3.12) |
 | `web/src/app/api/freelancer/dashboard/route.ts` | 2 | Use getPlanConfig |
-| `web/src/app/api/teams/route.ts` | 2 | Seat cap enforcement |
-| `web/src/app/api/seed/route.ts` | 1 | New tier names + test data |
+| `web/src/app/api/teams/route.ts` | 2 | Seat cap enforcement (§3.7) |
+| `web/src/app/api/invites/route.ts` | 2 | Invite cap enforcement (§3.14) |
+| `web/src/app/api/keys/route.ts` | 2 | Plan gate for API access (§3.15) |
+| `web/src/app/api/seed/route.ts` | 1 | New tier names + AI quota fields |
+| `web/src/app/api/admin/config/route.ts` | 2 | Per-tier fee support (§3.17) |
 | `web/src/app/pricing/page.tsx` | 2 | Renamed tiers + wiring |
+| `web/src/app/settings/page.tsx` | 2 | Plan gate + upgrade CTA (§4.9) |
+| `web/src/app/admin/config/page.tsx` | 2 | Per-tier fee inputs (§4.10) |
 | `web/src/components/feed/FreelancerFeed.tsx` | 2 | Use getPlanConfig |
 | `web/src/components/ai/AIBidStrategist.tsx` | 0 | Toast notification |
 | `web/src/components/feed/MyJobsSection.tsx` | 1 | Badge rename |
@@ -546,3 +684,78 @@ Phase 4 (Depends on: Phase 2, separate project)
 | `scripts/migrate-plan-names.mjs` | 1 |
 | `scripts/migrate-plan-limits.mjs` | 1 |
 | `scripts/create-indexes.mjs` | 4 |
+
+---
+
+## 8. Validation Log
+
+> Three-pass codebase audit performed against all 25 API route directories, 13 lib files, all frontend components, admin pages, and state management.
+
+### Pass 1+2 Findings (Fixed)
+
+| # | Type | Finding | Resolution |
+|---|------|---------|------------|
+| 1 | ❌ Error | Missing AI route `summarize-reviews` in §3.4 | Added as 7th route |
+| 2 | ❌ Error | `splitEscrow` refactor broke signature (changed `feePercent` to `PlanTier`) | Kept original param, callers resolve fee from config |
+| 3 | ❌ Error | Feature route path wrong (`jobs/route.ts` vs `jobs/feature/route.ts`) | Fixed file path in §3.8 |
+| 4 | ⚠️ Gap | "Upgrade to Pro" error strings not listed as rename targets | Added note in §3.1 covering all 6 files |
+| 5 | ⚠️ Gap | Seed data missing AI quota fields for testing | Expanded §3.10 with pre-population steps |
+| 6 | ⚠️ Gap | `AIBidStrategist.tsx` hardcoded `>= 2` and `=== "free"` gate | Fixed in §4.3 |
+| 7 | ⚠️ Gap | `subscriptions.userId` index was marked `unique` | Changed to non-unique in §1.2 and §5.3 |
+
+### Pass 3 Findings (Fixed)
+
+| # | Type | Finding | Severity | Resolution |
+|---|------|---------|----------|------------|
+| 8 | ⚠️ Gap | Direct offers (`/api/jobs/direct-offer`) bypass job quota entirely | 🔴 HIGH | Added §3.12 |
+| 9 | ⚠️ Gap | Teams route has no plan gate (anyone can create) | 🔴 HIGH | Merged into §3.7, §3.13 redirects there |
+| 10 | ⚠️ Gap | Unlimited freelancer invites for all tiers | 🟡 MEDIUM | Added §3.14 |
+| 11 | ⚠️ Gap | API keys available to free users (should be Plus+) | 🔴 HIGH | Added §3.15 |
+| 12 | ⚠️ Gap | API rate limit is flat 60/min for everyone | 🟡 MEDIUM | Added §3.16 |
+| 13 | ⚠️ Gap | Admin global `platformFeePercent` conflicts with per-tier fees | 🟡 MEDIUM | Added §3.17 |
+
+### Verified Correct (✅ 36+ claims)
+
+| Area | Count | Notes |
+|------|-------|-------|
+| Hardcoded limit values (§2) | 8/8 | All line numbers and values confirmed |
+| splitEscrow call sites (§3.6) | 4/4 | All file paths and line numbers confirmed |
+| AI routes using quota check (§3.4) | 7/7 | All confirmed (including added summarize-reviews) |
+| Badge checks (§4.4-4.6) | 3/3 | profile:123, MyJobs:71, TalentPool:122 |
+| Routes with no plan gate needed | 12/12 | chat, disputes, email-logs, milestones, notifications, reviews, transactions, referrals, assessments, auth, pricing engine, email |
+| Security checks | 2/2 | `PATCH /api/user` correctly excludes `plan` from allowedFields; admin route requires `ADMIN_SECRET_KEY` |
+
+---
+
+## 9. Known Risks & Design Decisions
+
+### 9.1 Quota Counters Never Decrement
+
+**Problem:** When a bid is deleted or rejected, `planLimits.bidsPlacedThisMonth` is never decremented. A user who posts 10 bids (free cap) then deletes 5 still shows 10/10 used. Same applies to jobs.
+
+**Impact:** Users may permanently hit limits even after cleaning up their activity.
+
+**Decision:** This is an intentional simplification for MVP. Decrementing quotas introduces race conditions and potential abuse vectors (create-delete loops to circumvent limits). The monthly reset at `monthResetAt` provides a natural ceiling.
+
+**Future:** If user complaints are significant, add opt-in decrement for `DELETE /api/bids` with a separate `$inc: { 'planLimits.bidsPlacedThisMonth': -1 }` call, protected by a minimum of 0.
+
+### 9.2 AI Prompt Exposes Plan Tier
+
+**File:** `api/ai/evaluate-bids/route.ts` (line 115)  
+**Context:** The AI bid evaluator sends `"Plan: plus"` / `"Plan: premium"` to Gemini as part of freelancer context. This means the AI's recommendation could be biased by the freelancer's subscription level.
+
+**Decision:** Keep for now — it provides useful signal (paid users are more invested). If bias becomes a concern, strip `plan` from the AI prompt context.
+
+### 9.3 Admin Fee Override vs Plan Config
+
+**Current conflict:** Admin config has a global `platformFeePercent` and the new plan system has per-tier fees. The resolution (§3.17) replaces the global with per-tier inputs. During the transition, `getPlanConfig()` should:
+1. Check if admin overrides exist in DB
+2. If yes, use admin values
+3. If no, use code defaults from `plans.ts`
+
+This means a cold start with no admin config uses the hardcoded 10/7/5 split.
+
+### 9.4 `teamSeats: 0` for Free Tier
+
+The free tier `teamSeats` was changed from `1` to `0`. This means free users **cannot** create teams at all (not even a solo team). If solo team creation is desired for free users, set back to `1` and gate only the invite action.
+

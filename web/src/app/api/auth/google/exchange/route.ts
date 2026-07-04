@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
       accessToken: payload.accessToken,
       user: payload.user,
       expiresIn: payload.expiresIn,
+      roleAdded: payload.roleAdded ?? false,
     });
   } catch (err) {
     console.error("[Google Exchange Error]", err);

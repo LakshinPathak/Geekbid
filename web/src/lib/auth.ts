@@ -108,7 +108,7 @@ export function clearRefreshCookie(response: NextResponse): NextResponse {
 }
 
 // ─── Refresh Token Storage (DB-backed for rotation) ────────────
-async function storeRefreshToken(userId: string, token: string) {
+export async function storeRefreshToken(userId: string, token: string) {
  const db = await getDb();
  await db.collection("refresh_tokens").updateOne(
  { userId },
@@ -164,13 +164,44 @@ export async function registerUser(
  const emailStr = String(email ?? "").toLowerCase().trim();
  const passwordStr = String(password ?? "");
  const roleStr = String(role ?? "freelancer");
- const db = await getDb();
- const existing = await db.collection("users").findOne({ email: emailStr });
- if (existing) return { error: "Email already registered" };
 
  if (passwordStr.length < 6) return { error: "Password must be at least 6 characters" };
  if (!["freelancer", "client"].includes(roleStr)) {
  return { error: "Invalid role. Must be freelancer or client" };
+ }
+
+ const db = await getDb();
+ const existing = await db.collection("users").findOne({ email: emailStr });
+
+ if (existing) {
+ // Dual-role: this email already has an account. Adding a second role to
+ // it must be proven with that account's own password — otherwise anyone
+ // could "add a role" to a stranger's account by guessing their email.
+ if (!existing.password) {
+ return { error: "This email uses Google sign-in. Log in with Google to add another role." };
+ }
+ if (!compareSync(passwordStr, existing.password)) {
+ return { error: "Email already registered" };
+ }
+
+ const existingRoles: string[] = existing.roles ?? [existing.role];
+ if (existingRoles.includes(roleStr)) {
+ return { error: `You already have a ${roleStr} account — please log in instead` };
+ }
+
+ const updatedRoles = [...existingRoles, roleStr];
+ const geekScoreUpdate = roleStr === "freelancer" && !(existing.geekScore ?? 0) ? { geekScore: 100 } : {};
+ await db.collection("users").updateOne(
+ { _id: existing._id },
+ { $set: { role: roleStr, roles: updatedRoles, ...geekScoreUpdate } }
+ );
+
+ const userId = existing._id.toString();
+ const { accessToken, refreshToken } = await createTokenPair(userId, roleStr, emailStr);
+ await storeRefreshToken(userId, refreshToken);
+
+ const safeUser = { ...existing, ...geekScoreUpdate, role: roleStr, roles: updatedRoles, _id: userId, id: userId, password: undefined };
+ return { accessToken, refreshToken, user: safeUser, roleAdded: true };
  }
 
  const hashed = hashSync(passwordStr, 12);
@@ -179,6 +210,7 @@ export async function registerUser(
  email: emailStr,
  password: hashed,
  role: roleStr,
+ roles: [roleStr],
  avatarInitial: nameStr
  .split(" ")
  .map((w) => w[0])
@@ -220,11 +252,13 @@ type GoogleProfile = {
 export async function googleLoginUser(profile: GoogleProfile) {
  const db = await getDb();
  const { email, name, avatarUrl, googleId, role } = profile;
+ const requestedRole = ["freelancer", "client"].includes(role) ? role : "freelancer";
 
  // Check if user exists by email or googleId
  let user = await db
  .collection("users")
  .findOne({ $or: [{ email: email.toLowerCase() }, { googleId }] });
+ let roleAdded = false;
 
  if (user) {
  // Link Google ID if not already linked
@@ -233,6 +267,26 @@ export async function googleLoginUser(profile: GoogleProfile) {
  { _id: user._id },
  { $set: { googleId, avatarUrl: avatarUrl || user.avatarUrl } }
  );
+ user = { ...user, googleId, avatarUrl: avatarUrl || user.avatarUrl };
+ }
+
+ const existingRoles: string[] = user.roles ?? [user.role];
+ if (!existingRoles.includes(requestedRole)) {
+ // Dual-role: signing in with Google already proves ownership of this
+ // email, so granting the newly-requested role here (instead of
+ // silently ignoring it, which was the original bug) is safe.
+ const updatedRoles = [...existingRoles, requestedRole];
+ const geekScoreUpdate = requestedRole === "freelancer" && !(user.geekScore ?? 0) ? { geekScore: 100 } : {};
+ await db.collection("users").updateOne(
+ { _id: user._id },
+ { $set: { role: requestedRole, roles: updatedRoles, ...geekScoreUpdate } }
+ );
+ user = { ...user, role: requestedRole, roles: updatedRoles, ...geekScoreUpdate };
+ roleAdded = true;
+ } else if (user.role !== requestedRole) {
+ // Already has this role from an earlier signup — switch which role is active.
+ await db.collection("users").updateOne({ _id: user._id }, { $set: { role: requestedRole } });
+ user = { ...user, role: requestedRole };
  }
  } else {
  // Create new user from Google profile
@@ -242,7 +296,8 @@ export async function googleLoginUser(profile: GoogleProfile) {
  password: null, // No password for OAuth users
  googleId,
  avatarUrl: avatarUrl || "",
- role: ["freelancer", "client"].includes(role) ? role : "freelancer",
+ role: requestedRole,
+ roles: [requestedRole],
  avatarInitial: name
  .trim()
  .split(" ")
@@ -250,7 +305,7 @@ export async function googleLoginUser(profile: GoogleProfile) {
  .join("")
  .toUpperCase()
  .slice(0, 2),
- geekScore: role === "freelancer" ? 100 : 0,
+ geekScore: requestedRole === "freelancer" ? 100 : 0,
  skills: [],
  bio: "",
  isVerified: true, // Google-verified email
@@ -281,7 +336,7 @@ export async function googleLoginUser(profile: GoogleProfile) {
  password: undefined,
  };
 
- return { accessToken, refreshToken, user: safeUser };
+ return { accessToken, refreshToken, user: safeUser, roleAdded };
 }
 
 // ─── User Login ────────────────────────────────────────────────
@@ -295,6 +350,9 @@ export async function loginUser(email: unknown, password: unknown) {
  .collection("users")
  .findOne({ email: emailStr });
  if (!user) return { error: "Invalid email or password" };
+ // Google-only accounts have password: null — compareSync requires a string
+ // hash, so this must be checked before calling it, not just fail the check.
+ if (!user.password) return { error: "This account uses Google sign-in. Please log in with Google." };
  if (!compareSync(passwordStr, user.password))
  return { error: "Invalid email or password" };
 

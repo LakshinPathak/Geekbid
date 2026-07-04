@@ -50,7 +50,7 @@ export function timeAgo(dateStr: string): string {
 export type Role = 'client' | 'freelancer' | 'admin';
 
 export type User = {
- id: string; _id?: string; role: Role; fullName: string; email: string; avatarInitial: string;
+ id: string; _id?: string; role: Role; roles?: Role[]; fullName: string; email: string; avatarInitial: string;
  geekScore: number; skills: string[]; bio: string; isVerified: boolean;
  company?: string; githubUsername?: string; availability?: string;
  hourlyRateMin?: number; hourlyRateMax?: number;

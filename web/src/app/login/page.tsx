@@ -101,7 +101,7 @@ function LoginPageContent() {
  const data = await res.json();
  if (data.error) throw new Error(data.error);
  googleAuth(data.accessToken, data.expiresIn, data.user);
- setSuccess("Signed in with Google!");
+ setSuccess(data.roleAdded ? `${data.user.role} role added to your account!` : "Signed in with Google!");
  setTimeout(() => router.replace("/feed"), 300);
  } catch {
  setError("Failed to process Google login");
@@ -127,7 +127,7 @@ function LoginPageContent() {
  : await register(name, email, password, role);
 
  if (result.ok) {
- setSuccess(mode === "login" ? "Welcome back!" : "Account created!");
+ setSuccess(mode === "login" ? "Welcome back!" : result.message);
  setTimeout(() => router.push("/feed"), 500);
  } else {
  setError(result.message);

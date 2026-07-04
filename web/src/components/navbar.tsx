@@ -10,9 +10,10 @@ import {
 import {
  LayoutGrid, MessageSquare, Bell, User, ChevronDown,
  LogOut, Settings, Briefcase, PlusCircle, DollarSign, Shield,
- CreditCard, X, Menu,
+ CreditCard, X, Menu, Repeat,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import { toast } from "sonner";
 
 const NAV_ITEMS = [
  { href: "/feed", label: "Feed", icon: LayoutGrid },
@@ -21,7 +22,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Navbar() {
- const { currentUser, unreadCount, logout, mounted } = useApp();
+ const { currentUser, unreadCount, logout, mounted, switchRole } = useApp();
  const pathname = usePathname();
  const router = useRouter();
  const [mobileOpen, setMobileOpen] = useState(false);
@@ -44,6 +45,19 @@ export default function Navbar() {
  const handleLogout = () => {
  logout();
  router.push("/");
+ };
+
+ const otherRoles = (currentUser.roles ?? [currentUser.role]).filter(r => r !== currentUser.role && r !== "admin");
+
+ const handleSwitchRole = async (role: "freelancer" | "client") => {
+ const result = await switchRole(role);
+ if (result.ok) {
+ toast.success(`Switched to ${role}`);
+ router.push("/feed");
+ router.refresh();
+ } else {
+ toast.error("Couldn't switch role", { description: result.message });
+ }
  };
 
  return (
@@ -119,6 +133,20 @@ export default function Navbar() {
  <p className="text-xs text-[#a8997e] mt-0.5">{currentUser.email}</p>
  </div>
  <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
+ {otherRoles.length > 0 && (
+ <>
+ {otherRoles.map((r) => (
+ <DropdownMenuItem
+ key={r}
+ onClick={() => handleSwitchRole(r as "freelancer" | "client")}
+ className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]"
+ >
+ <Repeat className="h-4 w-4 mr-2.5 text-[#c9a84c]" /> Switch to {r}
+ </DropdownMenuItem>
+ ))}
+ <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
+ </>
+ )}
  <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
  <User className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Profile
  </DropdownMenuItem>

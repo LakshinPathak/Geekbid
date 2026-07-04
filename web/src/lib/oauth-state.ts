@@ -42,6 +42,7 @@ type ExchangePayload = {
   user: unknown;
   expiresIn: number;
   createdAt: number;
+  roleAdded?: boolean;
 };
 
 const EXCHANGE_TTL_MS = 60 * 1000; // one-time code is only valid for 60s
@@ -54,14 +55,14 @@ function sweepExpired() {
   }
 }
 
-export function createExchangeCode(accessToken: string, user: unknown, expiresIn: number): string {
+export function createExchangeCode(accessToken: string, user: unknown, expiresIn: number, roleAdded?: boolean): string {
   sweepExpired();
   const code = crypto.randomBytes(32).toString("hex");
-  exchangeStore.set(code, { accessToken, user, expiresIn, createdAt: Date.now() });
+  exchangeStore.set(code, { accessToken, user, expiresIn, createdAt: Date.now(), roleAdded });
   return code;
 }
 
-export function consumeExchangeCode(code: string): { accessToken: string; user: unknown; expiresIn: number } | null {
+export function consumeExchangeCode(code: string): { accessToken: string; user: unknown; expiresIn: number; roleAdded?: boolean } | null {
   sweepExpired();
   const payload = exchangeStore.get(code);
   if (!payload) return null;
