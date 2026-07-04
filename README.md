@@ -1,11 +1,35 @@
 # GeekBid — Reverse-Auction Freelance Marketplace
 
-> **The world's first reverse-auction platform for tech talent.**  
+> **The world's first reverse-auction platform for tech talent.**
 > Clients post jobs. Prices decay over time. Freelancers bid the price **down**. Best value wins.
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v16** — Premium visual overhaul of the landing page and both feed dashboards, dual-role accounts (one login can be both a client and a freelancer), an OAuth sign-in bug fix, and a round of bug fixes found via live testing (job detail layout, QuickBid floor violation, a feed duplicate-key crash). See [What's in v16](#whats-in-v16) below.
+**Current version: v16** — Premium visual overhaul of the landing page and both feed
+dashboards, dual-role accounts (one login can be both a client and a freelancer), an
+OAuth sign-in bug fix, and a round of bug fixes found via live testing. See
+[What's in v16](#whats-in-v16).
+
+---
+
+## Table of Contents
+
+1. [How It Works](#how-it-works)
+2. [What's in v16](#whats-in-v16)
+3. [Project Structure](#project-structure)
+4. [Tech Stack](#tech-stack)
+5. [Core Domain Model](#core-domain-model)
+6. [Features](#features)
+7. [Frontend Page Map](#frontend-page-map)
+8. [API Reference (full)](#api-reference-full)
+9. [Quick Start](#quick-start)
+10. [Docker](#docker)
+11. [Microservice Backend (experimental)](#microservice-backend-experimental)
+12. [Environment Variables](#environment-variables)
+13. [Security](#security)
+14. [Troubleshooting](#troubleshooting)
+15. [Version History](#version-history)
+16. [License](#license)
 
 ---
 
@@ -97,122 +121,68 @@ plans rather than shipped code: [`SAAS_SUBSCRIPTION_PLAN.md`](SAAS_SUBSCRIPTION_
 subscription-tier redesign with full schema/route-level implementation detail) and the
 UI-library research above. Both need a decision before any of it lands in code.
 
-## What's in v15
-
-A full audit (security, bugs, architecture, feature-completeness, CI/CD) with every
-verifiable High/Medium finding fixed — **no feature or architecture changes**. Full
-detail: [`V15_FIXES.md`](V15_FIXES.md).
-
-| Area | Fix |
-|------|-----|
-| **AI quota race** | `checkAndConsumeAiQuota` and `bid-strategy`'s own counter now use one atomic `findOneAndUpdate` instead of read-then-write — closes a race that let concurrent requests exceed the free-plan AI cap |
-| **Milestone escrow race** | `PATCH /api/milestones` (`approve`) now atomically claims the milestone's release right before touching the transaction — closes a race that could double-release the same milestone's escrow |
-| **Rate limiting** | Added to all 8 `/api/ai/*` routes (per-user), `/api/auth/refresh` (per-IP), and the public `/api/v1/jobs` (per-API-key) — previously only login and admin-key-verify were throttled |
-| **Token refresh race** | `store.tsx`'s `silentRefresh()` now shares its in-flight promise instead of returning `null` to any request that raced the refresh window |
-| **Data-fetch waterfall** | `loadAllData()` no longer awaits `fetchJobs()`/`fetchBids()` sequentially before the parallel batch |
-| **`.env.example` drift** | Regenerated to match every var `web/Dockerfile` and CI actually require (was missing Cloudinary, Gemini, admin key, Resend) |
-| **No error boundary** | Added `web/src/app/error.tsx` + `loading.tsx` — previously zero existed anywhere in the app |
-
-## What's in v14
-
-Correctness & reliability hardening of the live Next.js app — **no feature or architecture changes**. (The microservice-migration experiment lives on the separate `v13_with_microservice_half_code` branch.) Full detail: [`V14_FIXES.md`](V14_FIXES.md).
-
-| Area | Fix |
-|------|-----|
-| **Money math (correctness)** | New `web/src/lib/money.ts` computes every escrow split in **integer cents**, guaranteeing `platformFee + netAmount === gross`. Wired into job accept / accept-best, direct-offer acceptance, Razorpay verify, and milestone partial release (exact fully-released check — the old `>= gross - 0.01` fudge is gone). Chained float math like `458 * 0.1 === 45.800000000000004` no longer reaches the ledger |
-| **Cross-tab auth sync** | `store.tsx` now listens for `storage` events — logging in/out in one tab updates every open tab instead of leaving them stale |
-| **Mongo connection singleton** | `getDb()` caches the connect *promise* on `globalThis` (not just the resolved Db), so concurrent cold starts / HMR reloads reuse one client instead of churning connections; a failed connect isn't cached |
-| **No error leaks** | `POST /api/seed` no longer returns raw `details: String(err)` to the client; `team/page.tsx` no longer swallows load errors in an empty `catch {}` |
-
-## What's in v12
-
-A verification pass over all 22 issues from the v11 audit (21 confirmed fixed) plus 8 new findings, all fixed. Full write-up: [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md). Highlights:
-
-| Area | Fix |
-|------|-----|
-| **Admin key exposure (critical)** | The admin panel config page rendered the real `ADMIN_SECRET_KEY` value in a client component — it shipped in the JS bundle. Now masked; rotate the key in your deployment |
-| **Payment replay** | `PATCH /api/payments` is now idempotent on `razorpayPaymentId` — replaying a verified payment payload can no longer mint duplicate escrow transactions |
-| **Direct-offer race** | Offer accept/decline now claims `offerStatus: "pending"` atomically (`findOneAndUpdate`, 409 on lost race); escrow is created only after a successful claim |
-| **API auth gaps** | `GET /api/bids` and `GET /api/milestones` now require authentication (they leaked bid messages and milestone financials to anonymous callers); milestone `start` now requires the assigned freelancer |
-| **AI quota** | `summarize-reviews` was the last AI route without a usage cap — now on the shared quota |
-| **Mock payments** | Mock payment verification (client-trusted amounts) is now rejected outright when `NODE_ENV === "production"` |
-
-## What's in v11
-
-A full audit of the bid → accept → escrow → chat pipeline, plus a system-wide pass over auth, payments, and AI routes. Full write-up: [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md). Highlights:
-
-| Area | Fix |
-|------|-----|
-| **Job ownership (critical)** | `PATCH /api/jobs/[id]` (`cancel`/`complete`) now checks `job.clientId === userId` — previously any client could cancel or force-complete *another* client's job and force-release their escrow |
-| **Escrow integrity** | Job acceptance (`accept`, `accept_best`) and escrow `release`/`dispute` are now atomic (`findOneAndUpdate` with a state-guard filter) instead of read-then-write, closing double-transaction and dispute-override races |
-| **Payments** | Payment amounts are now verified against Razorpay's actual captured amount server-side, not trusted from the client |
-| **Chat authorization** | `/api/chat/rooms` and `/api/chat/messages` now require the caller to be a participant — previously any authenticated user could join or write into any conversation |
-| **OAuth security** | Google login now validates a CSRF `state` nonce and hands off tokens via a one-time exchange code instead of putting them in the redirect URL |
-| **Seed endpoint** | `/api/seed` now requires an authenticated admin, not just an environment flag |
-| **Public API (v1)** | API-key lookup is now O(1) (indexed hash) instead of bcrypt-scanning every key; `/api/v1/jobs` enforces the same category/plan-limit rules as the internal API |
-| **Escrow/payout completeness** | The job-completion route the frontend actually calls now releases escrow (it previously didn't); milestone approval now does a real partial escrow release; referral credits now actually accrue |
-| **Notifications** | Losing bidders and clients whose direct offer was declined now get an in-app notification, not just an email that can silently fail |
-| **Plan limits & AI quotas** | Free-plan job/bid caps are now atomic (unracable); all AI routes now share a rate limit, not just bid-strategy |
-| **Bid evaluator** | `POST /api/ai/evaluate-bids` now takes `{jobId}` and re-fetches bids/freelancers server-side instead of trusting client-submitted data |
-
-## What's in v10
-
-| Area | Change |
-|------|--------|
-| **Admin Panel** | Full back-office: Dashboard, Users, Jobs, Transactions, Disputes, Audit Logs, Config. 2FA key gate, all data from MongoDB |
-| **Security** | NoSQL injection, ReDoS, brute-force, IDOR, null-deref — 16 vulnerabilities patched. `sanitize.ts` utility library |
-| **Cloudinary CDN** | All avatars via Cloudinary — `CldImage` with face-detect crop, WebP auto-format |
-| **AvatarUploader** | `CldUploadWidget` with crop-to-square, change + remove photo |
-| **Gemini AI** | Bid Strategist, Bid Evaluator, Description Generator, Pricing Advisor — all gated server-side |
-
-## What's in v9
-
-| Area | Change |
-|------|--------|
-| **Role-based feed** | `/feed` auto-routes: clients → Procurement Terminal, freelancers → Mission Control |
-| **Procurement Terminal** | SpendAnalytics, MyJobsSection carousel, MarketIntel, TalentPool |
-| **Mission Control** | FreelancerStats, RecommendedCarousel, ActiveBidsTracker, advanced filters |
-| **Landing page** | Staggered hero entrance, price decay card glow + particle sparks, testimonials carousel |
-
 ---
 
-## Features
+## Project Structure
 
-### For Clients
-- Post jobs in 3 steps with live price decay preview and adaptive pricing toggle
-- Procurement Terminal — scrollable carousel of your active jobs with per-job bid panels
-- Spend Analytics — budget posted, average bid, decay rate, savings from price drop
-- Accept Best Bid — one click awards the job to the lowest bidder, creates escrow, fires emails
-- Invite to Bid — invite specific freelancers from the Talent Pool
-- Direct Hire — send a fixed-price offer to any freelancer with GeekScore > 500
-- Market Intelligence — average starting prices, decay rates, time-to-first-bid by category
-- Escrow payments — funds held until you release or mark complete
+GeekBid is a monorepo with **two independent backends** for the same domain model: the
+Next.js app's own `src/app/api` routes (what actually runs in production/dev today) and a
+parallel Express microservice stack (`backend/`, an architecture experiment — see
+[Microservice Backend](#microservice-backend-experimental)).
 
-### For Freelancers
-- Mission Control — KPI bar (matches, bids used, win rate, earning potential)
-- Recommended carousel — top 5 skill-matched open jobs
-- Active Bids Tracker — live rank, current price, cooldown timer
-- Smart filters — search, category, budget range, competition, $/hr floor, multi-skill picker
-- Sort modes — Best Match, Price low/high, Newest, Fewest Bids, Skill Match %
-- Quick Bid — 2% below current price in one click
-- GeekScore — reputation that grows with successful jobs and ratings
-
-### AI Features
-- **Bid Strategist** — 7-signal analysis (price, decay rate, demand multiplier, bid distribution, time remaining, competition, freelancer fit). Returns suggested bid, win probability, timing, risks, and 2 alternatives
-- **Bid Evaluator** — client-side bid ranking by value score (price + skill match + GeekScore + commitment)
-- **Description Generator** — type a title, click Generate, get a 200-word professional description
-- **Pricing Advisor** — recommends starting price, floor, and hourly decay rate based on category + skills
-- Free plan: 2 AI analyses per month; graceful degradation when Gemini unavailable
-
-### Admin Panel
-- 2FA key gate — requires admin JWT + separate `ADMIN_SECRET_KEY`
-- Dashboard — live MongoDB KPIs: users, open jobs, disputes, GMV, held escrow
-- Users — full CRUD, soft-delete with reason, GeekScore override
-- Jobs — full CRUD, status override, featured toggle, remove with reason
-- Transactions — paginated table, Release Escrow and Refund with reason modal, CSV export
-- Disputes — 4 resolution types: refund client, pay freelancer, split 50/50, dismiss
-- Audit Logs — append-only log of every admin action
-- Config — platformFeePercent, decayRate, maintenanceMode, AI toggle, env var status grid
+```
+Geekbid/
+├── web/                                ← Next.js 16 app (the real app — port 3000)
+│   ├── src/app/
+│   │   ├── page.tsx                       Landing page (composes web/src/components/landing/*)
+│   │   ├── login/                         Login + register (password & Google OAuth)
+│   │   ├── feed/                          Role router → ClientFeed or FreelancerFeed
+│   │   ├── jobs/[id]/                     Job detail — bids, counter-bid, AI strategist, escrow
+│   │   ├── post-job/                      3-step job posting wizard (client)
+│   │   ├── my-jobs/                       Client's posted jobs / freelancer's active bids
+│   │   ├── profile/ , profile/[id]/       Own profile edit / public profile view
+│   │   ├── inbox/ , notifications/        Chat + notifications
+│   │   ├── payments/ , earnings/          Razorpay escrow checkout / freelancer earnings
+│   │   ├── team/ , assessments/           Team seats / skill assessments
+│   │   ├── pricing/ , settings/           Plan comparison (mock) / account settings
+│   │   ├── admin/                         7-section back office (see Features → Admin Panel)
+│   │   └── api/                           ~70 REST route files — see API Reference
+│   ├── src/components/
+│   │   ├── landing/                       ~15 landing-page section components + hooks
+│   │   ├── feed/                          17 client/freelancer dashboard components
+│   │   ├── ai/                            AIBidStrategist widget
+│   │   └── admin/                         AdminKeyGate, AdminSidebar
+│   └── src/lib/
+│       ├── auth.ts                        JWT (jose) + bcrypt + Google OAuth + dual-role logic
+│       ├── store.tsx                       App-wide React Context — all client-side state/actions
+│       ├── pricing.ts                     Price-decay + adaptive-pricing engine
+│       ├── money.ts                        Integer-cent escrow-fee split math
+│       ├── sanitize.ts                     Input sanitization + in-memory rate limiting
+│       ├── mongodb.ts                      Atlas connection singleton
+│       ├── ai.ts                           Gemini SDK wrapper
+│       ├── email.ts                        Resend transactional emails (20+ templates)
+│       └── oauth-state.ts                  OAuth CSRF nonce + one-time exchange codes
+│
+├── backend/                            ← Express microservices (experimental, not the live app)
+│   ├── services/gateway/                  Port 3000 — reverse proxy to the other 6
+│   ├── services/auth-service/             Port 3001
+│   ├── services/job-service/              Port 3003
+│   ├── services/bidding-service/          Port 3004 (Socket.IO)
+│   ├── services/payment-service/          Port 3005
+│   ├── services/notification-service/     Port 3006
+│   ├── services/chat-service/             Port 3007 (Socket.IO)
+│   ├── common/                            Shared JWT/DB helpers across services
+│   └── scripts/dev.js                     Boots all 7 services together
+│
+├── docker-compose.yml                  Web + backend + MongoDB, one command
+├── SAAS_SUBSCRIPTION_PLAN.md            Proposed Free/Plus/Premium tier design (plan only)
+├── SAAS_CRUD_IMPLEMENTATION.md          Schema/route-level detail for the above (plan only)
+├── UI_ENHANCEMENT_PLAN.md               bklit/motion.dev/Anime.js research (plan only)
+├── oauthfix_plan.md                     Dual-role/OAuth-fix research trail
+├── V14_FIXES.md , V15_FIXES.md          Prior audit write-ups
+├── geekbid_*.md                         Earlier security/bid-acceptance audit reports
+└── README.md                            This file
+```
 
 ---
 
@@ -220,58 +190,33 @@ A full audit of the bid → accept → escrow → chat pipeline, plus a system-w
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
-| **Styling** | Tailwind CSS v4, Royal Dark design system, Georgia serif + Inter sans |
+| **Frontend** | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
+| **Styling** | Tailwind CSS v4, "Royal Dark" design system — `#080b14` bg, `#c9a84c` gold, `#f0e8d4` ivory, Georgia serif + Inter sans |
 | **UI Components** | Radix UI primitives, Lucide icons, Sonner toasts |
-| **State** | React Context + useCallback (no external state library) |
-| **Auth** | JWT (jose), bcrypt 12 rounds, Google OAuth 2.0, HttpOnly refresh cookies |
+| **State** | React Context + `useCallback` (`web/src/lib/store.tsx`) — no external state library |
+| **Auth** | JWT (`jose`), bcrypt (12 rounds), Google OAuth 2.0, HttpOnly refresh cookies, dual-role accounts |
 | **Database** | MongoDB Atlas (native driver, no ORM) |
-| **Image CDN** | Cloudinary — `next-cloudinary` (`CldImage`, `CldUploadWidget`) |
-| **AI** | Google Gemini 2.0 Flash via `@google/generative-ai` |
-| **Payments** | Razorpay escrow (order → verify → release flow) |
-| **Email** | Resend (Nodemailer) — transactional emails for all key events |
-| **Real-time** | Socket.IO — bid decay broadcast + chat |
-| **Backend** | Express.js microservices (gateway, auth, jobs, bidding, payments, notifications, chat) |
-| **CI/CD** | GitHub Actions — lint, typecheck, build, Docker, deploy |
+| **Image CDN** | Cloudinary — `next-cloudinary` (`CldImage`, `CldUploadWidget`), face-detect crop, WebP auto-format |
+| **AI** | Google Gemini 2.0 Flash via `@google/generative-ai` — 8 gated routes |
+| **Payments** | Razorpay escrow (order → verify → release) |
+| **Email** | Resend (Nodemailer) — transactional emails for every key event |
+| **Real-time** | Socket.IO — used by the microservice backend variant (bid decay broadcast + chat) |
+| **Backend (experimental)** | Express.js microservices — gateway, auth, jobs, bidding, payments, notifications, chat |
+| **CI/CD** | GitHub Actions — lint, typecheck, build, Docker |
 
 ---
 
-## Architecture
+## Core Domain Model
 
-```
-GeekBid/
-├── web/                          ← Next.js 16 app (port 3000)
-│   ├── src/app/                    16 pages + ~50 API routes
-│   │   ├── admin/                  Admin panel (7 sections)
-│   │   └── api/                    REST API routes
-│   ├── src/components/
-│   │   ├── admin/                  AdminKeyGate, AdminSidebar
-│   │   └── feed/                   12 role-split feed components
-│   └── src/lib/
-│       ├── auth.ts                 JWT helpers + authenticateRequest
-│       ├── sanitize.ts             Input sanitization + rate limiting
-│       ├── mongodb.ts              Atlas connection singleton
-│       ├── store.tsx               App-wide context + store actions
-│       ├── ai.ts                   Gemini SDK wrapper
-│       ├── cloudinary.ts           Cloudinary server config
-│       └── email.ts                Transactional emails
-│
-├── backend/                      ← Express microservices
-│   ├── services/gateway/           Port 3000 — reverse proxy
-│   ├── services/auth-service/      Port 3001
-│   ├── services/job-service/       Port 3003
-│   ├── services/bidding-service/   Port 3004 (Socket.IO)
-│   ├── services/payment-service/   Port 3005
-│   ├── services/notification-service/ Port 3006
-│   └── services/chat-service/      Port 3007 (Socket.IO)
-│
-├── docs/                         ← Project documentation
-├── prompts/                      ← AI generation prompts
-├── docker-compose.yml
-└── README.md
-```
+### Users & Roles
 
-### Price Decay Formula
+`User.role: 'client' | 'freelancer' | 'admin'` is the **active** role a session operates
+as. As of v16, `User.roles: Role[]` tracks every role an account has ever been granted —
+one email can hold both a client and a freelancer identity (see
+[What's in v16](#whats-in-v16)). `admin` can never be self-granted through registration or
+OAuth — only set directly in MongoDB or via another admin's `PATCH /api/admin/users/[id]`.
+
+### Pricing Engine (`web/src/lib/pricing.ts`)
 
 **Fixed pricing:**
 ```
@@ -285,6 +230,263 @@ currentPrice  = max(startingPrice − effectiveRate × elapsedHours, minimumPric
 
 demandMultiplier:  0 bids → 1.0×  |  1-2 → 0.85×  |  3-4 → 0.7×  |  5+ → 0.55×
 ```
+
+### GeekScore
+
+Freelancer reputation, `0–1000`, five tiers (Newbie → 10x Engineer). Starts at `100` on
+signup, `+50` per passed skill assessment, otherwise only admin-adjustable. Gates Direct
+Hire (requires the target freelancer's GeekScore ≥ 500) and a "best value" bid highlight
+for clients.
+
+### Escrow & Money (`web/src/lib/money.ts`)
+
+Every fee split is computed in **integer cents** (`splitEscrow(gross, feePercent)`),
+guaranteeing `platformFee + netAmount === gross` — no floating-point drift reaching the
+ledger. Funded via Razorpay (order → signature-verified capture → `transactions` doc with
+`escrowStatus: "held"`), released in full on job completion or partially per approved
+milestone.
+
+### Plans (Free / Pro / Enterprise — today's implementation)
+
+| | Free | Pro | Enterprise |
+|---|---|---|---|
+| Job posts/month | 3 | unlimited* | unlimited* |
+| Bids/month | 10 | unlimited* | unlimited* |
+| AI features/month | 5 (2 for Bid Strategist) | unlimited* | unlimited* |
+
+\* "Unlimited" for paid tiers is currently enforced only on the free-tier check being
+skipped — see `SAAS_SUBSCRIPTION_PLAN.md` for the proposed real Free/Plus/Premium
+redesign with actual finite caps and billing.
+
+---
+
+## Features
+
+### For Clients
+- Post jobs in 3 steps with live price decay preview and adaptive pricing toggle
+- Procurement Terminal — scrollable carousel of your active jobs with per-job bid panels
+- Spend Analytics — budget posted, average bid, decay rate, savings from price drop
+- Accept Best Bid — one click awards the job to the lowest bidder, creates escrow, fires emails
+- Invite to Bid — invite specific freelancers from the Talent Pool
+- Direct Hire — send a fixed-price offer to any freelancer with GeekScore ≥ 500
+- Market Intelligence — average starting prices, decay rates, time-to-first-bid by category
+- Escrow payments — funds held until you release or mark complete
+
+### For Freelancers
+- Mission Control — KPI bar (matches, bids used, win rate, earning potential)
+- Recommended carousel — top skill-matched open jobs
+- Active Bids Tracker — live rank, current price, cooldown timer
+- Smart filters — search, category, budget range, competition, $/hr floor, multi-skill picker
+- Sort modes — Best Match, Price low/high, Newest, Fewest Bids, Skill Match %
+- Quick Bid — 2% below current price in one click, floor-clamped as of v16
+- GeekScore — reputation that grows with successful jobs, ratings, and passed assessments
+
+### AI Features (Google Gemini 2.0 Flash)
+- **Bid Strategist** — 7-signal analysis (price, decay rate, demand multiplier, bid distribution, time remaining, competition, freelancer fit). Recommended bid, win probability, timing, risks
+- **Bid Evaluator** — server-side bid ranking by value score (price + skill match + GeekScore + commitment), re-fetches data rather than trusting client input
+- **Description Generator** — title + skills → a professional job description
+- **Pricing Advisor** — recommends starting price, floor, and hourly decay rate
+- **Quality Check** — reviews a draft posting before publishing
+- **Smart Search** — natural-language query → structured filters
+- **Chat Assist** — drafts a message for a given context
+- **Summarize Reviews** — turns a freelancer's reviews into a strengths summary
+- Free plan: 5 general AI analyses/month, 2 for Bid Strategist specifically; graceful degradation when Gemini is unavailable
+
+### Admin Panel
+- 2FA key gate — requires admin JWT + separate `ADMIN_SECRET_KEY`
+- Dashboard — live MongoDB KPIs: users, open jobs, disputes, GMV, held escrow
+- Users — full CRUD, soft-delete with reason, GeekScore/role override
+- Jobs — full CRUD, status override, featured toggle, remove with reason
+- Transactions — paginated table, Release Escrow and Refund with reason modal, CSV export
+- Disputes — 4 resolution types: refund client, pay freelancer, split 50/50, dismiss
+- Audit Logs — append-only log of every admin action
+- Config — platform fee %, decay rate, maintenance mode, AI toggle, env var status grid
+
+---
+
+## Frontend Page Map
+
+| Route | Who | Purpose |
+|---|---|---|
+| `/` | Public | Landing page |
+| `/login` | Public | Login + register (role toggle, password or Google OAuth) |
+| `/feed` | Auth | Router → `ClientFeed` (Procurement Terminal) or `FreelancerFeed` (Mission Control) by active role |
+| `/jobs/[id]` | Auth | Job detail — price analytics, live bids, counter-bid, AI Bid Strategist, milestones |
+| `/post-job` | Client | 3-step job posting wizard with live decay preview |
+| `/my-jobs` | Auth | Client's posted jobs list, or freelancer's active-bid list |
+| `/profile` | Auth | Edit own profile (skills, rate, availability, GitHub verification for freelancers) |
+| `/profile/[id]` | Auth | View another user's public profile; Direct-Hire/Invite/Message actions if applicable |
+| `/inbox` | Auth | Chat rooms tied to a job |
+| `/notifications` | Auth | Notification list, mark read |
+| `/payments` | Auth | Razorpay checkout UI + transaction history |
+| `/earnings` | Freelancer | Transaction history + totals |
+| `/team` | Auth | Create/join a team, invite members |
+| `/assessments` | Freelancer | Skill assessments — pass one for `+50` GeekScore and a verified-skill badge |
+| `/pricing` | Auth | Free/Pro/Enterprise comparison (mock — see [Plans](#plans-free--pro--enterprise-todays-implementation)) |
+| `/settings` | Auth | Account settings |
+| `/admin` | Admin | Dashboard KPIs |
+| `/admin/users` , `/admin/jobs` , `/admin/transactions` , `/admin/disputes` , `/admin/logs` , `/admin/config` | Admin | Back-office CRUD — see [Admin Panel](#admin-panel) |
+
+---
+
+## API Reference (full)
+
+All routes live under `/api/`. "Bearer" means `Authorization: Bearer <access_token>` is
+required. Every route file lives at `web/src/app/api/<path>/route.ts`.
+
+### Auth
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth` | No | `{action:"register"\|"login", name?, email, password, role?}`. `register` only allows `role: freelancer\|client`; if the email already has an account, adds the requested role to it instead of erroring (password must match) |
+| GET | `/api/auth/me` | Bearer | Current user profile, read fresh from the DB |
+| POST | `/api/auth/refresh` | Cookie | Silent token refresh (rate-limited 20/15min per IP) |
+| POST | `/api/auth/logout` | Bearer | Revokes the refresh token, clears the cookie |
+| POST | `/api/auth/switch-role` | Bearer | `{role}` — switches the active role for an account holding more than one, mints a fresh token pair |
+| GET | `/api/auth/google` | No | `?role=freelancer\|client` — sets a CSRF state cookie, redirects to Google |
+| GET | `/api/auth/google/callback` | No | Validates CSRF state, exchanges code, redirects with a one-time `?google_exchange=` code |
+| POST | `/api/auth/google/exchange` | No | `{code}` → `{accessToken, user, expiresIn, roleAdded}` — single-use, 60s TTL |
+
+### Jobs
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/jobs` | Optional | `?category=` — invite-only jobs hidden unless you're the client, an invited freelancer, or admin |
+| POST | `/api/jobs` | Client | Create a job; free-plan cap (3/month) enforced atomically |
+| GET | `/api/jobs/[id]` | No | Single job |
+| PATCH | `/api/jobs/[id]` | Bearer | `action`: `accept` (freelancer) / `accept_best` (client, atomic, `409` on lost race) |
+| PATCH | `/api/jobs/[id]/cancel` | Client (own job) or admin | Cancel an open job |
+| PATCH | `/api/jobs/[id]/complete` | Client (own job) or admin | Mark complete, releases escrow, credits any pending referral |
+| GET | `/api/jobs/recommended` | Freelancer | Skill-matched open jobs |
+| GET | `/api/jobs/pricing-hint` | No | `?skills=` — market rate data for the post-job wizard |
+| POST | `/api/jobs/direct-offer` | Client | Fixed-price offer; target freelancer must have GeekScore ≥ 500 |
+| PATCH | `/api/jobs/offer-response` | Freelancer | Accept/decline a direct offer, atomic |
+| PATCH | `/api/jobs/feature` | Client (own job) or admin | Toggle a job's `featured` flag (feed sorts featured jobs first) |
+
+### Bids
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/bids` | Bearer | `?jobId=` — bids include freelancer IDs and private messages |
+| POST | `/api/bids` | Freelancer | 30-min per-job cooldown; free-plan cap (10/month) atomic; as of v16, floor/ceiling enforced server-side |
+| GET | `/api/bids/my` | Freelancer | Own bid history with job details |
+
+### Public API (v1 — API-key auth)
+
+For third-party integrations. Requires `X-API-Key` (generated via `/api/keys`), not a JWT.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/v1/jobs` | `?status=&category=&page=&limit=` — paginated job list |
+| POST | `/api/v1/jobs` | Create a job — same category whitelist + free-plan cap as the internal API |
+
+### Freelancer Dashboard
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/freelancer/dashboard` | KPIs: matched jobs, bids, win rate, earning potential |
+| `GET /api/freelancer/bid-tracker` | Active bids with rank, price, cooldown (server dedupes to one row per job) |
+| `GET /api/freelancer/earnings` | Transaction history + totals |
+| `GET /api/freelancer/match-radar` | Skill gap analysis |
+| `GET /api/freelancer/price-alerts` | Jobs nearing floor price |
+
+### Client Dashboard
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/client/dashboard` | KPIs: jobs, budget, savings, avg bid |
+| `GET /api/client/market-intel` | `?category=` — avg prices, top skills, time-to-bid |
+| `GET /api/client/spend-analytics` | Spend breakdown by category |
+| `GET /api/client/job-health` | Health matrix for open jobs |
+| `GET /api/client/activity-feed` | Recent activity on the client's jobs |
+
+### Payments, Transactions & Disputes
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order create/verify. `PATCH` re-fetches the captured amount from Razorpay, idempotent on `razorpayPaymentId`, rejects mock orders in production |
+| GET | `/api/transactions` | Bearer | Own transactions (admin sees all) |
+| PATCH | `/api/transactions` | Client or admin | Release or dispute escrow — atomic, only if currently `held` |
+| GET | `/api/disputes` | Bearer | Own disputes (admin sees all) |
+| PATCH | `/api/disputes` | Admin | Resolve — refund / pay / split / dismiss |
+
+### Milestones, Reviews, Referrals & Assessments
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/milestones` | Bearer | `?jobId=` — list milestones |
+| POST | `/api/milestones` | Client | Create milestones for a job |
+| PATCH | `/api/milestones` | Bearer | `action`: `start`/`submit` (assigned freelancer) / `approve` (client) — approving does a real partial escrow release |
+| GET/POST | `/api/reviews` | Optional / Bearer | `?userId=` or `?jobId=` to read; POST to leave a review after job completion |
+| GET | `/api/referrals` | Bearer | Referral code + stats; credits accrue when a referred freelancer completes their first job |
+| GET/POST | `/api/assessments` | Optional / Bearer | List assessments (`?results=true` for own results) / submit answers — pass to gain `+50` GeekScore |
+
+### Teams, Invites & API Keys
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET/POST/PATCH | `/api/teams` | Bearer | Get own team / create one (one per owner) / `{action:"invite"\|"accept"}` |
+| GET/POST/PATCH | `/api/invites` | Bearer | Client's sent invites or freelancer's received invites; respond to one |
+| GET/POST/DELETE | `/api/keys` | Bearer | List (masked) / generate / revoke a personal API key for `/api/v1/*` |
+
+### Chat & Notifications
+
+| Endpoint | Description |
+|---|---|
+| `GET/POST /api/chat/rooms` | Chat rooms — creating one requires being one of the two participants, both tied to the job |
+| `GET/POST /api/chat/messages` | Messages in a room — posting requires being a participant |
+| `GET/PATCH /api/notifications` | Notifications list + mark read |
+| `GET /api/notifications/count` | `{unread: N}` for the navbar badge |
+
+### User Profile & Uploads
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET/PATCH | `/api/user` | Bearer | Get/update the authenticated user's own profile |
+| GET | `/api/users` | Bearer | List users (non-admin callers don't receive `email`) |
+| GET | `/api/users/[id]` | No | Public profile — excludes email/password |
+| POST | `/api/user/verify-github` | Bearer | Verifies a GitHub username, sets `githubVerified` + `githubData` |
+| POST | `/api/upload/sign` | Bearer | Cloudinary signed-upload params (image formats only) |
+| DELETE | `/api/upload/delete` | Bearer | Delete an image (ownership-verified) |
+
+### AI Routes
+
+All require Bearer auth, rate-limited 10/min per user, quota-capped on the free plan (Bid
+Strategist has its own stricter cap). Gemini key is server-side only.
+
+| Endpoint | Description |
+|---|---|
+| `POST /api/ai/bid-strategy` | `{jobId}` → optimal bid, win %, timing, risks |
+| `POST /api/ai/evaluate-bids` | `{jobId}` → value scores, recommended bid — re-fetches server-side |
+| `POST /api/ai/generate-description` | `{title, category, skills}` → job description |
+| `POST /api/ai/pricing-advisor` | `{title, category, skills}` → starting price, floor, decay |
+| `POST /api/ai/quality-check` | `{content}` → trustScore, flags, action |
+| `POST /api/ai/smart-search` | `{query}` → parsed filters |
+| `POST /api/ai/chat-assist` | `{command, jobContext}` → drafted message |
+| `POST /api/ai/summarize-reviews` | `{reviews[]}` → summary + strengths + improvements |
+
+### Admin Routes (admin role + `ADMIN_SECRET_KEY` required)
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/admin/stats` | Dashboard KPIs |
+| `GET/POST /api/admin/users` | List users / create an admin user |
+| `GET/PATCH/DELETE /api/admin/users/[id]` | User detail, update (incl. `role`), soft-delete |
+| `GET /api/admin/jobs` | List jobs with filters |
+| `PATCH/DELETE /api/admin/jobs/[id]` | Update job, remove with reason |
+| `GET/PATCH /api/admin/transactions` | List transactions, release/refund |
+| `GET/PATCH /api/admin/disputes` | List disputes, resolve |
+| `GET /api/admin/logs` | Audit log |
+| `GET/PATCH /api/admin/config` | Platform config read/write |
+| `GET /api/admin/config/env-status` | Env var presence check |
+| `POST /api/admin/verify-key` | Verify admin panel key (rate-limited 5/15min) |
+| `GET/DELETE /api/email-logs` | Email send log — admin sees all, user sees own |
+
+### Other
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/seed` | Admin* | Wipes and reseeds all collections. *No auth required only on a completely empty, non-production database — see [Seed the database](#4-seed-the-database) |
 
 ---
 
@@ -315,12 +517,13 @@ cp .env.example .env.local   # then fill in the values below
 ```env
 # Required
 MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.wpsakax.mongodb.net/geekbid?retryWrites=true&w=majority
-NEXTAUTH_SECRET=<at-least-32-char-random-string>
+NEXTAUTH_SECRET=<at-least-32-char-random-string>   # generate: openssl rand -base64 32
 NEXTAUTH_URL=http://localhost:3000
 ADMIN_SECRET_KEY=<your-admin-panel-password>
 
 # Cloudinary (image CDN)
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=geekbid_unsigned
@@ -334,6 +537,8 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your-secret
 RAZORPAY_KEY_ID=rzp_test_your_key
 RAZORPAY_KEY_SECRET=your_razorpay_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_your_key
 RESEND_API_KEY=re_your_key
 ```
 
@@ -345,9 +550,21 @@ npm run dev
 # → http://localhost:3000
 ```
 
+Other scripts (`web/package.json`):
+
+```bash
+npm run build   # production build (next build)
+npm run start   # run the production build (next start --port 3000)
+npm run lint    # eslint
+```
+
 ### 4. Seed the database
 
-`/api/seed` requires an authenticated admin (as of v11 — it used to be gated only by an env flag, with no auth check at all). The one exception is a completely empty local database: since registration can't create an admin account directly (`role` is restricted to `freelancer`/`client`), the very first seed on a fresh, non-production database is allowed without auth so it can create the seeded `admin@geekbid.io` account. Every seed after that requires that admin's token.
+`/api/seed` requires an authenticated admin — the one exception is a completely empty
+local database: since registration can't create an admin account directly (`role` is
+restricted to `freelancer`/`client`), the very first seed on a fresh, non-production
+database is allowed without auth so it can create the seeded `admin@geekbid.io` account.
+Every seed after that requires that admin's token.
 
 ```bash
 # First time on a fresh database — no auth needed, this is what creates admin@geekbid.io
@@ -363,7 +580,8 @@ curl -X POST http://localhost:3000/api/seed \
   -H "Authorization: Bearer <accessToken>"
 ```
 
-In production, `/api/seed` is disabled outright unless `ALLOW_SEED=true` is set — and even then still requires an admin token once any user exists.
+In production, `/api/seed` is disabled outright unless `ALLOW_SEED=true` is set — and even
+then still requires an admin token once any user exists.
 
 ### 5. Test accounts
 
@@ -375,164 +593,86 @@ In production, `/api/seed` is disabled outright unless `ALLOW_SEED=true` is set 
 | Freelancer | `priya@secmail.io` | `password123` |
 | Admin | `admin@geekbid.io` | `admin123` |
 
-> **Admin panel:** Log in as admin → navigate to `/admin` → enter `ADMIN_SECRET_KEY` value when prompted
+> **Admin panel:** Log in as admin → navigate to `/admin` → enter the `ADMIN_SECRET_KEY` value when prompted
+
+### 6. Useful one-off commands
+
+```bash
+# Quick type-check without a full build
+cd web && npx tsc --noEmit
+
+# Kill whatever's on 3000 and restart dev
+lsof -ti:3000 | xargs kill -9 && npm run dev
+
+# Clean rebuild after a pull
+cd web && rm -rf .next node_modules && npm install && npm run dev
+```
 
 ---
 
 ## Docker
 
 ```bash
-# From repo root — starts web, backend services, and MongoDB
-docker-compose up
+# From repo root — starts web, backend microservices, and MongoDB
+docker-compose up          # foreground
+docker-compose up -d       # background
+docker-compose down        # stop everything
+docker-compose down -v     # stop + wipe the MongoDB volume
 ```
 
-| Service | URL |
-|---------|-----|
-| Web app | http://localhost:3002 |
-| Gateway | http://localhost:3000 |
-| MongoDB | localhost:27017 |
+| Service | URL | Notes |
+|---------|-----|-------|
+| Web app | http://localhost:3002 | Next.js — port 3002 because the backend gateway owns 3000 in this compose file |
+| Backend gateway | http://localhost:3000 | Reverse proxy to the 6 microservices |
+| MongoDB | localhost:27017 | Local instance, seeded from an empty volume |
+
+Every env var the web container needs is declared as both a build `arg` (baked in at
+`next build` time) and a runtime `environment` var (needed by server-side route handlers)
+in `docker-compose.yml` — see the file's comments if you add a new one, since missing it
+from either spot causes a silent failure rather than an obvious error.
+
+If you use Google OAuth with Docker, add both redirect URIs to Google Cloud Console →
+Credentials → Authorized redirect URIs:
+```
+http://localhost:3002/api/auth/google/callback   (Docker)
+http://localhost:3000/api/auth/google/callback   (npm run dev)
+```
 
 ---
 
-## API Reference
+## Microservice Backend (experimental)
 
-All routes live under `/api/`. Protected routes require `Authorization: Bearer <access_token>`.
+`backend/` is an architecture experiment — the same domain model (auth, jobs, bidding,
+payments, notifications, chat) reimplemented as 7 separate Express services behind a
+gateway, with Socket.IO for live bid/chat updates. **It is not the app that's live or that
+this README's Quick Start sets up** — the Next.js app under `web/` owns all product
+functionality today. Full detail on the partial-wiring attempt lives on the
+`v13_with_microservice_half_code` branch.
 
-### Auth
+```bash
+cd backend
+npm install
+npm run start          # boots all 7 services together via scripts/dev.js
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth` | No | `{action:"register"|"login", ...}` — `register` only allows `role: freelancer|client`. Registering with an email that already has an account **adds** the requested role to it (password must match) instead of erroring, if that role isn't already on the account |
-| GET | `/api/auth/me` | Bearer | Current user profile |
-| POST | `/api/auth/refresh` | Cookie | Silent token refresh |
-| POST | `/api/auth/logout` | Bearer | Clears refresh cookie |
-| POST | `/api/auth/switch-role` | Bearer | `{role}` — flips the active role for an account holding more than one, mints a fresh token pair for it. `403` if the account doesn't have that role |
-| GET | `/api/auth/google` | No | `?role=freelancer|client` — sets a CSRF state cookie before redirecting to Google |
-| GET | `/api/auth/google/callback` | No | Validates the CSRF state, then redirects with a one-time `?google_exchange=` code (never the token itself) |
-| POST | `/api/auth/google/exchange` | No | `{code}` → `{accessToken, user, expiresIn, roleAdded}` — redeems the one-time code from the callback; single-use, 60s TTL. `roleAdded` is `true` if this sign-in just added a new role to an existing account rather than switching to one already held |
+# Or run one service in isolation:
+npm run start:gateway
+npm run start:auth
+npm run start:jobs
+npm run start:bidding
+npm run start:payments
+npm run start:notifications
+npm run start:chat
+```
 
-### Jobs
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/jobs` | Optional | `?category=` filter. Invite-only jobs are hidden unless you're the client, an invited freelancer, or admin — pass a token to see your own |
-| POST | `/api/jobs` | Client | Plan limit enforced atomically (free: 3/month) |
-| GET | `/api/jobs/[id]` | No | Single job |
-| PATCH | `/api/jobs/[id]` | Bearer | `action`: `accept` / `accept_best` / `cancel` / `complete`. `accept`/`accept_best` are atomic — return `409` if the job was already accepted by another request. `cancel`/`complete` verify `job.clientId === userId` |
-| GET | `/api/jobs/recommended` | Freelancer | Top 10 skill-matched open jobs |
-| GET | `/api/jobs/pricing-hint` | No | `?skills=` — market rate data |
-| POST | `/api/jobs/direct-offer` | Client | Fixed-price offer to freelancer |
-| PATCH | `/api/jobs/offer-response` | Freelancer | Accept or decline direct offer — atomic as of v12, returns `409` if the offer was already responded to; declining also creates an in-app notification for the client |
-
-### Bids
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/bids` | Bearer | `?jobId=` filter — protected as of v12 (bids include freelancer IDs and private messages) |
-| POST | `/api/bids` | Freelancer | Rejects bids on jobs that aren't `open`; 30-min cooldown; plan limit enforced atomically |
-| GET | `/api/bids/my` | Freelancer | Own bid history with job details (batched job lookup) |
-
-### Public API (v1 — API key auth)
-
-For third-party integrations. Requires an `X-API-Key` header (generated via `/api/keys`), not a JWT.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/jobs` | `?status=&category=&page=&limit=` — paginated job list |
-| POST | `/api/v1/jobs` | Create a job. Enforces the same category whitelist and free-plan job cap as the internal API |
-
-### Freelancer Dashboard
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/freelancer/dashboard` | KPIs: matched jobs, bids, win rate, earning potential |
-| `GET /api/freelancer/bid-tracker` | Active bids with rank, price, cooldown |
-| `GET /api/freelancer/earnings` | Transaction history + totals |
-| `GET /api/freelancer/match-radar` | Skill gap analysis |
-| `GET /api/freelancer/price-alerts` | Jobs nearing floor price |
-
-### Client Dashboard
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/client/dashboard` | KPIs: jobs, budget, savings, avg bid |
-| `GET /api/client/market-intel` | `?category=` — avg prices, top skills, time-to-bid |
-| `GET /api/client/spend-analytics` | Spend breakdown by category |
-| `GET /api/client/job-health` | Health matrix for open jobs |
-
-### Payments & Disputes
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET/POST/PATCH | `/api/payments` | Bearer | Razorpay order, verify. `PATCH` re-fetches the captured amount from Razorpay server-side, is idempotent on `razorpayPaymentId`, and rejects mock orders in production |
-| GET | `/api/transactions` | Bearer | Own transactions |
-| PATCH | `/api/transactions` | Client | Release or dispute escrow — both are atomic and only succeed if the transaction is currently `held` |
-| GET | `/api/disputes` | Bearer | Own disputes |
-| PATCH | `/api/disputes` | Admin | Resolve dispute |
-
-### Milestones & Referrals
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/milestones` | Bearer | `?jobId=` — list milestones for a job (protected as of v12) |
-| POST | `/api/milestones` | Client | Create milestones for a job |
-| PATCH | `/api/milestones` | Bearer | `action`: `start` / `submit` (assigned freelancer) / `approve` (client) — approving does a real partial escrow release matching the milestone's amount |
-| GET | `/api/referrals` | Bearer | Referral code + stats. Credits now actually accrue when a referred freelancer completes their first job |
-
-### Chat & Notifications
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET/POST /api/chat/rooms` | Chat rooms — creating one now requires you to be one of the two participants, and both participants must be associated with the job |
-| `GET/POST /api/chat/messages` | Messages in a room — posting now requires you to be a participant of that room |
-| `GET/PATCH /api/notifications` | Notifications list + mark read |
-| `GET /api/notifications/count` | `{unread: N}` for badge |
-
-### Image Upload
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/upload/sign` | Bearer | Cloudinary signed upload params, restricted to image formats. Not used by the actual avatar upload flow, which uses an unsigned Cloudinary preset directly from the browser |
-| DELETE | `/api/upload/delete` | Bearer | Delete image (ownership-verified) |
-
-### AI Routes
-
-All require `Authorization: Bearer <token>` and every route is quota-capped on the free plan (bid-strategy has its own, stricter cap). Gemini key is server-side only.
-
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/ai/bid-strategy` | `{jobId}` → optimal bid, win%, timing, risks |
-| `POST /api/ai/evaluate-bids` | `{jobId}` → value scores, recommended bid. Re-fetches bids/freelancer profiles server-side rather than trusting client-submitted data |
-| `POST /api/ai/generate-description` | `{title, category, skills}` → job description |
-| `POST /api/ai/pricing-advisor` | `{title, category, skills}` → starting price, floor, decay |
-| `POST /api/ai/summarize-reviews` | `{reviews[]}` → summary + strengths + improvements |
-| `POST /api/ai/smart-search` | `{query}` → parsed filters |
-| `POST /api/ai/chat-assist` | `{command, jobContext}` → drafted message |
-| `POST /api/ai/quality-check` | `{content}` → trustScore, flags, action |
-
-### Admin Routes (admin role + `ADMIN_SECRET_KEY` required)
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/admin/stats` | Dashboard KPIs |
-| `GET/PATCH /api/admin/users` | List users, create admin user |
-| `GET/PATCH/DELETE /api/admin/users/[id]` | User detail + update + soft-delete |
-| `GET /api/admin/jobs` | List jobs with filters |
-| `PATCH/DELETE /api/admin/jobs/[id]` | Update job, remove with reason |
-| `GET/PATCH /api/admin/transactions` | List transactions, release/refund |
-| `GET/PATCH /api/admin/disputes` | List disputes, resolve |
-| `GET /api/admin/logs` | Audit log |
-| `GET/PATCH /api/admin/config` | Platform config read/write |
-| `GET /api/admin/config/env-status` | Env var presence check |
-| `POST /api/admin/verify-key` | Verify admin panel key (rate-limited: 5/15min) |
-
-### Other
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/seed` | Admin* | Wipes and reseeds all collections. *No auth required only on a completely empty, non-production database — see [Seed the database](#4-seed-the-database) |
-| GET | `/api/users` | Bearer | List users. Non-admin callers no longer receive `email` in the response |
-| POST/DELETE | `/api/keys` | Bearer | Generate/revoke a personal API key for `/api/v1/*` routes |
+| Service | Port |
+|---|---|
+| Gateway | 3000 |
+| Auth | 3001 |
+| Jobs | 3003 |
+| Bidding (Socket.IO) | 3004 |
+| Payments | 3005 |
+| Notifications | 3006 |
+| Chat (Socket.IO) | 3007 |
 
 ---
 
@@ -546,7 +686,7 @@ All require `Authorization: Bearer <token>` and every route is quota-capped on t
 | `NEXTAUTH_SECRET` | Yes | JWT signing secret (32+ chars, use `openssl rand -hex 32`) |
 | `NEXTAUTH_URL` | Yes | `http://localhost:3000` for local dev |
 | `ADMIN_SECRET_KEY` | Yes | Admin panel 2FA key |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret — server only |
 | `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Yes | Upload preset name |
@@ -556,37 +696,45 @@ All require `Authorization: Bearer <token>` and every route is quota-capped on t
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
 | `RAZORPAY_KEY_ID` | No | Payments (mock mode if absent) |
 | `RAZORPAY_KEY_SECRET` | No | Razorpay secret |
+| `RAZORPAY_WEBHOOK_SECRET` | No | For a future Razorpay webhook endpoint — not yet wired to any route (see `SAAS_CRUD_IMPLEMENTATION.md`) |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | No | Same value as `RAZORPAY_KEY_ID`, exposed to the browser for Razorpay Checkout |
 | `RESEND_API_KEY` | No | Transactional email |
-| `ALLOW_SEED` | No | Set to `true` to allow `/api/seed` in production. Never a substitute for admin auth — see [Seed the database](#4-seed-the-database) |
+| `ALLOW_SEED` | No | Set to `true` to allow `/api/seed` in production. Never a substitute for admin auth |
+
+This list must stay in sync with the `ARG`s declared in `web/Dockerfile` and
+`docker-compose.yml`'s `web` service — `next build` imports every route module, so a
+missing var here can mean a silent Cloudinary/AI/email failure or an unset admin key that
+only surfaces at runtime instead of at setup time.
 
 ---
 
 ## Security
 
-Four audit reports:
+Audit reports, oldest to newest:
 - [`web/SECURITY_AUDIT.md`](web/SECURITY_AUDIT.md) — NoSQL injection, ReDoS, brute-force, IDOR sweep (v10)
-- [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md) — job acceptance, escrow, chat, OAuth, and payment-integrity sweep (v11)
-- [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md) — verification of all v11 fixes + admin-key exposure, payment replay, offer race, and API auth gaps (v12)
-- [`V15_FIXES.md`](V15_FIXES.md) — full security/bug/architecture/feature/CI-CD audit; atomic quota & escrow races closed, rate limiting extended (v15)
+- [`geekbid_bid_acceptance_and_system_audit.md`](geekbid_bid_acceptance_and_system_audit.md) — job acceptance, escrow, chat, OAuth, payment-integrity sweep (v11)
+- [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md) — verification of all v11 fixes + admin-key exposure, payment replay, offer race, API auth gaps (v12)
+- [`V15_FIXES.md`](V15_FIXES.md) — atomic quota & escrow races closed, rate limiting extended (v15)
+- [`oauthfix_plan.md`](oauthfix_plan.md) — dual-role/OAuth research + fix (v16)
 
 Summary of protections in place:
 
 | Layer | Protection |
 |-------|-----------|
-| Auth | JWT (jose), bcrypt 12 rounds, HttpOnly refresh cookies |
+| Auth | JWT (jose), bcrypt 12 rounds, HttpOnly refresh cookies, dual-role password ownership check |
 | OAuth | CSRF `state` nonce validated on Google login callback; tokens handed off via one-time exchange code, never a URL query string |
-| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; 10/min per user on every AI route; 20/15min per IP on token refresh; 60/min per key on the public v1 API |
+| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; 10/min per user on every AI route; 20/15min per IP on token refresh + switch-role; 60/min per key on the public v1 API |
 | Input sanitization | `sanitizeString`, `sanitizeObjectId`, `sanitizeSearchRegex` on all user input |
 | NoSQL injection | `$`-prefix keys stripped; all inputs forced to primitive types before DB queries |
 | ReDoS | `sanitizeSearchRegex()` escapes all regex metacharacters before `$regex` use |
-| IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT), including job cancel/complete |
+| IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT) |
 | Chat authorization | `/api/chat/rooms` and `/api/chat/messages` require the caller to be a participant |
-| Escrow integrity | Job acceptance, escrow release/dispute, and milestone partial-release all use atomic, state-guarded updates — no read-then-write races |
-| Quota integrity | Free-plan AI, job, and bid caps are all atomic `findOneAndUpdate` checks — no read-then-write races |
-| Payment verification | Payment amounts are verified against Razorpay's captured amount server-side, never trusted from the client |
+| Escrow integrity | Job acceptance, escrow release/dispute, and milestone partial-release all use atomic, state-guarded updates |
+| Quota integrity | Free-plan AI, job, and bid caps are all atomic `findOneAndUpdate` checks |
+| Bid floor/ceiling | Enforced server-side in `POST /api/bids` as of v16, not just client-side |
+| Payment verification | Payment amounts are verified against Razorpay's captured amount server-side |
 | ObjectId | All `new ObjectId()` calls guarded by `sanitizeObjectId()` — returns 400 not 500 |
-| Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA); `/api/seed` requires admin auth too |
+| Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA) |
 | Secrets | `NEXTAUTH_SECRET` throws at startup if missing — no hardcoded fallbacks |
 
 ---
@@ -607,17 +755,19 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 **Stale auth after secret change** — clear cookies and localStorage, then log in again.
 
+**"Encountered two children with the same key" on the feed** — fixed in v16; if you see it again on a fork/older checkout, see the duplicate-key fix under [What's in v16](#whats-in-v16).
+
 ---
 
-## Branch History
+## Version History
 
-| Branch | Description |
+| Branch/tag | Description |
 |--------|-------------|
-| `v16` | **Latest** — landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
+| `v16` | **Latest** (also `main`/`master`) — landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
-| `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only, not the recommended path) |
-| `v12` / `main` / `master` | Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
+| `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only) |
+| `v12` | Admin-key exposure fix, payment replay protection, direct-offer race fix, API auth gaps closed |
 | `v11` | Job/escrow/chat/OAuth security hardening, payment verification, referral & milestone payout fixes |
 | `v10` | Admin panel, initial security hardening, Cloudinary CDN, Gemini AI |
 | `v9` | Role-based feeds, landing page animations, CRUD fixes |
