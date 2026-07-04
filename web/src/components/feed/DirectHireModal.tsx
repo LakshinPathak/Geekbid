@@ -22,6 +22,12 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
   const [price, setPrice] = useState(defaultPrice);
   const [estimatedHours, setEstimatedHours] = useState(defaultHours);
   const [submitting, setSubmitting] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 180);
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) { toast.error("Job title required"); return; }
@@ -40,7 +46,7 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
     if (result.ok) {
       toast.success("Direct offer sent!", { description: `${freelancerName} will be notified.` });
-      onClose();
+      handleClose();
     } else {
       toast.error("Failed to send offer", { description: result.message });
     }
@@ -48,12 +54,12 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
-        className="w-full max-w-lg rounded-[6px] border p-6 space-y-5 animate-scale-in"
+        className={`w-full max-w-lg rounded-[6px] border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
         style={{ background: "#0d1120", borderColor: "rgba(201,168,76,0.22)" }}
         onClick={e => e.stopPropagation()}
       >
@@ -66,7 +72,7 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="h-8 w-8 rounded-[3px] flex items-center justify-center hover:bg-[#111625] transition-colors"
           >
             <X className="h-4 w-4 text-[#a8997e]" />
@@ -155,7 +161,7 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
         {/* Buttons */}
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="btn-ghost flex-1 h-10 text-sm">
+          <button onClick={handleClose} className="btn-ghost flex-1 h-10 text-sm">
             Cancel
           </button>
           <button

@@ -167,7 +167,19 @@ export default function FreelancerFeed() {
  const displayActiveBids = useMemo((): ActiveBid[] => {
  if (activeBids.length > 0) return activeBids;
  const myBids = bids.filter(b => b.freelancerId === uid);
- return myBids
+ // A freelancer can place multiple counter-bids on the same job (e.g. after
+ // using the AI Bid Strategist's "Apply" suggestion) — dedupe to one row per
+ // job here, keeping the most recent bid, matching /api/freelancer/bid-tracker's
+ // behavior server-side. Without this, two bids on one job produce two rows
+ // sharing the same jobId, which ActiveBidsTracker keys on and React rejects.
+ const latestBidByJob = new Map<string, typeof myBids[number]>();
+ for (const b of myBids) {
+ const existing = latestBidByJob.get(b.jobId);
+ if (!existing || new Date(b.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
+ latestBidByJob.set(b.jobId, b);
+ }
+ }
+ return Array.from(latestBidByJob.values())
  .filter(b => {
  const job = jobs.find(j => (j.id ?? j._id) === b.jobId && j.status === "open");
  return !!job;

@@ -782,6 +782,19 @@ input:focus, textarea:focus, select:focus { outline: none; }
 }
 .animate-scale-in { animation: scale-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* ── Fade/scale-out (modal exit — reverse of the entrance pair above) ── */
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.animate-fade-out { animation: fade-out 0.18s ease-in forwards; }
+
+@keyframes scale-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.96); }
+}
+.animate-scale-out { animation: scale-out 0.18s cubic-bezier(0.4, 0, 1, 1) forwards; }
+
 /* ── Admin ───────────────────────────────────────────────── */
 .admin-header {
   background: #0d1120;

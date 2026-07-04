@@ -18,6 +18,12 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 180);
+  };
 
   const uid = currentUser?.id ?? currentUser?._id ?? "";
   const myOpenJobs = jobs.filter(j => j.clientId === uid && j.status === "open");
@@ -41,7 +47,7 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
 
       toast.success("Message sent!", { description: `${freelancerName} will see your message in inbox.` });
       router.push(`/inbox?room=${result.roomId}`);
-      onClose();
+      handleClose();
     } catch (e: unknown) {
       toast.error("Failed to send message", { description: e instanceof Error ? e.message : "Try again" });
     } finally {
@@ -51,12 +57,12 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
-        className="w-full max-w-md rounded-[6px] border p-6 space-y-5 animate-scale-in"
+        className={`w-full max-w-md rounded-[6px] border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
         style={{ background: "#0d1120", borderColor: "rgba(201,168,76,0.22)" }}
         onClick={e => e.stopPropagation()}
       >
@@ -69,7 +75,7 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="h-8 w-8 rounded-[3px] flex items-center justify-center hover:bg-[#111625] transition-colors"
           >
             <X className="h-4 w-4 text-[#a8997e]" />
@@ -141,7 +147,7 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
         </div>
 
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="btn-ghost flex-1 h-10 text-sm">Cancel</button>
+          <button onClick={handleClose} className="btn-ghost flex-1 h-10 text-sm">Cancel</button>
           <button
             onClick={handleSend}
             disabled={submitting || !selectedJobId || myOpenJobs.length === 0 || !messageText.trim()}
