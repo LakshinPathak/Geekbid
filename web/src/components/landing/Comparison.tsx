@@ -2,7 +2,7 @@
 
 import { Zap, Check, X } from "lucide-react";
 import { useInView } from "./hooks";
-import { COMPARISONS } from "./data";
+import { COMPARISONS, FEATURES } from "./data";
 import SectionDivider from "./SectionDivider";
 
 export default function Comparison() {
@@ -14,14 +14,27 @@ export default function Comparison() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-500/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
       <div className="relative mx-auto max-w-5xl px-5 sm:px-8">
-        <div className="text-center mb-16" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Why GeekBid</p>
+        <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
+          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Overview</p>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
-            Traditional hiring is broken
+            Why GeekBid
           </h2>
           <p className="text-base text-[#a8997e] max-w-lg mx-auto mt-5">
-            See how GeekBid&apos;s reverse auction model compares to the old way of sourcing engineering talent.
+            Everything built into the platform, and how it stacks up against the old way of sourcing engineering talent.
           </p>
+        </div>
+
+        {/* Platform features — icon strip (folded in from the old standalone Features section) */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-3 mb-14"
+          style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(16px)", transition: "opacity 0.6s ease 80ms, transform 0.6s ease 80ms" }}
+        >
+          {FEATURES.map((f) => (
+            <div key={f.title} className={`flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full border ${f.iconBorder} ${f.iconBg}`}>
+              <f.icon className={`h-5 w-5 ${f.iconColor}`} />
+              <span className="text-xs font-medium text-[#f0e8d4] whitespace-nowrap">{f.title}</span>
+            </div>
+          ))}
         </div>
 
         <div className="overflow-x-auto">

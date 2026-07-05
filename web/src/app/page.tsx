@@ -4,9 +4,7 @@ import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
 import ProductShowcase from "@/components/landing/ProductShowcase";
 import HowItWorks from "@/components/landing/HowItWorks";
-import Features from "@/components/landing/Features";
 import Comparison from "@/components/landing/Comparison";
-import Stats from "@/components/landing/Stats";
 import Testimonials from "@/components/landing/Testimonials";
 import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
@@ -20,9 +18,7 @@ export default function LandingPage() {
       <SocialProof />
       <ProductShowcase />
       <HowItWorks />
-      <Features />
       <Comparison />
-      <Stats />
       <Testimonials />
       <FAQ />
       <CTA />

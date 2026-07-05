@@ -3,15 +3,45 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, CheckCircle2 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
-import { useInView } from "./hooks";
-import { TESTIMONIALS } from "./data";
+import { useInView, useSlotDigits } from "./hooks";
+import { TESTIMONIALS, STATS } from "./data";
 
-const TRUST_STRIP = [
-  { val: "2,400+", label: "Active Freelancers" },
-  { val: "94%", label: "Client Satisfaction" },
-  { val: "$1.2M+", label: "Total Paid Out" },
-  { val: "< 4hr", label: "Avg Match Time" },
-];
+/* Slot-machine rolling digits — same treatment the standalone Stats
+   section used before it was folded into this trust strip. */
+function SlotNumber({ digits }: { digits: number[] }) {
+  return (
+    <>
+      {digits.map((d, i) => (
+        <span key={i} className="landing-slot-digit">
+          <span
+            className="landing-slot-track"
+            style={{ transform: `translateY(-${d}em)` }}
+          >
+            {Array.from({ length: 10 }, (_, n) => (
+              <span key={n}>{n}</span>
+            ))}
+          </span>
+        </span>
+      ))}
+    </>
+  );
+}
+
+function DecimalSlotNumber({ value, enabled }: { value: number; enabled: boolean }) {
+  // value*10 animated as an integer (e.g. 1.2 -> 0..12), then re-split
+  // with a decimal point — the count-then-divide trick for the one
+  // stat that isn't a whole number ($1.2M).
+  const digits = useSlotDigits(value * 10, 2000, enabled);
+  const asString = digits.join("");
+  const whole = asString.slice(0, -1) || "0";
+  const decimal = asString.slice(-1);
+  return <>{whole}.{decimal}</>;
+}
+
+// Labels for the trust strip — same STATS values/order as the old
+// standalone Stats section, with two labels reworded to read better
+// alongside testimonials ("Total Paid Out" vs "Total Volume").
+const TRUST_STRIP_LABELS = ["Active Freelancers", "Total Paid Out", "Client Satisfaction", "Avg Match Time"];
 
 export default function Testimonials() {
   const testimonialsSection = useInView(0.1);
@@ -19,6 +49,10 @@ export default function Testimonials() {
   const carouselPausedRef = useRef(false);
   const [activeDot, setActiveDot] = useState(0);
   const lastDotRef = useRef(0);
+
+  const slot0 = useSlotDigits(STATS[0].value, 1800, testimonialsSection.inView);
+  const slot2 = useSlotDigits(STATS[2].value, 1800, testimonialsSection.inView);
+  const slot3 = useSlotDigits(STATS[3].value, 1400, testimonialsSection.inView);
 
   useEffect(() => {
     const el = carouselRef.current;
@@ -137,12 +171,19 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {/* Bottom trust strip */}
+        {/* Bottom trust strip — animated slot-machine digits (folded in from the old standalone Stats section) */}
         <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {TRUST_STRIP.map((s) => (
+          {STATS.map((s, i) => (
             <div key={s.label} className="text-center">
-              <p className="text-xl font-serif text-[#c9a84c]">{s.val}</p>
-              <p className="text-[10px] uppercase tracking-wider text-[#a8997e] mt-0.5">{s.label}</p>
+              <p className="text-xl font-serif text-[#c9a84c] tabular-nums">
+                {s.prefix}
+                {i === 0 && <SlotNumber digits={slot0} />}
+                {i === 1 && <DecimalSlotNumber value={STATS[1].value} enabled={testimonialsSection.inView} />}
+                {i === 2 && <SlotNumber digits={slot2} />}
+                {i === 3 && <SlotNumber digits={slot3} />}
+                {s.suffix}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-[#a8997e] mt-0.5">{TRUST_STRIP_LABELS[i]}</p>
             </div>
           ))}
         </div>
