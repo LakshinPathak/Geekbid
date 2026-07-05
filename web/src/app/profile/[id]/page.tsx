@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import DirectHireModal from "@/components/feed/DirectHireModal";
 import InviteToBidModal from "@/components/feed/InviteToBidModal";
+import MessageFreelancerModal from "@/components/feed/MessageFreelancerModal";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 interface PublicUser {
@@ -51,6 +52,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState("");
   const [showHire, setShowHire] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
     fetch(`/api/users/${id}`)
@@ -151,7 +153,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
             {showActions && (
               <div className="flex items-center gap-2 shrink-0">
                 <button
-                  onClick={() => router.push("/inbox")}
+                  onClick={() => setShowMessage(true)}
                   className="btn-ghost text-sm px-4 py-2 flex items-center gap-1.5"
                 >
                   <MessageSquare className="h-4 w-4" /> Message
@@ -244,6 +246,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
           freelancerId={id}
           freelancerName={user.fullName ?? "Freelancer"}
           onClose={() => setShowInvite(false)}
+        />
+      )}
+      {showMessage && user && (
+        <MessageFreelancerModal
+          freelancerId={id}
+          freelancerName={user.fullName ?? "Freelancer"}
+          onClose={() => setShowMessage(false)}
         />
       )}
     </div>

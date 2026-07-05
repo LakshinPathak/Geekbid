@@ -55,8 +55,8 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
       if (data.error) throw new Error(data.error);
       toast.success("Invite sent!", { description: `${freelancerName} has been notified.` });
       handleClose();
-    } catch {
-      toast.error("Failed to send invite");
+    } catch (e: unknown) {
+      toast.error("Failed to send invite", { description: e instanceof Error ? e.message : "Try again" });
     } finally {
       setSubmitting(false);
     }

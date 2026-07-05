@@ -65,14 +65,14 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  />
 
  {/* Name + GeekScore */}
- <div className="flex-1 min-w-0">
+ <div className="flex-1 min-w-0 overflow-hidden">
  <p className="text-xs font-semibold text-[#f0e8d4] truncate">
  {user?.fullName ?? "Unknown"}
  {user?.plan === "pro" && (
  <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Pro</span>
  )}
  </p>
- <div className="flex items-center gap-2 mt-0.5">
+ <div className="flex items-center gap-2 mt-0.5 truncate">
  <span className="text-[10px] text-[#a8997e]">GS {user?.geekScore ?? 0}</span>
  {(user?.averageRating ?? 0) > 0 && (
  <span className="flex items-center gap-0.5 text-[10px] text-[#c9a84c]">
@@ -85,9 +85,11 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
 
  {/* Bid message excerpt */}
  {bid.message && (
- <p className="text-[10px] text-[#a8997e] italic line-clamp-1 max-w-[120px] hidden sm:block">
+ <div className="hidden sm:block max-w-[120px] min-w-0">
+ <p className="text-[10px] text-[#a8997e] italic line-clamp-1">
  &ldquo;{bid.message}&rdquo;
  </p>
+ </div>
  )}
 
  {/* Price */}

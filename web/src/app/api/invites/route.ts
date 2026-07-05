@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const clientId = auth.payload.userId;
     const db = await getDb();
 
-    // Check for duplicate
+    // Fast-fail check (the unique index below is the real race guard)
     const existing = await db.collection("invites").findOne({ clientId, freelancerId, jobId });
     if (existing) {
       return NextResponse.json({ error: "Invite already sent for this job" }, { status: 409 });
@@ -99,7 +99,15 @@ export async function POST(req: NextRequest) {
       respondedAt: null,
     };
 
-    const result = await db.collection("invites").insertOne(invite);
+    let result;
+    try {
+      result = await db.collection("invites").insertOne(invite);
+    } catch (err: unknown) {
+      if ((err as { code?: number }).code === 11000) {
+        return NextResponse.json({ error: "Invite already sent for this job" }, { status: 409 });
+      }
+      throw err;
+    }
 
     // Create notification for the freelancer
     await db.collection("notifications").insertOne({
@@ -156,16 +164,21 @@ export async function PATCH(req: NextRequest) {
     }
 
     const respondedAt = new Date().toISOString();
+    // Atomically claim the pending invite so concurrent accept/decline calls can't both succeed
+    let claimed;
     try {
-      await db.collection("invites").updateOne(
-        { _id: new ObjectId(inviteId) },
+      claimed = await db.collection("invites").findOneAndUpdate(
+        { _id: new ObjectId(inviteId), status: "pending" },
         { $set: { status: response, respondedAt } }
       );
     } catch {
-      await db.collection("invites").updateOne(
-        { _id: inviteId },
+      claimed = await db.collection("invites").findOneAndUpdate(
+        { _id: inviteId, status: "pending" },
         { $set: { status: response, respondedAt } }
       );
+    }
+    if (!claimed) {
+      return NextResponse.json({ error: "Invite already responded to" }, { status: 409 });
     }
 
     // Notify client if accepted
