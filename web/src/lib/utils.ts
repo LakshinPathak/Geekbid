@@ -57,7 +57,7 @@ export type User = {
  averageRating?: number; totalReviews?: number;
  githubVerified?: boolean; githubData?: { publicRepos: number; followers: number; profileUrl: string; verifiedAt: string };
  referralCode?: string; referredBy?: string; referralCredits?: number;
- plan?: 'free' | 'pro' | 'enterprise'; planLimits?: { jobsPostedThisMonth: number; bidsPlacedThisMonth: number; aiBidUsesThisMonth?: number; monthResetAt: string };
+ plan?: 'free' | 'pro' | 'enterprise'; planLimits?: { jobsPostedThisMonth: number; bidsPlacedThisMonth: number; aiBidUsesThisMonth?: number; aiUsesThisMonth?: number; aiMonthResetAt?: string; aiBidMonthResetAt?: string; monthResetAt: string };
  teamId?: string; teamRole?: 'owner' | 'member';
  verifiedSkills?: string[];
  avatarUrl?: string;

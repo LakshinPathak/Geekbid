@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Zap, Loader2, TrendingUp, Clock, Target, ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 
 type StrategyResult = {
@@ -76,12 +77,23 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
     }
   }
 
+  function handleClick() {
+    if (isFreePlanLimited) {
+      toast.error("Free plan AI limit reached", {
+        description: "You've used both AI Bid Strategist calls this month. Upgrade to Plus for more.",
+      });
+      return;
+    }
+    if (result) setOpen(o => !o);
+    else analyze();
+  }
+
   return (
     <div className="rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#0d1120] overflow-hidden">
       <button
-        onClick={() => result ? setOpen(o => !o) : analyze()}
-        disabled={loading || isFreePlanLimited}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={handleClick}
+        disabled={loading}
+        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isFreePlanLimited ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-[#c9a84c]">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}

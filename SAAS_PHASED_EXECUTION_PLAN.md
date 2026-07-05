@@ -1,3 +1,4 @@
+
 # GeekBid SaaS Tiers — Phased Execution Plan
 
 > **Companion to:** `GEEKBID_SAAS_BLUEPRINT.md` (the "what and why" — schema, code samples, business rationale, 6-pass validation log). This file is the "in what order, with what exit criteria" — a build checklist a developer can follow phase by phase without re-deriving sequencing from the blueprint's prose.
@@ -17,12 +18,12 @@
 
 These were the blueprint's own recommended defaults (§4). Flag now if any should change — they get progressively more expensive to change once Phase 2 enforcement code and Phase 4 billing plans are live:
 
-| Decision | Assumed default |
-|---|---|
-| A — "Unlimited" paid tiers | Real finite (generous) caps, not literally unlimited |
-| B — Analytics gating | Stays free for everyone; not a paid differentiator |
-| C — AI Bid Strategist tier | Available at every paid tier (not Premium-exclusive) |
-| D — Premium checkout | Self-serve ($79/mo, click-to-pay), not "Contact Sales" |
+| Decision                    | Assumed default                                        |
+| --------------------------- | ------------------------------------------------------ |
+| A — "Unlimited" paid tiers | Real finite (generous) caps, not literally unlimited   |
+| B — Analytics gating       | Stays free for everyone; not a paid differentiator     |
+| C — AI Bid Strategist tier | Available at every paid tier (not Premium-exclusive)   |
+| D — Premium checkout       | Self-serve ($79/mo, click-to-pay), not "Contact Sales" |
 
 ---
 
@@ -32,19 +33,22 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 **Depends on:** nothing.
 
-- [ ] **AIBidStrategist toast on quota exhaustion** (blueprint §9.3, verified in Pass 6)
+- [x] **AIBidStrategist toast on quota exhaustion** (blueprint §9.3, verified in Pass 6)
   - File: `web/src/components/ai/AIBidStrategist.tsx`
   - Import `toast` from `sonner` (not yet imported in this file — package is already a dependency, used elsewhere).
   - On click while `isFreePlanLimited` is true, fire `toast.error(...)` explaining the limit and what to do, instead of only relying on the silently-disabled button.
-- [ ] **Fix `planLimits` TypeScript type drift** (blueprint §6.7, Pass 6 finding #31)
+  - Note: the button could not stay natively `disabled` for this state (disabled elements never fire `click`), so the limited state is now handled inside the click handler instead, with matching dimmed styling applied manually.
+- [x] **Fix `planLimits` TypeScript type drift** (blueprint §6.7, Pass 6 finding #31)
   - File: `web/src/lib/utils.ts:60`
   - Add the 3 fields already used at runtime but missing from the type: `aiUsesThisMonth`, `aiMonthResetAt`, `aiBidMonthResetAt`. (Do the full plan/premium rename of this same type in Phase 1, not here — keep this commit a pure type-completeness fix.)
-- [ ] **Wire `splitEscrow()`'s existing `feePercent` param at all 4 call sites** (blueprint §8.6)
+- [x] **Wire `splitEscrow()`'s existing `feePercent` param at all 4 call sites** (blueprint §8.6)
   - `splitEscrow()` in `web/src/lib/money.ts:34` already accepts `feePercent` (default 10) — no function signature change needed.
   - Update the 4 call sites to pass an explicit fee (still flat 10% at this stage, since per-tier fees don't exist until Phase 2): `api/payments/route.ts:210`, `api/jobs/[id]/route.ts:143`, `api/jobs/[id]/route.ts:352`, `api/jobs/offer-response/route.ts:57`.
   - This is prep work so Phase 2 only has to change *what value* is passed, not *whether* a value is passed.
 
 **Exit criteria:** AIBidStrategist shows a toast when blocked; `utils.ts` type matches runtime shape; all 4 `splitEscrow` call sites pass an explicit fee. No behavior change in fee amounts yet (still flat 10%). Typecheck + existing tests pass.
+
+**✅ Phase 0 complete** (2026-07-05) — verified: `tsc --noEmit` clean; toast fires with `data-type="error"` when a free-plan freelancer at their AI-bid quota clicks the button (tested live via a seeded freelancer account with `planLimits.aiBidUsesThisMonth` forced to 2); all 4 `splitEscrow` call sites now pass `DEFAULT_PLATFORM_FEE_PERCENT` explicitly.
 
 ---
 
@@ -143,37 +147,45 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 **Depends on:** Phase 2 (plan enforcement must already be live and correct before real billing switches people's tiers automatically).
 
 ### 4.1 — Schema + config
+
 - [ ] Create `subscriptions`, `webhook_events`, `quota_audit_log` collections + indexes (blueprint §6.2, §6.4, §6.5, §10.3). **Note:** `subscriptions.userId` index is intentionally **non-unique** (preserves cancel/resubscribe history) — don't "fix" this to unique.
 - [ ] Create Razorpay Plans in the dashboard (`plus_monthly`, `premium_monthly`) matching `plans.ts` pricing.
 - [ ] Add `pendingPlanChange` field to `subscriptions` (§14.2).
 
 ### 4.2 — Subscription lifecycle routes
+
 - [ ] `POST /api/subscriptions` — create + checkout.
 - [ ] `GET /api/subscriptions` — current status.
 - [ ] `PATCH /api/subscriptions` — cancel + plan change with proration (§21 — start with `schedule_change_at: "cycle_end"`, immediate `"now"` proration deferred to Phase 5).
 
 ### 4.3 — Webhook handling (§13, §14)
+
 - [ ] `POST /api/webhooks/razorpay` — raw-body HMAC signature verification (fail closed on missing/invalid signature), idempotent `findOneAndUpdate` upsert against `webhook_events` before processing (§13.1).
 - [ ] `processWebhookEvent()` router + all handler functions for the 12 state transitions in §14.1 (`handleActivated`, `handleCharged`, `handleHalted`, `handleCancelled`, `handlePaymentFailed`, `handlePaymentCaptured`).
 - [ ] Tie quota resets to `subscription.charged`, not calendar month, for paying users (§15). Free users keep the existing lazy calendar-month reset.
 - [ ] `web/src/app/api/cron/retry-webhooks/route.ts` (§13.2) — retries `status: 'failed'` events with `retryCount < 5` every 15 min.
 
 ### 4.4 — Downgrade + consistency
+
 - [ ] `web/src/lib/plan-downgrade.ts` → `handleDowngrade()` (§16) — revokes excess API keys (LIFO), freezes/flags teams over the new seat limit, logs to `plan_change_log`, sends notification email.
 - [ ] Team over-limit flow (§23) — `status: 'over_limit'`, 7-day owner deadline, LIFO auto-removal if the deadline passes, `TeamSettings.tsx` warning banner.
 - [ ] Concurrent session sync (§18, Pass 6 corrected) — `X-User-Plan` response header + **Context-based** (not Zustand) refresh logic inside `store.tsx`'s `apiRequest`.
 
 ### 4.5 — Distributed rate limiting (§19)
+
 - [ ] `web/src/lib/rate-limit.ts` — MongoDB-based, replaces the in-memory `Map` in `sanitize.ts` that doesn't share state across instances.
 
 ### 4.6 — Billing emails (§20)
+
 - [ ] `web/src/lib/billing-emails.ts` + 9 templates under `web/src/email-templates/billing/`. Reuse existing email infra rather than building a new sender.
 
 ### 4.7 — Reconciliation (§22)
+
 - [ ] `web/src/app/api/cron/reconcile-subscriptions/route.ts` — daily drift-correction against Razorpay's actual subscription state, plus expired-grace-period sweep.
 - [ ] Add both cron schedules to `vercel.json` (`reconcile-subscriptions` daily 3am UTC, `retry-webhooks` every 15 min).
 
 ### 4.8 — Wire the frontend
+
 - [ ] `pricing/page.tsx` — connect Upgrade/Contact Sales buttons to real checkout (resolves the Open Decision D above — self-serve for both tiers per default assumption).
 
 **Exit criteria:** A test user can subscribe, get charged, have quotas reset on the real billing cycle, hit a failed payment and land in grace period, and get cleanly downgraded after grace expires — all without a human touching the DB by hand. Webhook replay (send the same event twice) causes zero duplicate side effects. Reconciliation cron catches a manually-induced drift in a staging Razorpay test account.

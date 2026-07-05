@@ -5,7 +5,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { getAdaptivePrice } from "@/lib/pricing";
 import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
-import { splitEscrow } from "@/lib/money";
+import { splitEscrow, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/money";
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -140,7 +140,7 @@ export async function PATCH(
  if (!awardedJob) {
  return NextResponse.json({ error: "Job was already accepted by another request" }, { status: 409 });
  }
- const escrow = splitEscrow(finalPrice);
+ const escrow = splitEscrow(finalPrice, DEFAULT_PLATFORM_FEE_PERCENT);
  await db.collection("transactions").insertOne({
  jobId: id, clientId: awardJob.clientId, freelancerId,
  grossAmount: escrow.gross, platformFee: escrow.platformFee,
@@ -349,7 +349,7 @@ export async function PATCH(
  });
 
  // Create escrow transaction
- const escrow = splitEscrow(finalPrice);
+ const escrow = splitEscrow(finalPrice, DEFAULT_PLATFORM_FEE_PERCENT);
  await db.collection("transactions").insertOne({
  jobId: id,
  clientId: job.clientId,
