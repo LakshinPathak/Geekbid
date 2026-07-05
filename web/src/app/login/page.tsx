@@ -165,7 +165,7 @@ function LoginPageContent() {
  <Zap className="h-4 w-4" />
  </div>
  <span className="font-heading text-2xl font-bold" style={{ color: "#f0e8d4" }}>
- Geek<span style={{ color: "#c9a84c" }}>.</span>Bid
+ GeekBid
  </span>
  </Link>
  </div>
@@ -278,7 +278,7 @@ function LoginPageContent() {
  <Zap className="h-4 w-4" />
  </div>
  <span className="font-heading text-xl font-bold" style={{ color: "#f0e8d4" }}>
- Geek<span style={{ color: "#c9a84c" }}>.</span>Bid
+ GeekBid
  </span>
  </Link>
  </div>
