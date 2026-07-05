@@ -35,7 +35,7 @@ export default function Features() {
 
   return (
     <section id="features" ref={featuresSection.ref} className="relative py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="text-center mb-16" style={{ opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Features</p>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">

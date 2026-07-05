@@ -20,7 +20,7 @@ const FREELANCER_BENEFITS = [
 function DualCTA() {
   return (
     <section className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* For Clients */}
           <div className="group glass-card landing-glass-card hover:border-[rgba(201,168,76,0.40)] relative overflow-hidden">
@@ -83,7 +83,7 @@ function FinalCTA() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.4)] to-transparent" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.2)] to-transparent" />
       </div>
-      <div className="mx-auto max-w-4xl px-5 text-center relative z-10">
+      <div className="mx-auto max-w-5xl px-5 text-center relative z-10">
         <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#c9a84c] border border-[rgba(201,168,76,0.22)] px-3 py-1.5 rounded-[2px] mb-8 font-sans">
           <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse inline-block" />
           Join 2,400+ engineers on GeekBid

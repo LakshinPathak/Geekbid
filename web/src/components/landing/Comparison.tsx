@@ -13,7 +13,7 @@ export default function Comparison() {
       {/* Per-section ambient tint (cool blue, distinct from the gold used elsewhere) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-500/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-4xl px-5 sm:px-8">
+      <div className="relative mx-auto max-w-5xl px-5 sm:px-8">
         <div className="text-center mb-16" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Why GeekBid</p>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">

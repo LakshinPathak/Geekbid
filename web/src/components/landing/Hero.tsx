@@ -79,7 +79,7 @@ export default function Hero() {
       <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.3)] to-transparent pointer-events-none" />
 
-      <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="relative w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left: Copy — staggered entrance */}
         <div className="text-center lg:text-left">
           {/* Badge */}

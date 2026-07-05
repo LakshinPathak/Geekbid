@@ -26,7 +26,7 @@ export default function Nav() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-[rgba(201,168,76,0.22)] bg-[#050810]">
       <ScrollProgress />
-      <div className="flex h-14 items-center justify-between px-8 max-w-7xl mx-auto">
+      <div className="flex h-14 items-center justify-between px-8 max-w-[1400px] mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">G</div>
           <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">GeekBid</span>

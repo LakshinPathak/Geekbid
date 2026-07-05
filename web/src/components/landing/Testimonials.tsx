@@ -44,7 +44,7 @@ export default function Testimonials() {
         <div className="absolute bottom-8 right-8 text-[200px] font-serif text-[rgba(201,168,76,0.03)] leading-none select-none hidden lg:block rotate-180">&ldquo;</div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-5 relative z-10">
+      <div className="mx-auto max-w-[1400px] px-5 relative z-10">
         <div className="text-center mb-16">
           <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">What people say</p>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">

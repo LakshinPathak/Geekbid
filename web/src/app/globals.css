@@ -833,10 +833,12 @@ input:focus, textarea:focus, select:focus { outline: none; }
   border: 0.5px solid rgba(201,168,76,0.22);
   border-radius: 6px;
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.3s ease;
 }
 .faq-item.active {
   border-color: rgba(201,168,76,0.35);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(201,168,76,0.10);
 }
 
 /* ── Testimonials ────────────────────────────────────────── */
@@ -1129,6 +1131,41 @@ input:focus, textarea:focus, select:focus { outline: none; }
 }
 .faq-item.active .faq-chevron {
   transform: rotate(180deg);
+}
+
+/* ── FAQ premium redesign — numbering, icon badge, and a rotating
+   glow border on the active item only (reuses the same --angle
+   custom property + conic-rotate keyframe already registered above
+   for the testimonial border — no new keyframe needed) ──────────── */
+.faq-border-wrap {
+  border-radius: 6px;
+  padding: 1px;
+  transition: background 0.3s ease;
+}
+.faq-glow-border {
+  background: conic-gradient(from var(--angle), rgba(201,168,76,0.05), rgba(201,168,76,0.6), rgba(201,168,76,0.05) 50%, rgba(201,168,76,0.45), rgba(201,168,76,0.05));
+  animation: conic-rotate 5s linear infinite;
+}
+.faq-number {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgba(201,168,76,0.45);
+  letter-spacing: 0.05em;
+  transition: color 0.25s ease;
+}
+.faq-item.active .faq-number { color: #c9a84c; }
+.faq-icon-badge {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.faq-item.active .faq-icon-badge {
+  transform: scale(1.06);
+  box-shadow: 0 0 16px rgba(201,168,76,0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-glow-border {
+    animation: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

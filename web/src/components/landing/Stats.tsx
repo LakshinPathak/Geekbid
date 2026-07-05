@@ -38,7 +38,7 @@ export default function Stats() {
     <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative overflow-hidden">
       <div className="absolute inset-0 bg-[#050810] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#c9a84c]/[0.04] rounded-full blur-[100px] pointer-events-none animate-breathe" />
-      <div className="mx-auto max-w-5xl px-5 relative z-10">
+      <div className="mx-auto max-w-6xl px-5 relative z-10">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
           {STATS.map((s, i) => (
             <div key={s.label} className="text-center group">
