@@ -3,7 +3,6 @@
 import { Code, Users } from "lucide-react";
 import { useInView } from "./hooks";
 import { JOB_ROWS } from "./data";
-import SectionDivider from "./SectionDivider";
 
 const SHOWCASE_STATS = [
   { label: "Open Jobs", value: "12", sub: "+3 today", color: "text-emerald-400" },
@@ -12,12 +11,9 @@ const SHOWCASE_STATS = [
   { label: "Active Bids", value: "34", sub: "7 new today", color: "text-amber-400" },
 ];
 
-function MockupFrame({ mirrored = false }: { mirrored?: boolean }) {
+function MockupFrame() {
   return (
-    <div
-      className={`relative rounded-[6px] border border-[rgba(201,168,76,0.15)] bg-[#050810] overflow-hidden ${mirrored ? "landing-mockup-reflection" : "animate-subtle-float"}`}
-      aria-hidden={mirrored || undefined}
-    >
+    <div className="relative rounded-[6px] border border-[rgba(201,168,76,0.15)] bg-[#050810] overflow-hidden animate-subtle-float">
       {/* Chrome bar */}
       <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[rgba(201,168,76,0.15)]">
         <div className="flex gap-1.5">
@@ -32,7 +28,7 @@ function MockupFrame({ mirrored = false }: { mirrored?: boolean }) {
 
       {/* Dashboard content */}
       <div className="p-5 sm:p-8 relative">
-        {!mirrored && <div className="landing-fake-cursor" aria-hidden="true" />}
+        <div className="landing-fake-cursor" aria-hidden="true" />
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {SHOWCASE_STATS.map((s) => (
@@ -101,14 +97,8 @@ export default function ProductShowcase() {
         <div className="relative" style={{ opacity: productSection.inView ? 1 : 0, transform: productSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 150ms, transform 0.7s ease 150ms" }}>
           <div className="absolute -inset-1 /[0.06] rounded-[6px]" />
           <MockupFrame />
-          {/* Mirror-reflection copy, faded + masked, purely decorative */}
-          <div className="hidden lg:block mt-1 opacity-60">
-            <MockupFrame mirrored />
-          </div>
         </div>
       </div>
-
-      <SectionDivider variant="wave" fill="#080b14" />
     </section>
   );
 }
