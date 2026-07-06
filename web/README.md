@@ -2,6 +2,18 @@
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
+**v17** — Real Free/Plus/Premium SaaS tiering, executed in 5 phases: `src/lib/plans.ts` as
+the single source of truth for tier numbers; quota enforcement (jobs, bids, AI, teams,
+invites, featured boosts, API keys) on **every** tier via atomic `findOneAndUpdate` checks,
+not just free; 3 confirmed quota-bypass bugs closed (`direct-offer`, the job-accept path,
+`POST /api/keys`); admin plan overrides + per-tier fee config; pay-per-boost featured-job
+monetization (reuses the existing one-off Razorpay flow); and a full Razorpay recurring
+subscription billing system — lifecycle routes, a signature-verified idempotent webhook
+state machine, MongoDB-backed distributed rate limiting, 9 billing email templates, and
+reconciliation/retry cron jobs (code-complete, pending real Razorpay Plan setup). Full
+write-up: [`../README.md`](../README.md#whats-in-v17), execution checklist:
+[`../SAAS_PHASED_EXECUTION_PLAN.md`](../SAAS_PHASED_EXECUTION_PLAN.md).
+
 **v16** — Landing page + feed dashboard visual redesign (glass panels, tilt effects, animated counters, skeleton/empty states), dual-role accounts (`User.roles[]` + `POST /api/auth/switch-role`, so one login can be both a client and a freelancer), an OAuth sign-in bug fix (Google login no longer silently mislogs you into the wrong role), and bug fixes found via live testing: QuickBid could ask for a price below the job floor (now clamped client-side and enforced server-side in `POST /api/bids`), a feed duplicate-key React crash, and the job detail page's layout. Full write-up: [`../README.md`](../README.md#whats-in-v16), research trail: [`../oauthfix_plan.md`](../oauthfix_plan.md).
 
 **v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
@@ -56,6 +68,10 @@ GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxx
 RAZORPAY_KEY_ID=rzp_test_xxx
 RAZORPAY_KEY_SECRET=xxx
+RAZORPAY_WEBHOOK_SECRET=xxx                    # v17 — required for /api/webhooks/razorpay to accept events
+RAZORPAY_PLAN_ID_PLUS=plan_xxx                 # v17 — subscriptions run in mock mode without these
+RAZORPAY_PLAN_ID_PREMIUM=plan_xxx
+CRON_SECRET=any-random-string                  # v17 — required by /api/cron/*
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
 RESEND_API_KEY=re_your_key                     # transactional email
 ```
@@ -110,13 +126,17 @@ src/
 │       │   ├── smart-search/
 │       │   ├── chat-assist/
 │       │   └── quality-check/
-│       └── ...                   45 other REST API routes (see root README)
+│       ├── subscriptions/        v17 — POST/GET/PATCH subscription lifecycle (mock mode w/o real Plan IDs)
+│       ├── webhooks/razorpay/    v17 — signature-verified, idempotent billing webhook
+│       ├── cron/                 v17 — reconcile-subscriptions (daily), retry-webhooks (15min)
+│       └── ...                   ~80 total REST API routes (see root README)
 │
 ├── components/
 │   ├── CloudinaryAvatar.tsx      Single source of truth for ALL avatars (v10)
 │   ├── AvatarUploader.tsx        CldUploadWidget — crop, upload, remove (v10)
+│   ├── PlanLimitBanner.tsx       v17 — reusable 80%+-quota-used banner
 │   ├── ai/
-│   │   ├── AIBidStrategist.tsx   7-signal bid analysis panel (v10)
+│   │   ├── AIBidStrategist.tsx   7-signal bid analysis panel (v10), tier-aware quota as of v17
 │   │   ├── AIBidEvaluator.tsx    Client bid value ranking (v10)
 │   │   ├── AIDescriptionButton.tsx  ✨ Generate job description (v10)
 │   │   └── AIPricingAdvisor.tsx  Pricing recommendation panel (v10)
@@ -135,7 +155,8 @@ src/
 │   │   ├── InviteToBidModal.tsx
 │   │   └── MessageFreelancerModal.tsx
 │   ├── modals/
-│   │   └── AuctionVictoryModal.tsx
+│   │   ├── AuctionVictoryModal.tsx
+│   │   └── FeaturedBoostModal.tsx  v17 — pay-per-boost checkout
 │   ├── navbar.tsx
 │   ├── mobile-bottom-nav.tsx
 │   └── job-card.tsx
@@ -143,14 +164,21 @@ src/
 └── lib/
     ├── store.tsx       Context + all store actions (acceptJob, counterBid, cancelJob, completeJob, …)
     ├── auth.ts         authenticateRequest, JWT helpers
+    ├── plans.ts        v17 — PlanTier/PlanConfig/PLANS, getPlanConfig() — single source of truth for tiers
+    ├── razorpay.ts     v17 — shared Razorpay REST helper + webhook signature verification
+    ├── rate-limit.ts   v17 — MongoDB-backed distributed rate limiter (replaces sanitize.ts's in-memory Map)
+    ├── plan-downgrade.ts   v17 — handleDowngrade(): LIFO API-key revocation, team freeze/over-limit flow
+    ├── webhook-processing.ts  v17 — Razorpay subscription webhook state machine (6 handlers)
+    ├── billing-emails.ts  v17 — 9 subscription/billing email templates
+    ├── middleware/plan-header.ts  v17 — X-User-Plan header for cross-tab plan sync
     ├── ai.ts           Gemini wrapper — single entry point for ALL AI calls (v10)
     ├── cloudinary.ts   Cloudinary server-side SDK config (v10)
     ├── pricing.ts      getAdaptivePrice — demand-aware decay formula
     ├── mongodb.ts      Atlas connection singleton
-    ├── email.ts        Nodemailer — 10 transactional templates
+    ├── email.ts        Nodemailer/Resend — 20+ transactional templates
     ├── utils.ts        getCurrentPrice, formatMoney, SKILL_TAXONOMY, JOB_CATEGORIES
-    ├── ai-plan-limit.ts  Atomic free-plan AI usage quota (v15)
-    └── sanitize.ts     Input sanitization + rate limiting (checkRateLimit, sanitizeObjectId, …)
+    ├── ai-plan-limit.ts  Atomic AI usage quota, tier-aware as of v17 (was free-only)
+    └── sanitize.ts     Input sanitization (rate limiting moved to rate-limit.ts in v17)
 ```
 
 ## v10 Feature Details
@@ -246,7 +274,7 @@ const {
 
 ## API Routes
 
-All routes documented in the root [README.md](../README.md#api-reference). v10 additions: `/api/upload/sign`, `/api/upload/delete`, and 8 `/api/ai/*` routes.
+All routes documented in the root [README.md](../README.md#api-reference-full). v10 additions: `/api/upload/sign`, `/api/upload/delete`, and 8 `/api/ai/*` routes. v17 additions: `/api/user/plan`, `/api/admin/users/[id]/plan`, `/api/subscriptions`, `/api/webhooks/razorpay`, `/api/cron/reconcile-subscriptions`, `/api/cron/retry-webhooks`.
 
 ## Design Tokens
 

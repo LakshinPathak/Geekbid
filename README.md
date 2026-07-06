@@ -5,17 +5,17 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v16** — Premium visual overhaul of the landing page and both feed
-dashboards, dual-role accounts (one login can be both a client and a freelancer), an
-OAuth sign-in bug fix, and a round of bug fixes found via live testing. See
-[What's in v16](#whats-in-v16).
+**Current version: v17** — Real Free/Plus/Premium SaaS tiering: a single source-of-truth
+plan config, quota enforcement on every plan-gated resource (not just free), pay-per-boost
+featured-job monetization, and full Razorpay recurring subscription billing (code-complete,
+pending real Razorpay Plans). See [What's in v17](#whats-in-v17).
 
 ---
 
 ## Table of Contents
 
 1. [How It Works](#how-it-works)
-2. [What's in v16](#whats-in-v16)
+2. [What's in v17](#whats-in-v17)
 3. [Project Structure](#project-structure)
 4. [Tech Stack](#tech-stack)
 5. [Core Domain Model](#core-domain-model)
@@ -55,6 +55,83 @@ $400 ─────────────────────────
       ↑
    Posted   1h    2h    3h    4h
 ```
+
+---
+
+## What's in v17
+
+A full Free/Plus/Premium SaaS tiering rebuild, executed phase by phase per
+[`SAAS_PHASED_EXECUTION_PLAN.md`](SAAS_PHASED_EXECUTION_PLAN.md) (companion to the full
+design in [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md)). Five phases, each
+independently shippable:
+
+### Phase 0 — Quick fixes
+AI Bid Strategist now shows a toast instead of silently disabling itself when a
+free-plan user is out of AI-bid uses; `planLimits` TypeScript type brought in sync with
+fields already read/written at runtime; `splitEscrow()` wired to an explicit
+`DEFAULT_PLATFORM_FEE_PERCENT` constant instead of a bare positional argument.
+
+### Phase 1 — Foundation
+`web/src/lib/plans.ts` is now the **single source of truth** for tier numbers —
+`PlanTier`, `PlanConfig`, the `PLANS` record, and `getPlanConfig()` with backward-compat
+mapping (`'pro'`→`plus`, `'enterprise'`→`premium`) built in from day one so a mid-deploy
+rename never drops a paying user back to Free. Migration scripts
+(`web/scripts/migrate-plan-names.mjs`, `migrate-plan-limits.mjs`, `verify-migration.mjs`,
+`rollback-plan-names.mjs`) ran against the live DB — zero legacy values found, `planLimits`
+backfilled on every user missing the new counters. New `GET /api/user/plan` route.
+
+### Phase 2 — Enforcement
+Every tier's caps are now actually enforced — previously only the free tier had any quota
+checks at all, meaning Plus/Premium were unlimited by omission, not by design. Jobs, bids,
+AI (general + Bid Strategist), teams, invites, and featured boosts all now cap correctly
+per tier via atomic `findOneAndUpdate` checks. Three confirmed quota-bypass bugs closed:
+direct-offer job creation had zero quota reference at all, the job-accept path inserted a
+bid record with no quota check, and `POST /api/keys` had no plan gate or key-count cap.
+New admin plan-override route (`PATCH /api/admin/users/[id]/plan`) with a
+`plan_change_log` audit trail, and per-tier platform fee overrides in `admin/config`.
+Frontend: pricing page, badges, and quota banners are now generated from `lib/plans.ts`
+instead of hardcoded numbers.
+
+### Phase 3 — Featured boost monetization
+A client whose plan-included monthly featured boosts are exhausted (or whose tier has
+none, i.e. Free) can pay a one-off $10 fee to feature a job anyway, reusing the existing
+Razorpay one-off payment flow — no new payment infrastructure. The payment transaction is
+tagged to the exact job and atomically claimed so it can't be replayed onto a different
+job or a second boost.
+
+### Phase 4 — Recurring subscription billing
+Full Razorpay subscription lifecycle: create/checkout, cancel, and cycle-end plan changes
+(`POST`/`GET`/`PATCH /api/subscriptions`); a signature-verified, idempotent webhook
+endpoint (`POST /api/webhooks/razorpay`) implementing the full activated → charged →
+past_due → halted/cancelled state machine; quota resets tied to the real billing cycle
+for paying users instead of the calendar-month lazy-reset free users still use; clean
+downgrade handling (LIFO API-key revocation, team seat freeze/over-limit flow with a
+7-day owner deadline); a MongoDB-backed distributed rate limiter (replacing the old
+in-memory `Map`, which under-counted once there was more than one server instance); 9
+billing email templates; and daily reconciliation + 15-minute webhook-retry cron jobs.
+**Code-complete and typechecked/built clean, but not yet live** — it needs real Razorpay
+Plans created in their dashboard (`RAZORPAY_PLAN_ID_PLUS`/`RAZORPAY_PLAN_ID_PREMIUM`) and
+end-to-end verification against a real Razorpay test account before real money should
+move through it. Runs in mock mode until then, mirroring the existing one-off payment
+flow's own mock-mode convention.
+
+### New Free / Plus / Premium tiers
+
+| | Free | Plus ($19/mo) | Premium ($79/mo) |
+|---|---|---|---|
+| Job posts/month | 3 | 50 | 500 |
+| Bids/month | 10 | 100 | 500 |
+| AI features/month | 5 | 50 | 200 |
+| AI Bid Strategist/month | 2 | 15 | 60 |
+| Featured boosts/month | 0 (pay-per-boost) | 2 | 5 |
+| Team seats | 0 | 3 | 10 |
+| Invites/month | 5 | 25 | unlimited |
+| API access | No | Yes, 100 req/min | Yes, 500 req/min |
+| Platform fee | 10% | 7% | 5% |
+
+See [Plans](#plans-free--plus--premium) below for how this is enforced, and
+[`SAAS_PHASED_EXECUTION_PLAN.md`](SAAS_PHASED_EXECUTION_PLAN.md) for the full phase-by-phase
+checklist with what's done vs. pending.
 
 ---
 
@@ -115,13 +192,15 @@ Full research trail (JWT/auth internals, every one of the 30+ backend role check
 | **Duplicate-key React crash on the feed** | `ActiveBidsTracker`'s client-side fallback mapped every individual bid to a row without deduplicating by job — two bids on the same job (e.g. after using AI Bid Strategist's "Apply" suggestion) produced two rows sharing one React key. Now dedupes to one row per job, matching the server route's existing behavior |
 | **`admin_verified` not cleared on logout** | A different client logging into the same browser tab could inherit the previous session's admin-panel gate bypass |
 
-### Planning docs (not yet implemented)
+### Planning docs (superseded / partially implemented)
 
-Two larger initiatives were researched and scoped but intentionally left as review-first
-plans rather than shipped code: [`SAAS_SUBSCRIPTION_PLAN.md`](SAAS_SUBSCRIPTION_PLAN.md) +
-[`SAAS_CRUD_IMPLEMENTATION.md`](SAAS_CRUD_IMPLEMENTATION.md) (a proposed Free/Plus/Premium
-subscription-tier redesign with full schema/route-level implementation detail) and the
-UI-library research above. Both need a decision before any of it lands in code.
+[`SAAS_SUBSCRIPTION_PLAN.md`](SAAS_SUBSCRIPTION_PLAN.md) and
+[`SAAS_CRUD_IMPLEMENTATION.md`](SAAS_CRUD_IMPLEMENTATION.md) were the original v16-era
+proposal for a Free/Plus/Premium redesign — kept for historical reference, but **superseded**
+by [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md) (the re-verified, corrected
+design) and [`SAAS_PHASED_EXECUTION_PLAN.md`](SAAS_PHASED_EXECUTION_PLAN.md) (the phase-by-
+phase execution checklist), which is what v17 actually implements — see
+[What's in v17](#whats-in-v17). The UI-library research above remains undecided.
 
 ---
 
@@ -146,20 +225,29 @@ Geekbid/
 │   │   ├── inbox/ , notifications/        Chat + notifications
 │   │   ├── payments/ , earnings/          Razorpay escrow checkout / freelancer earnings
 │   │   ├── team/ , assessments/           Team seats / skill assessments
-│   │   ├── pricing/ , settings/           Plan comparison (mock) / account settings
+│   │   ├── pricing/ , settings/           Real Free/Plus/Premium checkout (v17) / account settings
 │   │   ├── admin/                         7-section back office (see Features → Admin Panel)
-│   │   └── api/                           ~70 REST route files — see API Reference
+│   │   └── api/                           ~80 REST route files — see API Reference
 │   ├── src/components/
 │   │   ├── landing/                       ~15 landing-page section components + hooks
 │   │   ├── feed/                          17 client/freelancer dashboard components
 │   │   ├── ai/                            AIBidStrategist widget
+│   │   ├── modals/                        FeaturedBoostModal (v17), AuctionVictoryModal
+│   │   ├── PlanLimitBanner.tsx             Reusable 80%+-quota-used banner (v17)
 │   │   └── admin/                         AdminKeyGate, AdminSidebar
 │   └── src/lib/
 │       ├── auth.ts                        JWT (jose) + bcrypt + Google OAuth + dual-role logic
 │       ├── store.tsx                       App-wide React Context — all client-side state/actions
+│       ├── plans.ts                       Free/Plus/Premium tier config — single source of truth (v17)
+│       ├── razorpay.ts                    Shared Razorpay REST helper + webhook signature verify (v17)
+│       ├── rate-limit.ts                  MongoDB-backed distributed rate limiter (v17)
+│       ├── plan-downgrade.ts              handleDowngrade() — API key/team cleanup on downgrade (v17)
+│       ├── webhook-processing.ts          Razorpay subscription webhook state machine (v17)
+│       ├── billing-emails.ts              9 subscription/billing email templates (v17)
+│       ├── middleware/plan-header.ts      X-User-Plan header for cross-tab plan sync (v17)
 │       ├── pricing.ts                     Price-decay + adaptive-pricing engine
 │       ├── money.ts                        Integer-cent escrow-fee split math
-│       ├── sanitize.ts                     Input sanitization + in-memory rate limiting
+│       ├── sanitize.ts                     Input sanitization (rate limiting moved to rate-limit.ts in v17)
 │       ├── mongodb.ts                      Atlas connection singleton
 │       ├── ai.ts                           Gemini SDK wrapper
 │       ├── email.ts                        Resend transactional emails (20+ templates)
@@ -177,8 +265,10 @@ Geekbid/
 │   └── scripts/dev.js                     Boots all 7 services together
 │
 ├── docker-compose.yml                  Web + backend + MongoDB, one command
-├── SAAS_SUBSCRIPTION_PLAN.md            Proposed Free/Plus/Premium tier design (plan only)
-├── SAAS_CRUD_IMPLEMENTATION.md          Schema/route-level detail for the above (plan only)
+├── GEEKBID_SAAS_BLUEPRINT.md            v17 SaaS tiering design — full schema/route detail
+├── SAAS_PHASED_EXECUTION_PLAN.md        v17 phase-by-phase checklist (0-4), what's done vs pending
+├── SAAS_SUBSCRIPTION_PLAN.md            Superseded by the two docs above — kept for history
+├── SAAS_CRUD_IMPLEMENTATION.md          Superseded by the two docs above — kept for history
 ├── UI_ENHANCEMENT_PLAN.md               bklit/motion.dev/Anime.js research (plan only)
 ├── oauthfix_plan.md                     Dual-role/OAuth-fix research trail
 ├── V14_FIXES.md , V15_FIXES.md          Prior audit write-ups
@@ -248,17 +338,28 @@ ledger. Funded via Razorpay (order → signature-verified capture → `transacti
 `escrowStatus: "held"`), released in full on job completion or partially per approved
 milestone.
 
-### Plans (Free / Pro / Enterprise — today's implementation)
+### Plans (Free / Plus / Premium)
 
-| | Free | Pro | Enterprise |
+Single source of truth: `web/src/lib/plans.ts`. Every tier's caps are enforced with atomic
+`findOneAndUpdate` checks on the resource being consumed — not just the free tier.
+
+| | Free | Plus ($19/mo) | Premium ($79/mo) |
 |---|---|---|---|
-| Job posts/month | 3 | unlimited* | unlimited* |
-| Bids/month | 10 | unlimited* | unlimited* |
-| AI features/month | 5 (2 for Bid Strategist) | unlimited* | unlimited* |
+| Job posts/month | 3 | 50 | 500 |
+| Bids/month | 10 | 100 | 500 |
+| AI features/month | 5 | 50 | 200 |
+| AI Bid Strategist/month | 2 | 15 | 60 |
+| Featured boosts/month | 0 (pay-per-boost, $10) | 2 | 5 |
+| Team seats | 0 | 3 | 10 |
+| Invites/month | 5 | 25 | unlimited |
+| API access | No | Yes, 100 req/min | Yes, 500 req/min |
+| Platform fee | 10% | 7% | 5% (admin-overridable per tier) |
 
-\* "Unlimited" for paid tiers is currently enforced only on the free-tier check being
-skipped — see `SAAS_SUBSCRIPTION_PLAN.md` for the proposed real Free/Plus/Premium
-redesign with actual finite caps and billing.
+`getPlanConfig()` still accepts the legacy `'pro'`/`'enterprise'` values (mapped to
+`plus`/`premium`) as a migration-safety net — `verify-migration.mjs` confirms zero users
+actually hold a legacy value, but the mapping stays until Phase 5 removes it for good.
+Recurring billing (subscribe → charge → grace period → downgrade) is code-complete as of
+v17 but not yet live — see [What's in v17](#whats-in-v17).
 
 ---
 
@@ -292,7 +393,7 @@ redesign with actual finite caps and billing.
 - **Smart Search** — natural-language query → structured filters
 - **Chat Assist** — drafts a message for a given context
 - **Summarize Reviews** — turns a freelancer's reviews into a strengths summary
-- Free plan: 5 general AI analyses/month, 2 for Bid Strategist specifically; graceful degradation when Gemini is unavailable
+- Tier-capped as of v17 — 5/50/200 general AI analyses per month (Free/Plus/Premium), 2/15/60 for Bid Strategist specifically; graceful degradation when Gemini is unavailable
 
 ### Admin Panel
 - 2FA key gate — requires admin JWT + separate `ADMIN_SECRET_KEY`
@@ -324,7 +425,7 @@ redesign with actual finite caps and billing.
 | `/earnings` | Freelancer | Transaction history + totals |
 | `/team` | Auth | Create/join a team, invite members |
 | `/assessments` | Freelancer | Skill assessments — pass one for `+50` GeekScore and a verified-skill badge |
-| `/pricing` | Auth | Free/Pro/Enterprise comparison (mock — see [Plans](#plans-free--pro--enterprise-todays-implementation)) |
+| `/pricing` | Auth | Free/Plus/Premium comparison + real self-serve checkout (v17 — see [Plans](#plans-free--plus--premium)) |
 | `/settings` | Auth | Account settings |
 | `/admin` | Admin | Dashboard KPIs |
 | `/admin/users` , `/admin/jobs` , `/admin/transactions` , `/admin/disputes` , `/admin/logs` , `/admin/config` | Admin | Back-office CRUD — see [Admin Panel](#admin-panel) |
@@ -354,7 +455,7 @@ required. Every route file lives at `web/src/app/api/<path>/route.ts`.
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/jobs` | Optional | `?category=` — invite-only jobs hidden unless you're the client, an invited freelancer, or admin |
-| POST | `/api/jobs` | Client | Create a job; free-plan cap (3/month) enforced atomically |
+| POST | `/api/jobs` | Client | Create a job; tier-aware quota (v17: 3/50/500 per month by plan) enforced atomically, platform fee locked in at creation |
 | GET | `/api/jobs/[id]` | No | Single job |
 | PATCH | `/api/jobs/[id]` | Bearer | `action`: `accept` (freelancer) / `accept_best` (client, atomic, `409` on lost race) |
 | PATCH | `/api/jobs/[id]/cancel` | Client (own job) or admin | Cancel an open job |
@@ -370,7 +471,7 @@ required. Every route file lives at `web/src/app/api/<path>/route.ts`.
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/bids` | Bearer | `?jobId=` — bids include freelancer IDs and private messages |
-| POST | `/api/bids` | Freelancer | 30-min per-job cooldown; free-plan cap (10/month) atomic; as of v16, floor/ceiling enforced server-side |
+| POST | `/api/bids` | Freelancer | 30-min per-job cooldown; tier-aware quota (v17: 10/100/500 per month by plan) atomic; floor/ceiling enforced server-side |
 | GET | `/api/bids/my` | Freelancer | Own bid history with job details |
 
 ### Public API (v1 — API-key auth)
@@ -380,7 +481,7 @@ For third-party integrations. Requires `X-API-Key` (generated via `/api/keys`), 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/v1/jobs` | `?status=&category=&page=&limit=` — paginated job list |
-| POST | `/api/v1/jobs` | Create a job — same category whitelist + free-plan cap as the internal API |
+| POST | `/api/v1/jobs` | Create a job — same category whitelist + tier-aware quota as the internal API; requires `hasApiAccess` (Plus/Premium only) |
 
 ### Freelancer Dashboard
 
@@ -453,8 +554,8 @@ For third-party integrations. Requires `X-API-Key` (generated via `/api/keys`), 
 
 ### AI Routes
 
-All require Bearer auth, rate-limited 10/min per user, quota-capped on the free plan (Bid
-Strategist has its own stricter cap). Gemini key is server-side only.
+All require Bearer auth, rate-limited 10/min per user, quota-capped per tier as of v17 (Bid
+Strategist has its own separate, stricter cap). Gemini key is server-side only.
 
 | Endpoint | Description |
 |---|---|
@@ -479,10 +580,21 @@ Strategist has its own stricter cap). Gemini key is server-side only.
 | `GET/PATCH /api/admin/transactions` | List transactions, release/refund |
 | `GET/PATCH /api/admin/disputes` | List disputes, resolve |
 | `GET /api/admin/logs` | Audit log |
-| `GET/PATCH /api/admin/config` | Platform config read/write |
+| `GET/PATCH /api/admin/config` | Platform config read/write, incl. v17 per-tier `planFees` overrides |
 | `GET /api/admin/config/env-status` | Env var presence check |
+| `PATCH /api/admin/users/[id]/plan` | v17 — manual plan override, logs to `plan_change_log` |
 | `POST /api/admin/verify-key` | Verify admin panel key (rate-limited 5/15min) |
 | `GET/DELETE /api/email-logs` | Email send log — admin sees all, user sees own |
+
+### Plans & Billing (v17)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/user/plan` | Bearer | Current plan config + remaining quota counts for every capped resource |
+| GET/POST/PATCH | `/api/subscriptions` | Bearer | Current status / create + Razorpay checkout / cancel or change plan (mock mode until real Razorpay Plans exist) |
+| POST | `/api/webhooks/razorpay` | Signature | Subscription lifecycle webhook — HMAC-verified, idempotent |
+| GET | `/api/cron/reconcile-subscriptions` | `Bearer $CRON_SECRET` | Daily — corrects DB/Razorpay drift, sweeps expired grace periods + team seat deadlines |
+| GET | `/api/cron/retry-webhooks` | `Bearer $CRON_SECRET` | Every 15 min — retries `webhook_events` stuck in `failed` |
 
 ### Other
 
@@ -540,6 +652,9 @@ GOOGLE_CLIENT_SECRET=GOCSPX-your-secret
 RAZORPAY_KEY_ID=rzp_test_your_key
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
+RAZORPAY_PLAN_ID_PLUS=plan_your_plus_id       # v17 — subscriptions run in mock mode without these
+RAZORPAY_PLAN_ID_PREMIUM=plan_your_premium_id
+CRON_SECRET=any-random-string                 # v17 — required by /api/cron/*
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_your_key
 RESEND_API_KEY=re_your_key
 ```
@@ -742,9 +857,11 @@ allowed.
 | `AI_MODEL` | No | Gemini model ID (default: `gemini-2.0-flash`) |
 | `GOOGLE_CLIENT_ID` | No | Enables Google Login |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
-| `RAZORPAY_KEY_ID` | No | Payments (mock mode if absent) |
+| `RAZORPAY_KEY_ID` | No | Payments + subscriptions (mock mode if absent) |
 | `RAZORPAY_KEY_SECRET` | No | Razorpay secret |
-| `RAZORPAY_WEBHOOK_SECRET` | No | For a future Razorpay webhook endpoint — not yet wired to any route (see `SAAS_CRUD_IMPLEMENTATION.md`) |
+| `RAZORPAY_WEBHOOK_SECRET` | No | v17 — verifies `POST /api/webhooks/razorpay`'s HMAC signature; that route fails closed (rejects) if unset |
+| `RAZORPAY_PLAN_ID_PLUS` / `RAZORPAY_PLAN_ID_PREMIUM` | No | v17 — real Razorpay Plan IDs for recurring billing; `/api/subscriptions` runs in mock mode until both are set |
+| `CRON_SECRET` | No | v17 — bearer secret required by `/api/cron/reconcile-subscriptions` and `/api/cron/retry-webhooks` |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | No | Same value as `RAZORPAY_KEY_ID`, exposed to the browser for Razorpay Checkout |
 | `RESEND_API_KEY` | No | Transactional email |
 | `ALLOW_SEED` | No | Set to `true` to allow `/api/seed` in production. Never a substitute for admin auth |
@@ -764,6 +881,7 @@ Audit reports, oldest to newest:
 - [`geekbid_review_2026-07-02.md`](geekbid_review_2026-07-02.md) — verification of all v11 fixes + admin-key exposure, payment replay, offer race, API auth gaps (v12)
 - [`V15_FIXES.md`](V15_FIXES.md) — atomic quota & escrow races closed, rate limiting extended (v15)
 - [`oauthfix_plan.md`](oauthfix_plan.md) — dual-role/OAuth research + fix (v16)
+- [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md) — SaaS tiering design, incl. webhook idempotency, quota-bypass closure, migration rollback strategy (v17)
 
 Summary of protections in place:
 
@@ -771,16 +889,16 @@ Summary of protections in place:
 |-------|-----------|
 | Auth | JWT (jose), bcrypt 12 rounds, HttpOnly refresh cookies, dual-role password ownership check |
 | OAuth | CSRF `state` nonce validated on Google login callback; tokens handed off via one-time exchange code, never a URL query string |
-| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; 10/min per user on every AI route; 20/15min per IP on token refresh + switch-role; 60/min per key on the public v1 API |
+| Rate limiting | 10 login attempts / 5 admin-key attempts per IP per 15 min; 10/min per user on every AI route; 20/15min per IP on token refresh + switch-role; tier-aware per key on the public v1 API. v17: MongoDB-backed (`lib/rate-limit.ts`), not in-memory, so the limit holds across multiple server instances |
 | Input sanitization | `sanitizeString`, `sanitizeObjectId`, `sanitizeSearchRegex` on all user input |
 | NoSQL injection | `$`-prefix keys stripped; all inputs forced to primitive types before DB queries |
 | ReDoS | `sanitizeSearchRegex()` escapes all regex metacharacters before `$regex` use |
 | IDOR | All mutations check ownership (clientId/freelancerId === userId from JWT) |
 | Chat authorization | `/api/chat/rooms` and `/api/chat/messages` require the caller to be a participant |
 | Escrow integrity | Job acceptance, escrow release/dispute, and milestone partial-release all use atomic, state-guarded updates |
-| Quota integrity | Free-plan AI, job, and bid caps are all atomic `findOneAndUpdate` checks |
-| Bid floor/ceiling | Enforced server-side in `POST /api/bids` as of v16, not just client-side |
-| Payment verification | Payment amounts are verified against Razorpay's captured amount server-side |
+| Quota integrity | v17: every tier's job/bid/AI/team/invite/API-key/featured-boost caps are atomic `findOneAndUpdate` checks, not just free's |
+| Bid floor/ceiling | Enforced server-side in `POST /api/bids`, not just client-side |
+| Payment verification | Payment amounts verified against Razorpay's captured amount server-side; v17 subscription webhooks are HMAC-signature-verified (fail closed) and idempotent per event id |
 | ObjectId | All `new ObjectId()` calls guarded by `sanitizeObjectId()` — returns 400 not 500 |
 | Admin panel | Requires admin role JWT + separate `ADMIN_SECRET_KEY` (2FA) |
 | Secrets | `NEXTAUTH_SECRET` throws at startup if missing — no hardcoded fallbacks |
@@ -811,7 +929,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v16` | **Latest** (also `main`/`master`) — landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
+| `v17` | **Latest** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code — not yet pushed to `main`/`master`, see [What's in v17](#whats-in-v17)) |
+| `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) — also `main`/`master` |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
 | `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only) |
