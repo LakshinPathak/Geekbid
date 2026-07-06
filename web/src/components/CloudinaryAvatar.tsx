@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { CldImage } from "next-cloudinary";
 
 type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -29,6 +30,8 @@ export default function CloudinaryAvatar({
   isOnline = false,
 }: CloudinaryAvatarProps) {
   const { px, text, indicator } = SIZES[size];
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const externalImgFailed = !!avatarUrl && failedUrl === avatarUrl;
 
   const wrapperStyle: React.CSSProperties = {
     width: px,
@@ -43,7 +46,7 @@ export default function CloudinaryAvatar({
     flexShrink: 0,
   };
 
-  if (avatarUrl) {
+  if (avatarUrl && !externalImgFailed) {
     const isCloudinaryUrl = avatarUrl.includes('res.cloudinary.com');
 
     if (isCloudinaryUrl) {
@@ -81,6 +84,7 @@ export default function CloudinaryAvatar({
             alt={avatarInitial}
             width={px}
             height={px}
+            onError={() => setFailedUrl(avatarUrl)}
             style={{ borderRadius: '50%', border: '0.5px solid rgba(201,168,76,0.22)', objectFit: 'cover', width: px, height: px }}
           />
           {showOnlineIndicator && (

@@ -68,7 +68,7 @@ export default function Navbar() {
  transition: "border-color 0.3s ease",
  }}
  >
- <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 sm:px-6">
+ <div className="mx-auto max-w-[1600px] flex h-14 items-center justify-between px-4 sm:px-6">
  {/* Logo */}
  <Link href="/feed" className="flex items-center gap-2.5">
  <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">
