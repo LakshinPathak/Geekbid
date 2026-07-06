@@ -8,7 +8,9 @@
 **Current version: v17** — Real Free/Plus/Premium SaaS tiering: a single source-of-truth
 plan config, quota enforcement on every plan-gated resource (not just free), pay-per-boost
 featured-job monetization, and full Razorpay recurring subscription billing (code-complete,
-pending real Razorpay Plans). See [What's in v17](#whats-in-v17).
+pending real Razorpay Plans). Also on `main`/`master` — `v17` was fast-forwarded onto both
+after a full API CRUD audit closed 7 real bugs (see [v17 refinements](#v17-refinements-post-phase-4)).
+See [What's in v17](#whats-in-v17).
 
 ---
 
@@ -16,22 +18,23 @@ pending real Razorpay Plans). See [What's in v17](#whats-in-v17).
 
 1. [How It Works](#how-it-works)
 2. [What's in v17](#whats-in-v17)
-3. [Project Structure](#project-structure)
-4. [Tech Stack](#tech-stack)
-5. [Core Domain Model](#core-domain-model)
-6. [Features](#features)
-7. [Frontend Page Map](#frontend-page-map)
-8. [API Reference (full)](#api-reference-full)
-9. [Quick Start](#quick-start)
-10. [Docker](#docker)
-11. [Microservice Backend (experimental)](#microservice-backend-experimental)
-12. [Deployment (Vercel)](#deployment-vercel)
-13. [CI/CD Pipeline](#cicd-pipeline)
-14. [Environment Variables](#environment-variables)
-15. [Security](#security)
-16. [Troubleshooting](#troubleshooting)
-17. [Version History](#version-history)
-18. [License](#license)
+3. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
+4. [Project Structure](#project-structure)
+5. [Tech Stack](#tech-stack)
+6. [Core Domain Model](#core-domain-model)
+7. [Features](#features)
+8. [Frontend Page Map](#frontend-page-map)
+9. [API Reference (full)](#api-reference-full)
+10. [Quick Start](#quick-start)
+11. [Docker](#docker)
+12. [Microservice Backend (experimental)](#microservice-backend-experimental)
+13. [Deployment (Vercel)](#deployment-vercel)
+14. [CI/CD Pipeline](#cicd-pipeline)
+15. [Environment Variables](#environment-variables)
+16. [Security](#security)
+17. [Troubleshooting](#troubleshooting)
+18. [Version History](#version-history)
+19. [License](#license)
 
 ---
 
@@ -132,6 +135,87 @@ flow's own mock-mode convention.
 See [Plans](#plans-free--plus--premium) below for how this is enforced, and
 [`SAAS_PHASED_EXECUTION_PLAN.md`](SAAS_PHASED_EXECUTION_PLAN.md) for the full phase-by-phase
 checklist with what's done vs. pending.
+
+---
+
+## v17 refinements (post-Phase-4)
+
+A round of hardening and polish on top of the Phase 0-4 SaaS work above, plus a full CRUD
+audit of the entire API surface — done after Phase 4 shipped, before `v17` was fast-forwarded
+onto `main`/`master`.
+
+### Feed subscription widget + hardened checkout
+A compact, upgrade-only subscription card (`components/feed/SubscriptionWidget.tsx`) now
+lives directly on both feed dashboards instead of sending users to a separate page for
+everything — downgrade/cancel intentionally stay on `/pricing` only, kept as deliberately
+separate, less-frequent actions. The underlying Razorpay checkout is now properly
+signature-verified end-to-end: `verifySubscriptionCheckoutSignature()`
+(`lib/razorpay.ts`) checks the HMAC before a client-side "success" callback is ever trusted,
+via a new `verify_checkout` action on `PATCH /api/subscriptions`. Also fixed a real bug where
+`/pricing` and `FeaturedBoostModal` read a possibly-stale `accessToken` directly instead of
+the store's auto-refreshing `getValidToken()`, causing "Access token expired or invalid"
+errors, and a second bug where a successful plan upgrade updated the DB but not the cached
+frontend user object until the next unrelated token refresh.
+
+### Sitewide typography overhaul
+Replaced the generic `Inter` (body) + bare `Georgia, Times New Roman, serif` (headings)
+pairing — which read as an unconfigured default rather than a chosen identity — with
+`Plus Jakarta Sans` + `Fraunces` (both self-hosted via `next/font/google`), applied
+consistently across every page. Root-caused a genuinely subtle bug during this: CSS custom
+properties only inherit **downward** (parent → child), so having `next/font`'s `variable`
+classes on `<body>` while Tailwind's compiled `@theme` block resolves them on `<html>` (an
+*ancestor* of body) meant the fonts silently never applied anywhere — fixed by moving the
+`variable` classNames onto `<html>` in `layout.tsx`.
+
+### Layout consistency
+Ten pages (`notifications`, `profile`, `earnings`, `settings`, `payments`, `team`,
+`assessments`, `my-jobs`, `post-job`, `profile/[id]`) were widened from various narrower
+`max-w-*` values to match the feed page's `max-w-[1600px]`, and the navbar's inner container
+(previously `max-w-7xl`) was widened to match, fixing a visible edge-to-edge misalignment on
+wide screens. Two horizontal-scroll carousels with dead-space bugs
+(`RecommendedCarousel`, `MyJobsSection`) were converted to responsive CSS grids. Deliberately
+left narrower where that's correct UX: the inbox chat thread, the pricing 3-card grid, the
+active quiz-taking view, and the create-team form.
+
+### Landing page redesign
+The reverse-auction price-decay mechanic — the whole product's hook — now gets its own
+full-bleed, committed-color "live market terminal" section (`PriceDecayShowcase.tsx`): a
+giant ticking price plus a scrolling bid-activity log, instead of a small widget tucked in
+the hero corner. The repeated tiny-uppercase-tracked "eyebrow" label that sat above nearly
+every section (a well-known generic-AI-landing-page tell) was removed sitewide in favor of
+stronger, section-specific headline treatments. The page was also consolidated from ~9
+scroll sections down to 5 — merging the "how it works" steps into the price-decay section,
+deleting a redundant dashboard-mockup section, merging the comparison table and pricing
+cards into one "why us + what it costs" section, and folding a trimmed FAQ into the final
+CTA — cutting total page height by roughly 40% with no loss of content.
+
+### Bug fixes
+`AuctionVictoryModal`'s "View Contract"/"Message"/"Leave a Review" buttons appeared dead
+because they were `<Link>`s to the exact route already open (a Next.js same-route
+navigation is a no-op, so the modal never dismissed) — fixed with an explicit `onClick`
+close handler. `CloudinaryAvatar` now falls back to the initials avatar if an external photo
+URL (e.g. a Google account photo) fails to load, instead of rendering blank.
+
+### Full API CRUD audit
+Every one of the ~80 API route files was exercised end-to-end (real HTTP requests against a
+running dev server, cross-checked against actual MongoDB writes, success **and** failure
+paths) and 7 real bugs were found and fixed:
+
+| Bug | Fix |
+|---|---|
+| **`GET /api/bids` leaked every bid on the platform** | Checked authentication only, not authorization — any logged-in freelancer could dump competitors' private bid prices/messages platform-wide. Scoped to bids the caller placed, or bids on jobs the caller posted (admin unrestricted) |
+| **`GET /api/disputes` only visible to whoever raised it** | The other party on the transaction — who the dispute was raised *against* — had no way to ever see or respond to it. Now visible to both parties |
+| **`POST /api/invites` had no job-ownership check** | Any authenticated client could invite freelancers to bid on a job that belonged to a *different* client. Added a 403 guard |
+| **`POST /api/invites` had no open-status check** | Could invite a freelancer onto a cancelled/completed job. Added a 400 guard, matching the equivalent check already enforced on regular bids |
+| **`admin/jobs` listing sorted by a field that doesn't exist** | Job documents only ever have `postedAt`, never `createdAt` — the "most recent jobs" admin view wasn't actually ordered by recency at all |
+| **Malformed assessment IDs crashed to a bare 500** | Missing `ObjectId.isValid()` guard on both `GET` and `POST /api/assessments` — now a clean `400` |
+| **Every transactional email showed a generic placeholder name** | `payments`, `transactions`, `milestones`, and `disputes` routes all looked up `user.name`, a field that doesn't exist on the schema (it's `fullName`) — payment/escrow/milestone/dispute emails never showed the real recipient name, always fell back to "Client"/"Freelancer"/"User" |
+
+**Flagged, not fixed** (shared infrastructure, needs a deliberate call rather than a drive-by
+edit): `getClientIp()` in `lib/sanitize.ts` trusts a client-supplied `X-Forwarded-For` header
+unconditionally, so the login/refresh/switch-role rate limiters can be bypassed by spoofing
+the header — the correct fix depends on the actual deployment's proxy topology (trusted
+reverse proxy or not).
 
 ---
 
@@ -283,7 +367,7 @@ Geekbid/
 | Layer | Technology |
 |-------|-----------|
 | **Frontend** | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
-| **Styling** | Tailwind CSS v4, "Royal Dark" design system — `#080b14` bg, `#c9a84c` gold, `#f0e8d4` ivory, Georgia serif + Inter sans |
+| **Styling** | Tailwind CSS v4, "Royal Dark" design system — `#080b14` bg, `#c9a84c` gold, `#f0e8d4` ivory, Fraunces serif + Plus Jakarta Sans (v17 refinement — see [v17 refinements](#v17-refinements-post-phase-4)) |
 | **UI Components** | Radix UI primitives, Lucide icons, Sonner toasts |
 | **State** | React Context + `useCallback` (`web/src/lib/store.tsx`) — no external state library |
 | **Auth** | JWT (`jose`), bcrypt (12 rounds), Google OAuth 2.0, HttpOnly refresh cookies, dual-role accounts |
@@ -882,6 +966,7 @@ Audit reports, oldest to newest:
 - [`V15_FIXES.md`](V15_FIXES.md) — atomic quota & escrow races closed, rate limiting extended (v15)
 - [`oauthfix_plan.md`](oauthfix_plan.md) — dual-role/OAuth research + fix (v16)
 - [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md) — SaaS tiering design, incl. webhook idempotency, quota-bypass closure, migration rollback strategy (v17)
+- Full API CRUD audit (v17 refinement) — every route exercised end-to-end, 7 bugs closed: a bid-list authorization leak, a one-sided dispute-visibility bug, two missing invite guards (ownership + open-status), a recency-sort bug, a crash-to-500 on malformed IDs, and a broken-recipient-name bug across 4 transactional-email call sites. See [v17 refinements](#v17-refinements-post-phase-4)
 
 Summary of protections in place:
 
@@ -929,8 +1014,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v17` | **Latest** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code — not yet pushed to `main`/`master`, see [What's in v17](#whats-in-v17)) |
-| `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) — also `main`/`master` |
+| `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, and a full API CRUD audit closing 7 more bugs (see [What's in v17](#whats-in-v17) and [v17 refinements](#v17-refinements-post-phase-4)) |
+| `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
 | `v13_with_microservice_half_code` | Experiment — partial wiring of the Next.js frontend to the Express microservices via a gateway/BFF (reference only) |

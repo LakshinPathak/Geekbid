@@ -14,6 +14,18 @@ reconciliation/retry cron jobs (code-complete, pending real Razorpay Plan setup)
 write-up: [`../README.md`](../README.md#whats-in-v17), execution checklist:
 [`../SAAS_PHASED_EXECUTION_PLAN.md`](../SAAS_PHASED_EXECUTION_PLAN.md).
 
+**v17 refinements** (post-Phase-4, also on `main`/`master` now) — sitewide typography
+overhaul (`Inter` + bare `Georgia` → self-hosted `Plus Jakarta Sans` + `Fraunces`, fixing a
+CSS-custom-property-inheritance bug in the process); a redesigned, consolidated landing page
+(the price-decay mechanic gets its own full-bleed "live market terminal" section instead of
+a hero-corner widget; repeated AI-tell "eyebrow" labels removed; page cut from ~9 sections to
+5); layout-width consistency across 10 pages + the navbar; a feed subscription widget with
+properly signature-verified Razorpay checkout; and a full CRUD audit of every API route that
+found and fixed 7 real bugs (a bid-list authorization leak, one-sided dispute visibility,
+two missing invite guards, a recency-sort bug, a crash-to-500 on bad IDs, and a broken
+recipient-name lookup across 4 transactional-email call sites). Full write-up:
+[`../README.md`](../README.md#v17-refinements-post-phase-4).
+
 **v16** — Landing page + feed dashboard visual redesign (glass panels, tilt effects, animated counters, skeleton/empty states), dual-role accounts (`User.roles[]` + `POST /api/auth/switch-role`, so one login can be both a client and a freelancer), an OAuth sign-in bug fix (Google login no longer silently mislogs you into the wrong role), and bug fixes found via live testing: QuickBid could ask for a price below the job floor (now clamped client-side and enforced server-side in `POST /api/bids`), a feed duplicate-key React crash, and the job detail page's layout. Full write-up: [`../README.md`](../README.md#whats-in-v16), research trail: [`../oauthfix_plan.md`](../oauthfix_plan.md).
 
 **v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
@@ -31,7 +43,7 @@ write-up: [`../README.md`](../README.md#whats-in-v17), execution checklist:
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 (`@import "tailwindcss"`) |
-| Design system | Royal Dark — `#080b14` bg · `#c9a84c` gold · `#f0e8d4` ivory · Georgia serif + Inter sans |
+| Design system | Royal Dark — `#080b14` bg · `#c9a84c` gold · `#f0e8d4` ivory · Fraunces serif + Plus Jakarta Sans (v17 refinement) |
 | State | React Context (`src/lib/store.tsx`) |
 | Database | MongoDB Atlas (native driver) |
 | Auth | JWT + bcrypt + Google OAuth 2.0 |
@@ -189,7 +201,7 @@ src/
 
 ```tsx
 // Cloudinary URL → CldImage (WebP, face-detect crop, responsive)
-// External URL (Google) → <img>
+// External URL (Google) → <img>, falls back to initials on load failure (v17 refinement)
 // No URL → initials fallback (Royal Dark styling)
 <CloudinaryAvatar
   avatarUrl={user.avatarUrl}    // optional
