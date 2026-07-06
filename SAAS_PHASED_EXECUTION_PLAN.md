@@ -138,10 +138,12 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 **Depends on:** Phase 1 (`plans.ts` for included-boost counts).
 
-- [ ] Pay-per-boost UI button on job listings (client-facing), reusing the existing one-off Razorpay payment flow (`api/payments/route.ts`) rather than building new payment infra.
-- [ ] Wire the button to `PATCH /api/jobs/feature` (already enforces `featuredBoostsPerMonth` from Phase 2) with a fallback to one-off payment when the monthly included boosts are exhausted.
+- [x] Pay-per-boost UI button on job listings (client-facing), reusing the existing one-off Razorpay payment flow (`api/payments/route.ts`) rather than building new payment infra. (`FeaturedBoostModal.tsx`, wired into `my-jobs/page.tsx`'s existing Feature button.)
+- [x] Wire the button to `PATCH /api/jobs/feature` (already enforces `featuredBoostsPerMonth` from Phase 2) with a fallback to one-off payment when the monthly included boosts are exhausted. Transaction tagged `featured_boost:<jobId>` and atomically claimed (`consumedAt`) so it can't be replayed.
 
 **Exit criteria:** A free-tier client can pay once to feature a job; a Plus/Premium client sees their included-boost count and can pay-per-boost once it's exhausted.
+
+✅ Phase 3 complete (2026-07-06) — committed as `c8d4b36`, pushed to `v17`. `$10` boost price picked from the blueprint's `$5–15` range.
 
 ---
 
