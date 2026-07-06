@@ -48,3 +48,29 @@ export function verifyWebhookSignature(rawBody: string, signature: string | null
     return false;
   }
 }
+
+// Verifies the signature Razorpay Checkout hands back to the client on a
+// successful subscription payment (razorpay_payment_id + razorpay_subscription_id
+// + razorpay_signature) — a different formula than the webhook's, and signed
+// with the API key secret, not the webhook secret. This lets the frontend's
+// "payment succeeded" callback be trusted server-side before showing a
+// confirmation, rather than acting purely on an unverified client claim. The
+// actual plan flip still only ever happens via the subscription.activated/
+// charged webhook — this is a defense-in-depth check on the checkout
+// response, not a replacement for that.
+export function verifySubscriptionCheckoutSignature(
+  paymentId: string,
+  subscriptionId: string,
+  signature: string
+): boolean {
+  if (RAZORPAY_KEY_SECRET === "secret_placeholder") return false;
+  const expected = crypto
+    .createHmac("sha256", RAZORPAY_KEY_SECRET)
+    .update(`${paymentId}|${subscriptionId}`)
+    .digest("hex");
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}

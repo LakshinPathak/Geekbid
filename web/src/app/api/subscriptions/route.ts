@@ -3,7 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { getPlanConfig, type PlanTier } from "@/lib/plans";
-import { razorpayRequest, isRazorpayConfigured, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { razorpayRequest, isRazorpayConfigured, RAZORPAY_KEY_ID, verifySubscriptionCheckoutSignature } from "@/lib/razorpay";
 import { sendSubscriptionWelcomeEmail, sendPlanCancelledEmail } from "@/lib/billing-emails";
 
 const RAZORPAY_PLAN_IDS: Record<'plus' | 'premium', string | undefined> = {
@@ -161,8 +161,38 @@ export async function PATCH(req: NextRequest) {
     const auth = await authenticateRequest(req);
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-    const { action, newPlan } = await req.json();
+    const { action, newPlan, razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = await req.json();
     const db = await getDb();
+
+    // Verifies the signature Razorpay Checkout hands the client after a real
+    // subscription payment, before trusting that "success" claim — a
+    // forged/tampered client callback must not be able to fake activation.
+    // The actual plan flip still only ever happens via the
+    // subscription.activated/charged webhook; this only confirms the
+    // checkout response itself wasn't spoofed, so the frontend can show an
+    // accurate confirmation instead of blindly trusting its own callback.
+    if (action === "verify_checkout") {
+      if (!razorpay_payment_id || !razorpay_subscription_id || !razorpay_signature) {
+        return NextResponse.json({ error: "Missing verification fields" }, { status: 400 });
+      }
+      const sub = await db.collection("subscriptions").findOne({
+        userId: auth.payload.userId,
+        razorpaySubscriptionId: razorpay_subscription_id,
+      });
+      if (!sub) return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+
+      const valid = verifySubscriptionCheckoutSignature(razorpay_payment_id, razorpay_subscription_id, razorpay_signature);
+      if (!valid) {
+        return NextResponse.json({ error: "Signature verification failed" }, { status: 400 });
+      }
+
+      await db.collection("subscriptions").updateOne(
+        { _id: sub._id },
+        { $set: { updatedAt: new Date().toISOString() } }
+      );
+
+      return NextResponse.json({ verified: true, status: sub.status });
+    }
 
     const sub = await db.collection("subscriptions").findOne({
       userId: auth.payload.userId,

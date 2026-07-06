@@ -2,18 +2,8 @@
 import { useApp } from "@/lib/store";
 import { Check, Zap, Building2, Crown, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
-import { toast } from "sonner";
 import { PLANS as PLAN_CONFIG } from "@/lib/plans";
-
-declare global {
-  interface Window {
-    Razorpay: new (options: Record<string, unknown>) => {
-      open: () => void;
-      on: (event: string, handler: (response: Record<string, string>) => void) => void;
-    };
-  }
-}
+import { useSubscriptionCheckout } from "@/lib/useSubscriptionCheckout";
 
 const DISPLAY_PLANS = [
   {
@@ -73,130 +63,10 @@ const DISPLAY_PLANS = [
   },
 ];
 
-type SubscriptionInfo = {
-  plan: 'plus' | 'premium';
-  status: string;
-  cancelAtPeriodEnd: boolean;
-} | null;
-
 export default function PricingPage() {
-  const { currentUser, getValidToken } = useApp();
+  const { currentUser } = useApp();
   const currentPlan = currentUser?.plan ?? "free";
-  const [subscription, setSubscription] = useState<SubscriptionInfo>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && !document.getElementById("razorpay-script")) {
-      const script = document.createElement("script");
-      script.id = "razorpay-script";
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      script.onload = () => setScriptLoaded(true);
-      script.onerror = () => console.warn("Razorpay script failed to load (mock mode will work)");
-      document.body.appendChild(script);
-    } else if (typeof window !== "undefined" && window.Razorpay) {
-      setScriptLoaded(true);
-    }
-  }, []);
-
-  const loadSubscription = useCallback(async () => {
-    const token = await getValidToken();
-    if (!token) return;
-    const res = await fetch("/api/subscriptions", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.subscription && ["created", "active", "past_due"].includes(data.subscription.status)) {
-        setSubscription(data.subscription);
-      } else {
-        setSubscription(null);
-      }
-    }
-  }, [getValidToken]);
-
-  useEffect(() => { loadSubscription(); }, [loadSubscription]);
-
-  const startCheckout = useCallback(async (targetPlan: 'plus' | 'premium') => {
-    setProcessingPlan(targetPlan);
-    try {
-      const token = await getValidToken();
-      if (!token) { toast.error("Please log in again"); setProcessingPlan(null); return; }
-
-      // Already on a different paid plan — this is a plan change, not a new subscription.
-      if (subscription) {
-        const res = await fetch("/api/subscriptions", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ action: "change_plan", newPlan: targetPlan }),
-        });
-        const data = await res.json();
-        if (data.error) { toast.error(data.error); setProcessingPlan(null); return; }
-        toast.success(data.message ?? "Plan change requested");
-        await loadSubscription();
-        setProcessingPlan(null);
-        return;
-      }
-
-      const orderRes = await fetch("/api/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ plan: targetPlan }),
-      });
-      const orderData = await orderRes.json();
-      if (orderData.error) { toast.error(orderData.error); setProcessingPlan(null); return; }
-
-      if (orderData.mock) {
-        toast.success(`You're now on ${targetPlan === "plus" ? "Plus" : "Premium"}!`);
-        await loadSubscription();
-        setProcessingPlan(null);
-        return;
-      }
-
-      if (!scriptLoaded || !window.Razorpay) {
-        toast.error("Payment provider failed to load. Please refresh and try again.");
-        setProcessingPlan(null);
-        return;
-      }
-
-      const options = {
-        key: orderData.key,
-        subscription_id: orderData.subscriptionId,
-        name: "GeekBid",
-        description: `${targetPlan === "plus" ? "Plus" : "Premium"} subscription`,
-        prefill: { name: currentUser?.fullName || "", email: currentUser?.email || "" },
-        theme: { color: "#c9a84c" },
-        handler: async () => {
-          toast.success("Subscription created! Activating your plan...");
-          await loadSubscription();
-          setProcessingPlan(null);
-        },
-        modal: { ondismiss: () => setProcessingPlan(null) },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error("Checkout error:", err);
-      toast.error("An unexpected error occurred");
-      setProcessingPlan(null);
-    }
-  }, [subscription, getValidToken, scriptLoaded, currentUser, loadSubscription]);
-
-  const cancelSubscription = useCallback(async () => {
-    setProcessingPlan("cancel");
-    const token = await getValidToken();
-    if (!token) { toast.error("Please log in again"); setProcessingPlan(null); return; }
-    const res = await fetch("/api/subscriptions", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ action: "cancel" }),
-    });
-    const data = await res.json();
-    if (data.error) toast.error(data.error);
-    else { toast.success(data.message ?? "Subscription cancelled"); await loadSubscription(); }
-    setProcessingPlan(null);
-  }, [getValidToken, loadSubscription]);
+  const { subscription, processingPlan, startCheckout, cancelSubscription } = useSubscriptionCheckout();
 
   return (
     <div className="min-h-screen bg-[#080b14] grid-bg">

@@ -11,6 +11,7 @@ import SpendAnalytics from "./SpendAnalytics";
 import MyJobsSection from "./MyJobsSection";
 import MarketIntel from "./MarketIntel";
 import TalentPool from "./TalentPool";
+import SubscriptionWidget from "./SubscriptionWidget";
 
 // ── Types ─────────────────────────────────────────────────────────
 interface ClientDashboard {
@@ -196,6 +197,9 @@ export default function ClientFeed() {
 
  {/* ── Body ────────────────────────────────────────────────── */}
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+ {/* 0. Subscription status */}
+ <SubscriptionWidget />
 
  {/* 1. Spend Analytics */}
  <SpendAnalytics

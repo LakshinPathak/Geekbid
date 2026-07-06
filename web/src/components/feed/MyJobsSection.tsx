@@ -249,7 +249,7 @@ function MyJobCard({
  )}
  </div>
 
- {bidCount > 0 && (
+ {bidCount > 0 ? (
  <button
  onClick={handleAccept}
  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors"
@@ -257,13 +257,17 @@ function MyJobCard({
  <CheckCircle className="h-3 w-3" />
  Accept Best
  </button>
+ ) : (
+ <span className="text-[11px] text-[#a8997e]/60 italic">Waiting for bids…</span>
  )}
  </div>
  </div>
  </Link>
 
- {/* ── Bids toggle button ─────────────────────────────────── */}
- {bidCount > 0 && (
+ {/* ── Bids toggle button (or an equal-height placeholder when there are
+ no bids yet, so cards in the same row don't end up with mismatched
+ empty space beneath them) ─────────────────────────────────── */}
+ {bidCount > 0 ? (
  <button
  onClick={() => setBidsOpen(o => !o)}
  className="w-full flex items-center justify-between px-5 py-2.5 border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] hover:bg-[#111625] transition-colors text-xs font-semibold text-[#a8997e]"
@@ -274,6 +278,11 @@ function MyJobCard({
  </span>
  <ChevronDown className={`h-4 w-4 text-[#a8997e] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
  </button>
+ ) : (
+ <div className="w-full flex items-center gap-1.5 px-5 py-2.5 border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] text-xs font-medium text-[#a8997e]/60">
+ <AlertCircle className="h-3.5 w-3.5" />
+ No bids yet — consider lowering the price or broadening required skills
+ </div>
  )}
 
  {/* ── Expanded bids feed ─────────────────────────────────── */}

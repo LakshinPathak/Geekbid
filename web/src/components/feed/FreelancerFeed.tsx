@@ -19,6 +19,7 @@ import ActiveBidsTracker from "./ActiveBidsTracker";
 import FreelancerJobCard from "./FreelancerJobCard";
 import CompetitorAnalysis from "./CompetitorAnalysis";
 import EmptyState from "./EmptyState";
+import SubscriptionWidget from "./SubscriptionWidget";
 
 // ── Types ─────────────────────────────────────────────────────────
 interface FreelancerDashboard {
@@ -334,6 +335,9 @@ export default function FreelancerFeed() {
 
  {/* ── Body ────────────────────────────────────────────────── */}
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8 space-y-10">
+
+ {/* 0. Subscription status */}
+ <SubscriptionWidget />
 
  {/* 1. Freelancer Stats Bar */}
  <FreelancerStats

@@ -106,6 +106,7 @@ type AppState = {
  fetchInvites: () => Promise<void>;
  getUserPlanConfig: () => PlanConfig;
  getValidToken: () => Promise<string | null>;
+ refreshCurrentUser: () => Promise<string | null>;
  planUsage: {
  jobsPostedThisMonth: number; jobsRemaining: number;
  bidsPlacedThisMonth: number; bidsRemaining: number;
@@ -1378,6 +1379,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  getUserPlanConfig,
  planUsage,
  getValidToken,
+ refreshCurrentUser: silentRefresh,
  }),
  [
  auth,
@@ -1442,6 +1444,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  getUserPlanConfig,
  planUsage,
  getValidToken,
+ silentRefresh,
  ]
  );
 
