@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { hashSync } from "bcryptjs";
 import crypto from "crypto";
+import { getPlanConfig } from "@/lib/plans";
 
 // GET /api/keys — list user's API keys (masked)
 export async function GET(req: NextRequest) {
@@ -49,12 +50,30 @@ export async function POST(req: NextRequest) {
 
  if (!name) return NextResponse.json({ error: "Key name required" }, { status: 400 });
 
+ const db = await getDb();
+ const keyUser = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const keyConfig = getPlanConfig(keyUser?.plan);
+
+ if (!keyConfig.hasApiAccess) {
+ return NextResponse.json({ error: "API access requires a Plus or Premium plan." }, { status: 403 });
+ }
+
+ const activeKeyCount = await db.collection("api_keys").countDocuments({
+ userId: auth.payload.userId,
+ revokedAt: { $exists: false },
+ });
+ if (activeKeyCount >= keyConfig.limits.maxApiKeys) {
+ return NextResponse.json(
+ { error: `${keyConfig.name} plan limit: ${keyConfig.limits.maxApiKeys} active API keys. Revoke one or upgrade for more.` },
+ { status: 403 }
+ );
+ }
+
  const rawKey = crypto.randomBytes(32).toString("hex");
  const hashedKey = hashSync(rawKey, 10);
  const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
  const prefix = rawKey.slice(0, 8) + "...";
 
- const db = await getDb();
  const doc = {
  userId: auth.payload.userId,
  key: hashedKey,

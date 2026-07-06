@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { getPlanConfig } from "@/lib/plans";
 
 export async function GET(req: NextRequest) {
  try {
@@ -42,8 +43,7 @@ export async function GET(req: NextRequest) {
 
  const totalEarned = txns.reduce((s, t) => s + (t.netAmount || 0), 0);
 
- const plan = user?.plan ?? "free";
- const bidLimit = plan === "plus" ? 50 : plan === "premium" ? 200 : 10;
+ const bidLimit = getPlanConfig(user?.plan).limits.bidsPerMonth;
  const bidsUsed = user?.planLimits?.bidsPlacedThisMonth ?? myBids.length;
 
  return NextResponse.json({

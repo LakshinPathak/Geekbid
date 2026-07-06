@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
+import { getPlanConfig } from "@/lib/plans";
 
 /**
  * GET /api/invites — fetch invites for the current user (protected)
@@ -30,7 +32,6 @@ export async function GET(req: NextRequest) {
     // Populate job titles
     const jobIds = [...new Set(invites.map(i => i.jobId))];
     const jobTitleMap: Record<string, string> = {};
-    const { ObjectId } = await import("mongodb");
     if (jobIds.length > 0) {
       const jobDocs = await db.collection("jobs").find({
         $or: jobIds.map(id => {
@@ -79,7 +80,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Get job title for notification
-    const { ObjectId } = await import("mongodb");
     let rawJobDoc;
     try {
       rawJobDoc = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
@@ -88,6 +88,32 @@ export async function POST(req: NextRequest) {
     }
     const jobDoc = rawJobDoc as { title?: string } | null;
     const jobTitle = jobDoc?.title ?? "a job";
+
+    // Plan limit enforcement — applies to every tier (Premium's limit is
+    // effectively unlimited via Infinity, so the $lt check always passes there).
+    const client = await db.collection("users").findOne({ _id: new ObjectId(clientId) });
+    const config = getPlanConfig(client?.plan);
+    if (client) {
+      const limits = client.planLimits ?? { invitesSentThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+      if (new Date(limits.monthResetAt) < new Date()) {
+        await db.collection("users").updateOne({ _id: client._id }, {
+          $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.invitesSentThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
+        });
+      }
+      const capped = await db.collection("users").findOneAndUpdate(
+        {
+          _id: client._id,
+          $or: [
+            { "planLimits.invitesSentThisMonth": { $lt: config.limits.invitesPerMonth } },
+            { "planLimits.invitesSentThisMonth": { $exists: false } },
+          ],
+        },
+        { $inc: { "planLimits.invitesSentThisMonth": 1 } }
+      );
+      if (!capped) {
+        return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.invitesPerMonth} invites/month. Upgrade for more.` }, { status: 403 });
+      }
+    }
 
     const now = new Date().toISOString();
     const invite = {
@@ -145,7 +171,6 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "inviteId and response (accepted|declined) required" }, { status: 400 });
     }
 
-    const { ObjectId } = await import("mongodb");
     const db = await getDb();
 
     let invite: Record<string, unknown> | null = null;

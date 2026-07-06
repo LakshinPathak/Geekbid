@@ -5,6 +5,7 @@ import { ObjectId, type Document, type WithId } from "mongodb";
 import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
 import { getCurrentPrice } from "@/lib/utils";
 import type { Job } from "@/lib/utils";
+import { getPlanConfig } from "@/lib/plans";
 
 // GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
 // private bid messages, so an anonymous caller must not be able to dump them)
@@ -85,12 +86,12 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: `Must be ≤ $${currentPrice.toFixed(2)}` }, { status: 400 });
  }
 
- // Plan limit enforcement for freelancers
+ // Plan limit enforcement for freelancers — applies to every tier, not just free.
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
  let bidQuotaReserved = false;
+ const plan = user?.plan ?? "free";
+ const config = getPlanConfig(plan);
  if (user) {
- const plan = user.plan ?? "free";
- if (plan === "free") {
  const limits = user.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
  if (new Date(limits.monthResetAt) < new Date()) {
  await db.collection("users").updateOne({ _id: user._id }, {
@@ -103,17 +104,16 @@ export async function POST(req: NextRequest) {
  {
  _id: user._id,
  $or: [
- { "planLimits.bidsPlacedThisMonth": { $lt: 10 } },
+ { "planLimits.bidsPlacedThisMonth": { $lt: config.limits.bidsPerMonth } },
  { "planLimits.bidsPlacedThisMonth": { $exists: false } },
  ],
  },
  { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
  );
  if (!capped) {
- return NextResponse.json({ error: "Free plan limit: 10 bids/month. Upgrade to Pro for unlimited." }, { status: 403 });
+ return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.bidsPerMonth} bids/month. Upgrade for more.` }, { status: 403 });
  }
  bidQuotaReserved = true;
- }
  }
 
  // 30-minute per-user bid cooldown (anti-spam / anti-freeze)

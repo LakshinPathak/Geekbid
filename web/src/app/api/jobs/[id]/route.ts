@@ -6,6 +6,7 @@ import { getAdaptivePrice } from "@/lib/pricing";
 import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
 import { splitEscrow, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/money";
+import { getPlanConfig } from "@/lib/plans";
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -309,6 +310,36 @@ export async function PATCH(
 
  finalPrice = Number(finalPrice.toFixed(2));
 
+ // Bid-quota enforcement — accepting a job is equivalent to placing a winning
+ // bid and must count against the same monthly cap as POST /api/bids. Reserve
+ // the quota BEFORE attempting to claim the job below so a failed reservation
+ // never leaves the job in a claimed-but-uncounted state.
+ const acceptingUser = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const acceptConfig = getPlanConfig(acceptingUser?.plan);
+ let bidQuotaReserved = false;
+ if (acceptingUser) {
+ const limits = acceptingUser.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+ if (new Date(limits.monthResetAt) < new Date()) {
+ await db.collection("users").updateOne({ _id: acceptingUser._id }, {
+ $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
+ });
+ }
+ const bidCapped = await db.collection("users").findOneAndUpdate(
+ {
+ _id: acceptingUser._id,
+ $or: [
+ { "planLimits.bidsPlacedThisMonth": { $lt: acceptConfig.limits.bidsPerMonth } },
+ { "planLimits.bidsPlacedThisMonth": { $exists: false } },
+ ],
+ },
+ { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
+ );
+ if (!bidCapped) {
+ return NextResponse.json({ error: `${acceptConfig.name} plan limit: ${acceptConfig.limits.bidsPerMonth} bids/month. Upgrade for more.` }, { status: 403 });
+ }
+ bidQuotaReserved = true;
+ }
+
  // Log divergence if client sent a different price (diagnostic only)
  const clientPrice = Number(body.finalPrice);
  if (Math.abs(clientPrice - finalPrice) > 1) {
@@ -336,6 +367,14 @@ export async function PATCH(
  } as any,
  });
  if (!acceptedJob) {
+ // Roll back the quota reservation above — this attempt never actually
+ // claimed the job, so it must not count against the freelancer's cap.
+ if (bidQuotaReserved) {
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { $inc: { "planLimits.bidsPlacedThisMonth": -1 } }
+ );
+ }
  return NextResponse.json({ error: "Job was already accepted by another request" }, { status: 409 });
  }
 

@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendTeamInviteEmail } from "@/lib/email";
+import { getPlanConfig } from "@/lib/plans";
 
 // GET /api/teams — get user's team
 export async function GET(req: NextRequest) {
@@ -74,6 +75,13 @@ export async function POST(req: NextRequest) {
  });
  if (existing) return NextResponse.json({ error: "Already in a team" }, { status: 409 });
 
+ // Team seats are a paid feature — free plan has 0 seats and can't create a team at all.
+ const creator = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const config = getPlanConfig(creator?.plan);
+ if (config.limits.teamSeats <= 0) {
+ return NextResponse.json({ error: `${config.name} plan does not include team seats. Upgrade to Plus or Premium to create a team.` }, { status: 403 });
+ }
+
  const team = {
  name: name.trim().slice(0, 100),
  ownerId: auth.payload.userId,
@@ -116,6 +124,17 @@ export async function PATCH(req: NextRequest) {
 
  const team = await db.collection("teams").findOne({ ownerId: auth.payload.userId });
  if (!team) return NextResponse.json({ error: "You don't own a team" }, { status: 403 });
+
+ // Seat cap: owner + accepted members + still-pending invites must not exceed
+ // the owner's plan seat count — otherwise every pending invite could be
+ // accepted at once and blow past the paid-for limit.
+ const owner = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const config = getPlanConfig(owner?.plan);
+ const pendingInviteCount = (team.invites ?? []).filter((i: { status: string }) => i.status === "pending").length;
+ const seatsUsed = 1 + (team.memberIds?.length ?? 0) + pendingInviteCount;
+ if (seatsUsed >= config.limits.teamSeats) {
+ return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.teamSeats} team seats. Upgrade for more.` }, { status: 403 });
+ }
 
  await db.collection("teams").updateOne(
  { _id: team._id },

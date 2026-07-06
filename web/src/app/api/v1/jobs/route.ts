@@ -4,6 +4,7 @@ import { compareSync } from "bcryptjs";
 import { ObjectId } from "mongodb";
 import crypto from "crypto";
 import { checkRateLimit } from "@/lib/sanitize";
+import { getPlanConfig, getPlanConfigWithOverrides } from "@/lib/plans";
 
 async function authenticateApiKey(req: NextRequest) {
  const apiKey = req.headers.get("x-api-key");
@@ -52,16 +53,29 @@ export async function GET(req: NextRequest) {
  );
  }
 
+ const db = await getDb();
+
+ // API access itself is a paid feature — a free-tier user who somehow still
+ // holds an api_keys row (e.g. downgraded after generating one) must not be
+ // able to use it.
+ const apiUser = await db.collection("users").findOne({ _id: new ObjectId(userId) });
+ const apiConfig = getPlanConfig(apiUser?.plan);
+ if (!apiConfig.hasApiAccess) {
+ return NextResponse.json(
+ { success: false, error: { code: "ERR_PLAN_LIMIT", message: "API access requires a Plus or Premium plan." } },
+ { status: 403 }
+ );
+ }
+
  // Per-key throttle — this is the only door into the app that isn't behind
  // a browser session, so nothing else bounds how fast a script can call it.
- if (!checkRateLimit(`v1:${userId}`, 60, 60 * 1000)) {
+ if (!checkRateLimit(`v1:${userId}`, apiConfig.apiRateLimit, 60 * 1000)) {
  return NextResponse.json(
  { success: false, error: { code: "ERR_RATE_LIMITED", message: "Too many requests. Try again shortly." } },
  { status: 429 }
  );
  }
 
- const db = await getDb();
  const { searchParams } = new URL(req.url);
  const status = searchParams.get("status") ?? "open";
  const category = searchParams.get("category");
@@ -102,9 +116,29 @@ export async function POST(req: NextRequest) {
  );
  }
 
+ const db = await getDb();
+
+ // Same category whitelist and job cap as the internal job-creation API —
+ // jobs created through the API-key door must follow the same rules as jobs
+ // created through the UI, not bypass them.
+ const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "qa", "other"];
+
+ const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
+ const config = await getPlanConfigWithOverrides(user?.plan, db);
+
+ // API access itself is a paid feature — a free-tier user who somehow still
+ // holds an api_keys row (e.g. downgraded after generating one) must not be
+ // able to use it.
+ if (!config.hasApiAccess) {
+ return NextResponse.json(
+ { success: false, error: { code: "ERR_PLAN_LIMIT", message: "API access requires a Plus or Premium plan." } },
+ { status: 403 }
+ );
+ }
+
  // Per-key throttle — this is the only door into the app that isn't behind
  // a browser session, so nothing else bounds how fast a script can call it.
- if (!checkRateLimit(`v1:${userId}`, 60, 60 * 1000)) {
+ if (!checkRateLimit(`v1:${userId}`, config.apiRateLimit, 60 * 1000)) {
  return NextResponse.json(
  { success: false, error: { code: "ERR_RATE_LIMITED", message: "Too many requests. Try again shortly." } },
  { status: 429 }
@@ -121,19 +155,10 @@ export async function POST(req: NextRequest) {
  );
  }
 
- const db = await getDb();
-
- // Same category whitelist and free-plan job cap as the internal job-creation
- // API — jobs created through the API-key door must follow the same rules as
- // jobs created through the UI, not bypass them.
- const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "qa", "other"];
  const jobCategory = validCategories.includes(category) ? category : "other";
 
- const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
  let jobQuotaReserved = false;
  if (user) {
- const plan = user.plan ?? "free";
- if (plan === "free") {
  const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
  if (new Date(limits.monthResetAt) < new Date()) {
  await db.collection("users").updateOne({ _id: user._id }, {
@@ -147,7 +172,7 @@ export async function POST(req: NextRequest) {
  {
  _id: user._id,
  $or: [
- { "planLimits.jobsPostedThisMonth": { $lt: 3 } },
+ { "planLimits.jobsPostedThisMonth": { $lt: config.limits.jobsPerMonth } },
  { "planLimits.jobsPostedThisMonth": { $exists: false } },
  ],
  },
@@ -155,12 +180,11 @@ export async function POST(req: NextRequest) {
  );
  if (!capped) {
  return NextResponse.json(
- { success: false, error: { code: "ERR_PLAN_LIMIT", message: "Free plan limit: 3 jobs/month. Upgrade to Pro for unlimited." } },
+ { success: false, error: { code: "ERR_PLAN_LIMIT", message: `${config.name} plan limit: ${config.limits.jobsPerMonth} jobs/month. Upgrade for more.` } },
  { status: 403 }
  );
  }
  jobQuotaReserved = true;
- }
  }
 
  const now = new Date().toISOString();
@@ -178,6 +202,7 @@ export async function POST(req: NextRequest) {
  category: jobCategory,
  featured: false,
  visibility: "public",
+ platformFeePercent: config.platformFeePercent,
  // Adaptive pricing fields — required by the pricing engine and feed elsewhere in the app
  pricingMode: body.pricingMode === "fixed" ? "fixed" : "adaptive",
  bidCount: 0,

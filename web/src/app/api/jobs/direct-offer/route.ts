@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendDirectOfferEmail } from "@/lib/email";
+import { getPlanConfigWithOverrides } from "@/lib/plans";
 
 // POST /api/jobs/direct-offer — client creates direct offer to specific freelancer
 export async function POST(req: NextRequest) {
@@ -33,6 +34,34 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: "Direct hire requires freelancer GeekScore > 500" }, { status: 400 });
  }
 
+ // Same job-quota enforcement as the regular job-posting route — a direct
+ // offer is still a job creation and must count against the same monthly cap.
+ const client = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const config = await getPlanConfigWithOverrides(client?.plan, db);
+ let jobQuotaReserved = false;
+ if (client) {
+ const limits = client.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+ if (new Date(limits.monthResetAt) < new Date()) {
+ await db.collection("users").updateOne({ _id: client._id }, {
+ $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
+ });
+ }
+ const capped = await db.collection("users").findOneAndUpdate(
+ {
+ _id: client._id,
+ $or: [
+ { "planLimits.jobsPostedThisMonth": { $lt: config.limits.jobsPerMonth } },
+ { "planLimits.jobsPostedThisMonth": { $exists: false } },
+ ],
+ },
+ { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
+ );
+ if (!capped) {
+ return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.jobsPerMonth} jobs/month. Upgrade for more.` }, { status: 403 });
+ }
+ jobQuotaReserved = true;
+ }
+
  const job = {
  clientId: auth.payload.userId,
  title,
@@ -50,9 +79,17 @@ export async function POST(req: NextRequest) {
  type: "direct_offer",
  offeredTo: freelancerId,
  offerStatus: "pending",
+ platformFeePercent: config.platformFeePercent,
  };
 
  const result = await db.collection("jobs").insertOne(job);
+
+ if (!jobQuotaReserved) {
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
+ );
+ }
 
  // Create notification for freelancer
  await db.collection("notifications").insertOne({

@@ -1,11 +1,11 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { getPlanConfig } from "@/lib/plans";
 
-// Shared free-plan cap across every AI feature except bid-strategy (which
-// already tracks its own separate, stricter counter). Without this, a
-// free-tier user could call chat-assist/evaluate-bids/generate-description/
+// Shared cap across every AI feature except bid-strategy (which already
+// tracks its own separate counter) — applies to every tier, not just free.
+// Without this, a user could call chat-assist/evaluate-bids/generate-description/
 // quality-check/pricing-advisor/smart-search unlimited times.
-const FREE_PLAN_AI_MONTHLY_LIMIT = 5;
 
 export async function checkAndConsumeAiQuota(
   userId: string
@@ -17,7 +17,8 @@ export async function checkAndConsumeAiQuota(
     .findOne({ _id }, { projection: { plan: 1, planLimits: 1 } });
   if (!user) return { ok: false, error: "User not found" };
 
-  if (user.plan && user.plan !== "free") return { ok: true };
+  const config = getPlanConfig(user.plan);
+  const aiLimit = config.limits.aiGeneralPerMonth;
 
   // Dedicated reset field (not the shared jobs/bids `planLimits.monthResetAt`)
   // so resetting this quota can never skip or double-fire a reset of the
@@ -40,7 +41,7 @@ export async function checkAndConsumeAiQuota(
     {
       _id,
       $or: [
-        { "planLimits.aiUsesThisMonth": { $lt: FREE_PLAN_AI_MONTHLY_LIMIT } },
+        { "planLimits.aiUsesThisMonth": { $lt: aiLimit } },
         { "planLimits.aiUsesThisMonth": { $exists: false } },
       ],
     },
@@ -50,7 +51,7 @@ export async function checkAndConsumeAiQuota(
   if (!capped) {
     return {
       ok: false,
-      error: "Free plan AI usage limit reached. Upgrade to Pro for unlimited AI features.",
+      error: `${config.name} plan AI usage limit reached: ${aiLimit}/month. Upgrade for more.`,
     };
   }
   return { ok: true };

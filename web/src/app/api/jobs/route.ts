@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendJobPostedEmail } from "@/lib/email";
+import { getPlanConfigWithOverrides } from "@/lib/plans";
 
 // GET /api/jobs — list all jobs (public), supports ?category= filter
 export async function GET(req: NextRequest) {
@@ -99,12 +100,12 @@ export async function POST(req: NextRequest) {
 
  const db = await getDb();
 
- // Plan limit enforcement
+ // Plan limit enforcement — applies to every tier, not just free.
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
  let jobQuotaReserved = false;
+ const plan = user?.plan ?? "free";
+ const config = await getPlanConfigWithOverrides(plan, db);
  if (user) {
- const plan = user.plan ?? "free";
- if (plan === "free") {
  const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
  if (new Date(limits.monthResetAt) < new Date()) {
  await db.collection("users").updateOne({ _id: user._id }, {
@@ -117,17 +118,16 @@ export async function POST(req: NextRequest) {
  {
  _id: user._id,
  $or: [
- { "planLimits.jobsPostedThisMonth": { $lt: 3 } },
+ { "planLimits.jobsPostedThisMonth": { $lt: config.limits.jobsPerMonth } },
  { "planLimits.jobsPostedThisMonth": { $exists: false } },
  ],
  },
  { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
  );
  if (!capped) {
- return NextResponse.json({ error: "Free plan limit: 3 jobs/month. Upgrade to Pro for unlimited." }, { status: 403 });
+ return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.jobsPerMonth} jobs/month. Upgrade for more.` }, { status: 403 });
  }
  jobQuotaReserved = true;
- }
  }
  const now = new Date().toISOString();
  const validVisibility = ["public", "invite_only"];
@@ -147,6 +147,9 @@ export async function POST(req: NextRequest) {
  category: jobCategory,
  featured: false,
  visibility: validVisibility.includes(body.visibility) ? body.visibility : "public",
+ // Lock in the poster's fee rate at creation time so a later plan change
+ // doesn't retroactively alter the split on an already-posted job.
+ platformFeePercent: config.platformFeePercent,
  // Adaptive pricing fields
  pricingMode: body.pricingMode === "fixed" ? "fixed" : "adaptive",
  bidCount: 0,
