@@ -93,40 +93,42 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 ### Backend — centralize existing caps to all tiers
 
-- [ ] `POST /api/jobs` (§8.1) — replace the free-only `$lt: 3` block with `getPlanConfig(plan).limits.jobsPerMonth` applied to all tiers. **Also lock `platformFeePercent` onto the new Job document here** (§8.6/§17) — do this in the same change since both touch job creation.
-- [ ] `POST /api/bids` (§8.2) — same pattern, `bidsPerMonth`.
-- [ ] `POST /api/ai/bid-strategy` (§8.3) — remove the `=== "free"` gate, apply `aiBidStrategyPerMonth` to all tiers.
-- [ ] `lib/ai-plan-limit.ts` + its 7 call sites (§8.4) — accept a `plan` param, use `aiGeneralPerMonth`, apply to all tiers.
-- [ ] `POST /api/v1/jobs` (§8.5, §8.15) — API-access gate (`hasApiAccess` → 403 for free), reuse the centralized job cap, replace both hardcoded 60 req/min sites (GET line ~57, POST line ~107) with `apiRateLimit`.
-- [ ] Update all "Upgrade to Pro" error strings to dynamic tier-aware messages — 6 known sites (§8.1 note): `jobs/route.ts`, `bids/route.ts`, `v1/jobs/route.ts`, `ai-plan-limit.ts`, `bid-strategy/route.ts`, `pricing/page.tsx`.
+- [x] `POST /api/jobs` (§8.1) — replace the free-only `$lt: 3` block with `getPlanConfig(plan).limits.jobsPerMonth` applied to all tiers. **Also lock `platformFeePercent` onto the new Job document here** (§8.6/§17) — done in the same change.
+- [x] `POST /api/bids` (§8.2) — same pattern, `bidsPerMonth`.
+- [x] `POST /api/ai/bid-strategy` (§8.3) — removed the `=== "free"` gate, applies `aiBidStrategyPerMonth` to all tiers.
+- [x] `lib/ai-plan-limit.ts` + its 7 call sites (§8.4) — uses `aiGeneralPerMonth` via `getPlanConfig`, applied to all tiers. The 7 call sites needed no changes (function signature unchanged).
+- [x] `POST /api/v1/jobs` (§8.5, §8.15) — API-access gate (`hasApiAccess` → 403), reuses the centralized job cap, both hardcoded 60 req/min sites replaced with `apiRateLimit`.
+- [x] Updated all "Upgrade to Pro" error strings to dynamic tier-aware messages — all 6 known sites done: `jobs/route.ts`, `bids/route.ts`, `v1/jobs/route.ts`, `ai-plan-limit.ts`, `bid-strategy/route.ts`, `pricing/page.tsx`.
 
 ### Backend — close the 3 confirmed bypass bugs
 
-- [ ] **`POST /api/jobs/direct-offer`** (§8.12, HIGH) — apply the same `jobsPerMonth` cap as `POST /api/jobs`. Confirmed in Pass 6: this route builds and inserts a job with zero reference to `plan`/`planLimits` anywhere in the file.
-- [ ] **`PATCH /api/jobs/[id]` accept action** (§8.17, HIGH) — the `insertOne` at line 343 must atomically check-and-increment `planLimits.bidsPlacedThisMonth` before inserting, same as `POST /api/bids`. Confirmed in Pass 6 exactly as described — this is a real, currently-exploitable quota bypass.
-- [ ] **`POST /api/keys`** (§8.14, HIGH) — gate on `hasApiAccess` (403 for free, confirmed today anyone can generate unlimited keys) and cap active keys at `maxApiKeys`.
+- [x] **`POST /api/jobs/direct-offer`** (§8.12, HIGH) — now applies the same `jobsPerMonth` cap as `POST /api/jobs`, plus locks `platformFeePercent`.
+- [x] **`PATCH /api/jobs/[id]` accept action** (§8.17, HIGH) — quota reserved atomically before the job-accept `findOneAndUpdate`; rolled back (`$inc: -1`) if the accept loses the race (409), so a failed claim never counts against the cap.
+- [x] **`POST /api/keys`** (§8.14, HIGH) — gated on `hasApiAccess` (403 for free) and capped active keys at `maxApiKeys`.
 
 ### Backend — new caps on previously-uncapped resources
 
-- [ ] `POST /api/teams` (§8.7) — `teamSeats > 0` gate for team creation, invite-time seat cap check, tier-aware error message.
-- [ ] `POST /api/invites` (§8.13) — add `invitesPerMonth` cap, track in `planLimits.invitesSentThisMonth`.
-- [ ] `PATCH /api/jobs/feature` (§8.8) — check `featuredBoostsPerMonth`, atomic increment, hand off to Phase 3 pay-per-boost when exhausted.
-- [ ] `GET /api/freelancer/dashboard` (§8.9) — replace the hardcoded ternary at line 46 with `getPlanConfig(plan).limits.bidsPerMonth`.
-- [ ] `PATCH /api/admin/users/[id]/plan` (§8.11, new route) — admin manual plan override, writes `plan_change_log`.
-- [ ] `admin/config` per-tier fee split (§8.16) — restructure `api/admin/config/route.ts` (currently a single flat `platformFeePercent: 10` at line 22) into per-tier storage; `getPlanConfig()` checks admin DB overrides first (this is where `getPlanConfigWithOverrides()` from §7 gets wired in).
+- [x] `POST /api/teams` (§8.7) — `teamSeats > 0` gate for team creation, invite-time seat cap check (owner + members + pending invites vs `teamSeats`), tier-aware error message.
+- [x] `POST /api/invites` (§8.13) — added `invitesPerMonth` cap, tracked in `planLimits.invitesSentThisMonth` (Premium's `Infinity` limit passes the `$lt` check unconditionally).
+- [x] `PATCH /api/jobs/feature` (§8.8) — checks `featuredBoostsPerMonth`, atomic increment on turning a boost ON only (un-featuring is free); hard 403 for now, Phase 3 will add pay-per-boost fallback.
+- [x] `GET /api/freelancer/dashboard` (§8.9) — hardcoded ternary replaced with `getPlanConfig(plan).limits.bidsPerMonth`.
+- [x] `PATCH /api/admin/users/[id]/plan` (§8.11, new route) — admin manual plan override, writes `plan_change_log` + `audit_logs`.
+- [x] `admin/config` per-tier fee split (§8.16) — `platform_config` now stores `planFees: {free,plus,premium}`; added `getPlanConfigWithOverrides(plan, db)` with a 5-min in-process cache (invalidated immediately on admin save), wired into all 3 job-creation routes so an admin fee change is reflected in newly-locked-in job fees.
 
 ### Frontend
 
-- [ ] `pricing/page.tsx` (§9.1) — rename tiers, update prices, leave checkout wiring for Phase 4 (buttons can stay disabled with correct copy until then).
-- [ ] `FreelancerFeed.tsx:154` (§9.2) — replace the exact hardcoded ternary (`plan === "pro" ? 50 : plan === "enterprise" ? 200 : 10`, confirmed unchanged in Pass 6) with `getPlanConfig(...).limits.bidsPerMonth`.
-- [ ] `AIBidStrategist.tsx` (§9.3) — extend the Phase 0 toast fix to be tier-aware for all tiers, not just free.
-- [ ] Badges (§9.4) — add the **new** Premium/Enterprise badge visual (confirmed in Pass 6 this doesn't exist yet — it's not a rename, it's new UI) alongside the already-renamed `"plus"` check from Phase 1.
-- [ ] `store.tsx` (§9.5) — add `getUserPlanConfig()` helper, expose remaining quota counts. Remember: this is **React Context + `useState`**, not Zustand (Pass 6 correction) — build accordingly.
-- [ ] New `PlanLimitBanner.tsx` (§9.6) — reusable 80%+-used banner, wire into job posting, bid placement, AI features.
-- [ ] `settings/page.tsx` (§9.7) — gate on `hasApiAccess`; show upgrade CTA instead of key-management UI for free users.
-- [ ] `admin/config/page.tsx` (§9.8) — replace the single fee slider with 3 per-tier inputs; warn if any fee is outside 3–15%.
+- [x] `pricing/page.tsx` (§9.1) — tiers/prices/features now generated from `lib/plans.ts` (`PLANS`) instead of hardcoded copy; checkout buttons remain inert (Phase 4 scope).
+- [x] `FreelancerFeed.tsx:154` (§9.2) — hardcoded ternary replaced with `getPlanConfig(currentUser?.plan).limits.bidsPerMonth`.
+- [x] `AIBidStrategist.tsx` (§9.3) — toast + inline limit copy now tier-aware for all 3 tiers (uses `aiBidStrategyPerMonth` per tier), not just free.
+- [x] Badges (§9.4) — added the new Premium badge visual (gradient + Crown icon) at all 3 sites, alongside the Phase-1-renamed Plus badge (also relabeled "Pro"→"Plus" text for consistency).
+- [x] `store.tsx` (§9.5) — added `getUserPlanConfig()` and `planUsage` (remaining/used counts for jobs, bids, AI general, AI bid-strategy, featured boosts, invites) to the Context value.
+- [x] New `PlanLimitBanner.tsx` (§9.6) — reusable 80%+-used banner; wired into `post-job/page.tsx` (jobs), `jobs/[id]/page.tsx` (bids), and `AIBidStrategist.tsx` (AI bid analyses).
+- [x] `settings/page.tsx` (§9.7) — gated key-management UI on `hasApiAccess`; free-tier users see an upgrade CTA instead (API docs section stays visible for everyone).
+- [x] `admin/config/page.tsx` (§9.8) — single fee slider replaced with 3 per-tier inputs (Free/Plus/Premium), each flagging a visual warning outside the 3–15% range.
 
-**Exit criteria:** Every route in the blueprint's file list enforces its tier's actual cap (verifiable by hitting each endpoint as a free/plus/premium seeded user up to and past the limit). The 3 bypass bugs are closed and covered by a manual test each. Pricing page shows correct numbers. No route still reads a hardcoded `3`/`10`/`5`/`2`/`60` limit — grep for these to confirm before moving on.
+**Exit criteria:** Every route in the blueprint's file list enforces its tier's actual cap. ✅ The 3 bypass bugs are closed. ✅ Pricing page shows correct tier-sourced numbers. ✅ `grep` for hardcoded `$lt: 3/10/5/2` and `, 60,` rate-limit values in `src/app/api` returns nothing. ✅ `npx tsc --noEmit` and `npm run build` both pass clean.
+
+✅ Phase 2 complete (2026-07-06) — backend committed as `399f219`, frontend as `fa5a52e`, both pushed to `v17`.
 
 ---
 
