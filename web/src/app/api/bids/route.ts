@@ -6,6 +6,7 @@ import { sendNewBidEmail, sendPriceTargetAlertEmail } from "@/lib/email";
 import { getCurrentPrice } from "@/lib/utils";
 import type { Job } from "@/lib/utils";
 import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
 // private bid messages, so an anonymous caller must not be able to dump them)
@@ -228,9 +229,12 @@ export async function POST(req: NextRequest) {
  { _id: new ObjectId(auth.payload.userId) },
  { $inc: { "planLimits.bidsPlacedThisMonth": 1 } }
  );
- return NextResponse.json(
+ return withPlanHeader(
+ NextResponse.json(
  { ...bid, _id: result.insertedId.toString(), id: result.insertedId.toString() },
  { status: 201 }
+ ),
+ plan
  );
  } catch (err) {
  console.error("[Bids POST Error]", err);

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Per-user throttle: these routes call an external Gemini API on every
     // request, so nothing short of this stops rapid-fire calls from racking up
     // cost within a user's monthly quota window.
-    if (!checkRateLimit(`ai:${auth.payload.userId}`, 10, 60 * 1000)) {
+    if (!(await checkRateLimit(`ai:${auth.payload.userId}`, 10, 60 * 1000))) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 

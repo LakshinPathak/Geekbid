@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendJobPostedEmail } from "@/lib/email";
 import { getPlanConfigWithOverrides } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // GET /api/jobs — list all jobs (public), supports ?category= filter
 export async function GET(req: NextRequest) {
@@ -185,9 +186,9 @@ export async function POST(req: NextRequest) {
  ).catch(() => {});
  }
 
- return NextResponse.json(
- { ...job, _id: jobId, id: jobId },
- { status: 201 }
+ return withPlanHeader(
+ NextResponse.json({ ...job, _id: jobId, id: jobId }, { status: 201 }),
+ plan
  );
  } catch (err) {
  console.error("[Jobs POST Error]", err);

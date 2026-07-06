@@ -117,6 +117,21 @@ export type Transaction = {
  escrowStatus: string; createdAt: string; releasedAt?: string;
 };
 
+export type SubscriptionStatus = 'created' | 'active' | 'past_due' | 'halted' | 'cancelled' | 'completed';
+
+export type Subscription = {
+ id: string; _id?: string; userId: string;
+ plan: 'plus' | 'premium';
+ razorpaySubscriptionId: string; razorpayPlanId: string;
+ status: SubscriptionStatus;
+ currentPeriodStart: string; currentPeriodEnd: string;
+ cancelAtPeriodEnd: boolean;
+ pendingPlanChange: 'plus' | 'premium' | null;
+ gracePeriodEndsAt: string | null;
+ createdAt: string; updatedAt: string;
+ lastWebhookEventId: string | null;
+};
+
 export type Dispute = {
  id: string; transactionId: string; raisedBy: string;
  reason: string; status: string; createdAt: string;

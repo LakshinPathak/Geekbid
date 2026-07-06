@@ -53,27 +53,10 @@ export function sanitizeSearchRegex(input: unknown): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// ── Simple in-memory rate limiter for Next.js edge routes ──────────────────
-
-interface RateEntry { count: number; resetAt: number }
-const _store = new Map<string, RateEntry>();
-
-/** Returns true if the caller is within the allowed limit, false if blocked. */
-export function checkRateLimit(
-  key: string,
-  maxRequests: number,
-  windowMs: number
-): boolean {
-  const now = Date.now();
-  const entry = _store.get(key);
-  if (!entry || now > entry.resetAt) {
-    _store.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-  entry.count += 1;
-  if (entry.count > maxRequests) return false;
-  return true;
-}
+// Rate limiting moved to lib/rate-limit.ts (MongoDB-backed, shared across
+// instances) — re-exported here so existing call sites don't need to change
+// their import path, only add `await` since the check is now async.
+export { checkRateLimit } from "./rate-limit";
 
 /** Extract client IP from Next.js request for rate-limit keys. */
 export function getClientIp(req: Request): string {

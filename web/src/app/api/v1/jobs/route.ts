@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
 
  // Per-key throttle — this is the only door into the app that isn't behind
  // a browser session, so nothing else bounds how fast a script can call it.
- if (!checkRateLimit(`v1:${userId}`, apiConfig.apiRateLimit, 60 * 1000)) {
+ if (!(await checkRateLimit(`v1:${userId}`, apiConfig.apiRateLimit, 60 * 1000))) {
  return NextResponse.json(
  { success: false, error: { code: "ERR_RATE_LIMITED", message: "Too many requests. Try again shortly." } },
  { status: 429 }
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 
  // Per-key throttle — this is the only door into the app that isn't behind
  // a browser session, so nothing else bounds how fast a script can call it.
- if (!checkRateLimit(`v1:${userId}`, config.apiRateLimit, 60 * 1000)) {
+ if (!(await checkRateLimit(`v1:${userId}`, config.apiRateLimit, 60 * 1000))) {
  return NextResponse.json(
  { success: false, error: { code: "ERR_RATE_LIMITED", message: "Too many requests. Try again shortly." } },
  { status: 429 }

@@ -5,7 +5,7 @@ import { useApp } from "@/lib/store";
 import { formatMoney } from "@/lib/utils";
 import { toast } from "sonner";
 import {
- Users, Plus, Mail, CheckCircle2, ArrowLeft, Briefcase, DollarSign, Activity,
+ Users, Plus, Mail, CheckCircle2, ArrowLeft, Briefcase, DollarSign, Activity, AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
@@ -15,6 +15,9 @@ type TeamData = {
  members: { id: string; fullName: string; avatarInitial: string; avatarUrl?: string; email: string; role: string }[];
  invites: { email: string; status: string; invitedAt: string }[];
  analytics: { totalJobs: number; activeJobs: number; totalSpend: number };
+ status?: "active" | "over_limit" | "frozen";
+ seatDeadline?: string;
+ frozenReason?: string;
 };
 
 export default function TeamPage() {
@@ -118,6 +121,29 @@ export default function TeamPage() {
 
  <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4] mb-1 animate-fade-in-up">{team.name}</h1>
  <p className="text-[#a8997e] text-sm mb-6">{isOwner ? "You're the team owner" : "Team member"}</p>
+
+ {team.status === "over_limit" && (
+ <div className="flex items-start gap-3 rounded-[6px] border border-[rgba(229,115,115,0.3)] bg-[rgba(229,115,115,0.06)] px-4 py-3 mb-6">
+ <AlertTriangle className="h-4 w-4 text-[#e57373] mt-0.5 shrink-0" />
+ <div className="text-sm">
+ <p className="text-[#e57373] font-medium">Your team is over your plan&apos;s seat limit</p>
+ <p className="text-[#a8997e] text-xs mt-0.5">
+ {isOwner
+ ? `Remove members to fit your plan${team.seatDeadline ? ` by ${new Date(team.seatDeadline).toLocaleDateString()}` : ""}, or the most recently added members will be removed automatically.`
+ : "The team owner needs to reduce team size to match their current plan."}
+ </p>
+ </div>
+ </div>
+ )}
+ {team.status === "frozen" && (
+ <div className="flex items-start gap-3 rounded-[6px] border border-[rgba(229,115,115,0.3)] bg-[rgba(229,115,115,0.06)] px-4 py-3 mb-6">
+ <AlertTriangle className="h-4 w-4 text-[#e57373] mt-0.5 shrink-0" />
+ <div className="text-sm">
+ <p className="text-[#e57373] font-medium">This team is frozen</p>
+ <p className="text-[#a8997e] text-xs mt-0.5">The owner&apos;s plan no longer includes team seats. Upgrade to Plus or Premium to reactivate.</p>
+ </div>
+ </div>
+ )}
 
  {/* Analytics */}
  <div className="grid grid-cols-3 gap-4 mb-6">

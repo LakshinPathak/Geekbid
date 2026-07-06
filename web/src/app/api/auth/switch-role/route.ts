@@ -15,7 +15,7 @@ import { ObjectId } from "mongodb";
 export async function POST(req: NextRequest) {
  try {
  const ip = getClientIp(req);
- if (!checkRateLimit(`switch-role:${ip}`, 20, 15 * 60 * 1000)) {
+ if (!(await checkRateLimit(`switch-role:${ip}`, 20, 15 * 60 * 1000))) {
  return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
  }
 

@@ -6,7 +6,7 @@ import { checkRateLimit, getClientIp } from "@/lib/sanitize";
 export async function POST(req: NextRequest) {
   // Rate limit: 5 attempts per IP per 15 minutes — brute-force protection
   const ip = getClientIp(req);
-  if (!checkRateLimit(`admin-key:${ip}`, 5, 15 * 60 * 1000)) {
+  if (!(await checkRateLimit(`admin-key:${ip}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }
 

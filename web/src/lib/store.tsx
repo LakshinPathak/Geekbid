@@ -24,6 +24,7 @@ import {
  getCurrentPrice,
 } from "@/lib/utils";
 import { getPlanConfig, type PlanConfig } from "@/lib/plans";
+import { toast } from "sonner";
 
 // ─── Types ─────────────────────────────────────────────────────
 type AuthState = {
@@ -128,6 +129,15 @@ const STORAGE_KEY_TOKEN = "gb_access_token";
 const STORAGE_KEY_EXPIRES = "gb_token_expires";
 const STORAGE_KEY_USER = "gb_user";
 
+// ─── Concurrent Session Consistency (blueprint §18) ───────────────
+// apiRequest is a module-level function (not a hook), so it has no direct
+// access to the Provider's React state — this tiny pub-sub lets it notify
+// the Provider when a response's X-User-Plan header (set by the Phase 4
+// plan-gated routes) disagrees with the plan cached in this tab, without
+// threading a callback through every one of apiRequest's ~40 call sites.
+let lastKnownPlan: string | null = null;
+let onPlanDrift: ((serverPlan: string) => void) | null = null;
+
 // ─── API Helper ────────────────────────────────────────────────
 async function apiRequest(
  path: string,
@@ -144,6 +154,12 @@ async function apiRequest(
  headers: { ...headers, ...(opts?.headers as Record<string, string>) },
  credentials: "include",
  });
+
+ const serverPlan = res.headers.get("X-User-Plan");
+ if (serverPlan && lastKnownPlan && serverPlan !== lastKnownPlan) {
+ onPlanDrift?.(serverPlan);
+ }
+
  return res;
 }
 
@@ -239,6 +255,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
  refreshPromiseRef.current = promise;
  return promise;
  }, [clearAuth, persistAuth]);
+
+ // ── Concurrent session sync (blueprint §18) ───────────────
+ // Keep the module-level "what plan does this tab think it has" in sync with
+ // React state, and react when apiRequest spots the server disagreeing.
+ useEffect(() => {
+ lastKnownPlan = currentUser?.plan ?? null;
+ }, [currentUser?.plan]);
+
+ useEffect(() => {
+ onPlanDrift = (serverPlan) => {
+ toast.info(`Your plan has been updated to ${serverPlan}.`);
+ silentRefresh();
+ };
+ return () => { onPlanDrift = null; };
+ }, [silentRefresh]);
 
  // ── Get a valid access token ──────────────────────────────
  const getValidToken = useCallback(async (): Promise<string | null> => {

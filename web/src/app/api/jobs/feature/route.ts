@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { getPlanConfig, FEATURED_BOOST_PRICE_USD } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // PATCH /api/jobs/feature — toggle featured status
 export async function PATCH(req: NextRequest) {
@@ -113,7 +114,14 @@ export async function PATCH(req: NextRequest) {
  }
  );
 
- return NextResponse.json({ ok: true, featured: !!featured });
+ const caller = await db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { plan: 1 } }
+ );
+ return withPlanHeader(
+ NextResponse.json({ ok: true, featured: !!featured }),
+ caller?.plan ?? "free"
+ );
  } catch (err) {
  console.error("[Feature PATCH Error]", err);
  return NextResponse.json({ error: "Failed to update featured status" }, { status: 500 });

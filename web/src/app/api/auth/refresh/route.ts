@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
  // Rate limit: throttles both routine over-eager refresh storms and
  // brute-force/stolen-cookie replay attempts against this endpoint.
  const ip = getClientIp(req);
- if (!checkRateLimit(`refresh:${ip}`, 20, 15 * 60 * 1000)) {
+ if (!(await checkRateLimit(`refresh:${ip}`, 20, 15 * 60 * 1000))) {
  return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
  }
 

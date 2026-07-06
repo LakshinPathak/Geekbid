@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import { generateJSON, isAIAvailable } from "@/lib/ai";
 import { checkRateLimit } from "@/lib/sanitize";
 import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     // Per-user throttle: these routes call an external Gemini API on every
     // request, so nothing short of this stops rapid-fire calls from racking up
     // cost within a user's monthly quota window.
-    if (!checkRateLimit(`ai:${auth.payload.userId}`, 10, 60 * 1000)) {
+    if (!(await checkRateLimit(`ai:${auth.payload.userId}`, 10, 60 * 1000))) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
@@ -122,7 +123,7 @@ Analyze this and return a JSON object with EXACTLY this shape:
       tips: string[];
     }>(prompt);
 
-    return NextResponse.json(result);
+    return withPlanHeader(NextResponse.json(result), user.plan ?? "free");
   } catch (err) {
     console.error("[AI Bid Strategy Error]", err);
     return NextResponse.json({ error: "AI analysis failed" }, { status: 500 });

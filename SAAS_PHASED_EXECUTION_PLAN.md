@@ -155,45 +155,49 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 ### 4.1 — Schema + config
 
-- [ ] Create `subscriptions`, `webhook_events`, `quota_audit_log` collections + indexes (blueprint §6.2, §6.4, §6.5, §10.3). **Note:** `subscriptions.userId` index is intentionally **non-unique** (preserves cancel/resubscribe history) — don't "fix" this to unique.
-- [ ] Create Razorpay Plans in the dashboard (`plus_monthly`, `premium_monthly`) matching `plans.ts` pricing.
-- [ ] Add `pendingPlanChange` field to `subscriptions` (§14.2).
+- [x] Create `subscriptions`, `webhook_events`, `quota_audit_log` collections + indexes (blueprint §6.2, §6.4, §6.5, §10.3). **Note:** `subscriptions.userId` index is intentionally **non-unique** (preserves cancel/resubscribe history) — don't "fix" this to unique. Written as `web/scripts/create-phase4-indexes.mjs` — **not yet run** against the live DB (same deliberate hold as the Phase 1 migration scripts). Also added a `rate_limits` index for §4.5 in the same script.
+- [ ] Create Razorpay Plans in the dashboard (`plus_monthly`, `premium_monthly`) matching `plans.ts` pricing. **Not done — external dashboard setup, explicitly out of scope per your "build the code, skip external setup" answer.** `RAZORPAY_PLAN_ID_PLUS`/`RAZORPAY_PLAN_ID_PREMIUM` env vars added to `.env.example`; until they're set, `/api/subscriptions` runs in mock mode (mirrors `api/payments/route.ts`'s existing mock convention).
+- [x] Add `pendingPlanChange` field to `subscriptions` (§14.2). Also added a `Subscription` type to `utils.ts`.
 
 ### 4.2 — Subscription lifecycle routes
 
-- [ ] `POST /api/subscriptions` — create + checkout.
-- [ ] `GET /api/subscriptions` — current status.
-- [ ] `PATCH /api/subscriptions` — cancel + plan change with proration (§21 — start with `schedule_change_at: "cycle_end"`, immediate `"now"` proration deferred to Phase 5).
+- [x] `POST /api/subscriptions` — create + checkout (mock mode until real Plan IDs exist).
+- [x] `GET /api/subscriptions` — current status.
+- [x] `PATCH /api/subscriptions` — cancel + plan change with proration (§21 — `schedule_change_at: "cycle_end"`; immediate `"now"` proration deferred to Phase 5 as planned).
 
 ### 4.3 — Webhook handling (§13, §14)
 
-- [ ] `POST /api/webhooks/razorpay` — raw-body HMAC signature verification (fail closed on missing/invalid signature), idempotent `findOneAndUpdate` upsert against `webhook_events` before processing (§13.1).
-- [ ] `processWebhookEvent()` router + all handler functions for the 12 state transitions in §14.1 (`handleActivated`, `handleCharged`, `handleHalted`, `handleCancelled`, `handlePaymentFailed`, `handlePaymentCaptured`).
-- [ ] Tie quota resets to `subscription.charged`, not calendar month, for paying users (§15). Free users keep the existing lazy calendar-month reset.
-- [ ] `web/src/app/api/cron/retry-webhooks/route.ts` (§13.2) — retries `status: 'failed'` events with `retryCount < 5` every 15 min.
+- [x] `POST /api/webhooks/razorpay` — raw-body HMAC signature verification (fail closed on missing/invalid signature via `lib/razorpay.ts`'s `verifyWebhookSignature`), idempotent `findOneAndUpdate` upsert against `webhook_events` before processing (§13.1).
+- [x] `processWebhookEvent()` router + all 6 handler functions, moved to `web/src/lib/webhook-processing.ts` (not left inline in the route) so `cron/retry-webhooks` can reuse them without relying on non-standard exports from a `route.ts` file.
+- [x] Tied quota resets to `subscription.charged`, not calendar month, for paying users (§15). Free users keep the existing lazy calendar-month reset. `handleCharged` also applies any `pendingPlanChange` at this point (transitions #11/#12).
+- [x] `web/src/app/api/cron/retry-webhooks/route.ts` (§13.2) — retries `status: 'failed'` events with `retryCount < 5` every 15 min.
 
 ### 4.4 — Downgrade + consistency
 
-- [ ] `web/src/lib/plan-downgrade.ts` → `handleDowngrade()` (§16) — revokes excess API keys (LIFO), freezes/flags teams over the new seat limit, logs to `plan_change_log`, sends notification email.
-- [ ] Team over-limit flow (§23) — `status: 'over_limit'`, 7-day owner deadline, LIFO auto-removal if the deadline passes, `TeamSettings.tsx` warning banner.
-- [ ] Concurrent session sync (§18, Pass 6 corrected) — `X-User-Plan` response header + **Context-based** (not Zustand) refresh logic inside `store.tsx`'s `apiRequest`.
+- [x] `web/src/lib/plan-downgrade.ts` → `handleDowngrade()` (§16) — revokes excess API keys (LIFO — most-recently-created revoked first), freezes teams when new tier has 0 seats or flags them `over_limit` with a 7-day deadline otherwise, logs to `plan_change_log`, sends notification email.
+- [x] Team over-limit flow (§23) — `status: 'over_limit'`, 7-day owner deadline, LIFO auto-removal via `enforceExpiredTeamSeatDeadlines()` (called from the reconciliation cron). **Note:** this codebase has no `TeamSettings.tsx` — the warning banner was added directly to the actual file, `web/src/app/team/page.tsx`.
+- [x] Concurrent session sync (§18, Pass 6 corrected) — `X-User-Plan` response header (`lib/middleware/plan-header.ts`) + a module-level pub-sub in `store.tsx` (since `apiRequest` is a plain function, not a hook, and can't call `setState` directly) that triggers `silentRefresh()` + a toast on drift. Wired into 4 representative plan-gated routes (jobs, bids, ai/bid-strategy, jobs/feature) rather than all ~50 routes in the app — scoped to the surfaces most likely to show a visibly stale limit.
 
 ### 4.5 — Distributed rate limiting (§19)
 
-- [ ] `web/src/lib/rate-limit.ts` — MongoDB-based, replaces the in-memory `Map` in `sanitize.ts` that doesn't share state across instances.
+- [x] `web/src/lib/rate-limit.ts` — MongoDB-based (single atomic aggregation-pipeline `findOneAndUpdate`, one doc per key), replaces the in-memory `Map` in `sanitize.ts` (now just re-exports from the new module so none of the 14 call sites' import paths needed to change — each just gained an `await`).
 
 ### 4.6 — Billing emails (§20)
 
-- [ ] `web/src/lib/billing-emails.ts` + 9 templates under `web/src/email-templates/billing/`. Reuse existing email infra rather than building a new sender.
+- [x] `web/src/lib/billing-emails.ts` with all 9 required email functions. **Deviated from the blueprint's suggested `web/src/email-templates/billing/*.html` directory** — this codebase's actual convention (confirmed in `email.ts`) is inline HTML built from small exported helper functions (`wrapHtml`, `heading`, `subtext`, `ctaButton`, `infoCard`), not separate template files; billing-emails.ts reuses those exact helpers (now exported from `email.ts`) for visual consistency with every other email already in the app.
 
 ### 4.7 — Reconciliation (§22)
 
-- [ ] `web/src/app/api/cron/reconcile-subscriptions/route.ts` — daily drift-correction against Razorpay's actual subscription state, plus expired-grace-period sweep.
-- [ ] Add both cron schedules to `vercel.json` (`reconcile-subscriptions` daily 3am UTC, `retry-webhooks` every 15 min).
+- [x] `web/src/app/api/cron/reconcile-subscriptions/route.ts` — daily drift-correction against Razorpay's actual subscription state (skips mock subscriptions, nothing to reconcile there), expired-grace-period sweep, and team seat deadline enforcement.
+- [x] Added both cron schedules to `web/vercel.json`. **Caveat:** this repo also has a `docker-compose.yml` + `backend/Dockerfile` — if the `web` app isn't actually deployed on Vercel, these two cron endpoints need an external scheduler (system cron / CI scheduled workflow) hitting them with `Authorization: Bearer $CRON_SECRET` instead.
 
 ### 4.8 — Wire the frontend
 
-- [ ] `pricing/page.tsx` — connect Upgrade/Contact Sales buttons to real checkout (resolves the Open Decision D above — self-serve for both tiers per default assumption).
+- [x] `pricing/page.tsx` — Upgrade/Premium buttons call real checkout (`POST`/`PATCH /api/subscriptions` + Razorpay Checkout with `subscription_id`, mock-mode fallback matching `FeaturedBoostModal`'s pattern); resolves Open Decision D as self-serve for both tiers. Added a "Downgrade to Free" / cancel affordance and a cancellation-scheduled banner not explicitly itemized in the checklist but necessary for the flow to be usable end-to-end.
+
+**Phase 4 exit criteria not yet verifiable:** the blueprint's stated exit criteria ("a test user can subscribe, get charged, hit a failed payment, land in grace period, get cleanly downgraded... webhook replay causes zero duplicate side effects... reconciliation cron catches a manually-induced drift in a staging Razorpay test account") all require a **real Razorpay test account with real Plans**, which doesn't exist in this environment. The code paths for all of this exist and typecheck/build clean, but are only exercised via mock mode here — real end-to-end verification is still pending the external Razorpay dashboard setup.
+
+✅ Phase 4 code complete (2026-07-06), pending Razorpay dashboard setup + real-account verification. Migration/index scripts written, not run.
 
 **Exit criteria:** A test user can subscribe, get charged, have quotas reset on the real billing cycle, hit a failed payment and land in grace period, and get cleanly downgraded after grace expires — all without a human touching the DB by hand. Webhook replay (send the same event twice) causes zero duplicate side effects. Reconciliation cron catches a manually-induced drift in a staging Razorpay test account.
 

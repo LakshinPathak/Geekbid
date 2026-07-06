@@ -16,7 +16,11 @@ export type EmailType =
  | "review_received" | "team_invite"
  | "referral_signup" | "assessment_passed" | "job_posted"
  | "payment_confirmed" | "booking_confirmed" | "job_completed" | "price_target_alert"
- | "job_cancelled" | "job_completed_summary";
+ | "job_cancelled" | "job_completed_summary"
+ // Billing (Phase 4) — see lib/billing-emails.ts
+ | "subscription_welcome" | "payment_receipt" | "payment_failed_warning"
+ | "grace_period_warning" | "grace_period_final" | "plan_downgraded"
+ | "plan_upgraded" | "plan_cancelled" | "win_back";
 
 interface EmailMeta {
  jobId?: string;
@@ -69,7 +73,9 @@ async function logEmail(params: {
 }
 
 // ── Core send wrapper with tracking ────────────────────────────────
-async function trackedSend(opts: {
+// Exported so billing-emails.ts (Phase 4) can reuse the same dedup/logging
+// path instead of duplicating it.
+export async function trackedSend(opts: {
  to: string;
  recipientId?: string;
  emailType: EmailType;
@@ -105,7 +111,9 @@ async function trackedSend(opts: {
 }
 
 // ── Dark-themed HTML wrapper matching GeekBid's design system ──────
-function wrapHtml(title: string, content: string): string {
+// Exported alongside the component helpers below so billing-emails.ts
+// (Phase 4) composes the same visual language instead of a separate one.
+export function wrapHtml(title: string, content: string): string {
  return `
 <!DOCTYPE html>
 <html>
@@ -160,7 +168,7 @@ function wrapHtml(title: string, content: string): string {
 }
 
 // ── Reusable components ────────────────────────────────────────────
-function ctaButton(text: string, url: string): string {
+export function ctaButton(text: string, url: string): string {
  return `
  <div style="text-align:center;margin:28px 0 8px;">
  <a href="${url}" style="display:inline-block; ;color:#FFFFFF;font-weight:700;font-size:14px;padding:14px 36px;border-radius:12px;text-decoration:none;letter-spacing:0.3px;">
@@ -169,7 +177,7 @@ function ctaButton(text: string, url: string): string {
  </div>`;
 }
 
-function infoCard(rows: [string, string][]): string {
+export function infoCard(rows: [string, string][]): string {
  const rowsHtml = rows
  .map(
  ([label, value]) => `
@@ -186,15 +194,15 @@ function infoCard(rows: [string, string][]): string {
  </table>`;
 }
 
-function heading(text: string): string {
+export function heading(text: string): string {
  return `<h1 style="color:#182739;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">${text}</h1>`;
 }
 
-function subtext(text: string): string {
+export function subtext(text: string): string {
  return `<p style="color:#7B8694;font-size:14px;line-height:1.7;margin:0 0 4px;">${text}</p>`;
 }
 
-function highlight(text: string): string {
+export function highlight(text: string): string {
  return `<strong style="color:#C8923D;">${text}</strong>`;
 }
 
