@@ -4,11 +4,13 @@ import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import {
   Settings, Save, RefreshCw, Shield, Zap, Users,
-  CheckCircle, XCircle,
+  CheckCircle, XCircle, AlertTriangle,
 } from "lucide-react";
 
+type PlanFees = { free: number; plus: number; premium: number };
+
 type Config = {
-  platformFeePercent: number;
+  planFees: PlanFees;
   defaultDecayRate: number;
   maintenanceMode: boolean;
   registrationOpen: boolean;
@@ -18,7 +20,7 @@ type Config = {
 };
 
 const defaults: Config = {
-  platformFeePercent: 10,
+  planFees: { free: 10, plus: 7, premium: 5 },
   defaultDecayRate: 5,
   maintenanceMode: false,
   registrationOpen: true,
@@ -26,6 +28,12 @@ const defaults: Config = {
   updatedAt: null,
   updatedBy: null,
 };
+
+const FEE_TIERS: { key: keyof PlanFees; label: string }[] = [
+  { key: "free", label: "Free" },
+  { key: "plus", label: "Plus" },
+  { key: "premium", label: "Premium" },
+];
 
 const API_KEYS = [
   { label: "Razorpay Key ID", envVar: "RAZORPAY_KEY_ID" },
@@ -53,7 +61,7 @@ export default function AdminConfigPage() {
     const res = await fetch("/api/admin/config", { headers });
     if (res.ok) {
       const data = await res.json();
-      setConfig({ ...defaults, ...data });
+      setConfig({ ...defaults, ...data, planFees: { ...defaults.planFees, ...data.planFees } });
     }
     // Fetch env key status
     const envRes = await fetch("/api/admin/config/env-status", { headers });
@@ -66,11 +74,11 @@ export default function AdminConfigPage() {
 
   async function saveConfig() {
     setSaving(true);
-    const { platformFeePercent, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled } = config;
+    const { planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled } = config;
     const res = await fetch("/api/admin/config", {
       method: "PATCH",
       headers,
-      body: JSON.stringify({ platformFeePercent, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled }),
+      body: JSON.stringify({ planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled }),
     });
     if (res.ok) toast.success("Configuration saved");
     else toast.error("Save failed");
@@ -115,33 +123,51 @@ export default function AdminConfigPage() {
           <span className="text-sm font-medium text-[#f0e8d4]">Economics</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
-          <div>
-            <label className="text-[11px] text-[#a8997e] uppercase tracking-wider mb-2 block">Platform Fee %</label>
-            <div className="relative">
-              <input
-                type="number" min={0} max={50} step={0.5}
-                value={config.platformFeePercent}
-                onChange={e => setConfig(c => ({ ...c, platformFeePercent: parseFloat(e.target.value) || 0 }))}
-                className="glass-input w-full px-3 py-2.5 rounded-[6px] text-sm pr-8"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#a8997e]">%</span>
-            </div>
-            <p className="text-[11px] text-[#a8997e] mt-1">Deducted from each transaction</p>
+        <div>
+          <label className="text-[11px] text-[#a8997e] uppercase tracking-wider mb-2 block">Platform Fee % by Tier</label>
+          <div className="grid grid-cols-3 gap-3">
+            {FEE_TIERS.map(({ key, label }) => {
+              const value = config.planFees[key];
+              const outOfRange = value < 3 || value > 15;
+              return (
+                <div key={key}>
+                  <p className="text-[11px] text-[#a8997e] mb-1.5">{label}</p>
+                  <div className="relative">
+                    <input
+                      type="number" min={0} max={50} step={0.5}
+                      value={value}
+                      onChange={e => {
+                        const next = parseFloat(e.target.value) || 0;
+                        setConfig(c => ({ ...c, planFees: { ...c.planFees, [key]: next } }));
+                      }}
+                      className={`glass-input w-full px-3 py-2.5 rounded-[6px] text-sm pr-8 ${outOfRange ? "border-[rgba(229,115,115,0.4)]" : ""}`}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#a8997e]">%</span>
+                  </div>
+                  {outOfRange && (
+                    <p className="flex items-center gap-1 text-[11px] text-[#e57373] mt-1">
+                      <AlertTriangle className="h-3 w-3 shrink-0" /> Outside typical 3–15% range
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <div>
-            <label className="text-[11px] text-[#a8997e] uppercase tracking-wider mb-2 block">Bid Decay Rate %</label>
-            <div className="relative">
-              <input
-                type="number" min={0} max={50} step={0.5}
-                value={config.defaultDecayRate}
-                onChange={e => setConfig(c => ({ ...c, defaultDecayRate: parseFloat(e.target.value) || 0 }))}
-                className="glass-input w-full px-3 py-2.5 rounded-[6px] text-sm pr-8"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#a8997e]">%</span>
-            </div>
-            <p className="text-[11px] text-[#a8997e] mt-1">Per-period decay for dynamic bidding</p>
+          <p className="text-[11px] text-[#a8997e] mt-2">Deducted from each transaction, locked in per job at creation time</p>
+        </div>
+
+        <div>
+          <label className="text-[11px] text-[#a8997e] uppercase tracking-wider mb-2 block">Bid Decay Rate %</label>
+          <div className="relative max-w-[200px]">
+            <input
+              type="number" min={0} max={50} step={0.5}
+              value={config.defaultDecayRate}
+              onChange={e => setConfig(c => ({ ...c, defaultDecayRate: parseFloat(e.target.value) || 0 }))}
+              className="glass-input w-full px-3 py-2.5 rounded-[6px] text-sm pr-8"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#a8997e]">%</span>
           </div>
+          <p className="text-[11px] text-[#a8997e] mt-1">Per-period decay for dynamic bidding</p>
         </div>
       </div>
 

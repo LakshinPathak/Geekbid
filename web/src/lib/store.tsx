@@ -23,6 +23,7 @@ import {
  type Role,
  getCurrentPrice,
 } from "@/lib/utils";
+import { getPlanConfig, type PlanConfig } from "@/lib/plans";
 
 // ─── Types ─────────────────────────────────────────────────────
 type AuthState = {
@@ -102,6 +103,15 @@ type AppState = {
  createChatRoom: (jobId: string, participantIds: string[]) => Promise<{ ok: boolean; roomId?: string; error?: string }>;
  invites: any[];
  fetchInvites: () => Promise<void>;
+ getUserPlanConfig: () => PlanConfig;
+ planUsage: {
+ jobsPostedThisMonth: number; jobsRemaining: number;
+ bidsPlacedThisMonth: number; bidsRemaining: number;
+ aiUsesThisMonth: number; aiRemaining: number;
+ aiBidUsesThisMonth: number; aiBidRemaining: number;
+ featuredBoostsUsedThisMonth: number; featuredBoostsRemaining: number;
+ invitesSentThisMonth: number; invitesRemaining: number;
+ };
 };
 
 // ─── Context ────────────────────────────────────────────────────
@@ -1240,6 +1250,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
  }, [getValidToken, loadAllData]);
 
  // ── Context value ─────────────────────────────────────────
+ const getUserPlanConfig = useCallback(
+ () => getPlanConfig(currentUser?.plan),
+ [currentUser?.plan]
+ );
+
+ const planUsage = useMemo(() => {
+ const config = getPlanConfig(currentUser?.plan);
+ const limits = currentUser?.planLimits;
+ const remaining = (used: number, limit: number) =>
+ limit === Infinity ? Infinity : Math.max(0, limit - used);
+ const jobsUsed = limits?.jobsPostedThisMonth ?? 0;
+ const bidsUsed = limits?.bidsPlacedThisMonth ?? 0;
+ const aiUsed = limits?.aiUsesThisMonth ?? 0;
+ const aiBidUsed = limits?.aiBidUsesThisMonth ?? 0;
+ const boostsUsed = limits?.featuredBoostsUsedThisMonth ?? 0;
+ const invitesUsed = limits?.invitesSentThisMonth ?? 0;
+ return {
+ jobsPostedThisMonth: jobsUsed,
+ jobsRemaining: remaining(jobsUsed, config.limits.jobsPerMonth),
+ bidsPlacedThisMonth: bidsUsed,
+ bidsRemaining: remaining(bidsUsed, config.limits.bidsPerMonth),
+ aiUsesThisMonth: aiUsed,
+ aiRemaining: remaining(aiUsed, config.limits.aiGeneralPerMonth),
+ aiBidUsesThisMonth: aiBidUsed,
+ aiBidRemaining: remaining(aiBidUsed, config.limits.aiBidStrategyPerMonth),
+ featuredBoostsUsedThisMonth: boostsUsed,
+ featuredBoostsRemaining: remaining(boostsUsed, config.limits.featuredBoostsPerMonth),
+ invitesSentThisMonth: invitesUsed,
+ invitesRemaining: remaining(invitesUsed, config.limits.invitesPerMonth),
+ };
+ }, [currentUser?.plan, currentUser?.planLimits]);
+
  const value = useMemo(
  () => ({
  auth,
@@ -1301,6 +1343,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
  createChatRoom,
  invites,
  fetchInvites,
+ getUserPlanConfig,
+ planUsage,
  }),
  [
  auth,
@@ -1362,6 +1406,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
  createChatRoom,
  invites,
  fetchInvites,
+ getUserPlanConfig,
+ planUsage,
  ]
  );
 

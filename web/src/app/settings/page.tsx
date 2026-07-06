@@ -4,14 +4,16 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import {
- Key, Plus, Trash2, ArrowLeft, Copy, AlertTriangle, Clock, Code2,
+ Key, Plus, Trash2, ArrowLeft, Copy, AlertTriangle, Clock, Code2, Lock,
 } from "lucide-react";
 import Link from "next/link";
 
 type ApiKeyItem = { id: string; name: string; prefix: string; lastUsedAt?: string; createdAt: string };
 
 export default function SettingsPage() {
- const { currentUser, mounted } = useApp();
+ const { currentUser, mounted, getUserPlanConfig } = useApp();
+ const planConfig = getUserPlanConfig();
+ const hasApiAccess = planConfig.hasApiAccess;
  const router = useRouter();
  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
  const [newKeyName, setNewKeyName] = useState("");
@@ -29,7 +31,7 @@ export default function SettingsPage() {
  if (res.ok) setKeys(await res.json());
  }, []);
 
- useEffect(() => { if (mounted && currentUser) loadKeys(); }, [mounted, currentUser, loadKeys]);
+ useEffect(() => { if (mounted && currentUser && hasApiAccess) loadKeys(); }, [mounted, currentUser, hasApiAccess, loadKeys]);
 
  const createKey = async () => {
  if (!newKeyName.trim()) return;
@@ -86,6 +88,20 @@ export default function SettingsPage() {
  <p className="text-[#a8997e] text-sm mt-1">Manage your API keys for programmatic access</p>
  </div>
 
+ {!hasApiAccess ? (
+ /* Free plan: no key-management UI — just the upgrade CTA */
+ <div className="glass-card mt-8 animate-fade-in-up text-center py-10" style={{ animationDelay: "100ms" }}>
+ <Lock className="h-8 w-8 text-[#a8997e] mx-auto mb-3" />
+ <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-1">API access requires Plus or Premium</h2>
+ <p className="text-[#a8997e] text-sm max-w-sm mx-auto">
+ Upgrade your plan to generate API keys and access the GeekBid API programmatically.
+ </p>
+ <Link href="/pricing" className="btn-primary inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-[6px] text-sm payment-ready">
+ View Plans
+ </Link>
+ </div>
+ ) : (
+ <>
  {/* Create key */}
  <div className="glass-card mt-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
  <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
@@ -123,6 +139,10 @@ export default function SettingsPage() {
  </div>
  </div>
  )}
+
+ <p className="text-[#a8997e] text-xs mt-3">
+ {planConfig.name} plan: up to {planConfig.limits.maxApiKeys} active keys, {planConfig.apiRateLimit} req/min.
+ </p>
  </div>
 
  {/* Existing keys */}
@@ -162,6 +182,8 @@ export default function SettingsPage() {
  </div>
  )}
  </div>
+ </>
+ )}
 
  {/* API Docs */}
  <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "300ms" }}>

@@ -12,10 +12,11 @@ import {
 } from "lucide-react";
 import AIBidStrategist from "@/components/ai/AIBidStrategist";
 import AIBidEvaluator from "@/components/ai/AIBidEvaluator";
+import PlanLimitBanner from "@/components/PlanLimitBanner";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id: jobId } = use(params);
- const { jobs, bids, users, now, currentUser, acceptJob, counterBid, milestones, fetchMilestones, updateMilestone } = useApp();
+ const { jobs, bids, users, now, currentUser, acceptJob, counterBid, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
  const [victoryData, setVictoryData] = useState<null | {
@@ -844,6 +845,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  ) : (
  /* Normal bid actions */
  <div className="space-y-3">
+ <PlanLimitBanner
+ used={planUsage.bidsPlacedThisMonth}
+ limit={getUserPlanConfig().limits.bidsPerMonth}
+ label="bids"
+ planName={getUserPlanConfig().name}
+ />
  <button onClick={handleAccept}
  className={`btn-primary w-full py-3 rounded-[6px] flex items-center justify-center gap-2 text-sm payment-ready ${justUnlocked ? "animate-glow-ring" : ""}`}>
  <Zap className="h-4 w-4" /> Accept at {formatMoney(current)}

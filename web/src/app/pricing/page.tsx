@@ -2,57 +2,60 @@
 import { useApp } from "@/lib/store";
 import { Check, Zap, Building2, Crown } from "lucide-react";
 import Link from "next/link";
+import { PLANS as PLAN_CONFIG } from "@/lib/plans";
 
-const PLANS = [
+const DISPLAY_PLANS = [
  {
- name: "Free",
- price: "$0",
+ name: PLAN_CONFIG.free.name,
+ price: `$${PLAN_CONFIG.free.price}`,
  period: "forever",
  icon: Zap,
  features: [
- "3 job posts/month",
- "10 bids/month",
+ `${PLAN_CONFIG.free.limits.jobsPerMonth} job posts/month`,
+ `${PLAN_CONFIG.free.limits.bidsPerMonth} bids/month`,
  "Basic profile",
  "Standard search ranking",
- "10% platform fee",
+ `${PLAN_CONFIG.free.platformFeePercent}% platform fee`,
  ],
  cta: "Current Plan",
  highlight: false,
  value: "free",
  },
  {
- name: "Pro",
- price: "$29",
+ name: PLAN_CONFIG.plus.name,
+ price: `$${PLAN_CONFIG.plus.price}`,
  period: "/month",
  icon: Crown,
  features: [
- "Unlimited job posts",
- "Unlimited bids",
+ `${PLAN_CONFIG.plus.limits.jobsPerMonth} job posts/month`,
+ `${PLAN_CONFIG.plus.limits.bidsPerMonth} bids/month`,
  "Priority in search",
  "Featured profile badge",
- "7% platform fee",
+ `${PLAN_CONFIG.plus.limits.featuredBoostsPerMonth} featured boosts/month`,
+ `${PLAN_CONFIG.plus.platformFeePercent}% platform fee`,
+ "API access",
  "Advanced analytics",
  ],
- cta: "Upgrade to Pro",
+ cta: "Upgrade to Plus",
  highlight: true,
- value: "pro",
+ value: "plus",
  },
  {
- name: "Enterprise",
- price: "$99",
+ name: PLAN_CONFIG.premium.name,
+ price: `$${PLAN_CONFIG.premium.price}`,
  period: "/month",
  icon: Building2,
  features: [
- "Everything in Pro",
- "Team seats (up to 10)",
- "API access",
+ `Everything in ${PLAN_CONFIG.plus.name}`,
+ `Team seats (up to ${PLAN_CONFIG.premium.limits.teamSeats})`,
+ `${PLAN_CONFIG.premium.apiRateLimit} req/min API access`,
  "Dedicated support",
- "5% platform fee",
+ `${PLAN_CONFIG.premium.platformFeePercent}% platform fee`,
  "Custom integrations",
  ],
  cta: "Contact Sales",
  highlight: false,
- value: "enterprise",
+ value: "premium",
  },
 ];
 
@@ -69,7 +72,7 @@ export default function PricingPage() {
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- {PLANS.map((plan, idx) => (
+ {DISPLAY_PLANS.map((plan, idx) => (
  <div
  key={plan.value}
  className={`glass-panel p-6 flex flex-col animate-fade-in-up ${

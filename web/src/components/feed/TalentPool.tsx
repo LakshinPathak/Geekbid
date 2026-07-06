@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { type Job, GEEK_TIERS } from "@/lib/utils";
 import { formatMoney } from "@/lib/utils";
 import { useApp } from "@/lib/store";
-import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSquare, Send } from "lucide-react";
+import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSquare, Send, Crown } from "lucide-react";
 import DirectHireModal from "./DirectHireModal";
 import InviteToBidModal from "./InviteToBidModal";
 import MessageFreelancerModal from "./MessageFreelancerModal";
@@ -120,7 +120,12 @@ function FreelancerCard({
                 {avail.text}
               </span>
               {freelancer.plan === "plus" && (
-                <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Pro</span>
+                <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Plus</span>
+              )}
+              {freelancer.plan === "premium" && (
+                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-gradient-to-r from-[#c9a84c]/20 to-[#8a5fd6]/20 text-[#d8c589] border border-[#c9a84c]/35">
+                  <Crown className="h-3 w-3" /> Premium
+                </span>
               )}
               {freelancer.isVerified && (
                 <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#2e7d52]/12 text-[#4caf7d] border border-[#2e7d52]/22">✓ Verified</span>

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Zap, Loader2, TrendingUp, Clock, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/store";
+import { getPlanConfig } from "@/lib/plans";
+import PlanLimitBanner from "@/components/PlanLimitBanner";
 
 type StrategyResult = {
   recommendedBid: number;
@@ -39,10 +41,11 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
 
   if (!currentUser || currentUser.role !== "freelancer") return null;
 
-  const isFreePlanLimited =
-    !currentUser.plan || currentUser.plan === "free"
-      ? (currentUser.planLimits?.aiBidUsesThisMonth ?? 0) >= 2
-      : false;
+  // Every tier has a monthly cap now, not just free — Plus/Premium just have
+  // much higher ceilings.
+  const planConfig = getPlanConfig(currentUser.plan);
+  const aiBidLimit = planConfig.limits.aiBidStrategyPerMonth;
+  const isPlanLimited = (currentUser.planLimits?.aiBidUsesThisMonth ?? 0) >= aiBidLimit;
 
   async function analyze() {
     setLoading(true);
@@ -78,9 +81,9 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
   }
 
   function handleClick() {
-    if (isFreePlanLimited) {
-      toast.error("Free plan AI limit reached", {
-        description: "You've used both AI Bid Strategist calls this month. Upgrade to Plus for more.",
+    if (isPlanLimited) {
+      toast.error(`${planConfig.name} plan AI limit reached`, {
+        description: `You've used all ${aiBidLimit} AI Bid Strategist calls this month.${planConfig.name === "Premium" ? "" : " Upgrade for more."}`,
       });
       return;
     }
@@ -93,13 +96,13 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
       <button
         onClick={handleClick}
         disabled={loading}
-        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isFreePlanLimited ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isPlanLimited ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-[#c9a84c]">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
           AI Bid Strategist
-          {isFreePlanLimited && (
-            <span className="text-[10px] font-normal text-[#a8997e] ml-1">(Free limit reached)</span>
+          {isPlanLimited && (
+            <span className="text-[10px] font-normal text-[#a8997e] ml-1">({planConfig.name} limit reached)</span>
           )}
         </span>
         {result && (open ? <ChevronUp className="h-4 w-4 text-[#a8997e]" /> : <ChevronDown className="h-4 w-4 text-[#a8997e]" />)}
@@ -108,6 +111,15 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
       {error && (
         <div className="px-4 pb-3 text-xs text-[#e57373]">{error}</div>
       )}
+
+      <div className="px-4 pb-3">
+        <PlanLimitBanner
+          used={currentUser.planLimits?.aiBidUsesThisMonth ?? 0}
+          limit={aiBidLimit}
+          label="AI bid analyses"
+          planName={planConfig.name}
+        />
+      </div>
 
       {result && open && (
         <div className="border-t border-[rgba(201,168,76,0.12)] px-4 py-4 space-y-4">

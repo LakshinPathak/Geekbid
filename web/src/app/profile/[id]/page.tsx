@@ -6,7 +6,7 @@ import { useApp } from "@/lib/store";
 import { GEEK_TIERS, formatMoney } from "@/lib/utils";
 import {
   ArrowLeft, Star, Award, Briefcase, Zap,
-  CheckCircle2, MessageSquare, Shield, Send,
+  CheckCircle2, MessageSquare, Shield, Send, Crown,
 } from "lucide-react";
 import DirectHireModal from "@/components/feed/DirectHireModal";
 import InviteToBidModal from "@/components/feed/InviteToBidModal";
@@ -123,7 +123,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                   </span>
                 )}
                 {user.plan === "plus" && (
-                  <span className="px-2 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Pro</span>
+                  <span className="px-2 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Plus</span>
+                )}
+                {user.plan === "premium" && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[11px] font-semibold bg-gradient-to-r from-[#c9a84c]/20 to-[#8a5fd6]/20 text-[#d8c589] border border-[#c9a84c]/35">
+                    <Crown className="h-3 w-3" /> Premium
+                  </span>
                 )}
               </div>
 

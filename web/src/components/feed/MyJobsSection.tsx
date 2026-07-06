@@ -8,7 +8,7 @@ import {
 import { getJobHealth, getCompetitionBadge } from "./feed-helpers";
 import {
  Users, Clock, TrendingDown, ChevronDown,
- Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight,
+ Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight, Crown,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 import EmptyState from "./EmptyState";
@@ -69,7 +69,12 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  <p className="text-xs font-semibold text-[#f0e8d4] truncate">
  {user?.fullName ?? "Unknown"}
  {user?.plan === "plus" && (
- <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Pro</span>
+ <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Plus</span>
+ )}
+ {user?.plan === "premium" && (
+ <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-gradient-to-r from-[#c9a84c] to-[#8a5fd6] text-[#0d0f1a]">
+ <Crown className="h-2.5 w-2.5" /> Premium
+ </span>
  )}
  </p>
  <div className="flex items-center gap-2 mt-0.5 truncate">

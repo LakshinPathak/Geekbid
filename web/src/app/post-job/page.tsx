@@ -12,6 +12,7 @@ import {
 import { getDemandMultiplier } from "@/lib/pricing";
 import AIDescriptionButton from "@/components/ai/AIDescriptionButton";
 import AIPricingAdvisor from "@/components/ai/AIPricingAdvisor";
+import PlanLimitBanner from "@/components/PlanLimitBanner";
 
 type Step = 1 | 2 | 3;
 
@@ -352,7 +353,7 @@ function DecayCurvePreview({
 }
 
 export default function PostJobPage() {
- const { postJob, currentUser, mounted, loading } = useApp();
+ const { postJob, currentUser, mounted, loading, getUserPlanConfig, planUsage } = useApp();
  const router = useRouter();
  const [step, setStep] = useState<Step>(1);
  const [title, setTitle] = useState("");
@@ -450,6 +451,15 @@ export default function PostJobPage() {
  {/* Header */}
  <h1 className="font-serif font-normal text-2xl sm:text-3xl text-[#f0e8d4]">Post a New Job</h1>
  <p className="text-[#a8997e] text-sm mt-1 font-sans">Set your starting price and let the market find the true value.</p>
+
+ <div className="mt-4">
+ <PlanLimitBanner
+ used={planUsage.jobsPostedThisMonth}
+ limit={getUserPlanConfig().limits.jobsPerMonth}
+ label="job posts"
+ planName={getUserPlanConfig().name}
+ />
+ </div>
 
  {/* Progress bar */}
  <div className="mt-8 mb-2">

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { getCurrentPrice, SKILL_TAXONOMY, JOB_CATEGORIES, type Job } from "@/lib/utils";
+import { getPlanConfig } from "@/lib/plans";
 import { toast } from "sonner";
 import { Search, X, ChevronDown, Target } from "lucide-react";
 import {
@@ -151,7 +152,7 @@ export default function FreelancerFeed() {
  const matched = jobs.filter(j => j.status === "open" && mySkills.some(s => j.skillsRequired.includes(s)));
  const wonJobs = jobs.filter(j => j.acceptedBy === uid).length;
  const myBids = bids.filter(b => b.freelancerId === uid);
- const bidLimit = currentUser?.plan === "plus" ? 50 : currentUser?.plan === "premium" ? 200 : 10;
+ const bidLimit = getPlanConfig(currentUser?.plan).limits.bidsPerMonth;
  const bidsUsed = currentUser?.planLimits?.bidsPlacedThisMonth ?? myBids.length;
  return {
  matchedJobs: matched.length,
