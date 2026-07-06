@@ -442,7 +442,7 @@ export default function PostJobPage() {
 
  return (
  <div className="min-h-screen bg-[#080b14] grid-bg">
- <div className="max-w-5xl mx-auto px-6 sm:px-10 pt-20 pb-8">
+ <div className="max-w-[1600px] mx-auto px-6 sm:px-10 pt-20 pb-8">
  {/* Back link */}
  <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Feed

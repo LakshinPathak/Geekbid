@@ -91,7 +91,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-[#080b14] grid-bg pb-16 md:pb-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-20 pb-8">
 
         {/* Back */}
         <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
