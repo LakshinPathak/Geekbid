@@ -1,5 +1,9 @@
 export type PlanTier = 'free' | 'plus' | 'premium';
 
+// One-off pay-per-boost price (blueprint §5: "$5-15/boost") — reuses the
+// existing one-off Razorpay payment flow rather than new payment infra.
+export const FEATURED_BOOST_PRICE_USD = 10;
+
 export interface PlanConfig {
   name: string;
   price: number;

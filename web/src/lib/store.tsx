@@ -88,7 +88,7 @@ type AppState = {
  createDirectOffer: (data: { title: string; description?: string; skillsRequired?: string[]; price: number; freelancerId: string; estimatedHours?: number; category?: string }) => Promise<ActionResult>;
  respondToOffer: (jobId: string, response: "accepted" | "declined") => Promise<ActionResult>;
  verifyGithub: (githubUsername: string) => Promise<ActionResult>;
- toggleFeatured: (jobId: string, featured: boolean) => Promise<ActionResult>;
+ toggleFeatured: (jobId: string, featured: boolean, paymentTransactionId?: string) => Promise<ActionResult & { code?: string; boostPrice?: number }>;
  fetchRecommendedJobs: () => Promise<void>;
  fetchJobs: () => Promise<void>;
  fetchBids: () => Promise<void>;
@@ -601,17 +601,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
  );
 
  const toggleFeatured = useCallback(
- async (jobId: string, featured: boolean): Promise<ActionResult> => {
+ async (jobId: string, featured: boolean, paymentTransactionId?: string) => {
  const token = await getValidToken();
  if (!token) return { ok: false, message: "Not authenticated" };
  try {
  const res = await apiRequest("/api/jobs/feature", {
  method: "PATCH",
- body: JSON.stringify({ jobId, featured }),
+ body: JSON.stringify({ jobId, featured, paymentTransactionId }),
  accessToken: token,
  });
  const data = await res.json();
- if (data.error) return { ok: false, message: data.error };
+ if (data.error) return { ok: false, message: data.error, code: data.code, boostPrice: data.boostPrice };
  await fetchJobs();
  return { ok: true, message: featured ? "Job featured!" : "Unfeatured" };
  } catch {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
-import { getPlanConfig } from "@/lib/plans";
+import { getPlanConfig, FEATURED_BOOST_PRICE_USD } from "@/lib/plans";
 
 // PATCH /api/jobs/feature — toggle featured status
 export async function PATCH(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest) {
  }
 
  const body = await req.json();
- const { jobId, featured } = body;
+ const { jobId, featured, paymentTransactionId } = body;
 
  if (!jobId) {
  return NextResponse.json({ error: "jobId required" }, { status: 400 });
@@ -38,10 +38,9 @@ export async function PATCH(req: NextRequest) {
  if (featured && !job.featured) {
  const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) });
  const config = getPlanConfig(client?.plan);
- if (config.limits.featuredBoostsPerMonth <= 0) {
- return NextResponse.json({ error: `${config.name} plan does not include featured boosts. Upgrade or purchase a one-off boost.` }, { status: 403 });
- }
- if (client) {
+
+ let quotaConsumed = false;
+ if (client && config.limits.featuredBoostsPerMonth > 0) {
  const limits = client.planLimits ?? { featuredBoostsUsedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
  if (new Date(limits.monthResetAt) < new Date()) {
  await db.collection("users").updateOne({ _id: client._id }, {
@@ -58,9 +57,48 @@ export async function PATCH(req: NextRequest) {
  },
  { $inc: { "planLimits.featuredBoostsUsedThisMonth": 1 } }
  );
- if (!capped) {
- // Phase 3 will offer a pay-per-boost fallback here instead of a hard block.
- return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.featuredBoostsPerMonth} featured boosts/month used. Upgrade for more.` }, { status: 403 });
+ quotaConsumed = !!capped;
+ }
+
+ // Included monthly boosts are exhausted (or the tier has none) — fall back
+ // to a one-off pay-per-boost purchase instead of a hard block.
+ if (!quotaConsumed) {
+ if (!paymentTransactionId) {
+ return NextResponse.json(
+ {
+ error: `${config.limits.featuredBoostsPerMonth > 0
+ ? `${config.name} plan limit: ${config.limits.featuredBoostsPerMonth} featured boosts/month used.`
+ : `${config.name} plan does not include featured boosts.`
+ } Pay $${FEATURED_BOOST_PRICE_USD} for a one-off boost.`,
+ code: "BOOST_QUOTA_EXCEEDED",
+ boostPrice: FEATURED_BOOST_PRICE_USD,
+ },
+ { status: 403 }
+ );
+ }
+
+ let txObjectId: ObjectId;
+ try {
+ txObjectId = new ObjectId(paymentTransactionId);
+ } catch {
+ return NextResponse.json({ error: "Invalid payment transaction" }, { status: 400 });
+ }
+
+ // Atomically claim the payment so the same transaction can't fund two
+ // different boosts — tag ties it to this exact job so a boost paid for
+ // one job can't be replayed onto another.
+ const claimedTx = await db.collection("transactions").findOneAndUpdate(
+ {
+ _id: txObjectId,
+ clientId: auth.payload.userId,
+ description: `featured_boost:${jobId}`,
+ verified: true,
+ consumedAt: { $exists: false },
+ },
+ { $set: { consumedAt: new Date().toISOString() } }
+ );
+ if (!claimedTx) {
+ return NextResponse.json({ error: "Invalid or already-used payment for this boost" }, { status: 400 });
  }
  }
  }

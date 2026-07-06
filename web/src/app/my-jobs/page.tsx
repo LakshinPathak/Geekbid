@@ -9,6 +9,7 @@ import {
  Calendar, MessageSquare, ArrowRight, Inbox, Star, X, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import FeaturedBoostModal from "@/components/modals/FeaturedBoostModal";
 
 export default function MyJobsPage() {
  const { jobs, bids, now, currentUser, mounted, transactions, reviews, users, submitReview, toggleFeatured } = useApp();
@@ -18,6 +19,7 @@ export default function MyJobsPage() {
  const [reviewRating, setReviewRating] = useState(5);
  const [reviewComment, setReviewComment] = useState("");
  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+ const [boostModal, setBoostModal] = useState<{ jobId: string; jobTitle: string } | null>(null);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -177,7 +179,12 @@ export default function MyJobsPage() {
  <button
  onClick={async () => {
  const r = await toggleFeatured(jid, !job.featured);
- r.ok ? toast.success(r.message) : toast.error(r.message);
+ if (r.ok) { toast.success(r.message); return; }
+ if (r.code === "BOOST_QUOTA_EXCEEDED") {
+ setBoostModal({ jobId: jid, jobTitle: job.title });
+ return;
+ }
+ toast.error(r.message);
  }}
  className={`flex items-center gap-1 border text-xs font-medium px-3 py-2 rounded-[3px] transition-all ${
  job.featured ? "border-[rgba(201,168,76,0.35)] text-[#c9a84c] bg-[rgba(201,168,76,0.12)]" : "border-[rgba(201,168,76,0.22)] text-[#a8997e] hover:bg-[#111625] hover:text-[#f0e8d4]"
@@ -271,6 +278,14 @@ export default function MyJobsPage() {
  </div>
  </div>
  </div>
+ )}
+ {boostModal && (
+ <FeaturedBoostModal
+ jobId={boostModal.jobId}
+ jobTitle={boostModal.jobTitle}
+ onClose={() => setBoostModal(null)}
+ onFeatured={() => setBoostModal(null)}
+ />
  )}
  </div>
  );
