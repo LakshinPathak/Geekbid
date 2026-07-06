@@ -71,7 +71,7 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
   - `web/scripts/migrate-plan-limits.mjs` — backfill new `planLimits` fields to `0`.
   - `web/scripts/verify-migration.mjs` — asserts zero users remain on legacy plan names (§25 verification query).
   - `web/scripts/rollback-plan-names.mjs` — emergency reverse migration.
-- [ ] **Run the migration** against the real DB (`cd web && node scripts/migrate-plan-names.mjs` then `migrate-plan-limits.mjs`), then run `verify-migration.mjs` to confirm zero legacy values remain. **Not yet run — needs explicit go-ahead since it writes to the live Atlas DB** (current DB already has no `'pro'`/`'enterprise'` string values pre-existing from before this session, so this is precautionary, but should still be confirmed before executing against production data).
+- [x] **Run the migration** against the real DB. Ran 2026-07-06 with explicit go-ahead: `migrate-plan-names.mjs` found 0 legacy values (matched 0/0 for both renames — DB was already clean), `migrate-plan-limits.mjs` backfilled 2 users missing `planLimits` entirely and 10 users missing the new `featuredBoostsUsedThisMonth`/`invitesSentThisMonth` counters, `verify-migration.mjs` reported all 5 checks PASS across 12 total users.
 - [x] **Create `GET /api/user/plan`** (blueprint §11) — returns current plan config + remaining quota counts for the logged-in user. Nothing depends on this yet, but Phase 2's `PlanLimitBanner.tsx` and Phase 4's pricing page both will.
 - [x] **Update seed data** (blueprint §8.10, Pass 6 confirmed `seed/route.ts:794` still assigns `plan: "free"` to everyone with no AI-quota pre-population)
   - Give some seeded users `plan: 'plus'` / `plan: 'premium'`.
@@ -79,9 +79,9 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 - [x] **Badge rename (data-shape only, not new UI yet):** update the 3 `"pro"` checks (`profile/[id]/page.tsx:125`, `MyJobsSection.tsx:71`, `TalentPool.tsx:122`) to check `"plus"`. Hold off on adding the *new* Premium/Enterprise badge visual until Phase 2's frontend pass (§9.4), since that's net-new UI, not a rename (Pass 6 finding #33).
   - Also fixed 2 additional call sites TypeScript flagged after the type rename: `FreelancerFeed.tsx:154` and `freelancer/dashboard/route.ts:46` (hardcoded `"pro"`/`"enterprise"` bid-limit ternaries — renamed literals only, no logic change, full centralization via `getPlanConfig` is Phase 2 §9.2).
 
-**Exit criteria:** `plans.ts` exists and is the only source of tier numbers. ✅ `npx tsc --noEmit` passes clean after the full rename. Zero users have `plan: 'pro'` or `plan: 'enterprise'` in the DB — **pending migration run** (see above). App still behaves identically to pre-Phase-1 for all users (rename is invisible to end users at this point — no new enforcement yet). Rollback script written; not yet tested against a DB snapshot (no staging copy exists in this environment).
+**Exit criteria:** `plans.ts` exists and is the only source of tier numbers. ✅ `npx tsc --noEmit` passes clean after the full rename. ✅ Zero users have `plan: 'pro'` or `plan: 'enterprise'` in the DB — confirmed via `verify-migration.mjs`. App still behaves identically to pre-Phase-1 for all users (rename is invisible to end users at this point — no new enforcement yet). Rollback script written; not yet tested against a DB snapshot (no staging copy exists in this environment) — kept on hand in case Phase 1's enforcement rollout ever needs reversing.
 
-✅ Phase 1 code complete (2026-07-06) — all files written/edited, typecheck clean. Migration execution against the real DB deliberately held back pending explicit confirmation (see note above).
+✅ Phase 1 fully complete (2026-07-06) — code, migration, and verification all done.
 
 ---
 
@@ -155,7 +155,7 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 ### 4.1 — Schema + config
 
-- [x] Create `subscriptions`, `webhook_events`, `quota_audit_log` collections + indexes (blueprint §6.2, §6.4, §6.5, §10.3). **Note:** `subscriptions.userId` index is intentionally **non-unique** (preserves cancel/resubscribe history) — don't "fix" this to unique. Written as `web/scripts/create-phase4-indexes.mjs` — **not yet run** against the live DB (same deliberate hold as the Phase 1 migration scripts). Also added a `rate_limits` index for §4.5 in the same script.
+- [x] Create `subscriptions`, `webhook_events`, `quota_audit_log` collections + indexes (blueprint §6.2, §6.4, §6.5, §10.3). **Note:** `subscriptions.userId` index is intentionally **non-unique** (preserves cancel/resubscribe history) — don't "fix" this to unique. Written as `web/scripts/create-phase4-indexes.mjs` and run against the live DB 2026-07-06 — all 4 collections' indexes created successfully (including the `rate_limits` index for §4.5).
 - [ ] Create Razorpay Plans in the dashboard (`plus_monthly`, `premium_monthly`) matching `plans.ts` pricing. **Not done — external dashboard setup, explicitly out of scope per your "build the code, skip external setup" answer.** `RAZORPAY_PLAN_ID_PLUS`/`RAZORPAY_PLAN_ID_PREMIUM` env vars added to `.env.example`; until they're set, `/api/subscriptions` runs in mock mode (mirrors `api/payments/route.ts`'s existing mock convention).
 - [x] Add `pendingPlanChange` field to `subscriptions` (§14.2). Also added a `Subscription` type to `utils.ts`.
 
