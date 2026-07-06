@@ -158,12 +158,12 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
 
  {/* Action buttons */}
  <div className="flex gap-3">
- <Link href={`/jobs/${data.jobId}`} className="flex-1">
+ <Link href={`/jobs/${data.jobId}`} className="flex-1" onClick={onClose}>
  <button className="btn-primary w-full py-3 text-sm rounded-[3px]">
  View Contract
  </button>
  </Link>
- <Link href="/inbox" className="flex-1">
+ <Link href="/inbox" className="flex-1" onClick={onClose}>
  <button className="btn-glass w-full py-3 text-sm rounded-[3px]">
  <MessageSquare className="h-4 w-4" />
  Message
@@ -172,7 +172,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  </div>
 
  <div className="mt-3 text-center">
- <Link href={`/jobs/${data.jobId}`}>
+ <Link href={`/jobs/${data.jobId}`} onClick={onClose}>
  <button className="text-xs text-[#a8997e] hover:text-[#c9a84c] transition-colors flex items-center gap-1 mx-auto">
  <Star className="h-3 w-3" /> Leave a Review
  </button>
