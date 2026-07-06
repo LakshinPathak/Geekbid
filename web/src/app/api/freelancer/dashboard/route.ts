@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
  const totalEarned = txns.reduce((s, t) => s + (t.netAmount || 0), 0);
 
  const plan = user?.plan ?? "free";
- const bidLimit = plan === "pro" ? 50 : plan === "enterprise" ? 200 : 10;
+ const bidLimit = plan === "plus" ? 50 : plan === "premium" ? 200 : 10;
  const bidsUsed = user?.planLimits?.bidsPlacedThisMonth ?? myBids.length;
 
  return NextResponse.json({

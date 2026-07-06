@@ -119,7 +119,7 @@ function FreelancerCard({
               <span className={`px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${avail.bg} ${avail.color} ${avail.border}`}>
                 {avail.text}
               </span>
-              {freelancer.plan === "pro" && (
+              {freelancer.plan === "plus" && (
                 <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Pro</span>
               )}
               {freelancer.isVerified && (

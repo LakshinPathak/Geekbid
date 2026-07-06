@@ -68,7 +68,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  <div className="flex-1 min-w-0 overflow-hidden">
  <p className="text-xs font-semibold text-[#f0e8d4] truncate">
  {user?.fullName ?? "Unknown"}
- {user?.plan === "pro" && (
+ {user?.plan === "plus" && (
  <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Pro</span>
  )}
  </p>

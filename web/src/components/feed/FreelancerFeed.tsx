@@ -151,7 +151,7 @@ export default function FreelancerFeed() {
  const matched = jobs.filter(j => j.status === "open" && mySkills.some(s => j.skillsRequired.includes(s)));
  const wonJobs = jobs.filter(j => j.acceptedBy === uid).length;
  const myBids = bids.filter(b => b.freelancerId === uid);
- const bidLimit = currentUser?.plan === "pro" ? 50 : currentUser?.plan === "enterprise" ? 200 : 10;
+ const bidLimit = currentUser?.plan === "plus" ? 50 : currentUser?.plan === "premium" ? 200 : 10;
  const bidsUsed = currentUser?.planLimits?.bidsPlacedThisMonth ?? myBids.length;
  return {
  matchedJobs: matched.length,

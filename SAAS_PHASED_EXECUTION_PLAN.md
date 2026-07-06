@@ -58,27 +58,30 @@ These were the blueprint's own recommended defaults (§4). Flag now if any shoul
 
 **Depends on:** Phase 0 (uses the corrected `utils.ts` type).
 
-- [ ] **Create `web/src/lib/plans.ts`** (blueprint §7)
+- [x] **Create `web/src/lib/plans.ts`** (blueprint §7)
   - `PlanTier`, `PlanConfig`, `PLANS` record, `getPlanConfig()`.
   - Use `getPlanConfig()` with **backward-compat mapping built in from day one** (blueprint §25 Phase A) — i.e. write it so `'pro'` and `'enterprise'` already resolve correctly, *before* running any migration. This avoids the "paying users lose features mid-deploy" failure mode described in §25/§28.6.
   - Skip the async `getPlanConfigWithOverrides()` admin-override version for now — that's Phase 2 (§8.16), not needed until per-tier fee admin overrides exist.
-- [ ] **Finish the `utils.ts` type rename** (blueprint §6.7)
+- [x] **Finish the `utils.ts` type rename** (blueprint §6.7)
   - `plan?: 'free' | 'plus' | 'premium'` (keep it accepting the old strings at the DB-read boundary only via `getPlanConfig`'s compat mapping — the *type* itself should reflect the target state).
   - Add `subscriptionId`, `planExpiresAt`, `planDowngradedAt`.
-- [ ] **Add new `planLimits` fields**: `featuredBoostsUsedThisMonth`, `invitesSentThisMonth` (blueprint §6.1).
-- [ ] **Write migration scripts** (blueprint §10.1, §10.2, §25) — do not run yet:
+- [x] **Add new `planLimits` fields**: `featuredBoostsUsedThisMonth`, `invitesSentThisMonth` (blueprint §6.1).
+- [x] **Write migration scripts** (blueprint §10.1, §10.2, §25) — do not run yet:
   - `web/scripts/migrate-plan-names.mjs` — idempotent `pro→plus`, `enterprise→premium`.
   - `web/scripts/migrate-plan-limits.mjs` — backfill new `planLimits` fields to `0`.
   - `web/scripts/verify-migration.mjs` — asserts zero users remain on legacy plan names (§25 verification query).
   - `web/scripts/rollback-plan-names.mjs` — emergency reverse migration.
-- [ ] **Run the migration** against the real DB (`cd web && node scripts/migrate-plan-names.mjs` then `migrate-plan-limits.mjs`), then run `verify-migration.mjs` to confirm zero legacy values remain.
-- [ ] **Create `GET /api/user/plan`** (blueprint §11) — returns current plan config + remaining quota counts for the logged-in user. Nothing depends on this yet, but Phase 2's `PlanLimitBanner.tsx` and Phase 4's pricing page both will.
-- [ ] **Update seed data** (blueprint §8.10, Pass 6 confirmed `seed/route.ts:794` still assigns `plan: "free"` to everyone with no AI-quota pre-population)
+- [ ] **Run the migration** against the real DB (`cd web && node scripts/migrate-plan-names.mjs` then `migrate-plan-limits.mjs`), then run `verify-migration.mjs` to confirm zero legacy values remain. **Not yet run — needs explicit go-ahead since it writes to the live Atlas DB** (current DB already has no `'pro'`/`'enterprise'` string values pre-existing from before this session, so this is precautionary, but should still be confirmed before executing against production data).
+- [x] **Create `GET /api/user/plan`** (blueprint §11) — returns current plan config + remaining quota counts for the logged-in user. Nothing depends on this yet, but Phase 2's `PlanLimitBanner.tsx` and Phase 4's pricing page both will.
+- [x] **Update seed data** (blueprint §8.10, Pass 6 confirmed `seed/route.ts:794` still assigns `plan: "free"` to everyone with no AI-quota pre-population)
   - Give some seeded users `plan: 'plus'` / `plan: 'premium'`.
   - Pre-populate `aiUsesThisMonth` / `aiMonthResetAt` / `aiBidUsesThisMonth` / `aiBidMonthResetAt` for at least one test user, including one seeded near its limit (for testing the 80%+ banner in Phase 2).
-- [ ] **Badge rename (data-shape only, not new UI yet):** update the 3 `"pro"` checks (`profile/[id]/page.tsx:125`, `MyJobsSection.tsx:71`, `TalentPool.tsx:122`) to check `"plus"`. Hold off on adding the *new* Premium/Enterprise badge visual until Phase 2's frontend pass (§9.4), since that's net-new UI, not a rename (Pass 6 finding #33).
+- [x] **Badge rename (data-shape only, not new UI yet):** update the 3 `"pro"` checks (`profile/[id]/page.tsx:125`, `MyJobsSection.tsx:71`, `TalentPool.tsx:122`) to check `"plus"`. Hold off on adding the *new* Premium/Enterprise badge visual until Phase 2's frontend pass (§9.4), since that's net-new UI, not a rename (Pass 6 finding #33).
+  - Also fixed 2 additional call sites TypeScript flagged after the type rename: `FreelancerFeed.tsx:154` and `freelancer/dashboard/route.ts:46` (hardcoded `"pro"`/`"enterprise"` bid-limit ternaries — renamed literals only, no logic change, full centralization via `getPlanConfig` is Phase 2 §9.2).
 
-**Exit criteria:** `plans.ts` exists and is the only source of tier numbers. Zero users have `plan: 'pro'` or `plan: 'enterprise'` in the DB (verified by script). App still behaves identically to pre-Phase-1 for all users (rename is invisible to end users at this point — no new enforcement yet). Rollback script tested against a DB snapshot/staging copy at least once.
+**Exit criteria:** `plans.ts` exists and is the only source of tier numbers. ✅ `npx tsc --noEmit` passes clean after the full rename. Zero users have `plan: 'pro'` or `plan: 'enterprise'` in the DB — **pending migration run** (see above). App still behaves identically to pre-Phase-1 for all users (rename is invisible to end users at this point — no new enforcement yet). Rollback script written; not yet tested against a DB snapshot (no staging copy exists in this environment).
+
+✅ Phase 1 code complete (2026-07-06) — all files written/edited, typecheck clean. Migration execution against the real DB deliberately held back pending explicit confirmation (see note above).
 
 ---
 

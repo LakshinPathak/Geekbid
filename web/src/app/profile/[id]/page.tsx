@@ -122,7 +122,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                     <CheckCircle2 className="h-3 w-3" /> Verified
                   </span>
                 )}
-                {user.plan === "pro" && (
+                {user.plan === "plus" && (
                   <span className="px-2 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c]/12 text-[#c9a84c] border border-[#c9a84c]/22">Pro</span>
                 )}
               </div>

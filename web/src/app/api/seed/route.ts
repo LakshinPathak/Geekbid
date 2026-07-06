@@ -785,13 +785,42 @@ export async function POST(req: NextRequest) {
 
  await db.collection("reviews").insertMany(reviews);
 
- // Set referral codes on users
- const refCodes = ["MAYA2026", "DEREK26", "SARAH26", "ARJUN26", "PRIYA26", "LEOCHEN", "MIRAPAT", "JAKEWIL", "ADMIN26"];
+ // Set referral codes + plan tier on users. Mix of tiers (incl. legacy-named
+ // values still supported via getPlanConfig's backward-compat mapping) so the
+ // seeded DB exercises all three tiers, plus one near-quota-limit freelancer
+ // (Arjun) for testing the AI Bid Strategist quota-exhausted UX.
+ const userPlanSeed = [
+ { code: "MAYA2026", plan: "plus" }, // Maya Sharma (client)
+ { code: "DEREK26", plan: "free" }, // Derek Olsen (client)
+ { code: "SARAH26", plan: "premium" }, // Sarah Kim (client)
+ { code: "ARJUN26", plan: "free", aiBidUsesThisMonth: 2 }, // Arjun Dev (freelancer) — at free-tier AI bid limit
+ { code: "PRIYA26", plan: "plus" }, // Priya Nair (freelancer)
+ { code: "LEOCHEN", plan: "free" }, // Leo Chen (freelancer)
+ { code: "MIRAPAT", plan: "premium" }, // Mira Patel (freelancer)
+ { code: "JAKEWIL", plan: "free" }, // Jake Wilson (freelancer)
+ { code: "ADMIN26", plan: "premium" }, // Admin
+ ];
+ const monthResetAt = new Date(now + 30 * 24 * h).toISOString();
  await Promise.all(
- refCodes.map((code, i) =>
+ userPlanSeed.map(({ code, plan, aiBidUsesThisMonth }, i) =>
  db.collection("users").updateOne(
  { _id: userResult.insertedIds[i] },
- { $set: { referralCode: code, referralCredits: 0, plan: "free", planLimits: { jobsPostedThisMonth: 0, bidsPlacedThisMonth: 0, monthResetAt: new Date(now + 30 * 24 * h).toISOString() } } }
+ {
+ $set: {
+ referralCode: code,
+ referralCredits: 0,
+ plan,
+ planLimits: {
+ jobsPostedThisMonth: 0,
+ bidsPlacedThisMonth: 0,
+ aiUsesThisMonth: 0,
+ aiBidUsesThisMonth: aiBidUsesThisMonth ?? 0,
+ featuredBoostsUsedThisMonth: 0,
+ invitesSentThisMonth: 0,
+ monthResetAt,
+ },
+ },
+ }
  )
  )
  );
