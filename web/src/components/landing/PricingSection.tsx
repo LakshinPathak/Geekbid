@@ -64,11 +64,8 @@ export default function PricingSection() {
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase text-[#c9a84c] bg-[#c9a84c]/10 border border-[#c9a84c]/25 mb-4">
-            Pricing
-          </span>
           <h2 className="font-serif text-3xl sm:text-4xl text-[#f0e8d4]">
-            Start free. Scale when you win.
+            Start free. <span className="text-[#c9a84c]">Scale when you win.</span>
           </h2>
           <p className="text-[#a8997e] text-sm mt-3 max-w-xl mx-auto">
             Every plan includes the full reverse-auction engine, escrow protection, and AI tools.

@@ -879,6 +879,7 @@ input:focus, textarea:focus, select:focus { outline: none; }
   .landing-fake-cursor,
   .landing-cta-glow,
   .landing-constellation-dot,
+  .landing-log-line,
   .animate-breathe {
     animation: none !important;
   }
@@ -1087,6 +1088,13 @@ input:focus, textarea:focus, select:focus { outline: none; }
   50%      { opacity: 0.65; }
 }
 .landing-constellation-dot { animation: twinkle 3s ease-in-out infinite; }
+
+/* ── Market terminal log line entrance (PriceDecayShowcase) ────── */
+@keyframes log-line-in {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.landing-log-line { animation: log-line-in 0.35s ease-out both; }
 
 /* ── Slot-machine rolling digit stats ─────────────────────────── */
 .landing-slot-digit {

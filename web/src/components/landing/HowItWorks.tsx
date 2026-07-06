@@ -38,9 +38,8 @@ export default function HowItWorks() {
     <section id="how-it-works" ref={howItWorksSection.ref} className="relative py-16 sm:py-24 border-t border-[rgba(201,168,76,0.22)]">
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="text-center mb-10 sm:mb-14" style={{ opacity: howItWorksSection.inView ? 1 : 0, transform: howItWorksSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">How It Works</p>
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
-            From posting to payment in four simple steps
+          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto text-balance">
+            From posting to payment in <span className="text-[#c9a84c]">four</span> simple steps
           </h2>
           <p className="text-base text-[#a8997e] max-w-xl mx-auto mt-5">
             Traditional hiring is slow, expensive, and opaque. GeekBid&apos;s algorithmic pricing finds the true market rate automatically.

@@ -2,6 +2,7 @@ import LandingGate from "@/components/landing/LandingGate";
 import Nav from "@/components/landing/Nav";
 import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
+import PriceDecayShowcase from "@/components/landing/PriceDecayShowcase";
 import ProductShowcase from "@/components/landing/ProductShowcase";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Comparison from "@/components/landing/Comparison";
@@ -17,6 +18,7 @@ export default function LandingPage() {
       <Nav />
       <Hero />
       <SocialProof />
+      <PriceDecayShowcase />
       <ProductShowcase />
       <HowItWorks />
       <Comparison />

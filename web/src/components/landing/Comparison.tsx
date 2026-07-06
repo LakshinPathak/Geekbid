@@ -15,9 +15,8 @@ export default function Comparison() {
 
       <div className="relative mx-auto max-w-5xl px-5 sm:px-8">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Overview</p>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
-            Why GeekBid
+            Why <span className="text-[#c9a84c]">GeekBid</span>, not the old way
           </h2>
           <p className="text-base text-[#a8997e] max-w-lg mx-auto mt-5">
             Everything built into the platform, and how it stacks up against the old way of sourcing engineering talent.
