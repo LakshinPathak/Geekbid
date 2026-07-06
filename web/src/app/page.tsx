@@ -3,12 +3,8 @@ import Nav from "@/components/landing/Nav";
 import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
 import PriceDecayShowcase from "@/components/landing/PriceDecayShowcase";
-import ProductShowcase from "@/components/landing/ProductShowcase";
-import HowItWorks from "@/components/landing/HowItWorks";
-import Comparison from "@/components/landing/Comparison";
-import PricingSection from "@/components/landing/PricingSection";
+import WhyGeekBidSection from "@/components/landing/WhyGeekBidSection";
 import Testimonials from "@/components/landing/Testimonials";
-import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 
@@ -19,12 +15,8 @@ export default function LandingPage() {
       <Hero />
       <SocialProof />
       <PriceDecayShowcase />
-      <ProductShowcase />
-      <HowItWorks />
-      <Comparison />
-      <PricingSection />
+      <WhyGeekBidSection />
       <Testimonials />
-      <FAQ />
       <CTA />
       <Footer />
     </LandingGate>

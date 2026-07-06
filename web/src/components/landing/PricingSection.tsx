@@ -57,9 +57,11 @@ const TIERS = [
   },
 ];
 
+/** Nested content only (no <section> of its own) — rendered inside
+ *  WhyGeekBidSection alongside Comparison. */
 export default function PricingSection() {
   return (
-    <section id="pricing" className="relative py-16 sm:py-24 px-6 lg:px-8 overflow-hidden">
+    <div id="pricing" className="relative px-6 lg:px-8 overflow-hidden scroll-mt-20">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#c9a84c]/[0.05] rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative">
@@ -123,6 +125,6 @@ export default function PricingSection() {
           No featured boosts on Free? Feature any job for a one-off $10. Upgrade, downgrade, or cancel anytime — your data is never deleted.
         </p>
       </div>
-    </section>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useInView } from "./hooks";
+import HowItWorks from "./HowItWorks";
 
 const START_PRICE = 4200;
 const FLOOR_PRICE = 1450;
@@ -135,6 +136,7 @@ export default function PriceDecayShowcase() {
 
   return (
     <section
+      id="how-it-works"
       ref={section.ref}
       className="relative py-24 sm:py-32 overflow-hidden"
       style={{
@@ -176,6 +178,10 @@ export default function PriceDecayShowcase() {
         >
           <MarketTerminal />
         </div>
+      </div>
+
+      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
+        <HowItWorks inView={section.inView} />
       </div>
     </section>
   );

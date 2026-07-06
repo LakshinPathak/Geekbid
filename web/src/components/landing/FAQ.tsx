@@ -20,37 +20,33 @@ const FAQ_META: { icon: LucideIcon; bg: string; color: string; border: string }[
   { icon: Layers, bg: "bg-purple-500/10", color: "text-purple-400", border: "border-purple-500/20" },
 ];
 
+/* Trimmed to the 4 highest-value, non-redundant questions — "What does
+   GeekBid cost" duplicates the pricing cards directly above this
+   section, and the upgrade/downgrade + ongoing-projects entries are
+   niche enough to skip in the compact merged closing section. */
+const FAQ_INDICES = [0, 1, 2, 5];
+
+/** Nested content only (no <section> of its own) — rendered inside CTA
+ *  so the FAQ and the final call-to-action share one closing beat. */
 export default function FAQ() {
   const faqSection = useInView(0.1);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const faqs = FAQ_INDICES.map((i) => FAQS[i]);
 
   return (
-    <section id="faq" ref={faqSection.ref} className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative overflow-hidden">
-      {/* Ambient background — purple orb (existing) + a second gold orb for depth, both reusing animate-breathe */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-purple-500/[0.03] rounded-full blur-[120px] pointer-events-none animate-breathe" aria-hidden="true" />
-      <div className="absolute top-10 -left-20 w-[350px] h-[350px] bg-[#c9a84c]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "3s", animationDuration: "11s" }} aria-hidden="true" />
-      {/* Subtle dot-grid texture — same recipe as Hero's, just for premium consistency */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-60"
-        style={{ backgroundImage: "radial-gradient(circle, rgba(201,168,76,0.03) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-        aria-hidden="true"
-      />
-
+    <div id="faq" ref={faqSection.ref} className="relative scroll-mt-20">
       <div className="relative mx-auto max-w-4xl px-5 sm:px-8">
         <div
-          className="text-center mb-14"
+          className="text-center mb-10"
           style={{ opacity: faqSection.inView ? 1 : 0, transform: faqSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}
         >
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
+          <h2 className="landing-header-glow text-2xl sm:text-4xl font-serif font-normal text-[#f0e8d4] leading-tight">
             Frequently asked questions
           </h2>
-          <p className="text-base text-[#a8997e] max-w-lg mx-auto mt-5">
-            Everything you need to know about pricing, escrow, and how the reverse auction actually works.
-          </p>
         </div>
 
         <div className="space-y-3">
-          {FAQS.map((item, i) => {
+          {faqs.map((item, i) => {
             const isOpen = openIndex === i;
             const meta = FAQ_META[i % FAQ_META.length];
             return (
@@ -90,8 +86,8 @@ export default function FAQ() {
 
         {/* Bottom micro-CTA */}
         <div
-          className="faq-cta text-center mt-12"
-          style={{ opacity: faqSection.inView ? 1 : 0, transform: faqSection.inView ? "translateY(0)" : "translateY(16px)", transition: `opacity 0.6s ease ${150 + FAQS.length * 60 + 100}ms, transform 0.6s ease ${150 + FAQS.length * 60 + 100}ms` }}
+          className="faq-cta text-center mt-10"
+          style={{ opacity: faqSection.inView ? 1 : 0, transform: faqSection.inView ? "translateY(0)" : "translateY(16px)", transition: `opacity 0.6s ease ${150 + faqs.length * 60 + 100}ms, transform 0.6s ease ${150 + faqs.length * 60 + 100}ms` }}
         >
           <p className="text-sm text-[#a8997e] mb-4">Still have questions?</p>
           <a href="mailto:support@geekbid.io" className="btn-ghost text-sm px-6 py-3 rounded-[3px] inline-flex">
@@ -99,6 +95,6 @@ export default function FAQ() {
           </a>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

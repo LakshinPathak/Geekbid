@@ -3,17 +3,19 @@
 import { Zap, Check, X } from "lucide-react";
 import { useInView } from "./hooks";
 import { COMPARISONS, FEATURES } from "./data";
-import SectionDivider from "./SectionDivider";
 
+/** Nested content only (no <section> of its own) — rendered inside
+ *  WhyGeekBidSection alongside PricingSection so "why us" and "what
+ *  it costs" share one scroll beat instead of two. */
 export default function Comparison() {
   const comparisonSection = useInView(0.08);
 
   return (
-    <section id="compare" ref={comparisonSection.ref} className="relative py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] overflow-hidden">
+    <div ref={comparisonSection.ref} className="relative">
       {/* Per-section ambient tint (cool blue, distinct from the gold used elsewhere) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-500/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-5xl px-5 sm:px-8">
+      <div id="compare" className="relative mx-auto max-w-5xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight">
             Why <span className="text-[#c9a84c]">GeekBid</span>, not the old way
@@ -73,8 +75,6 @@ export default function Comparison() {
           </div>
         </div>
       </div>
-
-      <SectionDivider variant="diagonal" fill="#080b14" />
-    </section>
+    </div>
   );
 }
