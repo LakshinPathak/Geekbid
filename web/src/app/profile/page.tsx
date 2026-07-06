@@ -144,7 +144,7 @@ export default function ProfilePage() {
 
  return (
  <div className="min-h-screen bg-[#080b14] grid-bg">
- <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
+ <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-8">
 
  {/* ── Profile Header Card ── */}
  <div className="profile-card p-6 sm:p-8 animate-fade-in-up">

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
  getCurrentPrice, getHoursToFloor, formatHoursToFloor,
@@ -8,7 +8,7 @@ import {
 import { getJobHealth, getCompetitionBadge } from "./feed-helpers";
 import {
  Users, Clock, TrendingDown, ChevronDown,
- Star, CheckCircle, Plus, AlertCircle, Zap, ChevronLeft, ChevronRight, Crown,
+ Star, CheckCircle, Plus, AlertCircle, Zap, Crown,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 import EmptyState from "./EmptyState";
@@ -313,14 +313,6 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  const [filter, setFilter] = useState<"all" | "hot" | "nobids">("all");
  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
  const [indicator, setIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
- const scrollRef = useRef<HTMLDivElement>(null);
- const [canScrollLeft, setCanScrollLeft] = useState(false);
- const [canScrollRight, setCanScrollRight] = useState(false);
- const [activeDot, setActiveDot] = useState(0);
- const [isDragging, setIsDragging] = useState(false);
- const dragStart = useRef({ x: 0, scrollLeft: 0 });
-
- const CARD_W = 320;
 
  const filteredJobs = useMemo(() => {
  switch (filter) {
@@ -334,47 +326,10 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  const noBidCount = jobs.filter(j => (j.bidCount ?? 0) === 0).length;
  const totalBids = bids.filter(b => jobs.map(j => j.id ?? j._id).includes(b.jobId)).length;
 
- const updateScrollState = useCallback(() => {
- const el = scrollRef.current;
- if (!el) return;
- setCanScrollLeft(el.scrollLeft > 4);
- setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
- setActiveDot(Math.round(el.scrollLeft / CARD_W));
- }, [CARD_W]);
-
- useEffect(() => {
- updateScrollState();
- const el = scrollRef.current;
- if (!el) return;
- el.addEventListener("scroll", updateScrollState, { passive: true });
- const ro = new ResizeObserver(updateScrollState);
- ro.observe(el);
- return () => { el.removeEventListener("scroll", updateScrollState); ro.disconnect(); };
- }, [updateScrollState, filteredJobs.length]);
-
- const scroll = (dir: "left" | "right") => {
- scrollRef.current?.scrollBy({ left: dir === "right" ? CARD_W * 2 : -CARD_W * 2, behavior: "smooth" });
- };
-
  useEffect(() => {
  const el = tabRefs.current[filter];
  if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
  }, [filter, jobs.length]);
-
- const onMouseDown = (e: React.MouseEvent) => {
- const el = scrollRef.current; if (!el) return;
- setIsDragging(true);
- dragStart.current = { x: e.pageX, scrollLeft: el.scrollLeft };
- el.style.cursor = "grabbing"; el.style.userSelect = "none";
- };
- const onMouseMove = (e: React.MouseEvent) => {
- if (!isDragging || !scrollRef.current) return;
- scrollRef.current.scrollLeft = dragStart.current.scrollLeft - (e.pageX - dragStart.current.x);
- };
- const onMouseUp = () => {
- setIsDragging(false);
- if (scrollRef.current) { scrollRef.current.style.cursor = "grab"; scrollRef.current.style.userSelect = ""; }
- };
 
  if (jobs.length === 0) return (
  <div className="space-y-3">
@@ -426,31 +381,6 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  <p className="font-serif text-sm text-[#e57373]">{noBidCount}</p>
  </div>
  )}
- {/* Arrow buttons */}
- <div className="flex items-center gap-1">
- <button
- onClick={() => scroll("left")}
- disabled={!canScrollLeft}
- className={`h-7 w-7 flex items-center justify-center rounded-[3px] border transition-all ${
- canScrollLeft
- ? "border-[rgba(201,168,76,0.35)] text-[#c9a84c] hover:bg-[rgba(201,168,76,0.10)] bg-[#0d1120]"
- : "border-[rgba(201,168,76,0.12)] text-[#a8997e]/30 bg-[#0d1120] cursor-not-allowed"
- }`}
- >
- <ChevronLeft className="h-4 w-4" />
- </button>
- <button
- onClick={() => scroll("right")}
- disabled={!canScrollRight}
- className={`h-7 w-7 flex items-center justify-center rounded-[3px] border transition-all ${
- canScrollRight
- ? "border-[rgba(201,168,76,0.35)] text-[#c9a84c] hover:bg-[rgba(201,168,76,0.10)] bg-[#0d1120]"
- : "border-[rgba(201,168,76,0.12)] text-[#a8997e]/30 bg-[#0d1120] cursor-not-allowed"
- }`}
- >
- <ChevronRight className="h-4 w-4" />
- </button>
- </div>
  <Link href="/post-job">
  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
  <Plus className="h-3.5 w-3.5" />
@@ -475,7 +405,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  <button
  key={tab.key}
  ref={(el) => { tabRefs.current[tab.key] = el; }}
- onClick={() => { setFilter(tab.key as typeof filter); scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" }); }}
+ onClick={() => setFilter(tab.key as typeof filter)}
  className={`relative z-10 px-3 py-1.5 rounded-[3px] text-[11px] font-sans font-semibold transition-colors border ${
  filter === tab.key
  ? "text-[#080b14] border-transparent"
@@ -498,53 +428,13 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  </div>
  )}
 
- {/* ── Carousel ────────────────────────────────────────────── */}
+ {/* ── Job grid — wraps instead of scrolling so a small job count
+ doesn't leave dead space in an unfilled horizontal track ────── */}
  {filteredJobs.length > 0 ? (
- <div className="relative">
- {/* Left fade */}
- <div
- className="absolute left-0 top-0 bottom-2 w-12 z-10 pointer-events-none transition-opacity duration-200"
- style={{ background: "linear-gradient(to right, #080b14, transparent)", opacity: canScrollLeft ? 1 : 0 }}
- />
- {/* Right fade */}
- <div
- className="absolute right-0 top-0 bottom-2 w-16 z-10 pointer-events-none transition-opacity duration-200"
- style={{ background: "linear-gradient(to left, #080b14, transparent)", opacity: canScrollRight ? 1 : 0 }}
- />
-
- <div
- ref={scrollRef}
- onMouseDown={onMouseDown}
- onMouseMove={onMouseMove}
- onMouseUp={onMouseUp}
- onMouseLeave={onMouseUp}
- className="flex gap-3 overflow-x-auto pb-2 select-none"
- style={{ cursor: "grab", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}
- >
+ <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
  {filteredJobs.map(job => (
- <div key={job.id ?? job._id} className="shrink-0" style={{ width: CARD_W, scrollSnapAlign: "start" }}>
- <MyJobCard job={job} bids={bids} users={users} now={now} onAcceptBest={onAcceptBest} />
- </div>
+ <MyJobCard key={job.id ?? job._id} job={job} bids={bids} users={users} now={now} onAcceptBest={onAcceptBest} />
  ))}
- </div>
-
- {/* Dot indicators */}
- {filteredJobs.length > 1 && (
- <div className="flex items-center gap-1.5 mt-3 justify-center">
- {filteredJobs.map((_, i) => (
- <button
- key={i}
- onClick={() => scrollRef.current?.scrollTo({ left: i * CARD_W, behavior: "smooth" })}
- className="h-px rounded-none transition-all duration-300"
- style={{
- width: i === activeDot ? 24 : 8,
- background: i === activeDot ? "#c9a84c" : "rgba(201,168,76,0.25)",
- }}
- aria-label={`Go to job ${i + 1}`}
- />
- ))}
- </div>
- )}
  </div>
  ) : (
  <EmptyState
