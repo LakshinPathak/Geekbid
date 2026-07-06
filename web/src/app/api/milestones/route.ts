@@ -191,17 +191,17 @@ export async function PATCH(req: NextRequest) {
  // Freelancer submitted → notify the client
  const client = await db.collection("users").findOne(
  { _id: new ObjectId(job.clientId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
- { projection: { name: 1 } }
+ { projection: { fullName: 1 } }
  );
  if (client?.email) {
  sendMilestoneSubmittedEmail(
  client.email,
- client.name ?? "Client",
- freelancer?.name ?? "A freelancer",
+ client.fullName ?? "Client",
+ freelancer?.fullName ?? "A freelancer",
  milestone.title ?? "Milestone",
  milestone.amount ?? 0,
  job.title ?? "Untitled Job"
@@ -211,12 +211,12 @@ export async function PATCH(req: NextRequest) {
  // Client approved → notify the freelancer
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(job.acceptedBy) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  if (freelancer?.email) {
  sendMilestoneApprovedEmail(
  freelancer.email,
- freelancer.name ?? "Freelancer",
+ freelancer.fullName ?? "Freelancer",
  milestone.title ?? "Milestone",
  milestone.amount ?? 0,
  job.title ?? "Untitled Job"

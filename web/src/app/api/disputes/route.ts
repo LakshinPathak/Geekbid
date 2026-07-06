@@ -16,10 +16,29 @@ export async function GET(req: NextRequest) {
  }
 
  const db = await getDb();
- const filter =
- auth.payload.role === "admin"
- ? {}
- : { raisedBy: auth.payload.userId };
+
+ let filter: Record<string, unknown> = {};
+ if (auth.payload.role !== "admin") {
+ // A dispute must be visible to BOTH parties on the underlying
+ // transaction, not just whoever filed it — otherwise the party a
+ // dispute is raised against has no way to ever see or respond to it.
+ const myTxIds = (
+ await db
+ .collection("transactions")
+ .find(
+ { $or: [{ clientId: auth.payload.userId }, { freelancerId: auth.payload.userId }] },
+ { projection: { _id: 1 } }
+ )
+ .toArray()
+ ).map((t) => t._id.toString());
+
+ filter = {
+ $or: [
+ { raisedBy: auth.payload.userId },
+ { transactionId: { $in: myTxIds } },
+ ],
+ };
+ }
 
  const disputes = await db
  .collection("disputes")
@@ -95,12 +114,12 @@ export async function PATCH(req: NextRequest) {
  if (dispute?.raisedBy) {
  const raiser = await db.collection("users").findOne(
  { _id: new ObjectId(dispute.raisedBy) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  if (raiser?.email) {
  sendDisputeResolvedEmail(
  raiser.email,
- raiser.name ?? "User",
+ raiser.fullName ?? "User",
  dispute.jobTitle ?? "a project",
  resolution || newStatus,
  dispute.transactionId

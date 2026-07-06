@@ -79,15 +79,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invite already sent for this job" }, { status: 409 });
     }
 
-    // Get job title for notification
+    // Get job and confirm it's still open — inviting a freelancer to bid on a
+    // cancelled/completed/removed job (matches the same check bids/route.ts
+    // already enforces on the regular bid path).
     let rawJobDoc;
     try {
       rawJobDoc = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
     } catch {
       rawJobDoc = await db.collection("jobs").findOne({ _id: jobId });
     }
-    const jobDoc = rawJobDoc as { title?: string } | null;
-    const jobTitle = jobDoc?.title ?? "a job";
+    const jobDoc = rawJobDoc as { title?: string; status?: string; clientId?: string } | null;
+    if (!jobDoc) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+    if (jobDoc.status !== "open") {
+      return NextResponse.json({ error: "This job is no longer open for invites" }, { status: 400 });
+    }
+    if (jobDoc.clientId !== clientId) {
+      return NextResponse.json({ error: "Only the job's owner can invite freelancers to it" }, { status: 403 });
+    }
+    const jobTitle = jobDoc.title ?? "a job";
 
     // Plan limit enforcement — applies to every tier (Premium's limit is
     // effectively unlimited via Infinity, so the $lt check always passes there).

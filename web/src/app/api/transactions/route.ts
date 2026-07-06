@@ -103,11 +103,11 @@ export async function PATCH(req: NextRequest) {
  if (tx.freelancerId) {
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(tx.freelancerId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  if (freelancer?.email) {
  sendEscrowReleasedEmail(
- freelancer.email, freelancer.name ?? "Freelancer",
+ freelancer.email, freelancer.fullName ?? "Freelancer",
  tx.netAmount ?? tx.grossAmount ?? 0,
  job?.title ?? "Your project", transactionId
  ).catch((err) => console.error("[Email Failed] escrowReleased:", err));
@@ -116,12 +116,12 @@ export async function PATCH(req: NextRequest) {
  // Also send job completed summary to the client
  const client = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  if (client?.email) {
  sendJobCompletedEmail(
- client.email, client.name ?? "Client",
- freelancer?.name ?? "Freelancer",
+ client.email, client.fullName ?? "Client",
+ freelancer?.fullName ?? "Freelancer",
  job?.title ?? "Your project",
  tx.grossAmount ?? 0, tx.platformFee ?? 0,
  transactionId
@@ -165,12 +165,12 @@ export async function PATCH(req: NextRequest) {
  if (otherId) {
  const other = await db.collection("users").findOne(
  { _id: new ObjectId(otherId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  const job = tx.jobId ? await db.collection("jobs").findOne({ _id: new ObjectId(tx.jobId) }) : null;
  if (other?.email) {
  sendDisputeEmail(
- other.email, other.name ?? "User",
+ other.email, other.fullName ?? "User",
  job?.title ?? "a project",
  reason || "Quality dispute",
  transactionId

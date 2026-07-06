@@ -236,7 +236,7 @@ export async function PATCH(req: NextRequest) {
  // Fire-and-forget: send payment receipt to client
  const payer = await db.collection("users").findOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1 } }
  );
  const jobDoc = jobId ? await db.collection("jobs").findOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
@@ -244,7 +244,7 @@ export async function PATCH(req: NextRequest) {
  ) : null;
  if (payer?.email) {
  sendPaymentConfirmationEmail(
- payer.email, payer.name ?? "Client",
+ payer.email, payer.fullName ?? "Client",
  grossAmount, currency,
  jobDoc?.title ?? description ?? "GeekBid Project",
  txId, isMock

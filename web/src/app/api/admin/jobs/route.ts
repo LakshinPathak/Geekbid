@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   const [jobs, total] = await Promise.all([
     db.collection("jobs")
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ postedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .toArray(),

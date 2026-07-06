@@ -9,7 +9,9 @@ import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // GET /api/bids?jobId=xxx (protected — bids include freelancer IDs and
-// private bid messages, so an anonymous caller must not be able to dump them)
+// private bid messages, so a caller must only see bids they placed
+// themselves or bids on jobs they personally posted; being merely
+// authenticated is not enough, and neither is being *some* freelancer.)
 export async function GET(req: NextRequest) {
  try {
  const auth = await authenticateRequest(req);
@@ -19,7 +21,20 @@ export async function GET(req: NextRequest) {
 
  const jobId = req.nextUrl.searchParams.get("jobId");
  const db = await getDb();
- const filter = jobId ? { jobId } : {};
+ const filter: Record<string, unknown> = jobId ? { jobId } : {};
+
+ if (auth.payload.role !== "admin") {
+ const ownJobIds = await db
+ .collection("jobs")
+ .find({ clientId: auth.payload.userId }, { projection: { _id: 1 } })
+ .toArray();
+ const ownJobIdStrings = ownJobIds.map((j) => j._id.toString());
+ filter.$or = [
+ { freelancerId: auth.payload.userId },
+ { jobId: { $in: ownJobIdStrings } },
+ ];
+ }
+
  const bids = await db
  .collection("bids")
  .find(filter)

@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
  const db = await getDb();
 
  if (assessmentId) {
+ if (!ObjectId.isValid(assessmentId)) {
+ return NextResponse.json({ error: "Invalid assessment id" }, { status: 400 });
+ }
  // Return a specific assessment (without correct answers for quiz taking)
  const assessment = await db.collection("assessments").findOne({ _id: new ObjectId(assessmentId) });
  if (!assessment) return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
@@ -73,6 +76,9 @@ export async function POST(req: NextRequest) {
 
  if (!assessmentId || !Array.isArray(answers)) {
  return NextResponse.json({ error: "assessmentId and answers required" }, { status: 400 });
+ }
+ if (!ObjectId.isValid(assessmentId)) {
+ return NextResponse.json({ error: "Invalid assessment id" }, { status: 400 });
  }
 
  const db = await getDb();
