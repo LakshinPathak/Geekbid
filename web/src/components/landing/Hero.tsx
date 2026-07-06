@@ -110,7 +110,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-lg sm:text-xl text-[#a8997e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
-            The world&apos;s first reverse-auction marketplace for tech talent. Post a job, watch prices automatically decay, and hire when it hits your sweet spot.
+            The reverse-auction pricing engine for tech talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
           </p>
 
           {/* CTAs */}
@@ -118,17 +118,17 @@ export default function Hero() {
             <div className="animate-fade-in-up" style={{ animationDelay: "600ms" }}>
               <Link href="/login?tab=register&role=client">
                 <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
-                  Start Hiring Free
+                  Start Free
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </Link>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: "750ms" }}>
-              <Link href="/login?tab=register&role=freelancer">
+              <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>
                 <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
-                  <Code className="h-4 w-4" /> Join as Freelancer
+                  <Code className="h-4 w-4" /> See Pricing
                 </button>
-              </Link>
+              </a>
             </div>
           </div>
 

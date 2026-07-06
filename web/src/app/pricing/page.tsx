@@ -80,7 +80,7 @@ type SubscriptionInfo = {
 } | null;
 
 export default function PricingPage() {
-  const { currentUser, auth } = useApp();
+  const { currentUser, getValidToken } = useApp();
   const currentPlan = currentUser?.plan ?? "free";
   const [subscription, setSubscription] = useState<SubscriptionInfo>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -101,9 +101,10 @@ export default function PricingPage() {
   }, []);
 
   const loadSubscription = useCallback(async () => {
-    if (!auth.accessToken) return;
+    const token = await getValidToken();
+    if (!token) return;
     const res = await fetch("/api/subscriptions", {
-      headers: { Authorization: `Bearer ${auth.accessToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) {
       const data = await res.json();
@@ -113,18 +114,21 @@ export default function PricingPage() {
         setSubscription(null);
       }
     }
-  }, [auth.accessToken]);
+  }, [getValidToken]);
 
   useEffect(() => { loadSubscription(); }, [loadSubscription]);
 
   const startCheckout = useCallback(async (targetPlan: 'plus' | 'premium') => {
     setProcessingPlan(targetPlan);
     try {
+      const token = await getValidToken();
+      if (!token) { toast.error("Please log in again"); setProcessingPlan(null); return; }
+
       // Already on a different paid plan — this is a plan change, not a new subscription.
       if (subscription) {
         const res = await fetch("/api/subscriptions", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ action: "change_plan", newPlan: targetPlan }),
         });
         const data = await res.json();
@@ -137,7 +141,7 @@ export default function PricingPage() {
 
       const orderRes = await fetch("/api/subscriptions", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ plan: targetPlan }),
       });
       const orderData = await orderRes.json();
@@ -177,20 +181,22 @@ export default function PricingPage() {
       toast.error("An unexpected error occurred");
       setProcessingPlan(null);
     }
-  }, [subscription, auth.accessToken, scriptLoaded, currentUser, loadSubscription]);
+  }, [subscription, getValidToken, scriptLoaded, currentUser, loadSubscription]);
 
   const cancelSubscription = useCallback(async () => {
     setProcessingPlan("cancel");
+    const token = await getValidToken();
+    if (!token) { toast.error("Please log in again"); setProcessingPlan(null); return; }
     const res = await fetch("/api/subscriptions", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ action: "cancel" }),
     });
     const data = await res.json();
     if (data.error) toast.error(data.error);
     else { toast.success(data.message ?? "Subscription cancelled"); await loadSubscription(); }
     setProcessingPlan(null);
-  }, [auth.accessToken, loadSubscription]);
+  }, [getValidToken, loadSubscription]);
 
   return (
     <div className="min-h-screen bg-[#080b14] grid-bg">

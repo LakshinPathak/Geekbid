@@ -233,7 +233,12 @@ export const FAQS: FaqItem[] = [
   {
     question: "What does GeekBid cost?",
     answer:
-      "There are no upfront fees to post a job or place a bid. GeekBid only takes a 10% success fee once a job is completed and escrow is released — if nothing gets delivered, you pay nothing.",
+      "Start free — 3 job posts and 10 bids a month with a 10% success fee, taken only when a job completes and escrow releases. Plus ($19/mo) raises limits to 50 posts / 100 bids and cuts the fee to 7%; Premium ($79/mo) goes to 500 / 500, team seats, API access, and a 5% fee. If nothing gets delivered, you pay nothing.",
+  },
+  {
+    question: "Can I upgrade, downgrade, or cancel my plan anytime?",
+    answer:
+      "Yes. Upgrades take effect right away, downgrades and cancellations apply at the end of your current billing period, and your jobs, bids, and data are never deleted when you move to a lower tier — only new activity beyond the new plan's limits is affected.",
   },
   {
     question: "How fast can I hire someone?",

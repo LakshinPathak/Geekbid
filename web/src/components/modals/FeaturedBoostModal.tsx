@@ -27,7 +27,7 @@ type Props = {
 // payment infra, tagging the transaction so /api/jobs/feature can atomically
 // claim it for exactly this job.
 export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeatured }: Props) {
-  const { auth, currentUser, toggleFeatured } = useApp();
+  const { currentUser, toggleFeatured, getValidToken } = useApp();
   const [config, setConfig] = useState<{ key: string; currency: string; mock: boolean } | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -67,9 +67,16 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
   const handlePay = useCallback(async () => {
     setProcessing(true);
     try {
+      const token = await getValidToken();
+      if (!token) {
+        toast.error("Please log in again");
+        setProcessing(false);
+        return;
+      }
+
       const orderRes = await fetch("/api/payments", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           amount: FEATURED_BOOST_PRICE_USD,
           currency: config?.currency || "INR",
@@ -89,7 +96,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
       if (mock || !scriptLoaded || !window.Razorpay) {
         const verifyRes = await fetch("/api/payments", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             razorpay_order_id: order.id,
             razorpay_payment_id: `pay_mock_${Date.now()}`,
@@ -121,7 +128,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
         handler: async (response: Record<string, string>) => {
           const verifyRes = await fetch("/api/payments", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.accessToken}` },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -149,7 +156,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
       toast.error("An unexpected error occurred");
       setProcessing(false);
     }
-  }, [auth.accessToken, config, scriptLoaded, currentUser, jobId, jobTitle, finishBoost]);
+  }, [getValidToken, config, scriptLoaded, currentUser, jobId, jobTitle, finishBoost]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={onClose}>
