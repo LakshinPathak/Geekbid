@@ -14,7 +14,7 @@ type QuizData = { id: string; skill: string; timeLimit: number; passingScore: nu
 type ResultData = { id: string; skill: string; score: number; passed: boolean; completedAt: string };
 
 export default function AssessmentsPage() {
- const { currentUser, mounted } = useApp();
+ const { currentUser, mounted, getValidToken } = useApp();
  const router = useRouter();
  const [assessments, setAssessments] = useState<AssessmentSummary[]>([]);
  const [results, setResults] = useState<ResultData[]>([]);
@@ -32,15 +32,16 @@ export default function AssessmentsPage() {
  }, [mounted, currentUser, router]);
 
  const loadData = useCallback(async () => {
+ const token = currentUser ? await getValidToken() : null;
  const [aRes, rRes] = await Promise.all([
  fetch("/api/assessments"),
- currentUser ? fetch("/api/assessments?results=true", {
- headers: { Authorization: `Bearer ${localStorage.getItem("gb_access_token")}` },
+ token ? fetch("/api/assessments?results=true", {
+ headers: { Authorization: `Bearer ${token}` },
  }) : Promise.resolve(null),
  ]);
  if (aRes.ok) setAssessments(await aRes.json());
  if (rRes?.ok) setResults(await rRes.json());
- }, [currentUser]);
+ }, [currentUser, getValidToken]);
 
  useEffect(() => { if (mounted) loadData(); }, [mounted, loadData]);
 
@@ -72,7 +73,7 @@ export default function AssessmentsPage() {
  if (timerRef.current) clearInterval(timerRef.current);
  setSubmitting(true);
  try {
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/assessments", {
  method: "POST",
  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

@@ -11,7 +11,7 @@ import Link from "next/link";
 type ApiKeyItem = { id: string; name: string; prefix: string; lastUsedAt?: string; createdAt: string };
 
 export default function SettingsPage() {
- const { currentUser, mounted, getUserPlanConfig } = useApp();
+ const { currentUser, mounted, getUserPlanConfig, getValidToken } = useApp();
  const planConfig = getUserPlanConfig();
  const hasApiAccess = planConfig.hasApiAccess;
  const router = useRouter();
@@ -26,17 +26,17 @@ export default function SettingsPage() {
  }, [mounted, currentUser, router]);
 
  const loadKeys = useCallback(async () => {
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/keys", { headers: { Authorization: `Bearer ${token}` } });
  if (res.ok) setKeys(await res.json());
- }, []);
+ }, [getValidToken]);
 
  useEffect(() => { if (mounted && currentUser && hasApiAccess) loadKeys(); }, [mounted, currentUser, hasApiAccess, loadKeys]);
 
  const createKey = async () => {
  if (!newKeyName.trim()) return;
  setCreating(true);
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/keys", {
  method: "POST",
  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -59,7 +59,7 @@ export default function SettingsPage() {
  };
 
  const revokeKey = async (id: string) => {
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch(`/api/keys?id=${id}`, {
  method: "DELETE",
  headers: { Authorization: `Bearer ${token}` },

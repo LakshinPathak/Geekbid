@@ -21,7 +21,7 @@ type TeamData = {
 };
 
 export default function TeamPage() {
- const { currentUser, mounted } = useApp();
+ const { currentUser, mounted, getValidToken } = useApp();
  const router = useRouter();
  const [team, setTeam] = useState<TeamData | null>(null);
  const [loading, setLoading] = useState(true);
@@ -35,21 +35,21 @@ export default function TeamPage() {
 
  const loadTeam = useCallback(async () => {
  try {
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/teams", { headers: { Authorization: `Bearer ${token}` } });
  if (res.ok) {
  const data = await res.json();
  setTeam(data);
  }
  } catch (err) { console.error("[loadTeam]", err); } finally { setLoading(false); }
- }, []);
+ }, [getValidToken]);
 
  useEffect(() => { if (mounted && currentUser) loadTeam(); }, [mounted, currentUser, loadTeam]);
 
  const createTeam = async () => {
  if (!teamName.trim()) return;
  setCreating(true);
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "POST",
  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -64,7 +64,7 @@ export default function TeamPage() {
 
  const inviteMember = async () => {
  if (!inviteEmail.trim()) return;
- const token = localStorage.getItem("gb_access_token");
+ const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "PATCH",
  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
