@@ -68,7 +68,7 @@ export default function AssessmentsPage() {
  }, 1000);
  };
 
- const submitQuiz = async () => {
+ const submitQuiz = useCallback(async () => {
  if (!quiz) return;
  if (timerRef.current) clearInterval(timerRef.current);
  setSubmitting(true);
@@ -85,11 +85,17 @@ export default function AssessmentsPage() {
  await loadData();
  } catch { toast.error("Submit failed"); }
  setSubmitting(false);
- };
+ }, [quiz, answers, startedAt, getValidToken, loadData]);
 
+ // Deliberately not depending on quizResult/submitting here — including
+ // them would re-fire this effect (and re-check the condition) every time
+ // this component re-renders for an unrelated reason while a quiz is
+ // mid-flight, which is harmless but wasteful; timeLeft/quiz/submitQuiz
+ // are the only values that actually determine whether an auto-submit is
+ // due.
  useEffect(() => {
  if (timeLeft === 0 && quiz && !quizResult && !submitting) submitQuiz();
- }, [timeLeft]);
+ }, [timeLeft, quiz, submitQuiz]);
 
  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
