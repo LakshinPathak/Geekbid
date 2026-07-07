@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { processWebhookEvent } from "@/lib/webhook-processing";
 
-// GET /api/cron/retry-webhooks — runs every 15 minutes (see vercel.json).
-// Sweeps webhook_events left in 'failed' status (the POST handler already
-// retries via Razorpay's own redelivery, but this catches events Razorpay
-// gave up on, or failures during a deploy window) and re-runs processing.
+// GET /api/cron/retry-webhooks — runs daily (see vercel.json). Vercel's
+// Hobby plan only allows daily cron schedules (Pro+ allows any frequency);
+// bump this back to */15 * * * * in vercel.json if/when the project is on
+// Pro. Sweeps webhook_events left in 'failed' status (the POST handler
+// already retries via Razorpay's own redelivery, but this catches events
+// Razorpay gave up on, or failures during a deploy window) and re-runs
+// processing.
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

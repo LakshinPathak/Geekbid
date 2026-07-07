@@ -1,6 +1,6 @@
 {
   "crons": [
     { "path": "/api/cron/reconcile-subscriptions", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/retry-webhooks", "schedule": "*/15 * * * *" }
+    { "path": "/api/cron/retry-webhooks", "schedule": "30 3 * * *" }
   ]
 }
