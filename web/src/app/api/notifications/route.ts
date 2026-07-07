@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/sanitize";
 
 /**
  * GET /api/notifications — fetch user's notifications (protected)
@@ -49,6 +50,14 @@ export async function POST(req: NextRequest) {
  const auth = await authenticateRequest(req);
  if ("error" in auth) {
  return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
+ // This route always writes userId as the caller's own id (see below), so
+ // it's really "create a notification for myself" — with no cap, it was
+ // the one write endpoint in the app a caller could loop against for free
+ // to spam their own notifications collection unboundedly.
+ if (!(await checkRateLimit(`notify:${auth.payload.userId}`, 20, 60 * 1000))) {
+ return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
  }
 
  const body = await req.json();
