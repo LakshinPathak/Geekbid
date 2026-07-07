@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { hashSync } from "bcryptjs";
-import { sanitizeSearchRegex, sanitizePagination, sanitizeString, checkRateLimit } from "@/lib/sanitize";
+import { sanitizeSearchRegex, sanitizePagination, sanitizeString, checkRateLimit, constantTimeEqual } from "@/lib/sanitize";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }
 
-  if (adminKey !== process.env.ADMIN_SECRET_KEY) {
+  if (!constantTimeEqual(adminKey, process.env.ADMIN_SECRET_KEY ?? "")) {
     return NextResponse.json({ error: "Admin key required to create admin users" }, { status: 403 });
   }
   if (!name || !email || !password) {

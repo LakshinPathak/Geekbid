@@ -3,10 +3,26 @@
  * Import from here before using ANY user-supplied value in a MongoDB query.
  */
 
+import crypto from "crypto";
+
 /** Force input to plain string; rejects objects that could carry MongoDB operators. */
 export function sanitizeString(input: unknown): string {
   if (typeof input !== "string") return "";
   return input.trim();
+}
+
+/**
+ * Constant-time string comparison for secrets (admin keys, etc.) — a plain
+ * `===` leaks length/prefix-match information through response timing.
+ * Length is compared first (also constant-time-safe, since it doesn't
+ * depend on secret content) so mismatched lengths never touch timingSafeEqual,
+ * which throws on unequal-length buffers.
+ */
+export function constantTimeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 /** Validate a 24-hex MongoDB ObjectId; returns null if invalid. */

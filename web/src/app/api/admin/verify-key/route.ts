@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
-import { checkRateLimit, getClientIp } from "@/lib/sanitize";
+import { checkRateLimit, getClientIp, constantTimeEqual } from "@/lib/sanitize";
 
 export async function POST(req: NextRequest) {
   // Rate limit: 5 attempts per IP per 15 minutes — brute-force protection
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const key = String(body.key ?? "");
   if (!key) return NextResponse.json({ error: "Key required" }, { status: 400 });
 
-  const valid = key === process.env.ADMIN_SECRET_KEY;
+  const valid = constantTimeEqual(key, process.env.ADMIN_SECRET_KEY ?? "");
   if (!valid) {
     const db = await getDb();
     await db.collection("audit_logs").insertOne({
