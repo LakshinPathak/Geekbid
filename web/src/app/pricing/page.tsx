@@ -136,12 +136,16 @@ export default function PricingPage() {
                   <button disabled className="w-full py-3 rounded-[6px] font-semibold text-sm bg-[#111625] text-[#a8997e] cursor-not-allowed">
                     Current Plan
                   </button>
-                ) : PLAN_ORDER[plan.value] < PLAN_ORDER[currentPlan] ? (
-                  // No prorated downgrade-between-paid-tiers flow exists yet —
-                  // only "cancel to Free" (above). Routing this through the
-                  // same checkout as an upgrade would create a second paid
-                  // subscription instead of actually downgrading, so disable
-                  // it here rather than let it silently double-charge.
+                ) : PLAN_ORDER[plan.value] < PLAN_ORDER[currentPlan] && !subscription ? (
+                  // startCheckout() already handles downgrading correctly via
+                  // PATCH /api/subscriptions {action:"change_plan"} whenever a
+                  // tracked `subscription` record exists (schedules the change
+                  // at cycle-end for a real Razorpay sub, applies immediately
+                  // in mock mode) — so only block the one case that's actually
+                  // broken: currentUser.plan was set without ever creating a
+                  // subscription record (e.g. an admin plan override), where
+                  // there's nothing for change_plan to act on and the button
+                  // would otherwise fall through to a brand-new paid checkout.
                   <button disabled title="Cancel to Free first, then re-subscribe to this plan" className="w-full py-3 rounded-[6px] font-semibold text-sm bg-[#111625] text-[#a8997e] cursor-not-allowed">
                     Downgrade unavailable
                   </button>
@@ -154,7 +158,11 @@ export default function PricingPage() {
                     }`}
                   >
                     {isProcessing ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
-                    {isProcessing ? "Processing..." : plan.cta}
+                    {isProcessing
+                      ? "Processing..."
+                      : PLAN_ORDER[plan.value] < PLAN_ORDER[currentPlan]
+                        ? `Downgrade to ${plan.name}`
+                        : plan.cta}
                   </button>
                 )}
               </div>
