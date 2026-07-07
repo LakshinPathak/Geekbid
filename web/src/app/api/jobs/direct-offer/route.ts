@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
  if (freelancer.email) {
  sendDirectOfferEmail(
  freelancer.email,
- freelancer.name ?? "Freelancer",
+ freelancer.fullName ?? freelancer.name ?? "Freelancer",
  title,
  Number(price),
  result.insertedId.toString()

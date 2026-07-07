@@ -32,6 +32,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) update[key] = body[key];
   }
 
+  // "accepted" can't be set through this generic field editor — the real
+  // accept flow (api/jobs/[id]/route.ts) also creates an escrow transaction,
+  // a chat room, and notifications together with the status flip. Setting
+  // status directly here would leave a job "accepted" with none of that.
+  if (update.status === "accepted") {
+    return NextResponse.json(
+      { error: "Cannot set status to 'accepted' directly — it requires an escrow transaction, chat room, and notifications that only the normal accept flow creates." },
+      { status: 400 }
+    );
+  }
+
   const db = await getDb();
   const result = await db.collection("jobs").updateOne(
     { _id: ObjectId.createFromHexString(id) },

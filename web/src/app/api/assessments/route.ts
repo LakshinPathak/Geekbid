@@ -127,13 +127,18 @@ export async function POST(req: NextRequest) {
  );
 
  // Fire-and-forget: congratulate the freelancer
+ db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { fullName: 1 } }
+ ).then((user) => {
  sendAssessmentPassedEmail(
  auth.payload.email,
- "Freelancer",
+ user?.fullName ?? "Freelancer",
  assessment.skill,
  score,
  assessmentId
  ).catch(() => {});
+ }).catch(() => {});
  }
 
  return NextResponse.json({ ...result, passed, score }, { status: 201 });

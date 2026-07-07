@@ -209,17 +209,17 @@ export async function POST(req: NextRequest) {
  if (jobDoc?.clientId) {
  const client = await db.collection("users").findOne(
  { _id: new ObjectId(jobDoc.clientId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1, name: 1 } }
  );
  if (client?.email) {
  const freelancerUser = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
- { projection: { name: 1 } }
+ { projection: { fullName: 1, name: 1 } }
  );
  sendNewBidEmail(
  client.email,
- client.name ?? "Client",
- freelancerUser?.name ?? "A freelancer",
+ client.fullName ?? client.name ?? "Client",
+ freelancerUser?.fullName ?? freelancerUser?.name ?? "A freelancer",
  jobDoc.title ?? "Untitled Job",
  Number(bidPrice),
  jobId
@@ -228,8 +228,8 @@ export async function POST(req: NextRequest) {
  // Price target alert: if bid is within 110% of floor price
  if (jobDoc.minimumPrice && Number(bidPrice) <= jobDoc.minimumPrice * 1.1) {
  sendPriceTargetAlertEmail(
- client.email, client.name ?? "Client",
- freelancerUser?.name ?? "A freelancer",
+ client.email, client.fullName ?? client.name ?? "Client",
+ freelancerUser?.fullName ?? freelancerUser?.name ?? "A freelancer",
  jobDoc.title ?? "Untitled Job",
  Number(bidPrice), jobDoc.minimumPrice,
  jobId, result.insertedId.toString()

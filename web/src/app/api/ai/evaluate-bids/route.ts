@@ -34,11 +34,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
-    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
-    if (!quota.ok) {
-      return NextResponse.json({ error: quota.error }, { status: 429 });
-    }
-
     const body = await req.json();
     const { jobId } = body;
 
@@ -64,6 +59,14 @@ export async function POST(req: NextRequest) {
     const bids = await db.collection("bids").find({ jobId: jobIdStr }).sort({ bidPrice: 1 }).toArray();
     if (bids.length === 0) {
       return NextResponse.json({ error: "No bids to evaluate" }, { status: 400 });
+    }
+
+    // Quota is only charged once we know the request will actually reach the
+    // AI call — checking job existence/ownership first means a doomed-to-404/403
+    // request never burns a unit of the caller's monthly AI quota.
+    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.error }, { status: 429 });
     }
 
     const freelancerObjectIds = [...new Set(bids.map((b) => b.freelancerId))]

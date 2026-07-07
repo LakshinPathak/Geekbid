@@ -45,7 +45,7 @@ export default function Nav() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <button className="hidden sm:block text-[11px] tracking-[0.06em] uppercase text-[#a8997e] hover:text-[#a8997e] transition-colors font-sans">Sign In</button>
+            <button className="hidden sm:block text-[11px] tracking-[0.06em] uppercase text-[#a8997e] hover:text-[#c9a84c] transition-colors font-sans">Sign In</button>
           </Link>
           <Link href="/login?tab=register&role=client">
             <button className="flex items-center gap-2 btn-primary text-[11px] tracking-[0.07em] uppercase px-4 py-2 rounded-[3px]">

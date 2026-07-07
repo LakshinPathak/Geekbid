@@ -324,8 +324,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  <span className={`shrink-0 ${
  job.status === "open" ? "badge-active"
- : (job.status as string) === "accepted" || (job.status as string) === "completed" ? "badge-completed"
- : (job.status as string) === "disputed" ? "badge-disputed"
+ : job.status === "accepted" || job.status === "completed" ? "badge-completed"
  : "badge-pending"
  }`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
  </div>

@@ -134,7 +134,7 @@ async function validateStoredRefreshToken(userId: string, token: string): Promis
  return !!stored;
 }
 
-async function revokeRefreshToken(userId: string) {
+export async function revokeRefreshToken(userId: string) {
  const db = await getDb();
  await db.collection("refresh_tokens").deleteMany({ userId });
 }
@@ -405,6 +405,17 @@ export async function refreshAccessToken(currentRefreshToken: string) {
  .collection("users")
  .findOne({ _id: new ObjectId(payload.userId) });
  if (!user) return { error: "User not found" };
+ // Suspending/deleting a user must actually end their session, not just
+ // block future logins — otherwise an already-issued refresh token keeps
+ // renewing a valid access token for up to its own 7-day lifetime.
+ if (user.deleted) {
+ await revokeRefreshToken(payload.userId);
+ return { error: "Invalid or expired refresh token" };
+ }
+ if (user.suspended) {
+ await revokeRefreshToken(payload.userId);
+ return { error: "This account has been suspended. Contact support for assistance." };
+ }
 
  // 4. Issue new token pair (rotation)
  const { accessToken, refreshToken: newRefreshToken } =

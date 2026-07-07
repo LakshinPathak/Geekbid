@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateRequest } from "@/lib/auth";
+import { authenticateRequest, revokeRefreshToken } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { sanitizeObjectId } from "@/lib/sanitize";
+
+const VALID_ROLES = ["freelancer", "client", "admin"];
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -54,6 +56,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
+  if ("role" in update && !VALID_ROLES.includes(update.role as string)) {
+    return NextResponse.json({ error: `role must be one of: ${VALID_ROLES.join(", ")}` }, { status: 400 });
+  }
 
   const db = await getDb();
   const result = await db.collection("users").updateOne(
@@ -61,6 +66,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     { $set: { ...update, updatedAt: new Date().toISOString() } }
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  // Suspending a user must end their existing session too, not just block
+  // future logins/refreshes — otherwise an already-issued refresh token
+  // keeps working until it naturally expires.
+  if (update.suspended === true) {
+    await revokeRefreshToken(id);
+  }
 
   await logAction(auth.payload.userId, "update_user", `Updated user ${id}: ${Object.keys(update).join(", ")}`);
   return NextResponse.json({ ok: true });
@@ -83,6 +95,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
+  await revokeRefreshToken(id);
   await logAction(auth.payload.userId, "delete_user", `Soft-deleted user ${id}. Reason: ${reason}`);
   return NextResponse.json({ ok: true });
 }

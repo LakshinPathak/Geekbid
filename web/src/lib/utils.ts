@@ -86,7 +86,7 @@ export type Job = {
  id: string; _id?: string; clientId: string; title: string; description: string;
  skillsRequired: string[]; startingPrice: number; minimumPrice: number;
  decayRatePerHour: number; postedAt: string; deadlineAt: string;
- estimatedHours: number; status: 'open' | 'accepted' | 'expired';
+ estimatedHours: number; status: 'open' | 'accepted' | 'expired' | 'cancelled' | 'completed' | 'removed';
  acceptedBy?: string; acceptedAt?: string; finalPrice?: number;
  currentPrice?: number; category?: JobCategory;
  visibility?: 'public' | 'invite_only';

@@ -15,11 +15,15 @@ export default function EarningsPage() {
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
+ // This page reports freelance income specifically ("Total Earned" from
+ // completed work) — a client's transactions are money they SPENT, not
+ // earned, so mixing the two into one figure would be actively misleading.
+ // Clients have the equivalent role-neutral view at /payments.
+ else if (mounted && currentUser && currentUser.role !== "freelancer") router.replace("/payments");
  }, [mounted, currentUser, router]);
 
  const myTxns = useMemo(() => transactions.filter(t =>
- t.freelancerId === (currentUser?.id ?? currentUser?._id) ||
- t.clientId === (currentUser?.id ?? currentUser?._id)
+ t.freelancerId === (currentUser?.id ?? currentUser?._id)
  ), [transactions, currentUser]);
 
  const released = useMemo(() => myTxns.filter(t => t.escrowStatus === "released").reduce((s, t) => s + t.netAmount, 0), [myTxns]);

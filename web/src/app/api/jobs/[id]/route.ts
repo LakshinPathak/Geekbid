@@ -404,18 +404,18 @@ export async function PATCH(
  const client = job.clientId
  ? await db.collection("users").findOne(
  { _id: new ObjectId(job.clientId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1, name: 1 } }
  )
  : null;
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
- { projection: { name: 1, email: 1 } }
+ { projection: { fullName: 1, name: 1, email: 1 } }
  );
  if (client?.email) {
  sendJobAcceptedEmail(
  client.email,
- client.name ?? "Client",
- freelancer?.name ?? "A freelancer",
+ client.fullName ?? client.name ?? "Client",
+ freelancer?.fullName ?? freelancer?.name ?? "A freelancer",
  job.title ?? "Untitled Job",
  finalPrice,
  id
@@ -426,8 +426,8 @@ export async function PATCH(
  if (freelancer?.email) {
  sendBookingConfirmationEmail(
  freelancer.email,
- freelancer.name ?? "Freelancer",
- client?.name ?? "Client",
+ freelancer.fullName ?? freelancer.name ?? "Freelancer",
+ client?.fullName ?? client?.name ?? "Client",
  job.title ?? "Untitled Job",
  finalPrice, finalPrice,
  id
@@ -463,8 +463,8 @@ export async function PATCH(
  // ── POST-ACCEPTANCE: In-app notifications ──
  try {
  const jobTitle = job.title ?? "Untitled Job";
- const clientName = client?.name ?? "Client";
- const freelancerName = freelancer?.name ?? "Freelancer";
+ const clientName = client?.fullName ?? client?.name ?? "Client";
+ const freelancerName = freelancer?.fullName ?? freelancer?.name ?? "Freelancer";
  await db.collection("notifications").insertMany([
  {
  userId: job.clientId, type: "job_accepted", isRead: false,

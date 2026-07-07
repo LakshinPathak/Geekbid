@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
  );
  // Fire-and-forget referral notification to referrer
  if (referrer.email) {
- sendReferralSignupEmail(referrer.email, referrer.name ?? "User", name).catch(() => {});
+ sendReferralSignupEmail(referrer.email, referrer.fullName ?? referrer.name ?? "User", name).catch(() => {});
  }
  }
  }

@@ -233,13 +233,19 @@ export async function PATCH(req: NextRequest) {
  const result = await db.collection("transactions").insertOne(tx);
  const txId = result.insertedId.toString();
 
- // Fire-and-forget: send payment receipt to client
+ // Fire-and-forget: send payment receipt to client. The transaction is
+ // already durably recorded above — a bad client-supplied jobId (or any
+ // other failure in this block) must never turn a successful payment into
+ // a false "payment failed" response, so this is isolated in its own
+ // try/catch rather than letting it fall through to the outer catch.
+ try {
+ const { ObjectId } = await import("mongodb");
  const payer = await db.collection("users").findOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
+ { _id: ObjectId.createFromHexString(auth.payload.userId) },
  { projection: { email: 1, fullName: 1 } }
  );
- const jobDoc = jobId ? await db.collection("jobs").findOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
+ const jobDoc = jobId && ObjectId.isValid(jobId) ? await db.collection("jobs").findOne(
+ { _id: ObjectId.createFromHexString(jobId) },
  { projection: { title: 1 } }
  ) : null;
  if (payer?.email) {
@@ -249,6 +255,9 @@ export async function PATCH(req: NextRequest) {
  jobDoc?.title ?? description ?? "GeekBid Project",
  txId, isMock
  ).catch((err) => console.error("[Email Failed] paymentConfirmation:", err));
+ }
+ } catch (err) {
+ console.error("[Payments] Receipt email lookup failed (payment already recorded):", err);
  }
 
  return NextResponse.json({

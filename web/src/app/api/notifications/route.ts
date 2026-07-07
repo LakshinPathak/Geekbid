@@ -113,6 +113,9 @@ export async function PATCH(req: NextRequest) {
 
  if (notificationId) {
  const { ObjectId } = await import("mongodb");
+ if (!ObjectId.isValid(notificationId)) {
+ return NextResponse.json({ error: "Invalid notificationId" }, { status: 400 });
+ }
  await db.collection("notifications").updateOne(
  { _id: new ObjectId(notificationId), userId: auth.payload.userId },
  { $set: { isRead: true } }

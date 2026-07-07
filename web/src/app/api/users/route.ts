@@ -14,7 +14,13 @@ export async function GET(req: NextRequest) {
 
  const db = await getDb();
  const role = req.nextUrl.searchParams.get("role");
- const filter: Record<string, unknown> = {};
+ // Soft-deleted accounts must never appear in a general listing (Talent
+ // Pool, etc.) — same visibility bug already fixed on the admin users
+ // list. Suspended accounts are excluded for non-admins too (an admin can
+ // still see them via GET /api/admin/users, which shows suspension status
+ // explicitly).
+ const filter: Record<string, unknown> = { deleted: { $ne: true } };
+ if (auth.payload.role !== "admin") filter.suspended = { $ne: true };
  if (role) filter.role = role;
 
  // Email is also the login credential — only admins get it in bulk. Everyone

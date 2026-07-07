@@ -25,12 +25,27 @@ export async function checkAndConsumeAiQuota(
   // job/bid counters, which key off that field independently.
   const aiMonthResetAt = user.planLimits?.aiMonthResetAt;
   if (!aiMonthResetAt || new Date(aiMonthResetAt) < new Date()) {
-    await db.collection("users").updateOne({ _id }, {
-      $set: {
-        "planLimits.aiUsesThisMonth": 0,
-        "planLimits.aiMonthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString(),
+    // Guard the write on staleness still holding *at write time*, not just
+    // at the read above — two concurrent requests can both observe a stale
+    // aiMonthResetAt before either writes. Without this filter, whichever
+    // request resets second would unconditionally zero out a count the
+    // first request already incremented below. With the filter, the second
+    // writer's reset simply won't match once the first has already landed.
+    await db.collection("users").updateOne(
+      {
+        _id,
+        $or: [
+          { "planLimits.aiMonthResetAt": { $exists: false } },
+          { "planLimits.aiMonthResetAt": aiMonthResetAt },
+        ],
       },
-    });
+      {
+        $set: {
+          "planLimits.aiUsesThisMonth": 0,
+          "planLimits.aiMonthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString(),
+        },
+      }
+    );
   }
 
   // Atomic check-and-increment in one round trip: a plain findOne-then-updateOne

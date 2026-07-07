@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { sendNewReviewEmail } from "@/lib/email";
+import { ObjectId } from "mongodb";
 
 // GET /api/reviews?userId=xxx or ?jobId=xxx
 export async function GET(req: NextRequest) {
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
 
  if (!jobId || !revieweeId) {
  return NextResponse.json({ error: "jobId and revieweeId required" }, { status: 400 });
+ }
+ if (!ObjectId.isValid(revieweeId) || !ObjectId.isValid(jobId)) {
+ return NextResponse.json({ error: "Invalid jobId or revieweeId" }, { status: 400 });
  }
 
  const numRating = Number(rating);
@@ -112,11 +116,11 @@ export async function POST(req: NextRequest) {
  // Fire-and-forget: email the reviewed user
  const reviewee = await db.collection("users").findOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(revieweeId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1, name: 1 } }
  );
  const reviewer = await db.collection("users").findOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
- { projection: { name: 1 } }
+ { projection: { fullName: 1, name: 1 } }
  );
  const jobForReview = await db.collection("jobs").findOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
@@ -125,8 +129,8 @@ export async function POST(req: NextRequest) {
  if (reviewee?.email) {
  sendNewReviewEmail(
  reviewee.email,
- reviewee.name ?? "User",
- reviewer?.name ?? "Someone",
+ reviewee.fullName ?? reviewee.name ?? "User",
+ reviewer?.fullName ?? reviewer?.name ?? "Someone",
  numRating,
  trimmedComment,
  jobForReview?.title ?? "a project"

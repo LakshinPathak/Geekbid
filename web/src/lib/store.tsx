@@ -1148,15 +1148,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
  prev.map((n) => (n.id === nId ? { ...n, isRead: true } : n))
  );
 
- // DB call
+ // DB call — on failure, revert the optimistic flip instead of silently
+ // swallowing the error. Left unreverted, the next fetchNotifications()
+ // would flip it back to unread anyway, but with no indication anything
+ // went wrong in between — this makes the failure visible immediately.
  getValidToken().then((token) => {
- if (token) {
+ if (!token) {
+ setNotifications((prev) =>
+ prev.map((n) => (n.id === nId ? { ...n, isRead: false } : n))
+ );
+ return;
+ }
  apiRequest("/api/notifications", {
  method: "PATCH",
  body: JSON.stringify({ notificationId: nId }),
  accessToken: token,
- }).catch(() => {});
+ }).then((res) => {
+ if (!res.ok) {
+ setNotifications((prev) =>
+ prev.map((n) => (n.id === nId ? { ...n, isRead: false } : n))
+ );
  }
+ }).catch(() => {
+ setNotifications((prev) =>
+ prev.map((n) => (n.id === nId ? { ...n, isRead: false } : n))
+ );
+ });
  });
  },
  [getValidToken]

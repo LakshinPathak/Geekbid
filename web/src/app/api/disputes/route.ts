@@ -85,6 +85,7 @@ export async function PATCH(req: NextRequest) {
  const disputeId = sanitizeObjectId(body.disputeId);
  const resolution = sanitizeString(body.resolution);
  const newStatus = sanitizeString(body.status);
+ const resolutionType = sanitizeString(body.resolutionType);
 
  if (!disputeId) {
  return NextResponse.json({ error: "Invalid or missing disputeId" }, { status: 400 });
@@ -94,12 +95,17 @@ export async function PATCH(req: NextRequest) {
  }
 
  const db = await getDb();
+ const disputeBefore = await db.collection("disputes").findOne({ _id: new ObjectId(disputeId) });
+ if (!disputeBefore) {
+ return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+ }
  const result = await db.collection("disputes").updateOne(
  { _id: new ObjectId(disputeId) },
  {
  $set: {
  status: newStatus,
  resolution,
+ resolutionType: resolutionType || "dismiss",
  resolvedAt: new Date().toISOString(),
  resolvedBy: auth.payload.userId,
  },
@@ -107,6 +113,30 @@ export async function PATCH(req: NextRequest) {
  );
  if (result.matchedCount === 0) {
  return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+ }
+
+ // Resolving a dispute must actually move the held escrow, not just relabel
+ // the dispute record — same fix as api/admin/disputes/route.ts, kept in
+ // sync here since this endpoint independently duplicates that one's
+ // resolve behavior. split_50_50 intentionally left unhandled — no
+ // partial-payout mechanism exists (a transaction has one recipient).
+ if (newStatus === "resolved" && disputeBefore.transactionId) {
+ let txUpdate: Record<string, unknown> | null = null;
+ if (resolutionType === "refund_client") {
+ txUpdate = { escrowStatus: "refunded", refundedAt: new Date().toISOString(), refundReason: `Dispute resolution: ${resolution}` };
+ } else if (resolutionType === "pay_freelancer") {
+ txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
+ }
+ if (txUpdate) {
+ try {
+ await db.collection("transactions").updateOne(
+ { _id: new ObjectId(disputeBefore.transactionId), escrowStatus: "held" },
+ { $set: txUpdate }
+ );
+ } catch (err) {
+ console.error("[Dispute Resolve] Failed to update linked transaction escrow:", err);
+ }
+ }
  }
 
  // Fire-and-forget: notify the user who raised the dispute

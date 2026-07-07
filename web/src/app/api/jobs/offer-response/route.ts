@@ -70,17 +70,17 @@ export async function PATCH(req: NextRequest) {
  // Fire-and-forget: notify client about offer response
  const client = await db.collection("users").findOne(
  { _id: new ObjectId(job.clientId) },
- { projection: { email: 1, name: 1 } }
+ { projection: { email: 1, fullName: 1, name: 1 } }
  );
  const freelancer = await db.collection("users").findOne(
  { _id: new ObjectId(auth.payload.userId) },
- { projection: { name: 1, email: 1 } }
+ { projection: { fullName: 1, name: 1, email: 1 } }
  );
  if (client?.email) {
   sendOfferResponseEmail(
   client.email,
-  client.name ?? "Client",
-  freelancer?.name ?? "A freelancer",
+  client.fullName ?? client.name ?? "Client",
+  freelancer?.fullName ?? freelancer?.name ?? "A freelancer",
   job.title ?? "Untitled Job",
   response as "accepted" | "declined",
   job.startingPrice ?? 0,
@@ -92,8 +92,8 @@ export async function PATCH(req: NextRequest) {
   if (response === "accepted" && freelancer?.email) {
   sendBookingConfirmationEmail(
   freelancer.email,
-  freelancer.name ?? "Freelancer",
-  client?.name ?? "Client",
+  freelancer.fullName ?? freelancer.name ?? "Freelancer",
+  client?.fullName ?? client?.name ?? "Client",
   job.title ?? "Untitled Job",
   job.startingPrice ?? 0,
   job.startingPrice ?? 0,
@@ -130,14 +130,14 @@ export async function PATCH(req: NextRequest) {
   await db.collection("notifications").insertMany([
   {
   userId: job.clientId, type: "offer_accepted", isRead: false,
-  title: `${freelancer?.name ?? "Freelancer"} accepted your offer for "${jobTitle}"`,
+  title: `${freelancer?.fullName ?? freelancer?.name ?? "Freelancer"} accepted your offer for "${jobTitle}"`,
   body: `Price: $${(job.startingPrice ?? 0).toLocaleString()}. You can now message them.`,
   jobId, createdAt: acceptedAt,
   },
   {
   userId: auth.payload.userId, type: "offer_accepted", isRead: false,
   title: `You accepted the offer for "${jobTitle}"`,
-  body: `Price: $${(job.startingPrice ?? 0).toLocaleString()}. Start the conversation with ${client?.name ?? "Client"}.`,
+  body: `Price: $${(job.startingPrice ?? 0).toLocaleString()}. Start the conversation with ${client?.fullName ?? client?.name ?? "Client"}.`,
   jobId, createdAt: acceptedAt,
   },
   ]);
@@ -150,7 +150,7 @@ export async function PATCH(req: NextRequest) {
   try {
   await db.collection("notifications").insertOne({
   userId: job.clientId, type: "offer_declined", isRead: false,
-  title: `${freelancer?.name ?? "The freelancer"} declined your offer for "${job.title ?? "Untitled Job"}"`,
+  title: `${freelancer?.fullName ?? freelancer?.name ?? "The freelancer"} declined your offer for "${job.title ?? "Untitled Job"}"`,
   body: "You can offer this job to someone else or post it publicly.",
   jobId, createdAt: new Date().toISOString(),
   });

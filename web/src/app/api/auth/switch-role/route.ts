@@ -31,6 +31,11 @@ export async function POST(req: NextRequest) {
  const db = await getDb();
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+ // A still-valid access token must not be able to mint a fresh token pair
+ // for a suspended/deleted account — same gap already closed on login and
+ // refresh.
+ if (user.deleted) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+ if (user.suspended) return NextResponse.json({ error: "This account has been suspended. Contact support for assistance." }, { status: 401 });
 
  const roles: string[] = user.roles ?? [user.role];
  if (!roles.includes(roleStr)) {

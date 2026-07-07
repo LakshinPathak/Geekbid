@@ -2,9 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
 /* ─── Live price decay demo (moved verbatim, plus a new price-tick-
-   synced glow orb layered behind the card) ───────────────────────── */
+   synced glow orb layered behind the card). Freezes to a representative
+   static frame under prefers-reduced-motion instead of running the
+   interval loop — same pattern as PriceDecayShowcase's MarketTerminal. */
 export default function PriceDecayDemo() {
+  const reducedMotion = useReducedMotion();
   const [price, setPrice] = useState(2400);
   const [elapsed, setElapsed] = useState(0);
   const [flashCount, setFlashCount] = useState(0);
@@ -15,6 +30,7 @@ export default function PriceDecayDemo() {
   const DECAY = 25;
 
   useEffect(() => {
+    if (reducedMotion) return;
     const id = setInterval(() => {
       setElapsed((prev) => {
         const next = prev + 1;
@@ -35,7 +51,7 @@ export default function PriceDecayDemo() {
       });
     }, 120);
     return () => clearInterval(id);
-  }, []);
+  }, [reducedMotion]);
 
   const pct = ((2400 - price) / (2400 - MIN)) * 100;
 

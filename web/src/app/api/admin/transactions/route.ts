@@ -71,22 +71,34 @@ export async function PATCH(req: NextRequest) {
 
   const { txId, action, reason } = await req.json();
   if (!txId || !action) return NextResponse.json({ error: "txId and action required" }, { status: 400 });
+  if (!ObjectId.isValid(txId)) return NextResponse.json({ error: "Invalid txId" }, { status: 400 });
 
   const db = await getDb();
   const tx = await db.collection("transactions").findOne({ _id: ObjectId.createFromHexString(txId) });
   if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
 
   if (action === "release") {
-    await db.collection("transactions").updateOne(
-      { _id: tx._id },
+    // Atomic, guarded on escrowStatus:"held" — mirrors api/transactions/route.ts's
+    // user-facing release action. Without this guard, two concurrent
+    // requests (or a release after an already-refunded/released terminal
+    // state) would both succeed unconditionally and silently overwrite
+    // escrowStatus/releasedAt.
+    const result = await db.collection("transactions").updateOne(
+      { _id: tx._id, escrowStatus: "held" },
       { $set: { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId } }
     );
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Transaction is not held (already released/refunded)" }, { status: 409 });
+    }
     await logAction(auth.payload.userId, "release_escrow", `Released escrow for tx ${txId}. ${reason ?? ""}`);
   } else if (action === "refund") {
-    await db.collection("transactions").updateOne(
-      { _id: tx._id },
+    const result = await db.collection("transactions").updateOne(
+      { _id: tx._id, escrowStatus: "held" },
       { $set: { escrowStatus: "refunded", refundedAt: new Date().toISOString(), refundReason: reason ?? "" } }
     );
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Transaction is not held (already released/refunded)" }, { status: 409 });
+    }
     await logAction(auth.payload.userId, "refund_transaction", `Refunded tx ${txId}. Reason: ${reason}`);
   } else {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

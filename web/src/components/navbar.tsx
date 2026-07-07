@@ -158,9 +158,11 @@ export default function Navbar() {
  <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
  <Briefcase className="h-4 w-4 mr-2.5 text-[#a8997e]" /> My Jobs
  </DropdownMenuItem>
+ {currentUser.role === "freelancer" && (
  <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
  <DollarSign className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Earnings
  </DropdownMenuItem>
+ )}
  <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
  <CreditCard className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Payments
  </DropdownMenuItem>
@@ -267,7 +269,7 @@ export default function Navbar() {
  {[
  { href: "/profile", label: "Profile", icon: User },
  { href: "/my-jobs", label: "My Jobs", icon: Briefcase },
- { href: "/earnings", label: "Earnings", icon: DollarSign },
+ ...(currentUser.role === "freelancer" ? [{ href: "/earnings", label: "Earnings", icon: DollarSign }] : []),
  { href: "/payments", label: "Payments", icon: CreditCard },
  { href: "/settings", label: "Settings", icon: Settings },
  ...(currentUser.role === "client" ? [{ href: "/post-job", label: "Post a Job", icon: PlusCircle }] : []),

@@ -18,7 +18,10 @@ export async function GET(
  user = await db.collection("users").findOne({ id });
  }
 
- if (!user) {
+ if (!user || user.deleted || user.suspended) {
+ // Same 404 for not-found, deleted, and suspended — a public profile
+ // lookup shouldn't reveal that an account existed but was removed or
+ // suspended, and neither should render as a normal active profile.
  return NextResponse.json({ error: "User not found" }, { status: 404 });
  }
 

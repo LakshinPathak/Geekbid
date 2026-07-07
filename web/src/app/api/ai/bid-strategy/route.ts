@@ -45,12 +45,24 @@ export async function POST(req: NextRequest) {
     // own reset, which key off that field independently.
     const aiBidMonthResetAt = user.planLimits?.aiBidMonthResetAt;
     if (!aiBidMonthResetAt || new Date(aiBidMonthResetAt) < new Date()) {
-      await db.collection("users").updateOne({ _id }, {
-        $set: {
-          "planLimits.aiBidUsesThisMonth": 0,
-          "planLimits.aiBidMonthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString(),
+      // Guard on staleness still holding *at write time* — see
+      // lib/ai-plan-limit.ts for why an unconditional reset here can wipe
+      // out a concurrent request's already-landed increment below.
+      await db.collection("users").updateOne(
+        {
+          _id,
+          $or: [
+            { "planLimits.aiBidMonthResetAt": { $exists: false } },
+            { "planLimits.aiBidMonthResetAt": aiBidMonthResetAt },
+          ],
         },
-      });
+        {
+          $set: {
+            "planLimits.aiBidUsesThisMonth": 0,
+            "planLimits.aiBidMonthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString(),
+          },
+        }
+      );
     }
 
     // Atomic check-and-increment in one round trip — a plain findOne-then-updateOne

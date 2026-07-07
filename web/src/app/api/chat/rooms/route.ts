@@ -74,12 +74,14 @@ export async function POST(req: NextRequest) {
  }
 
  // The job's own client can always open a room about their job with any
- // freelancer — same trust level as Invite/Direct-Offer, which likewise
+ // *freelancer* — same trust level as Invite/Direct-Offer, which likewise
  // don't require the freelancer to have already bid. Without this
  // exemption, Talent Pool's "Message" action (which lets a client pick
  // any of their own open jobs as context) would 403 on every job the
  // target freelancer hasn't bid on yet — i.e. the exact proactive-outreach
- // case the feature exists for.
+ // case the feature exists for. This must NOT become a way to message an
+ // arbitrary user ID, though — the other participant still has to be a
+ // real freelancer, just not necessarily one already tied to this job.
  const callerIsJobClient = job.clientId === auth.payload.userId;
 
  // Every OTHER participant must actually be associated with this job —
@@ -89,14 +91,22 @@ export async function POST(req: NextRequest) {
  const bid = await db.collection("bids").findOne({ jobId, freelancerId: userId });
  return !!bid;
  };
- if (!callerIsJobClient) {
+ const isFreelancer = async (userId: string) => {
+ let user: any;
+ try { user = await db.collection("users").findOne({ _id: new ObjectId(userId) }); }
+ catch { user = null; }
+ return user?.role === "freelancer";
+ };
  for (const participantId of participantIds) {
- if (!(await isAssociatedWithJob(participantId))) {
+ if (participantId === auth.payload.userId) continue;
+ const ok = callerIsJobClient
+ ? await isFreelancer(participantId)
+ : await isAssociatedWithJob(participantId);
+ if (!ok) {
  return NextResponse.json(
  { error: "All participants must be associated with this job" },
  { status: 403 }
  );
- }
  }
  }
 

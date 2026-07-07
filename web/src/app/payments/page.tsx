@@ -63,7 +63,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function PaymentsPage() {
- const { auth, currentUser, mounted, transactions, fetchTransactions, releaseEscrow } = useApp();
+ const { auth, currentUser, mounted, transactions, fetchTransactions, releaseEscrow, raiseDispute } = useApp();
  const router = useRouter();
 
  const [config, setConfig] = useState<PaymentConfig | null>(null);
@@ -78,6 +78,9 @@ export default function PaymentsPage() {
  const [scriptLoaded, setScriptLoaded] = useState(false);
  const [statusFilter, setStatusFilter] = useState<string>("all");
  const [releaseConfirm, setReleaseConfirm] = useState<string | null>(null);
+ const [disputeConfirm, setDisputeConfirm] = useState<string | null>(null);
+ const [disputeReason, setDisputeReason] = useState("");
+ const [disputeSubmitting, setDisputeSubmitting] = useState(false);
 
  useEffect(() => {
  if (typeof window !== "undefined" && !document.getElementById("razorpay-script")) {
@@ -244,6 +247,20 @@ export default function PaymentsPage() {
  setReleaseConfirm(null);
  } else {
  toast.error("Release failed", { description: r.message });
+ }
+ };
+
+ const handleDispute = async (txId: string) => {
+ if (!disputeReason.trim()) return;
+ setDisputeSubmitting(true);
+ const r = await raiseDispute(txId, disputeReason.trim());
+ setDisputeSubmitting(false);
+ if (r.ok) {
+ toast.success("Dispute raised", { description: "Our team will review this transaction." });
+ setDisputeConfirm(null);
+ setDisputeReason("");
+ } else {
+ toast.error("Failed to raise dispute", { description: r.message });
  }
  };
 
@@ -507,14 +524,23 @@ export default function PaymentsPage() {
  </div>
 
  {/* Action */}
- <div className="text-right w-24">
+ <div className="text-right w-24 flex items-center justify-end gap-2">
  {tx.escrowStatus === "held" ? (
+ <>
  <button
  onClick={() => setReleaseConfirm(tx.id || tx._id || "")}
  className="text-[#c9a84c] text-xs hover:underline font-medium"
  >
  Release
  </button>
+ <span className="text-[#a8997e]/40">|</span>
+ <button
+ onClick={() => setDisputeConfirm(tx.id || tx._id || "")}
+ className="text-[#a8997e] text-xs hover:underline hover:text-[#f0e8d4] font-medium"
+ >
+ Dispute
+ </button>
+ </>
  ) : (
  <span className="text-[#a8997e] text-xs">—</span>
  )}
@@ -563,6 +589,40 @@ export default function PaymentsPage() {
  className="btn-primary flex-1 h-10 rounded-[6px] text-sm"
  >
  Confirm Release
+ </button>
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* Dispute confirmation dialog */}
+ {disputeConfirm && (
+ <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={() => { setDisputeConfirm(null); setDisputeReason(""); }}>
+ <div className="glass-panel-lg p-8 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+ <h3 className="font-heading text-lg font-bold text-[#f0e8d4] mb-2">Raise a Dispute?</h3>
+ <p className="text-sm text-[#a8997e] mb-4">
+ This flags the transaction for admin review and holds the funds until resolved.
+ </p>
+ <textarea
+ value={disputeReason}
+ onChange={e => setDisputeReason(e.target.value)}
+ placeholder="Describe the issue (required)..."
+ rows={3}
+ className="glass-input w-full text-sm rounded-[6px] p-3 mb-6 resize-none"
+ />
+ <div className="flex gap-3">
+ <button
+ onClick={() => { setDisputeConfirm(null); setDisputeReason(""); }}
+ className="btn-ghost flex-1 h-10 rounded-[6px] text-sm"
+ >
+ Cancel
+ </button>
+ <button
+ onClick={() => handleDispute(disputeConfirm)}
+ disabled={!disputeReason.trim() || disputeSubmitting}
+ className="btn-primary flex-1 h-10 rounded-[6px] text-sm disabled:opacity-50"
+ >
+ {disputeSubmitting ? "Submitting..." : "Confirm Dispute"}
  </button>
  </div>
  </div>
