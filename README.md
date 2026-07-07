@@ -217,6 +217,41 @@ unconditionally, so the login/refresh/switch-role rate limiters can be bypassed 
 the header — the correct fix depends on the actual deployment's proxy topology (trusted
 reverse proxy or not).
 
+### Full-app live browser testing (14 more bugs)
+
+Where the CRUD audit above exercised the API surface directly, this pass actually drove the
+app in a real browser (Playwright) against a running dev server, logged in as real seeded
+client/freelancer/admin accounts, clicking through every page and interactive element —
+result documented row-by-row in [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md),
+a 185-row MECE checklist covering both roles plus the full admin panel. Every fix below was
+re-verified against the real database, not just a passing HTTP status.
+
+| Bug | Fix |
+|---|---|
+| **`loadAllData()` 403'd on every client/admin page load** | Called the freelancer-only `/api/jobs/recommended` endpoint unconditionally for any logged-in user. Gated to `currentUser?.role === "freelancer"` |
+| **Talent Pool's "Message" action 403'd on the exact case it exists for** | `POST /api/chat/rooms` required the target freelancer to already be associated with the job — but the client's own "message a freelancer about any of my jobs" picker offers jobs they haven't bid on yet. The job's own client is now exempt from that check (same trust level as Invite/Direct-Offer) |
+| **Victory modal showed the wrong freelancer name after a client accepted a bid** | Re-derived the winner by re-sorting local `bids` state instead of using the backend's authoritative response — disagreed with the DB on a price tie. Reproduced live (modal said one freelancer, DB recorded another). `acceptJob` now returns the server's `freelancerId` directly |
+| **Victory modal showed the wrong final price** | Used the job's live decaying market price instead of the actual awarded bid price — two independent numbers for a client `accept_best`. Reproduced live ($400 shown, $650 actually awarded). Now uses the server's authoritative `finalPrice` |
+| **GitHub username silently discarded by profile "Save Changes"** | Missing from the `PATCH /api/user` field whitelist — confirmed via direct DB query the field was never persisted, despite the UI showing it as saved. Added to the whitelist, with `githubVerified` reset to `false` when the handle actually changes |
+| **Clicking a notification never navigated anywhere** | Despite carrying a `jobId`. Now routes to `/jobs/{jobId}` on click |
+| **Suspended users could still log in** | No `suspended` check in `loginUser`/`googleLoginUser` despite the admin UI claiming otherwise. Reproduced live (suspended a test account, login still succeeded), fixed, re-verified both directions (suspend blocks, restore un-blocks) |
+| **Maintenance Mode had no effect** | Toggling it on and saving didn't block a single login. Reproduced live, fixed — non-admin logins now blocked with a 503 while admins retain access so the flag can always be turned back off |
+| **Pricing page could fire a real downgrade disguised as an "Upgrade"** | A Premium user saw an active "Upgrade to Plus" button — clicking it would checkout a *lower* tier while already paying for a higher one (no prorated-downgrade path exists). Disabled for any tier below the user's current plan |
+| **Soft-deleted users stayed fully visible/actionable in the admin Users list** | No "Deleted" indicator, all actions still live. `GET /api/admin/users` now excludes `deleted:true` by default |
+| **Deleted users could still log in** | Same gap as the suspended-login bug, just never checked for `deleted`. Fixed in both login paths |
+| **Admin Jobs page showed "NaNd ago" for every job** | Read `job.createdAt`, a field that doesn't exist on job documents (they use `postedAt`) — the same field-name mistake from the CRUD audit above, missed here including in the local TypeScript type |
+| **Dispute resolution never moved any money** | Resolving a dispute as "Refund Client" or "Pay Freelancer" only updated the dispute record's cosmetic status — the linked escrow transaction stayed `held`. Reproduced live twice (before and after the fix, confirmed via direct DB query each time). The single most severe bug found across all testing this session |
+| **`POST /api/disputes` doesn't exist at all** | Confirms the dispute-raising gap is a missing backend capability, not just a missing UI button — no path anywhere lets a user actually create a dispute |
+
+**Flagged, not fixed** (real feature gaps, not quick wiring fixes — scoping decisions rather
+than bugs): Forgot Password (dead stub, no reset flow exists), Delete Account (dead stub, no
+`DELETE` endpoint exists), Edit Job (links to a blank creation form, no edit-mode support
+anywhere), `accept_best` awarding the platform's lowest bid regardless of which bid row a
+client clicks Accept on (reproduced live — needs a product decision on what per-row "Accept"
+should mean), dispute creation (no backend route exists, per the bug above), and "Split
+50/50" dispute resolution (no partial-payout mechanism exists anywhere in the app — a
+transaction has exactly one recipient).
+
 ---
 
 ## What's in v16
@@ -967,6 +1002,7 @@ Audit reports, oldest to newest:
 - [`oauthfix_plan.md`](oauthfix_plan.md) — dual-role/OAuth research + fix (v16)
 - [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md) — SaaS tiering design, incl. webhook idempotency, quota-bypass closure, migration rollback strategy (v17)
 - Full API CRUD audit (v17 refinement) — every route exercised end-to-end, 7 bugs closed: a bid-list authorization leak, a one-sided dispute-visibility bug, two missing invite guards (ownership + open-status), a recency-sort bug, a crash-to-500 on malformed IDs, and a broken-recipient-name bug across 4 transactional-email call sites. See [v17 refinements](#v17-refinements-post-phase-4)
+- Full-app live browser testing (v17 refinement) — 14 more bugs closed, including two account-standing bypasses (suspended and soft-deleted users could both still log in, neither was ever checked), an authorization gap on Talent Pool messaging, and dispute resolution silently never releasing or refunding the actual escrowed funds despite reporting "resolved." See [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)
 
 Summary of protections in place:
 
@@ -1014,7 +1050,7 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, and a full API CRUD audit closing 7 more bugs (see [What's in v17](#whats-in-v17) and [v17 refinements](#v17-refinements-post-phase-4)) |
+| `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |

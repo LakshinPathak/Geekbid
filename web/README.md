@@ -26,6 +26,21 @@ two missing invite guards, a recency-sort bug, a crash-to-500 on bad IDs, and a 
 recipient-name lookup across 4 transactional-email call sites). Full write-up:
 [`../README.md`](../README.md#v17-refinements-post-phase-4).
 
+**v17 live-testing pass** (also on `main`/`master`) — the CRUD audit above tested the API
+directly; this pass actually drove the app in a browser as real client/freelancer/admin
+accounts, clicking through every page and interactive element (185-row MECE checklist,
+[`../CRUD_INTERACTION_TEST_PLAN.md`](../CRUD_INTERACTION_TEST_PLAN.md)), and found + fixed 14
+more bugs, every one re-verified against the real database. Most notable: suspended and
+soft-deleted users could both still log in (neither was ever checked); dispute resolution
+reported "resolved" while silently never releasing or refunding the actual escrowed
+transaction; the auction-victory modal could show the wrong winner's name and the wrong
+final price after a client accepted a bid (both re-derived client-side instead of trusting
+the server's response); and the pricing page could fire a real downgrade-via-checkout
+mislabeled as an "Upgrade" button. Also confirmed two gaps are missing backend capabilities
+rather than missing buttons: there's no `POST /api/disputes` route at all, and no
+partial-payout mechanism exists for a "Split 50/50" dispute resolution — both left
+unbuilt as scoping decisions, not bug fixes.
+
 **v16** — Landing page + feed dashboard visual redesign (glass panels, tilt effects, animated counters, skeleton/empty states), dual-role accounts (`User.roles[]` + `POST /api/auth/switch-role`, so one login can be both a client and a freelancer), an OAuth sign-in bug fix (Google login no longer silently mislogs you into the wrong role), and bug fixes found via live testing: QuickBid could ask for a price below the job floor (now clamped client-side and enforced server-side in `POST /api/bids`), a feed duplicate-key React crash, and the job detail page's layout. Full write-up: [`../README.md`](../README.md#whats-in-v16), research trail: [`../oauthfix_plan.md`](../oauthfix_plan.md).
 
 **v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
