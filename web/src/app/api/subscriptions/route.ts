@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import { getPlanConfig, type PlanTier } from "@/lib/plans";
 import { razorpayRequest, isRazorpayConfigured, RAZORPAY_KEY_ID, verifySubscriptionCheckoutSignature } from "@/lib/razorpay";
 import { sendSubscriptionWelcomeEmail, sendPlanCancelledEmail } from "@/lib/billing-emails";
+import { handleDowngrade } from "@/lib/plan-downgrade";
 
 const RAZORPAY_PLAN_IDS: Record<'plus' | 'premium', string | undefined> = {
   plus: process.env.RAZORPAY_PLAN_ID_PLUS,
@@ -213,10 +214,26 @@ export async function PATCH(req: NextRequest) {
         { _id: sub._id },
         { $set: { cancelAtPeriodEnd: true, updatedAt: new Date().toISOString() } }
       );
+      // Mock subs have no real billing cycle and no webhook to flip them to
+      // "cancelled" later — the reconciliation cron explicitly skips
+      // sub_mock_* (nothing to reconcile against), so without this the plan
+      // would say "cancels at period end" but silently stay active/paid forever.
+      if (isMockSub) {
+        await db.collection("subscriptions").updateOne(
+          { _id: sub._id },
+          { $set: { status: "cancelled" } }
+        );
+        await handleDowngrade(auth.payload.userId, sub.plan, "free", "mock_cancel", "user", db);
+      }
       await sendPlanCancelledEmail(auth.payload.userId, sub.plan).catch((err) =>
         console.error("[Plan Cancelled Email Failed]", err)
       );
-      return NextResponse.json({ ok: true, message: "Subscription will cancel at the end of the current billing period." });
+      return NextResponse.json({
+        ok: true,
+        message: isMockSub
+          ? "Subscription cancelled (mock mode — applied immediately)."
+          : "Subscription will cancel at the end of the current billing period.",
+      });
     }
 
     if (action === "change_plan") {
