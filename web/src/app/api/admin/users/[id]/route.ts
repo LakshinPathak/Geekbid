@@ -61,6 +61,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const db = await getDb();
+
+  // Setting `role` must keep it a member of the dual-role `roles` array —
+  // otherwise POST /api/auth/switch-role (which checks roles.includes())
+  // would refuse to switch back into the role an admin just set, since it
+  // was never added to that array.
+  if ("role" in update) {
+    const existingUser = await db.collection("users").findOne({ _id: new ObjectId(id) });
+    if (!existingUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const existingRoles: string[] = existingUser.roles ?? [existingUser.role];
+    update.roles = Array.from(new Set([...existingRoles, update.role as string]));
+  }
+
   const result = await db.collection("users").updateOne(
     { _id: new ObjectId(id) },
     { $set: { ...update, updatedAt: new Date().toISOString() } }
