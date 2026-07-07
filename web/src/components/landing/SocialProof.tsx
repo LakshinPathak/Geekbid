@@ -17,13 +17,13 @@ const TICKER_ITEMS = [
 
 export default function SocialProof() {
   return (
-    <div className="border-y border-[rgba(201,168,76,0.15)] bg-[#050810] py-3 overflow-hidden relative">
+    <div className="border-y border-[rgba(201,168,76,0.15)] bg-[#080b14] py-3 overflow-hidden relative">
       {/* Left gradient fade mask */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to right, #050810, transparent)" }} />
+      <div className="absolute left-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to right, #080b14, transparent)" }} />
       {/* Center glow highlight — items brighten as they pass center */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 100% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%)", zIndex: 5 }} />
       {/* Right gradient fade mask */}
-      <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to left, #050810, transparent)" }} />
+      <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to left, #080b14, transparent)" }} />
       <div className="flex items-center gap-12 whitespace-nowrap animate-marquee">
         {TICKER_ITEMS.map((item, i) => (
           <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#a8997e] font-sans shrink-0">
