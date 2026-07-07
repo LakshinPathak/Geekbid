@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
@@ -38,6 +38,15 @@ function LoginPageContent() {
  const [showPwd, setShowPwd] = useState(false);
  const [error, setError] = useState("");
  const [success, setSuccess] = useState("");
+ // Tracks which google_exchange code has already been redeemed — the
+ // one-time code stays in the URL until the deferred router.replace below
+ // actually navigates away, and a re-render in that window (e.g. from the
+ // successful login itself updating shared app state) can re-run this
+ // effect. Without this guard, that second run tries to redeem an
+ // already-consumed code, which correctly fails and overwrites the
+ // success message with a spurious "Failed to process Google login" —
+ // even though the login already succeeded.
+ const processedExchangeCodeRef = useRef<string | null>(null);
 
  // Typewriter state
  const [phraseIndex, setPhraseIndex] = useState(0);
@@ -91,6 +100,8 @@ function LoginPageContent() {
  }
 
  if (exchangeCode) {
+ if (processedExchangeCodeRef.current === exchangeCode) return;
+ processedExchangeCodeRef.current = exchangeCode;
  (async () => {
  try {
  const res = await fetch("/api/auth/google/exchange", {
