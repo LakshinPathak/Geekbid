@@ -84,11 +84,39 @@ export async function PATCH(req: NextRequest) {
   }
 
   const db = await getDb();
+  const dispute = await db.collection("disputes").findOne({ _id: ObjectId.createFromHexString(disputeId) });
+  if (!dispute) return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+
   const result = await db.collection("disputes").updateOne(
     { _id: ObjectId.createFromHexString(disputeId) },
     { $set: { status, resolution: resolution ?? "", resolutionType: resolutionType ?? "dismiss", resolvedAt: new Date().toISOString(), resolvedBy: auth.payload.userId } }
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+
+  // Resolving a dispute must actually move the held escrow, not just relabel
+  // the dispute record — refund_client/pay_freelancer map onto the same
+  // escrow actions the Transactions page already exposes. split_50_50 has
+  // no partial-payout mechanism anywhere in the app yet (a transaction has
+  // one recipient), so it's intentionally left as a status-only resolution
+  // until that's built; the admin should follow up via a manual payout.
+  if (status === "resolved" && dispute.transactionId) {
+    let txUpdate: Record<string, unknown> | null = null;
+    if (resolutionType === "refund_client") {
+      txUpdate = { escrowStatus: "refunded", refundedAt: new Date().toISOString(), refundReason: `Dispute resolution: ${resolution}` };
+    } else if (resolutionType === "pay_freelancer") {
+      txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
+    }
+    if (txUpdate) {
+      try {
+        await db.collection("transactions").updateOne(
+          { _id: ObjectId.createFromHexString(dispute.transactionId), escrowStatus: "held" },
+          { $set: txUpdate }
+        );
+      } catch (err) {
+        console.error("[Dispute Resolve] Failed to update linked transaction escrow:", err);
+      }
+    }
+  }
 
   await logAction(auth.payload.userId, "resolve_dispute", `Resolved dispute ${disputeId} as ${resolutionType}. Notes: ${resolution}`);
   return NextResponse.json({ ok: true });

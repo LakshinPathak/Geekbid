@@ -63,6 +63,8 @@ const DISPLAY_PLANS = [
   },
 ];
 
+const PLAN_ORDER: Record<string, number> = { free: 0, plus: 1, premium: 2 };
+
 export default function PricingPage() {
   const { currentUser } = useApp();
   const currentPlan = currentUser?.plan ?? "free";
@@ -133,6 +135,15 @@ export default function PricingPage() {
                 ) : isCurrent ? (
                   <button disabled className="w-full py-3 rounded-[6px] font-semibold text-sm bg-[#111625] text-[#a8997e] cursor-not-allowed">
                     Current Plan
+                  </button>
+                ) : PLAN_ORDER[plan.value] < PLAN_ORDER[currentPlan] ? (
+                  // No prorated downgrade-between-paid-tiers flow exists yet —
+                  // only "cancel to Free" (above). Routing this through the
+                  // same checkout as an upgrade would create a second paid
+                  // subscription instead of actually downgrading, so disable
+                  // it here rather than let it silently double-charge.
+                  <button disabled title="Cancel to Free first, then re-subscribe to this plan" className="w-full py-3 rounded-[6px] font-semibold text-sm bg-[#111625] text-[#a8997e] cursor-not-allowed">
+                    Downgrade unavailable
                   </button>
                 ) : (
                   <button

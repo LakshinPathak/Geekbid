@@ -32,7 +32,11 @@ export async function GET(req: NextRequest) {
   const role = ALLOWED_ROLES.includes(roleRaw) ? roleRaw : "";
 
   const db = await getDb();
-  const filter: Record<string, unknown> = {};
+  // Soft-deleted users are retained for data/audit purposes but must not
+  // clutter the active-management list — they'd otherwise appear fully
+  // normal and actionable (verify/edit/re-delete) with no indication they
+  // were ever removed.
+  const filter: Record<string, unknown> = { deleted: { $ne: true } };
   if (role && role !== "all") filter.role = role;
   if (search) {
     filter.$or = [

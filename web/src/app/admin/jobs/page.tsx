@@ -12,7 +12,7 @@ type Job = {
   _id: string; id: string; title: string; description?: string;
   status: string; startingPrice: number; minimumPrice: number;
   decayRatePerHour: number; skillsRequired: string[]; category?: string;
-  featured?: boolean; createdAt: string; clientId?: string;
+  featured?: boolean; postedAt: string; clientId?: string;
 };
 
 export default function AdminJobsPage() {
@@ -172,7 +172,7 @@ export default function AdminJobsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-xs text-[#a8997e]">{timeAgo(job.createdAt)}</span>
+                      <span className="text-xs text-[#a8997e]">{timeAgo(job.postedAt)}</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2 justify-end">
