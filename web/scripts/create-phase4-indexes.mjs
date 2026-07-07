@@ -83,6 +83,17 @@ async function main() {
       { expireAfterSeconds: 120 }
     );
     console.log("rate_limits indexes created");
+
+    // oauth_exchange_codes — Google OAuth one-time handoff codes
+    // (lib/oauth-state.ts). Moved from an in-memory Map to Mongo because the
+    // callback and exchange routes are independent serverless invocations on
+    // Vercel; createdAt must be a genuine BSON Date for the TTL index.
+    await db.collection("oauth_exchange_codes").createIndex({ code: 1 }, { unique: true });
+    await db.collection("oauth_exchange_codes").createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: 60 }
+    );
+    console.log("oauth_exchange_codes indexes created");
   } finally {
     await client.close();
   }

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "code is required" }, { status: 400 });
     }
 
-    const payload = consumeExchangeCode(code);
+    const payload = await consumeExchangeCode(code);
     if (!payload) {
       return NextResponse.json({ error: "Invalid or expired exchange code" }, { status: 400 });
     }

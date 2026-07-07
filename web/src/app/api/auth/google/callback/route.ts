@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
  // 4. Hand off the access token + user via a one-time exchange code instead
  // of putting them directly in the redirect URL — a URL query string ends
  // up in browser history, server/proxy access logs, and Referer headers.
- const exchangeCode = createExchangeCode(result.accessToken, result.user, 900, result.roleAdded);
+ const exchangeCode = await createExchangeCode(result.accessToken, result.user, 900, result.roleAdded);
  const redirectUrl = new URL("/login", process.env.NEXTAUTH_URL!);
  redirectUrl.searchParams.set("google_exchange", exchangeCode);
 
