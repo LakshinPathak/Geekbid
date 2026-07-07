@@ -252,6 +252,41 @@ should mean), dispute creation (no backend route exists, per the bug above), and
 50/50" dispute resolution (no partial-payout mechanism exists anywhere in the app — a
 transaction has exactly one recipient).
 
+### Full-codebase code review (19 more bugs)
+
+A systematic, file-by-file review of the whole codebase (partitioned across auth/security,
+jobs/bids/pricing, payments/financial, AI/chat/misc APIs, and frontend), with the
+highest-risk fixes re-verified live against a running dev server and the real database:
+
+| Bug | Fix |
+|---|---|
+| **Mock payment flow always failed signature verification** | Signature check ran before the `isMock` branch and computed a real HMAC, which can never equal the literal `"mock_signature"` every mock caller sends — with Razorpay env vars unset, every payment and Featured Boost purchase failed. Mock orders now skip signature verification entirely |
+| **Direct-offer jobs could be stolen by any freelancer** | Created with `status:"open"` and no `visibility` field, so they leaked into the public feed and could be accepted by anyone through the general accept flow before the intended recipient responded. Now `visibility:"invite_only"` and explicitly rejected by both the accept endpoint and bid placement |
+| **Reviews could be forged against an unrelated stranger** | `revieweeId` was never cross-checked against the transaction's actual counterparty — any user with a completed job could tank a stranger's rating. Now must equal the other party on the same transaction |
+| **GitHub "verification" proved nothing** | Only checked the username existed via GitHub's public API, then set `githubVerified:true` — anyone could claim any GitHub username. Replaced with a two-step proof-of-ownership challenge (add a one-time code to the GitHub bio, then confirm) |
+| **Settings/Team/Assessments pages silently 401'd on long-idle tabs** | Read the access token straight from `localStorage` instead of the store's auto-refreshing `getValidToken()`. Now goes through the same refresh path as every other authenticated action |
+| **Mock subscription cancellation never actually took effect** | Set `cancelAtPeriodEnd:true` but left `status:"active"` — mock subs have no webhook to flip it later, and the reconciliation cron explicitly skips them. Now applies the downgrade immediately for mock subs |
+| **Milestone `start`/`submit` had no status guard** | Unlike `approve`, which was already atomically guarded — a freelancer could revert an approved/paid milestone back to `in_progress`, or double-submit. All three transitions are now atomically CAS-guarded on the required prior status |
+| **Racy job-completion status transition** | Both completion endpoints did a bare `findOne` + unconditional `updateOne` — two concurrent complete requests could both pass the check and both fire duplicate summary emails. Now atomically claimed via `findOneAndUpdate` |
+| **Team invite-accept had no existing-team guard** | Unlike team creation — a user already in Team A could accept an invite to Team B, leaving Team A's member list stale |
+| **`POST /api/notifications` had no rate limit** | The one write endpoint in the app a caller could loop to spam their own notifications unboundedly. Capped at 20/minute |
+| **Admin-secret-key check in `admin/users` had no rate limit** | Unlike the identical check in `admin/verify-key` — brute-forceable path to minting new admin accounts. Now rate-limited the same way |
+| **TOCTOU on bid placement vs. job acceptance** | Job's "open" status was only checked once, several async round trips before the bid was actually inserted — a job could be accepted mid-request, leaving a stray bid on a closed job. Now re-checked immediately before insert |
+| **Dead `in_progress` job-status branch** | `job.status` is never actually set to `"in_progress"` anywhere (only `milestone.status` is) — removed the unreachable check |
+| **Timing side-channel on secret comparisons** | Admin-key and payment-signature checks used plain `===`. Now use `crypto.timingSafeEqual` via a shared `constantTimeEqual()` helper |
+| **Unvalidated `disputeId` crashed to a bare 500** | Missing `ObjectId.isValid()` guard, unlike the sibling `transactions` route — now a clean 400 |
+| **Admin role edit could desync from the dual-role `roles[]` array** | Setting `role` didn't touch `roles`, so `switch-role` could refuse to switch back into the role an admin just set. Now unions the new role into the existing array |
+| **`require("mongodb")` inconsistency in chat messages** | One handler used `require()` instead of the codebase's `await import()`/static-import convention — a landmine if the route ever moves to the Edge runtime |
+| **AI routes had no separation between instructions and user input** | Chat/description/quality-check/search/review-summary prompts concatenated user text directly alongside the app's own instructions. Added a `systemInstruction` channel (Gemini's dedicated, higher-weighted instruction slot) and explicitly labeled all user input as untrusted |
+| **Assessments auto-submit effect had an incomplete dependency array** | Worked today only because the countdown timer forces a re-render every second, masking the missing deps — fixed to be correct regardless of timer implementation |
+
+### Landing page polish
+
+Removed the FAQ section (and its now-dead `FAQ.tsx` component/data) per product decision.
+Fixed two background-color mismatches where a section explicitly overrode the page's
+standard `#080b14` base with a different shade (`#050810` on the logo marquee strip,
+`#060402` on the price-decay showcase section), both verified live via computed styles.
+
 ---
 
 ## What's in v16

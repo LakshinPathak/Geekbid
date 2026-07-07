@@ -41,6 +41,18 @@ rather than missing buttons: there's no `POST /api/disputes` route at all, and n
 partial-payout mechanism exists for a "Split 50/50" dispute resolution — both left
 unbuilt as scoping decisions, not bug fixes.
 
+**v17 code-review pass** (also on `main`/`master`) — a systematic file-by-file review of the
+whole codebase (not live-testing this time), partitioned across auth/security,
+jobs/bids/pricing, payments/financial, AI/chat/misc APIs, and frontend, found and fixed 19
+more bugs, the highest-risk ones re-verified live. Most notable: the mock payment flow always
+failed signature verification (broken in the current environment), direct-offer jobs could be
+accepted by any freelancer instead of just the intended recipient, GitHub "verification"
+proved nothing about actual account ownership, reviews could be forged against an unrelated
+stranger, and two racy status transitions (job completion, milestone approve/submit/start)
+could double-fire side effects. Also removed the landing page's FAQ section and fixed two
+background-color mismatches. Full write-up:
+[`../README.md`](../README.md#full-codebase-code-review-19-more-bugs).
+
 **v16** — Landing page + feed dashboard visual redesign (glass panels, tilt effects, animated counters, skeleton/empty states), dual-role accounts (`User.roles[]` + `POST /api/auth/switch-role`, so one login can be both a client and a freelancer), an OAuth sign-in bug fix (Google login no longer silently mislogs you into the wrong role), and bug fixes found via live testing: QuickBid could ask for a price below the job floor (now clamped client-side and enforced server-side in `POST /api/bids`), a feed duplicate-key React crash, and the job detail page's layout. Full write-up: [`../README.md`](../README.md#whats-in-v16), research trail: [`../oauthfix_plan.md`](../oauthfix_plan.md).
 
 **v15** — Atomic AI-quota and milestone-escrow checks (closes two check-then-write races), rate limiting added to all AI routes + token refresh + the public v1 API, a token-refresh race fix in `store.tsx`, and root `error.tsx`/`loading.tsx`. See [`../V15_FIXES.md`](../V15_FIXES.md).
