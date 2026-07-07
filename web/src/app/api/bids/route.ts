@@ -156,6 +156,22 @@ export async function POST(req: NextRequest) {
  }
  }
 
+ // Re-check the job is still open right before inserting — the quota and
+ // cooldown checks above are several async round trips deep from the
+ // status check at the top of this handler, and the job could have been
+ // accepted by someone else in that window, leaving a stray bid recorded
+ // against a job that's no longer live.
+ const stillOpen = await db.collection("jobs").findOne({ _id: targetJob._id, status: "open" });
+ if (!stillOpen) {
+ if (bidQuotaReserved) {
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { $inc: { "planLimits.bidsPlacedThisMonth": -1 } }
+ );
+ }
+ return NextResponse.json({ error: "This job is no longer open for bidding" }, { status: 400 });
+ }
+
  const bid = {
  jobId,
  freelancerId: auth.payload.userId,
