@@ -43,12 +43,14 @@ export async function PATCH(
  // concurrent complete requests both pass the status check and both fire
  // the summary emails below (the escrow release and referral credit happen
  // to be individually idempotent, but the duplicate emails weren't).
+ // "in_progress" is a milestone status, never a job status — no write path
+ // in the app ever sets job.status to that value, so it's dropped here.
  const claimedJob = await db.collection("jobs").findOneAndUpdate(
- { _id: job._id, status: { $in: ["accepted", "in_progress"] } },
+ { _id: job._id, status: "accepted" },
  { $set: { status: "completed", completedAt: new Date().toISOString() } }
  );
  if (!claimedJob) {
- return NextResponse.json({ error: "Job must be accepted or in progress to mark complete" }, { status: 400 });
+ return NextResponse.json({ error: "Job must be accepted to mark complete" }, { status: 400 });
  }
 
  // Release escrow — this is the route the frontend actually calls
