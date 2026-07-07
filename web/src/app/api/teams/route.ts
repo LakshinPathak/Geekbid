@@ -158,6 +158,15 @@ export async function PATCH(req: NextRequest) {
  if (action === "accept") {
  if (!teamId) return NextResponse.json({ error: "teamId required" }, { status: 400 });
 
+ // Unlike POST (create), this had no check that the user isn't already in
+ // a team — accepting a second invite would overwrite users.teamId to the
+ // new team while the old team's memberIds still listed them, leaving a
+ // stale membership whose seat/analytics math no longer matches reality.
+ const existingMembership = await db.collection("teams").findOne({
+ $or: [{ ownerId: auth.payload.userId }, { memberIds: auth.payload.userId }],
+ });
+ if (existingMembership) return NextResponse.json({ error: "Already in a team" }, { status: 409 });
+
  const team = await db.collection("teams").findOne({ _id: new ObjectId(teamId) });
  if (!team) return NextResponse.json({ error: "Team not found" }, { status: 404 });
 
