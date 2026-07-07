@@ -86,6 +86,12 @@ export async function POST(req: NextRequest) {
  if (targetJob.status !== "open") {
  return NextResponse.json({ error: "This job is no longer open for bidding" }, { status: 400 });
  }
+ // Direct-offer jobs are exclusive to one freelancer (offeredTo) and are
+ // handled entirely through /api/jobs/offer-response — they must not be
+ // biddable by anyone else.
+ if (targetJob.type === "direct_offer") {
+ return NextResponse.json({ error: "This job is a direct offer and is not open for bidding" }, { status: 400 });
+ }
 
  // Enforce the same floor/ceiling the frontend already checks — a bid
  // placed directly against the API (bypassing store.tsx) must not be able

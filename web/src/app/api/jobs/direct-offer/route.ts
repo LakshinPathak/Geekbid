@@ -76,6 +76,12 @@ export async function POST(req: NextRequest) {
  status: "open",
  category: category ?? "other",
  featured: false,
+ // Direct offers must stay out of the public feed — otherwise any
+ // freelancer could accept it through the general accept flow before the
+ // intended recipient ever responds. The public GET /api/jobs/[id] lookup
+ // (used by the notification link) doesn't filter on visibility, so the
+ // offeredTo freelancer can still open and respond to it directly.
+ visibility: "invite_only",
  type: "direct_offer",
  offeredTo: freelancerId,
  offerStatus: "pending",

@@ -259,6 +259,15 @@ export async function PATCH(
  return NextResponse.json({ error: "Job not found" }, { status: 404 });
  if (job.status !== "open")
  return NextResponse.json({ error: "Job not open" }, { status: 400 });
+ // Direct-offer jobs are exclusive to one freelancer and must go through
+ // /api/jobs/offer-response (which checks offeredTo) — otherwise any
+ // freelancer could win it out from under the intended recipient.
+ if (job.type === "direct_offer") {
+ return NextResponse.json(
+ { error: "This job is a direct offer and can only be accepted or declined by the freelancer it was sent to." },
+ { status: 400 }
+ );
+ }
 
  // ── Server-side price computation — NEVER trust client price ──
  const now = new Date();
