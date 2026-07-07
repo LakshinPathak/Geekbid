@@ -39,14 +39,17 @@ export async function PATCH(
  return NextResponse.json({ error: "You can only complete your own jobs" }, { status: 403 });
  }
 
- if (!["accepted", "in_progress"].includes(job.status)) {
- return NextResponse.json({ error: "Job must be accepted or in progress to mark complete" }, { status: 400 });
- }
-
- await db.collection("jobs").updateOne(
- { _id: job._id },
+ // Atomically claim the completion — a bare findOne+updateOne let two
+ // concurrent complete requests both pass the status check and both fire
+ // the summary emails below (the escrow release and referral credit happen
+ // to be individually idempotent, but the duplicate emails weren't).
+ const claimedJob = await db.collection("jobs").findOneAndUpdate(
+ { _id: job._id, status: { $in: ["accepted", "in_progress"] } },
  { $set: { status: "completed", completedAt: new Date().toISOString() } }
  );
+ if (!claimedJob) {
+ return NextResponse.json({ error: "Job must be accepted or in progress to mark complete" }, { status: 400 });
+ }
 
  // Release escrow — this is the route the frontend actually calls
  // (store.tsx completeJob), so this must happen here, not only in the

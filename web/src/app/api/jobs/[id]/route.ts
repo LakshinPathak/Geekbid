@@ -88,9 +88,12 @@ export async function PATCH(
  catch { job = await db.collection("jobs").findOne({ id }); }
  if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
   if (job.clientId !== auth.payload.userId) return NextResponse.json({ error: "You can only complete your own jobs" }, { status: 403 });
- if (job.status !== "accepted") return NextResponse.json({ error: "Job must be accepted before completing" }, { status: 400 });
- const filter = job._id ? { _id: job._id } : { id };
- await db.collection("jobs").updateOne(filter, { $set: { status: "completed", completedAt: new Date().toISOString() } });
+ // Atomically claim completion — see api/jobs/[id]/complete/route.ts for
+ // why a bare findOne+updateOne here let two concurrent requests both pass
+ // the status check and both fire the summary emails below.
+ const filter = job._id ? { _id: job._id, status: "accepted" } : { id, status: "accepted" };
+ const claimedJob = await db.collection("jobs").findOneAndUpdate(filter, { $set: { status: "completed", completedAt: new Date().toISOString() } });
+ if (!claimedJob) return NextResponse.json({ error: "Job must be accepted before completing" }, { status: 400 });
  // Release escrow
  await db.collection("transactions").updateOne(
  { jobId: id, escrowStatus: "held" },
