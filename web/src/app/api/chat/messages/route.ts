@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
 
 /**
  * GET /api/chat/messages?roomId=xxx — fetch messages for a room (protected)
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
  // Verify user is a participant of this room
  const room = await db.collection("chat_rooms").findOne({
  $or: [
- { _id: (() => { try { const { ObjectId } = require("mongodb"); return new ObjectId(roomId); } catch { return roomId; } })() },
+ { _id: (() => { try { return new ObjectId(roomId); } catch { return roomId; } })() as unknown as ObjectId },
  { id: roomId },
  ],
  participantIds: auth.payload.userId,
@@ -84,10 +85,9 @@ export async function POST(req: NextRequest) {
  // Verify the caller is a participant of this room before allowing a write —
  // otherwise any authenticated user could inject messages into a conversation
  // that isn't theirs.
- const { ObjectId: ChatRoomObjectId } = await import("mongodb");
  const room = await db.collection("chat_rooms").findOne({
  $or: [
- { _id: (() => { try { return new ChatRoomObjectId(roomId); } catch { return roomId; } })() },
+ { _id: (() => { try { return new ObjectId(roomId); } catch { return roomId; } })() as unknown as ObjectId },
  { id: roomId },
  ],
  participantIds: auth.payload.userId,
@@ -109,7 +109,6 @@ export async function POST(req: NextRequest) {
  const result = await db.collection("chat_messages").insertOne(message);
 
  // Update room's updatedAt
- const { ObjectId } = await import("mongodb");
  try {
  await db.collection("chat_rooms").updateOne(
  { _id: new ObjectId(roomId) },
