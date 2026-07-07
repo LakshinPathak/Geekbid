@@ -33,7 +33,7 @@ type AuthState = {
  expiresAt: number | null;
 };
 
-type ActionResult = { ok: boolean; message: string; freelancerId?: string; finalPrice?: number };
+type ActionResult = { ok: boolean; message: string; freelancerId?: string; finalPrice?: number; code?: string; verified?: boolean };
 
 type AppState = {
  auth: AuthState;
@@ -88,7 +88,7 @@ type AppState = {
  updateMilestone: (milestoneId: string, action: string) => Promise<ActionResult>;
  createDirectOffer: (data: { title: string; description?: string; skillsRequired?: string[]; price: number; freelancerId: string; estimatedHours?: number; category?: string }) => Promise<ActionResult>;
  respondToOffer: (jobId: string, response: "accepted" | "declined") => Promise<ActionResult>;
- verifyGithub: (githubUsername: string) => Promise<ActionResult>;
+ verifyGithub: (githubUsername: string, step?: "start" | "confirm") => Promise<ActionResult>;
  toggleFeatured: (jobId: string, featured: boolean, paymentTransactionId?: string) => Promise<ActionResult & { code?: string; boostPrice?: number }>;
  fetchRecommendedJobs: () => Promise<void>;
  fetchJobs: () => Promise<void>;
@@ -609,23 +609,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
  );
 
  const verifyGithub = useCallback(
- async (githubUsername: string): Promise<ActionResult> => {
+ async (githubUsername: string, step: "start" | "confirm" = "start"): Promise<ActionResult> => {
  const token = await getValidToken();
  if (!token) return { ok: false, message: "Not authenticated" };
  try {
  const res = await apiRequest("/api/user/verify-github", {
  method: "POST",
- body: JSON.stringify({ githubUsername }),
+ body: JSON.stringify({ githubUsername, step }),
  accessToken: token,
  });
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
+ if (step === "start") {
+ return { ok: true, verified: false, code: data.code, message: data.instructions };
+ }
  if (currentUser) {
  const updated = { ...currentUser, githubVerified: true, githubData: data.githubData, githubUsername };
  setCurrentUser(updated as User);
  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updated));
  }
- return { ok: true, message: "GitHub verified!" };
+ return { ok: true, verified: true, message: "GitHub verified!" };
  } catch {
  return { ok: false, message: "Failed to verify GitHub" };
  }

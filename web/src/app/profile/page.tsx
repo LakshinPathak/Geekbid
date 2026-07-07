@@ -64,6 +64,7 @@ export default function ProfilePage() {
  const [saved, setSaved] = useState(false);
  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
  const [verifyingGithub, setVerifyingGithub] = useState(false);
+ const [githubChallenge, setGithubChallenge] = useState<string | null>(null);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -454,7 +455,7 @@ export default function ProfilePage() {
  <div className="relative flex-1">
  <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
  <input
- value={githubUsername} onChange={e => setGithubUsername(e.target.value)}
+ value={githubUsername} onChange={e => { setGithubUsername(e.target.value); setGithubChallenge(null); }}
  className="w-full h-11 glass-input rounded-[6px] text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  placeholder="your-github-handle"
@@ -464,17 +465,36 @@ export default function ProfilePage() {
  onClick={async () => {
  if (!githubUsername.trim()) return;
  setVerifyingGithub(true);
- const r = await verifyGithub(githubUsername.trim());
+ if (githubChallenge) {
+ // Step 2: caller says they've added the code to their bio — confirm it.
+ const r = await verifyGithub(githubUsername.trim(), "confirm");
  setVerifyingGithub(false);
- r.ok ? toast.success(r.message) : toast.error(r.message);
+ if (r.ok) { setGithubChallenge(null); toast.success(r.message); }
+ else toast.error(r.message);
+ } else {
+ // Step 1: issue a challenge code proving ownership of the account.
+ const r = await verifyGithub(githubUsername.trim(), "start");
+ setVerifyingGithub(false);
+ if (r.ok && r.code) { setGithubChallenge(r.code); toast.success(r.message); }
+ else toast.error(r.message);
+ }
  }}
  disabled={verifyingGithub || !githubUsername.trim()}
  className="h-11 px-4 btn-primary rounded-[6px] text-sm disabled:opacity-40 shrink-0"
  >
- {verifyingGithub ? "Verifying..." : currentUser?.githubVerified ? "Re-verify" : "Verify"}
+ {verifyingGithub ? "Verifying..." : githubChallenge ? "Confirm" : currentUser?.githubVerified ? "Re-verify" : "Verify"}
  </button>
  </div>
- {currentUser?.githubVerified && (
+ {githubChallenge && (
+ <div className="mt-2 p-3 bg-[rgba(122,82,24,0.08)] border border-[rgba(201,168,76,0.35)]/30 rounded-[6px]">
+ <p className="text-[#a8997e] text-xs">
+ To prove you own this GitHub account, add this code to your bio at{" "}
+ <a href="https://github.com/settings/profile" target="_blank" rel="noreferrer" className="text-[#c9a84c] underline">github.com/settings/profile</a>, then click Confirm.
+ </p>
+ <code className="block mt-1.5 text-[#c9a84c] text-xs font-mono select-all">{githubChallenge}</code>
+ </div>
+ )}
+ {currentUser?.githubVerified && !githubChallenge && (
  <div className="flex items-center gap-3 mt-2 p-3 bg-[rgba(122,82,24,0.08)] border border-[rgba(201,168,76,0.35)]/30 rounded-[6px]">
  <CheckCircle2 className="h-4 w-4 text-[#c9a84c]" />
  <span className="text-[#c9a84c] text-xs font-medium">Verified</span>
