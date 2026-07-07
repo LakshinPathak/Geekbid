@@ -13,16 +13,25 @@ function getClient(): GoogleGenerativeAI {
   return _client;
 }
 
-export async function generateText(prompt: string): Promise<string> {
-  const model = getClient().getGenerativeModel({ model: MODEL_ID });
+// systemInstruction carries the app's own static instructions on a channel
+// separate from the (partly user-controlled) prompt content — the model
+// weighs it more heavily than plain prompt text, so callers should put
+// anything that must not be overridden by injected text there instead of
+// concatenating it into the prompt string.
+export async function generateText(prompt: string, systemInstruction?: string): Promise<string> {
+  const model = getClient().getGenerativeModel({
+    model: MODEL_ID,
+    ...(systemInstruction ? { systemInstruction } : {}),
+  });
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
 
-export async function generateJSON<T>(prompt: string): Promise<T> {
+export async function generateJSON<T>(prompt: string, systemInstruction?: string): Promise<T> {
   const model = getClient().getGenerativeModel({
     model: MODEL_ID,
     generationConfig: { responseMimeType: "application/json" },
+    ...(systemInstruction ? { systemInstruction } : {}),
   });
   const result = await model.generateContent(prompt);
   const text = result.response.text();
