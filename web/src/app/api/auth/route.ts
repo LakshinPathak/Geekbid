@@ -96,6 +96,20 @@ export async function POST(req: NextRequest) {
  );
  }
 
+ // Maintenance Mode blocks all logins except admins — otherwise nobody
+ // could sign back in to turn it off from the admin panel.
+ const userRole = (result.user as Record<string, unknown>)?.role;
+ if (userRole !== "admin") {
+ const db = await getDb();
+ const config = await db.collection("platform_config").findOne({ key: "platform_config" });
+ if (config?.maintenanceMode) {
+ return NextResponse.json(
+ { error: "GeekBid is currently undergoing maintenance. Please check back shortly." },
+ { status: 503 }
+ );
+ }
+ }
+
  const response = NextResponse.json({
  accessToken: result.accessToken,
  user: result.user,

@@ -260,6 +260,10 @@ export async function googleLoginUser(profile: GoogleProfile) {
  .findOne({ $or: [{ email: email.toLowerCase() }, { googleId }] });
  let roleAdded = false;
 
+ if (user?.suspended) {
+ return { error: "This account has been suspended. Contact support for assistance." };
+ }
+
  if (user) {
  // Link Google ID if not already linked
  if (!user.googleId) {
@@ -355,6 +359,7 @@ export async function loginUser(email: unknown, password: unknown) {
  if (!user.password) return { error: "This account uses Google sign-in. Please log in with Google." };
  if (!compareSync(passwordStr, user.password))
  return { error: "Invalid email or password" };
+ if (user.suspended) return { error: "This account has been suspended. Contact support for assistance." };
 
  const userId = user._id.toString();
  const { accessToken, refreshToken } = await createTokenPair(

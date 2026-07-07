@@ -121,7 +121,10 @@ export default function NotificationsPage() {
  return (
  <div
  key={n.id}
- onClick={() => markNotificationRead(n.id)}
+ onClick={() => {
+ markNotificationRead(n.id);
+ if (n.jobId) router.push(`/jobs/${n.jobId}`);
+ }}
  className={`notif-card p-4 flex items-start gap-4 cursor-pointer hover:border-[rgba(201,168,76,0.35)]/30 animate-fade-in-up ${
  isUnread ? "unread" : ""
  }`}

@@ -58,10 +58,25 @@ export async function PATCH(req: NextRequest) {
  "hourlyRateMax",
  "avatarUrl",
  "avatarPublicId",
+ "githubUsername",
  ];
  const safeUpdates: Record<string, unknown> = {};
  for (const key of allowedFields) {
  if (key in updates) safeUpdates[key] = updates[key];
+ }
+
+ // Editing the GitHub handle here (as opposed to the dedicated Verify flow)
+ // must drop any existing verified badge — otherwise a stale githubVerified
+ // from a previous handle would misleadingly carry over to a new, unverified one.
+ if ("githubUsername" in safeUpdates) {
+ const existing = await db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { githubUsername: 1 } }
+ );
+ if (existing?.githubUsername !== safeUpdates.githubUsername) {
+ safeUpdates.githubVerified = false;
+ safeUpdates.githubData = null;
+ }
  }
 
  if (Object.keys(safeUpdates).length === 0) {

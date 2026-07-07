@@ -261,15 +261,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const handleAccept = async () => {
  const r = await acceptJob(job.id ?? job._id ?? "");
  if (r.ok) {
- const winningBid = bids
- .filter(b => b.jobId === (job.id ?? job._id ?? ""))
- .sort((a, b) => a.bidPrice - b.bidPrice)[0];
- const freelancer = winningBid ? users.find(u => u.id === winningBid.freelancerId) : undefined;
+ // Use the server's authoritative winner, not a client-side re-derivation —
+ // re-sorting local bids can disagree with the backend's actual pick on a
+ // price tie or a stale bids cache (previously showed the wrong freelancer
+ // name in this modal).
+ const freelancer = r.freelancerId ? users.find(u => u.id === r.freelancerId) : undefined;
  const client = users.find(u => u.id === job.clientId);
  setVictoryData({
  jobId: job.id ?? job._id ?? "",
  jobTitle: job.title,
- finalPrice: current,
+ finalPrice: r.finalPrice ?? current,
  startingPrice: job.startingPrice,
  freelancerName: freelancer?.fullName ?? "Freelancer",
  freelancerScore: freelancer?.geekScore,

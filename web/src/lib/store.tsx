@@ -33,7 +33,7 @@ type AuthState = {
  expiresAt: number | null;
 };
 
-type ActionResult = { ok: boolean; message: string };
+type ActionResult = { ok: boolean; message: string; freelancerId?: string; finalPrice?: number };
 
 type AppState = {
  auth: AuthState;
@@ -670,7 +670,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  fetchChatRooms(),
  fetchDisputes(),
  fetchReviews(),
- fetchRecommendedJobs(),
+ ...(currentUser?.role === "freelancer" ? [fetchRecommendedJobs()] : []),
  fetchReferralStats(),
  fetchInvites(),
  ]
@@ -678,6 +678,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  ]);
  }, [
  auth.isLoggedIn,
+ currentUser?.role,
  fetchJobs,
  fetchBids,
  fetchUsers,
@@ -949,6 +950,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
  message: isClient
  ? `Job awarded at $${(data.finalPrice ?? 0).toFixed(2)}`
  : `Accepted at $${(data.finalPrice ?? Number(body.finalPrice) ?? 0).toFixed(2)}`,
+ // Authoritative winner + price from the server — callers must not
+ // re-derive these client-side (e.g. re-sorting local bids, or reading
+ // the job's live decaying price), since both can disagree with the
+ // backend's actual awarded values.
+ freelancerId: isClient ? data.freelancerId : currentUser.id,
+ finalPrice: data.finalPrice,
  };
  } catch {
  return { ok: false, message: "Failed to accept job" };

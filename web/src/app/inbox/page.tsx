@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import { toast } from "sonner";
 
 function InboxContent() {
  const { chatRooms, chatMessages, sendMessage, currentUser, users, jobs, mounted, fetchChatMessages } = useApp();
@@ -58,8 +59,13 @@ function InboxContent() {
 
  const handleSend = async () => {
  if (!text.trim() || !selectedRoom) return;
- await sendMessage(selectedRoom, text);
+ const sentText = text;
+ const result = await sendMessage(selectedRoom, sentText);
+ if (result.ok) {
  setText("");
+ } else {
+ toast.error("Failed to send message", { description: result.message });
+ }
  };
 
  const getOtherUser = (room: typeof chatRooms[0]) => {
