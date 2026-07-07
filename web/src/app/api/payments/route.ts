@@ -113,26 +113,9 @@ export async function PATCH(req: NextRequest) {
  );
  }
 
- let verified = false;
-
- // Real signature verification
  if (!razorpay_signature) {
  return NextResponse.json(
  { error: "Missing razorpay_signature" },
- { status: 400 }
- );
- }
-
- const expectedSignature = crypto
- .createHmac("sha256", RAZORPAY_KEY_SECRET)
- .update(`${razorpay_order_id}|${razorpay_payment_id}`)
- .digest("hex");
-
- verified = expectedSignature === razorpay_signature;
-
- if (!verified) {
- return NextResponse.json(
- { error: "Payment signature verification failed" },
  { status: 400 }
  );
  }
@@ -147,6 +130,31 @@ export async function PATCH(req: NextRequest) {
  { error: "Mock payments are not allowed in production" },
  { status: 400 }
  );
+ }
+
+ // Mock orders never went through Razorpay, so there's no real HMAC to
+ // check — the client sends the literal "mock_signature" placeholder
+ // (payments/page.tsx, FeaturedBoostModal.tsx). Checking that against a
+ // real computed HMAC would always fail, breaking every mock payment.
+ // Real orders still get full signature verification below.
+ if (!isMock) {
+ const expectedSignature = crypto
+ .createHmac("sha256", RAZORPAY_KEY_SECRET)
+ .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+ .digest("hex");
+
+ const expectedBuf = Buffer.from(expectedSignature, "hex");
+ const providedBuf = Buffer.from(razorpay_signature, "hex");
+ const verified =
+ expectedBuf.length === providedBuf.length &&
+ crypto.timingSafeEqual(expectedBuf, providedBuf);
+
+ if (!verified) {
+ return NextResponse.json(
+ { error: "Payment signature verification failed" },
+ { status: 400 }
+ );
+ }
  }
 
  // Never trust the client-supplied amount for a real payment — fetch what
