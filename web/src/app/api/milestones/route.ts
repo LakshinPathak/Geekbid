@@ -103,32 +103,47 @@ export async function PATCH(req: NextRequest) {
  if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
 
  const update: Record<string, unknown> = {};
+ let requiredStatus: string;
 
  if (action === "start") {
  if (job.acceptedBy !== auth.payload.userId) {
  return NextResponse.json({ error: "Only the assigned freelancer can start a milestone" }, { status: 403 });
  }
+ requiredStatus = "pending";
  update.status = "in_progress";
  } else if (action === "submit") {
  if (job.acceptedBy !== auth.payload.userId) {
  return NextResponse.json({ error: "Only the assigned freelancer can submit" }, { status: 403 });
  }
+ requiredStatus = "in_progress";
  update.status = "submitted";
  update.submittedAt = new Date().toISOString();
  } else if (action === "approve") {
  if (job.clientId !== auth.payload.userId && auth.payload.role !== "admin") {
  return NextResponse.json({ error: "Only client or admin can approve" }, { status: 403 });
  }
+ requiredStatus = "submitted";
  update.status = "approved";
  update.approvedAt = new Date().toISOString();
  } else {
  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
  }
 
- await db.collection("milestones").updateOne(
- { _id: new ObjectId(milestoneId) },
+ // Guard every transition on the milestone's current status, atomically —
+ // without this, "start"/"submit" had no check at all (unlike "approve",
+ // which was already CAS-guarded for its escrow release below) and a
+ // freelancer could e.g. call "start" on an already-approved/paid
+ // milestone and silently revert it, or double-submit.
+ const claimed = await db.collection("milestones").findOneAndUpdate(
+ { _id: new ObjectId(milestoneId), status: requiredStatus },
  { $set: update }
  );
+ if (!claimed) {
+ return NextResponse.json(
+ { error: `Milestone must be "${requiredStatus}" for this action (current status may have already changed)` },
+ { status: 409 }
+ );
+ }
 
  // ── Partial escrow release for this milestone ──
  // Approving a milestone is supposed to release its share of the held
