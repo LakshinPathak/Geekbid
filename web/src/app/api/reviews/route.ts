@@ -79,6 +79,14 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: "You are not part of this job" }, { status: 403 });
  }
 
+ // revieweeId must be the *other* party on this same transaction — without
+ // this, a caller could pass any arbitrary user's id and move their
+ // averageRating/totalReviews with a fabricated review unrelated to them.
+ const expectedRevieweeId = isClient ? transaction.freelancerId : transaction.clientId;
+ if (revieweeId !== expectedRevieweeId) {
+ return NextResponse.json({ error: "revieweeId must be the other party on this job" }, { status: 403 });
+ }
+
  // Check uniqueness
  const existing = await db.collection("reviews").findOne({
  jobId,
