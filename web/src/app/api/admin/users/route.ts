@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { hashSync } from "bcryptjs";
-import { sanitizeSearchRegex, sanitizePagination, sanitizeString } from "@/lib/sanitize";
+import { sanitizeSearchRegex, sanitizePagination, sanitizeString, checkRateLimit } from "@/lib/sanitize";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -73,6 +73,14 @@ export async function POST(req: NextRequest) {
   const email = sanitizeString(body.email).toLowerCase();
   const password = sanitizeString(body.password);
   const adminKey = String(body.adminKey ?? "");
+
+  // Same secret as api/admin/verify-key, which rate-limits this comparison
+  // to 5 attempts/15min — this endpoint (used to create new admin accounts)
+  // had no throttling at all, letting an authenticated non-super admin
+  // brute-force ADMIN_SECRET_KEY here instead.
+  if (!(await checkRateLimit(`admin-key:user:${auth.payload.userId}`, 5, 15 * 60 * 1000))) {
+    return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+  }
 
   if (adminKey !== process.env.ADMIN_SECRET_KEY) {
     return NextResponse.json({ error: "Admin key required to create admin users" }, { status: 403 });
