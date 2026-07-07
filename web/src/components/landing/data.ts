@@ -60,11 +60,6 @@ export interface JobRow {
   bids: number;
 }
 
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
-
 /* ─── Data (moved verbatim from the original page.tsx) ───────────── */
 export const FEATURES: Feature[] = [
   {
@@ -207,49 +202,3 @@ export const JOB_ROWS: JobRow[] = [
   { title: "Real-Time Analytics Dashboard", price: "$1,650", decay: "$22/hr", skills: ["Kafka", "React", "D3.js"], time: "12h 08m", bids: 4 },
 ];
 
-/* ─── NEW: FAQ content — no FAQ existed anywhere in the app before
-   this redesign. 5 of these 6 answers are pulled directly from copy
-   that already appears elsewhere on this page (price-decay formula,
-   escrow/GeekScore feature text, the "10% fee / no upfront fees"
-   trust badges, the "<4hr" avg-match-time stat). The 6th entry below
-   is flagged as the one speculative answer — replace with real copy
-   before shipping if this doesn't reflect actual policy. ─────────── */
-export const FAQS: FaqItem[] = [
-  {
-    question: "How does the reverse price-decay auction work?",
-    answer:
-      "Every job starts at a price you set and automatically decreases over time: currentPrice = max(startPrice − decayRate × hours, floor). Freelancers watch the price drop and bid (or accept) whenever it hits their sweet spot — the market finds the true rate without back-and-forth negotiation.",
-  },
-  {
-    question: "Is my payment protected?",
-    answer:
-      "Yes. Every payment is held in secure escrow until delivery is verified. GeekBid charges a 10% platform fee, and full dispute resolution is built in if something goes wrong — funds are only released when you approve the work.",
-  },
-  {
-    question: "What is GeekScore™?",
-    answer:
-      "GeekScore™ is our proprietary reputation system. It scores freelancers across delivery, quality, and reliability so you can make confident hiring decisions backed by data instead of guesswork.",
-  },
-  {
-    question: "What does GeekBid cost?",
-    answer:
-      "Start free — 3 job posts and 10 bids a month with a 10% success fee, taken only when a job completes and escrow releases. Plus ($19/mo) raises limits to 50 posts / 100 bids and cuts the fee to 7%; Premium ($79/mo) goes to 500 / 500, team seats, API access, and a 5% fee. If nothing gets delivered, you pay nothing.",
-  },
-  {
-    question: "Can I upgrade, downgrade, or cancel my plan anytime?",
-    answer:
-      "Yes. Upgrades take effect right away, downgrades and cancellations apply at the end of your current billing period, and your jobs, bids, and data are never deleted when you move to a lower tier — only new activity beyond the new plan's limits is affected.",
-  },
-  {
-    question: "How fast can I hire someone?",
-    answer:
-      "Most jobs get matched in under 4 hours on average. Because pricing is transparent and automatic, freelancers can act on a listing the moment it fits their rate — no waiting on proposals to trickle in.",
-  },
-  {
-    question: "Can I use GeekBid for ongoing or larger projects, not just one-off gigs?",
-    answer:
-      // NOTE: this is the one speculative entry, not directly grounded in
-      // existing on-page copy — confirm/replace before shipping.
-      "GeekBid works well for both quick one-off tasks and larger, multi-week engagements — you can adjust the starting price, floor, and decay rate to match the scope, and use milestone-based escrow releases for bigger projects.",
-  },
-];

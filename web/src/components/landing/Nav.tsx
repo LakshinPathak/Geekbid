@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { id: "compare", label: "Compare" },
   { id: "pricing", label: "Pricing" },
   { id: "testimonials", label: "Testimonials" },
-  { id: "faq", label: "FAQ" },
 ];
 
 export default function Nav() {

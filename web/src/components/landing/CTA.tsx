@@ -2,12 +2,8 @@
 
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
-import FAQ from "./FAQ";
 
-/* Merged closing section: hook (badge + headline), FAQ to clear
-   remaining objections, then one shared pair of CTA buttons — a
-   single decision point instead of two separate full-viewport
-   sections (FAQ, then a dedicated final CTA). */
+/* Closing section: hook (badge + headline), then one shared pair of CTA buttons. */
 export default function CTA() {
   return (
     <section className="py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)] relative grid-bg overflow-hidden">
@@ -28,10 +24,6 @@ export default function CTA() {
         <p className="text-lg text-[#a8997e] mt-6 max-w-lg mx-auto">
           Join thousands of companies using reverse auctions to find the best engineering talent at the right price.
         </p>
-      </div>
-
-      <div className="relative z-10 mt-16 sm:mt-20">
-        <FAQ />
       </div>
 
       <div className="mx-auto max-w-5xl px-5 text-center relative z-10 mt-16">
