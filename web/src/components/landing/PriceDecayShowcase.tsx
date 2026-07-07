@@ -140,7 +140,7 @@ export default function PriceDecayShowcase() {
       ref={section.ref}
       className="relative py-24 sm:py-32 overflow-hidden"
       style={{
-        background: "radial-gradient(ellipse 70% 60% at 25% 15%, rgba(201,168,76,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 85%, rgba(201,168,76,0.09) 0%, transparent 55%), #060402",
+        background: "radial-gradient(ellipse 70% 60% at 25% 15%, rgba(201,168,76,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 85%, rgba(201,168,76,0.09) 0%, transparent 55%), #080b14",
       }}
     >
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.35)] to-transparent" />
