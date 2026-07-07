@@ -79,6 +79,7 @@ export async function PATCH(req: NextRequest) {
 
   const { disputeId, status, resolution, resolutionType } = await req.json();
   if (!disputeId || !status) return NextResponse.json({ error: "disputeId and status required" }, { status: 400 });
+  if (!ObjectId.isValid(disputeId)) return NextResponse.json({ error: "Invalid disputeId" }, { status: 400 });
   if (status === "resolved" && !resolution?.trim()) {
     return NextResponse.json({ error: "Resolution notes required" }, { status: 400 });
   }
