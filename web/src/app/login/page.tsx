@@ -296,8 +296,9 @@ function LoginPageContent() {
 
  <div className="w-full max-w-md relative z-10 animate-fade-in-up">
 
- {/* Mobile logo */}
- <div className="lg:hidden flex items-center gap-2.5 mb-8">
+ {/* Mobile logo — centered as the page's focal branding element,
+     not pinned to the left edge like a nav-bar logo would be */}
+ <div className="lg:hidden flex items-center justify-center gap-2.5 mb-8">
  <Link href="/" className="flex items-center gap-2.5">
  <Logo markClassName="h-9 w-9" textClassName="font-heading text-xl font-bold" />
  </Link>
