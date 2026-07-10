@@ -635,10 +635,10 @@ export default function PostJobPage() {
  : "border-[rgba(75,63,143,0.22)] bg-[#ffffff] hover:border-[#b3aec0]/30"
  }`}
  >
- <div className="flex items-center gap-2 mb-1">
+ <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1">
  <Activity className={`h-4 w-4 ${pricingMode === "adaptive" ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`} />
  <p className={`text-sm font-semibold ${pricingMode === "adaptive" ? "text-[#3d3a45]" : "text-[#6f6a7d]"}`}>Adaptive</p>
- <span className="text-[11px] bg-[#4b3f8f]/20 text-[#4b3f8f] px-1.5 py-0.5 rounded-full font-sans font-medium">Recommended</span>
+ <span className="text-[11px] bg-[#4b3f8f]/20 text-[#4b3f8f] px-1.5 py-0.5 rounded-full font-sans font-medium whitespace-nowrap">Recommended</span>
  </div>
  <p className="text-[#6f6a7d] text-xs leading-relaxed">Price responds to bidder demand. Decays slower with more interest.</p>
  </button>

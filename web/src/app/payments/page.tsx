@@ -427,12 +427,12 @@ export default function PaymentsPage() {
  <h2 className="font-heading text-lg font-semibold text-[#3d3a45]">Transaction History</h2>
  <p className="text-sm text-[#6f6a7d] mt-0.5">{typedTransactions.length} transaction{typedTransactions.length !== 1 ? "s" : ""}</p>
  </div>
- <div className="flex items-center gap-2 glass-panel-sm p-1" style={{ borderRadius: "12px" }}>
+ <div className="flex items-center gap-2 glass-panel-sm p-1 overflow-x-auto max-w-full" style={{ borderRadius: "12px" }}>
  {STATUS_FILTERS.map(f => (
  <button
  key={f}
  onClick={() => setStatusFilter(f)}
- className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
+ className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
  statusFilter === f
  ? "bg-[#4b3f8f] text-[#ffffff] border border-transparent"
  : "text-[#6f6a7d] hover:text-[#3d3a45]"
@@ -443,7 +443,7 @@ export default function PaymentsPage() {
  ))}
  <button
  onClick={() => fetchTransactions()}
- className="ml-1 inline-flex items-center gap-1.5 text-xs font-medium text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors px-3 py-1.5 rounded-full hover:bg-[#f4f2ee]"
+ className="shrink-0 whitespace-nowrap ml-1 inline-flex items-center gap-1.5 text-xs font-medium text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors px-3 py-1.5 rounded-full hover:bg-[#f4f2ee]"
  >
  <RefreshCw className="h-3 w-3" />
  Refresh
