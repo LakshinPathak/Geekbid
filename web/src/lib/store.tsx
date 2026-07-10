@@ -33,7 +33,7 @@ type AuthState = {
  expiresAt: number | null;
 };
 
-type ActionResult = { ok: boolean; message: string; freelancerId?: string; finalPrice?: number; code?: string; verified?: boolean };
+type ActionResult = { ok: boolean; message: string; freelancerId?: string; finalPrice?: number; code?: string; verified?: boolean; role?: string };
 
 type AppState = {
  auth: AuthState;
@@ -815,7 +815,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  persistAuth(data.accessToken, data.expiresIn, data.user as User);
  scheduleRefresh(Date.now() + data.expiresIn * 1000);
  setLoading(false);
- return { ok: true, message: "Welcome back!" };
+ return { ok: true, message: "Welcome back!", role: data.user.role };
  } catch {
  setLoading(false);
  return { ok: false, message: "Connection failed" };
@@ -857,6 +857,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  return {
  ok: true,
  message: data.roleAdded ? `${role} role added to your account!` : "Account created!",
+ role: data.user.role,
  };
  } catch {
  setLoading(false);

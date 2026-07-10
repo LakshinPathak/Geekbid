@@ -114,7 +114,7 @@ function LoginPageContent() {
  if (data.error) throw new Error(data.error);
  googleAuth(data.accessToken, data.expiresIn, data.user);
  setSuccess(data.roleAdded ? `${data.user.role} role added to your account!` : "Signed in with Google!");
- setTimeout(() => router.replace("/feed"), 300);
+ setTimeout(() => router.replace(data.user.role === "admin" ? "/admin" : "/feed"), 300);
  } catch {
  setError("Failed to process Google login");
  }
@@ -123,7 +123,7 @@ function LoginPageContent() {
  }, [params, router, googleAuth]);
 
  useEffect(() => {
- if (mounted && currentUser) router.replace("/feed");
+ if (mounted && currentUser) router.replace(currentUser.role === "admin" ? "/admin" : "/feed");
  }, [mounted, currentUser, router]);
 
  const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -140,7 +140,7 @@ function LoginPageContent() {
 
  if (result.ok) {
  setSuccess(mode === "login" ? "Welcome back!" : result.message);
- setTimeout(() => router.push("/feed"), 500);
+ setTimeout(() => router.push(result.role === "admin" ? "/admin" : "/feed"), 500);
  } else {
  setError(result.message);
  }

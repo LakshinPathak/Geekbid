@@ -46,8 +46,9 @@ export function sanitizeQuery(input: unknown): Record<string, unknown> {
   return clean;
 }
 
-/** Coerce to a finite number, returning defaultVal if not finite. */
+/** Coerce to a finite number, returning defaultVal if not finite or absent. */
 export function sanitizeNumber(input: unknown, defaultVal = 0): number {
+  if (input === null || input === undefined || input === "") return defaultVal;
   const n = Number(input);
   return Number.isFinite(n) ? n : defaultVal;
 }
