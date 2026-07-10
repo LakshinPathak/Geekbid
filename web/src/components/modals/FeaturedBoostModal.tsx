@@ -124,7 +124,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
         description: `Featured boost: ${jobTitle}`,
         order_id: order.id,
         prefill: { name: currentUser?.fullName || "", email: currentUser?.email || "" },
-        theme: { color: "#c9a84c" },
+        theme: { color: "#4b3f8f" },
         handler: async (response: Record<string, string>) => {
           const verifyRes = await fetch("/api/payments", {
             method: "PATCH",
@@ -162,27 +162,27 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
     <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={onClose}>
       <div className="glass-panel-lg p-8 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-heading text-lg font-bold text-[#f0e8d4] flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-[#c9a84c]" /> Feature this job
+          <h3 className="font-heading text-lg font-bold text-[#3d3a45] flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-[#4b3f8f]" /> Feature this job
           </h3>
-          <button onClick={onClose} className="text-[#a8997e] hover:text-[#f0e8d4] transition-colors">
+          <button onClick={onClose} className="text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-sm text-[#a8997e] mb-1">
+        <p className="text-sm text-[#6f6a7d] mb-1">
           Your plan&apos;s included featured boosts are used up this month.
         </p>
-        <p className="text-lg font-heading font-bold text-[#c9a84c] mt-3 mb-6">
+        <p className="text-lg font-heading font-bold text-[#4b3f8f] mt-3 mb-6">
           ${FEATURED_BOOST_PRICE_USD} one-off boost
         </p>
         <div className="flex gap-3">
-          <button onClick={onClose} className="btn-ghost flex-1 h-11 rounded-[6px] text-sm">
+          <button onClick={onClose} className="btn-ghost flex-1 h-11 rounded-2xl text-sm">
             Cancel
           </button>
           <button
             onClick={handlePay}
             disabled={processing}
-            className="btn-primary flex-1 h-11 rounded-[6px] text-sm payment-ready disabled:opacity-50"
+            className="btn-primary flex-1 h-11 rounded-2xl text-sm payment-ready disabled:opacity-50"
           >
             {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
             {processing ? "Processing..." : "Pay & Feature"}

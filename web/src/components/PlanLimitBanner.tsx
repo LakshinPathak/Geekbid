@@ -20,10 +20,10 @@ export default function PlanLimitBanner({ used, limit, label, planName }: Props)
 
   return (
     <div
-      className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-[6px] border text-xs animate-fade-in-up ${
+      className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl border text-xs animate-fade-in-up ${
         atLimit
-          ? "bg-[#e57373]/10 border-[#e57373]/30 text-[#e57373]"
-          : "bg-[#c9a84c]/10 border-[#c9a84c]/30 text-[#c9a84c]"
+          ? "bg-[#96543f]/10 border-[#96543f]/30 text-[#96543f]"
+          : "bg-[#4b3f8f]/10 border-[#4b3f8f]/30 text-[#4b3f8f]"
       }`}
     >
       <span className="flex items-center gap-2">

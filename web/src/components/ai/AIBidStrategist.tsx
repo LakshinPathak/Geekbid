@@ -27,9 +27,9 @@ type Props = {
 };
 
 const CONFIDENCE_COLOR = {
-  high: "text-[#4caf7d]",
-  medium: "text-[#c9a84c]",
-  low: "text-[#e57373]",
+  high: "text-[#4d7245]",
+  medium: "text-[#4b3f8f]",
+  low: "text-[#96543f]",
 };
 
 export default function AIBidStrategist({ job, currentPrice, competitorBids, onApplyBid }: Props) {
@@ -92,24 +92,24 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
   }
 
   return (
-    <div className="rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#0d1120] overflow-hidden">
+    <div className="rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#ffffff] overflow-hidden">
       <button
         onClick={handleClick}
         disabled={loading}
-        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isPlanLimited ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(75,63,143,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isPlanLimited ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-[#c9a84c]">
+        <span className="flex items-center gap-2 text-sm font-semibold text-[#4b3f8f]">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
           AI Bid Strategist
           {isPlanLimited && (
-            <span className="text-[10px] font-normal text-[#a8997e] ml-1">({planConfig.name} limit reached)</span>
+            <span className="text-[10px] font-normal text-[#6f6a7d] ml-1">({planConfig.name} limit reached)</span>
           )}
         </span>
-        {result && (open ? <ChevronUp className="h-4 w-4 text-[#a8997e]" /> : <ChevronDown className="h-4 w-4 text-[#a8997e]" />)}
+        {result && (open ? <ChevronUp className="h-4 w-4 text-[#6f6a7d]" /> : <ChevronDown className="h-4 w-4 text-[#6f6a7d]" />)}
       </button>
 
       {error && (
-        <div className="px-4 pb-3 text-xs text-[#e57373]">{error}</div>
+        <div className="px-4 pb-3 text-xs text-[#96543f]">{error}</div>
       )}
 
       <div className="px-4 pb-3">
@@ -122,15 +122,15 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
       </div>
 
       {result && open && (
-        <div className="border-t border-[rgba(201,168,76,0.12)] px-4 py-4 space-y-4">
+        <div className="border-t border-[rgba(75,63,143,0.12)] px-4 py-4 space-y-4">
           {/* Recommended bid */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Recommended Bid</p>
-              <p className="font-heading text-2xl text-[#c9a84c]">${result.recommendedBid.toLocaleString()}</p>
+              <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Recommended Bid</p>
+              <p className="font-heading text-2xl text-[#4b3f8f]">${result.recommendedBid.toLocaleString()}</p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Win Probability</p>
+              <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Win Probability</p>
               <p className={`font-heading text-xl ${CONFIDENCE_COLOR[result.confidence]}`}>
                 {result.winProbability}%
               </p>
@@ -138,21 +138,21 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
           </div>
 
           {/* Rationale */}
-          <p className="text-xs text-[#a8997e] leading-relaxed">{result.rationale}</p>
+          <p className="text-xs text-[#6f6a7d] leading-relaxed">{result.rationale}</p>
 
           {/* Timing */}
-          <div className="flex items-center gap-2 text-xs text-[#f0e8d4]">
-            <Clock className="h-3.5 w-3.5 text-[#c9a84c] shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-[#3d3a45]">
+            <Clock className="h-3.5 w-3.5 text-[#4b3f8f] shrink-0" />
             <span>{result.timing}</span>
           </div>
 
           {/* Tips */}
           {result.tips.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Tips</p>
+              <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Tips</p>
               {result.tips.map((tip, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-[#f0e8d4]">
-                  <Target className="h-3.5 w-3.5 text-[#c9a84c] shrink-0 mt-0.5" />
+                <div key={i} className="flex items-start gap-2 text-xs text-[#3d3a45]">
+                  <Target className="h-3.5 w-3.5 text-[#4b3f8f] shrink-0 mt-0.5" />
                   <span>{tip}</span>
                 </div>
               ))}
@@ -163,7 +163,7 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
           {onApplyBid && (
             <button
               onClick={() => onApplyBid(result.recommendedBid)}
-              className="w-full py-2 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-full text-sm font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors flex items-center justify-center gap-2"
             >
               <TrendingUp className="h-4 w-4" />
               Apply ${result.recommendedBid.toLocaleString()}
@@ -174,7 +174,7 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
           <button
             onClick={analyze}
             disabled={loading}
-            className="w-full py-1.5 rounded-[3px] text-xs text-[#a8997e] border border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c] transition-colors"
+            className="w-full py-1.5 rounded-full text-xs text-[#6f6a7d] border border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f] transition-colors"
           >
             {loading ? "Analyzing..." : "Re-analyze"}
           </button>

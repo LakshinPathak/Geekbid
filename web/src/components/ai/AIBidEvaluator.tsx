@@ -36,9 +36,9 @@ type Props = {
 };
 
 const VERDICT_CONFIG = {
-  hire: { label: "Hire", cls: "text-[#4caf7d] bg-[rgba(76,175,61,0.12)] border-[rgba(76,175,61,0.3)]", icon: CheckCircle },
-  consider: { label: "Consider", cls: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]", icon: AlertCircle },
-  pass: { label: "Pass", cls: "text-[#e57373] bg-[rgba(192,57,43,0.12)] border-[rgba(192,57,43,0.3)]", icon: XCircle },
+  hire: { label: "Hire", cls: "text-[#4d7245] bg-[rgba(77,114,69,0.12)] border-[rgba(77,114,69,0.3)]", icon: CheckCircle },
+  consider: { label: "Consider", cls: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]", icon: AlertCircle },
+  pass: { label: "Pass", cls: "text-[#96543f] bg-[rgba(193,77,58,0.12)] border-[rgba(193,77,58,0.3)]", icon: XCircle },
 };
 
 export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }: Props) {
@@ -78,25 +78,25 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
   }
 
   return (
-    <div className="rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#0d1120] overflow-hidden">
+    <div className="rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#ffffff] overflow-hidden">
       <button
         onClick={() => result ? setOpen(o => !o) : evaluate()}
         disabled={loading}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[rgba(75,63,143,0.06)] transition-colors disabled:opacity-50"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-[#c9a84c]">
+        <span className="flex items-center gap-2 text-sm font-semibold text-[#4b3f8f]">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
           AI Bid Evaluator
-          <span className="text-[10px] font-normal text-[#a8997e]">({bids.length} bids)</span>
+          <span className="text-[10px] font-normal text-[#6f6a7d]">({bids.length} bids)</span>
         </span>
-        {result && (open ? <ChevronUp className="h-4 w-4 text-[#a8997e]" /> : <ChevronDown className="h-4 w-4 text-[#a8997e]" />)}
+        {result && (open ? <ChevronUp className="h-4 w-4 text-[#6f6a7d]" /> : <ChevronDown className="h-4 w-4 text-[#6f6a7d]" />)}
       </button>
 
-      {error && <div className="px-4 pb-3 text-xs text-[#e57373]">{error}</div>}
+      {error && <div className="px-4 pb-3 text-xs text-[#96543f]">{error}</div>}
 
       {result && open && (
-        <div className="border-t border-[rgba(201,168,76,0.12)] px-4 py-4 space-y-4">
-          <p className="text-xs text-[#a8997e] leading-relaxed">{result.summary}</p>
+        <div className="border-t border-[rgba(75,63,143,0.12)] px-4 py-4 space-y-4">
+          <p className="text-xs text-[#6f6a7d] leading-relaxed">{result.summary}</p>
 
           <div className="space-y-3">
             {result.evaluations.map((ev) => {
@@ -110,18 +110,18 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
               return (
                 <div
                   key={ev.bidId}
-                  className={`rounded-[4px] border p-3 ${isBest ? "border-[rgba(201,168,76,0.4)] bg-[rgba(201,168,76,0.06)]" : "border-[rgba(201,168,76,0.12)] bg-[#080b14]"}`}
+                  className={`rounded-xl border p-3 ${isBest ? "border-[rgba(75,63,143,0.4)] bg-[rgba(75,63,143,0.06)]" : "border-[rgba(75,63,143,0.12)] bg-[#fbfaf7]"}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      {isBest && <span className="text-[9px] font-bold text-[#c9a84c] uppercase tracking-wider bg-[rgba(201,168,76,0.12)] px-1.5 py-0.5 rounded-[2px]">Best</span>}
-                      <span className="text-sm font-semibold text-[#f0e8d4]">
+                      {isBest && <span className="text-[9px] font-bold text-[#4b3f8f] uppercase tracking-wider bg-[rgba(75,63,143,0.12)] px-1.5 py-0.5 rounded-full">Best</span>}
+                      <span className="text-sm font-semibold text-[#3d3a45]">
                         {freelancer?.fullName ?? "Freelancer"}
                       </span>
-                      <span className="text-sm text-[#c9a84c]">${bid.bidPrice.toLocaleString()}</span>
+                      <span className="text-sm text-[#4b3f8f]">${bid.bidPrice.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-[#a8997e]">{ev.score}/100</span>
+                      <span className="text-xs text-[#6f6a7d]">{ev.score}/100</span>
                       <span className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}>
                         <Icon className="h-3 w-3" />
                         {cfg.label}
@@ -132,14 +132,14 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
                   {ev.pros.length > 0 && (
                     <div className="space-y-0.5 mb-1.5">
                       {ev.pros.map((p, i) => (
-                        <p key={i} className="text-[10px] text-[#4caf7d] flex items-start gap-1">
+                        <p key={i} className="text-[10px] text-[#4d7245] flex items-start gap-1">
                           <span className="mt-0.5">+</span>{p}
                         </p>
                       ))}
                     </div>
                   )}
                   {ev.cons.map((c, i) => (
-                    <p key={i} className="text-[10px] text-[#e57373] flex items-start gap-1">
+                    <p key={i} className="text-[10px] text-[#96543f] flex items-start gap-1">
                       <span className="mt-0.5">-</span>{c}
                     </p>
                   ))}
@@ -147,7 +147,7 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
                   {isBest && onAcceptBid && (
                     <button
                       onClick={() => onAcceptBid(bid)}
-                      className="mt-2 w-full py-1.5 rounded-[3px] text-xs font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors"
+                      className="mt-2 w-full py-1.5 rounded-full text-xs font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors"
                     >
                       Accept This Bid
                     </button>
@@ -157,12 +157,12 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
             })}
           </div>
 
-          <p className="text-[10px] text-[#a8997e] italic">{result.recommendationReason}</p>
+          <p className="text-[10px] text-[#6f6a7d] italic">{result.recommendationReason}</p>
 
           <button
             onClick={evaluate}
             disabled={loading}
-            className="w-full py-1.5 rounded-[3px] text-xs text-[#a8997e] border border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c] transition-colors"
+            className="w-full py-1.5 rounded-full text-xs text-[#6f6a7d] border border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f] transition-colors"
           >
             {loading ? "Evaluating..." : "Re-evaluate"}
           </button>

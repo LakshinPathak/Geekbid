@@ -145,8 +145,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  }, [jobBids, users]);
 
  if (!job) return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120]">
- <p className="text-[#a8997e] text-lg">Job not found</p>
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#ffffff]">
+ <p className="text-[#6f6a7d] text-lg">Job not found</p>
  </div>
  );
 
@@ -232,17 +232,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  // P0: Countdown urgency class
  const countdownClass = deadlineHrs > 24
- ? "text-[#a8997e] text-sm"
+ ? "text-[#6f6a7d] text-sm"
  : deadlineHrs > 6
- ? "text-[#c9a84c] font-mono text-sm tabular-nums"
+ ? "text-[#4b3f8f] font-mono text-sm tabular-nums"
  : deadlineHrs > 1
- ? "text-[#C05B00] font-mono text-sm tabular-nums animate-pulse"
+ ? "text-[#7a6a2c] font-mono text-sm tabular-nums animate-pulse"
  : deadlineHrs > (10 / 60)
- ? "text-[#B02020] font-mono text-sm tabular-nums animate-shake"
- : "text-[#B02020] font-mono text-2xl font-bold tabular-nums animate-shake";
+ ? "text-[#c14d3a] font-mono text-sm tabular-nums animate-shake"
+ : "text-[#c14d3a] font-mono text-2xl font-bold tabular-nums animate-shake";
 
  // P8: Demand-scaled glow on price
- const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(200,146,61,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
+ const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(75,63,143,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
 
  // P1: Slider / position helpers
  const sliderNum = Number(counterPrice);
@@ -293,12 +293,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  };
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#ffffff] grid-bg">
  {victoryData && (
  <AuctionVictoryModal data={victoryData} onClose={() => setVictoryData(null)} />
  )}
- <div className="bg-[#080b14] max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
- <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <div className="bg-[#fbfaf7] max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+ <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Feed
  </Link>
 
@@ -309,15 +309,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="glass-panel scanline p-6 sm:p-8">
  <div className="flex justify-between items-start">
  <div className="flex-1">
- <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4]">{job.title}</h1>
+ <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#3d3a45]">{job.title}</h1>
  {client && (
  <div className="flex items-center gap-2 mt-3">
- <div className="w-8 h-8 bg-[rgba(201,168,76,0.12)] text-[#c9a84c] text-xs font-semibold rounded-full flex items-center justify-center">
+ <div className="w-8 h-8 bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] text-xs font-semibold rounded-full flex items-center justify-center">
  {client.avatarInitial}
  </div>
  <div>
- <p className="text-sm text-[#a8997e]">Posted by <span className="text-[#f0e8d4] font-medium">{client.fullName}</span></p>
- <p className="text-xs text-[#a8997e] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
+ <p className="text-sm text-[#6f6a7d]">Posted by <span className="text-[#3d3a45] font-medium">{client.fullName}</span></p>
+ <p className="text-xs text-[#6f6a7d] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
  </div>
  </div>
  )}
@@ -332,8 +332,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {job.skillsRequired.map(s => {
  const isMatch = currentUser?.skills?.includes(s);
  return (
- <span key={s} className={`px-2.5 py-1 rounded-[3px] text-xs border ${
- isMatch ? "bg-[#c9a84c] text-[#050810] border-transparent" : "bg-[#0d1120] border-[rgba(201,168,76,0.22)] text-[#a8997e]"
+ <span key={s} className={`px-2.5 py-1 rounded-full text-xs border ${
+ isMatch ? "bg-[#4b3f8f] text-[#ffffff] border-transparent" : "bg-[#ffffff] border-[rgba(75,63,143,0.22)] text-[#6f6a7d]"
  }`}>{isMatch && "✓ "}{s}</span>
  );
  })}
@@ -342,51 +342,51 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* Description */}
  <div className="glass-panel p-6 sm:p-8">
- <p className="text-[#a8997e] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
- <p className="text-[#a8997e] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+ <p className="text-[#6f6a7d] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
+ <p className="text-[#6f6a7d] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
  </div>
 
  {/* Price Analytics */}
  <div className="glass-panel p-6">
  <div className="flex items-center gap-2 mb-4">
- <BarChart3 className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#f0e8d4] text-sm font-semibold">Price Analytics</p>
+ <BarChart3 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Price Analytics</p>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  <div>
- <p className="text-[#a8997e] text-xs">Starting Price</p>
- <p className="terminal-amount text-xl text-[#f0e8d4] mt-1">{formatMoney(job.startingPrice)}</p>
+ <p className="text-[#6f6a7d] text-xs">Starting Price</p>
+ <p className="terminal-amount text-xl text-[#3d3a45] mt-1">{formatMoney(job.startingPrice)}</p>
  </div>
  <div>
- <p className="text-[#a8997e] text-xs">Current Price</p>
- <p className="terminal-amount text-xl text-[#c9a84c] mt-1 animate-price-pulse">{formatMoney(current)}</p>
+ <p className="text-[#6f6a7d] text-xs">Current Price</p>
+ <p className="terminal-amount text-xl text-[#4b3f8f] mt-1 animate-price-pulse">{formatMoney(current)}</p>
  </div>
  <div>
- <p className="text-[#a8997e] text-xs">Floor Price</p>
- <p className="terminal-amount text-xl text-[#f0e8d4] mt-1">{formatMoney(job.minimumPrice)}</p>
+ <p className="text-[#6f6a7d] text-xs">Floor Price</p>
+ <p className="terminal-amount text-xl text-[#3d3a45] mt-1">{formatMoney(job.minimumPrice)}</p>
  </div>
  <div>
- <p className="text-[#a8997e] text-xs">Decay Rate</p>
- <p className="terminal-amount text-xl text-[#B02020] mt-1">-${job.decayRatePerHour}/hr</p>
+ <p className="text-[#6f6a7d] text-xs">Decay Rate</p>
+ <p className="terminal-amount text-xl text-[#c14d3a] mt-1">-${job.decayRatePerHour}/hr</p>
  </div>
  </div>
- <div className="h-2 bg-[#111625] rounded-full mt-4 overflow-hidden">
+ <div className="h-2 bg-[#f4f2ee] rounded-full mt-4 overflow-hidden">
  <div className="decay-bar h-2 transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
  </div>
- <div className="flex justify-between mt-2 text-xs text-[#a8997e]">
+ <div className="flex justify-between mt-2 text-xs text-[#6f6a7d]">
  <span>Floor: {formatMoney(job.minimumPrice)}</span>
  <span>Start: {formatMoney(job.startingPrice)}</span>
  </div>
  </div>
 
  {/* ─── Bids: P2 comparison table (client) or P1 animated feed (others) ─── */}
- <div className={`glass-panel p-6 relative overflow-hidden transition-[border-color] ${isHot ? "!border-[rgba(201,168,76,0.30)]" : ""} ${newBidFlash ? "animate-border-flash" : ""}`}>
+ <div className={`glass-panel p-6 relative overflow-hidden transition-[border-color] ${isHot ? "!border-[rgba(75,63,143,0.30)]" : ""} ${newBidFlash ? "animate-border-flash" : ""}`}>
  {/* P8: Ember particles for hot jobs */}
  {isHot && (
  <div className="absolute top-3 right-16 flex gap-2 pointer-events-none">
- <span className="text-[8px] text-[#C05B00] animate-ember opacity-70">✦</span>
- <span className="text-[8px] text-[#c9a84c] animate-ember opacity-50 [animation-delay:0.4s]">✦</span>
- <span className="text-[8px] text-[#C05B00] animate-ember opacity-60 [animation-delay:0.9s]">✦</span>
+ <span className="text-[8px] text-[#7a6a2c] animate-ember opacity-70">✦</span>
+ <span className="text-[8px] text-[#4b3f8f] animate-ember opacity-50 [animation-delay:0.4s]">✦</span>
+ <span className="text-[8px] text-[#7a6a2c] animate-ember opacity-60 [animation-delay:0.9s]">✦</span>
  </div>
  )}
 
@@ -409,20 +409,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
  )}
  <div className="flex items-center gap-2 mb-4">
- <BarChart3 className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#f0e8d4] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
- {isHot && <span className="text-[11px] bg-[rgba(192,91,0,0.10)] text-[#C05B00] border border-[rgba(192,91,0,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+ <BarChart3 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
+ {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
  </div>
  {jobBids.length === 0 ? (
- <p className="text-[#a8997e] text-sm">No bids yet.</p>
+ <p className="text-[#6f6a7d] text-sm">No bids yet.</p>
  ) : (
  <>
  <div className="overflow-x-auto -mx-1">
  <table className="w-full text-xs min-w-[500px]">
  <thead>
- <tr className="border-b border-[rgba(201,168,76,0.22)]">
+ <tr className="border-b border-[rgba(75,63,143,0.22)]">
  {["Freelancer", "Price", "GeekScore", "Skills", "When", ""].map(h => (
- <th key={h} className={`py-2 px-2 text-[#a8997e] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
+ <th key={h} className={`py-2 px-2 text-[#6f6a7d] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
  ))}
  </tr>
  </thead>
@@ -434,27 +434,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const isBest = bid.id === bestValueBid?.id;
  const isNew = (now.getTime() - new Date(bid.createdAt).getTime()) < 300000;
  return (
- <tr key={bid.id} className={`border-b border-[rgba(201,168,76,0.22)]/60 transition-colors ${isBest ? "bg-[#c9a84c]/[0.04]" : "hover:bg-[#111625]"}`}>
+ <tr key={bid.id} className={`border-b border-[rgba(75,63,143,0.22)]/60 transition-colors ${isBest ? "bg-[#4b3f8f]/[0.04]" : "hover:bg-[#f4f2ee]"}`}>
  <td className="py-3 px-2">
  <div className="flex items-center gap-2">
- <div className="w-7 h-7 bg-[#0d1120] border border-[rgba(201,168,76,0.22)] text-[#a8997e] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
+ <div className="w-7 h-7 bg-[#ffffff] border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
  {bidder?.avatarInitial ?? "?"}
  </div>
- <span className="text-[#f0e8d4] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
- {isBest && <span className="text-[9px] bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
- {isNew && <span className="text-[9px] bg-[rgba(201,168,76,0.12)] text-[#c9a84c] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
+ <span className="text-[#3d3a45] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
+ {isBest && <span className="text-[9px] bg-[#4b3f8f] text-[#ffffff] border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
+ {isNew && <span className="text-[9px] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
  </div>
  </td>
- <td className="py-3 px-2 text-right font-heading font-bold text-[#c9a84c]">{formatMoney(bid.bidPrice)}</td>
- <td className="py-3 px-2 text-center text-[#a8997e]">
+ <td className="py-3 px-2 text-right font-heading font-bold text-[#4b3f8f]">{formatMoney(bid.bidPrice)}</td>
+ <td className="py-3 px-2 text-center text-[#6f6a7d]">
  {bidder ? `${bidder.geekScore}${tier ? ` · ${tier.label}` : ""}` : "—"}
  </td>
  <td className="py-3 px-2 text-center">
- <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#c9a84c]" : skillMatches > 0 ? "text-[#c9a84c]" : "text-[#a8997e]"}`}>
+ <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#4b3f8f]" : skillMatches > 0 ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`}>
  {skillMatches}/{job.skillsRequired.length} ✓
  </span>
  </td>
- <td className="py-3 px-2 text-right text-[#a8997e]">{timeAgo(bid.createdAt)}</td>
+ <td className="py-3 px-2 text-right text-[#6f6a7d]">{timeAgo(bid.createdAt)}</td>
  <td className="py-3 px-2 text-right">
  {isOpen && (
  <button onClick={handleAccept}
@@ -474,11 +474,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {bestValueBid && (() => {
  const bidder = users.find(u => u.id === bestValueBid.freelancerId);
  return (
- <div className="mt-4 glass-panel-sm border border-[rgba(201,168,76,0.35)]/30 p-3 flex items-center gap-3">
+ <div className="mt-4 glass-panel-sm border border-[rgba(75,63,143,0.35)]/30 p-3 flex items-center gap-3">
  <span className="text-lg shrink-0">💡</span>
  <div>
- <p className="text-[#c9a84c] text-xs font-semibold">Best value</p>
- <p className="text-[#a8997e] text-xs mt-0.5">
+ <p className="text-[#4b3f8f] text-xs font-semibold">Best value</p>
+ <p className="text-[#6f6a7d] text-xs mt-0.5">
  {bidder?.fullName ?? "Freelancer"} — {formatMoney(bestValueBid.bidPrice)} — lowest price among GeekScore &gt; 500 bidders
  </p>
  </div>
@@ -493,22 +493,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <>
  <div className="flex items-center justify-between mb-4">
  <div className="flex items-center gap-2">
- <MessageSquare className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#f0e8d4] text-sm font-semibold">Live Bids ({jobBids.length})</p>
- {isHot && <span className="text-[11px] bg-[rgba(192,91,0,0.10)] text-[#C05B00] border border-[rgba(192,91,0,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+ <MessageSquare className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Live Bids ({jobBids.length})</p>
+ {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
  </div>
  {isFreelancer && myRank !== null && (
- <span className="text-[11px] text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.30)] rounded-full px-2.5 py-0.5">
+ <span className="text-[11px] text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.30)] rounded-full px-2.5 py-0.5">
  Your bid #{myRank} of {jobBids.length}
  </span>
  )}
  {isFreelancer && myRank === null && jobBids.length > 0 && (
- <span className="text-[11px] text-[#a8997e]">You haven't bid yet</span>
+ <span className="text-[11px] text-[#6f6a7d]">You haven't bid yet</span>
  )}
  </div>
 
  {jobBids.length === 0 ? (
- <p className="text-[#a8997e] text-sm">No bids yet. Be the first!</p>
+ <p className="text-[#6f6a7d] text-sm">No bids yet. Be the first!</p>
  ) : (
  <>
  <div className="space-y-3">
@@ -521,29 +521,29 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div
  key={bid.id}
  className={`glass-panel-sm p-4 transition-colors animate-slide-up ${
- isMyBid ? "!border-[rgba(201,168,76,0.30)]" : "hover:!border-[rgba(201,168,76,0.35)]/10"
+ isMyBid ? "!border-[rgba(75,63,143,0.30)]" : "hover:!border-[rgba(75,63,143,0.35)]/10"
  }`}
  style={{ animationDelay: `${i * 0.07}s`, animationFillMode: "both" }}
  >
  <div className="flex items-start justify-between gap-3">
  <div className="flex items-center gap-3 flex-1 min-w-0">
- <div className="w-9 h-9 bg-[#0d1120] border border-[rgba(201,168,76,0.22)] text-[#a8997e] text-xs font-bold rounded-full flex items-center justify-center shrink-0 relative">
+ <div className="w-9 h-9 bg-[#ffffff] border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-xs font-bold rounded-full flex items-center justify-center shrink-0 relative">
  {bidder?.avatarInitial ?? "?"}
- {isNew && <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#c9a84c] rounded-full animate-pulse" />}
+ {isNew && <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4b3f8f] rounded-full animate-pulse" />}
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <span className="text-sm font-medium text-[#f0e8d4]">{bidder?.fullName ?? "Freelancer"}</span>
- {isNew && <span className="text-[9px] font-bold bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
- {tier && <span className="bg-[rgba(201,168,76,0.12)] text-[#c9a84c] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
- {isMyBid && <span className="text-[9px] font-bold bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)] rounded-full px-1.5 py-0.5">You</span>}
- <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(201,168,76,0.12)] text-[#c9a84c]" : "bg-[rgba(201,168,76,0.12)] text-[#c9a84c]"}`}>{bid.bidType}</span>
+ <span className="text-sm font-medium text-[#3d3a45]">{bidder?.fullName ?? "Freelancer"}</span>
+ {isNew && <span className="text-[9px] font-bold bg-[#4b3f8f] text-[#ffffff] border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
+ {tier && <span className="bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
+ {isMyBid && <span className="text-[9px] font-bold bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] rounded-full px-1.5 py-0.5">You</span>}
+ <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]" : "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"}`}>{bid.bidType}</span>
  </div>
  
- <p className="text-[11px] text-[#a8997e] mt-1">{timeAgo(bid.createdAt)}</p>
+ <p className="text-[11px] text-[#6f6a7d] mt-1">{timeAgo(bid.createdAt)}</p>
  </div>
  </div>
- <p className="font-heading text-lg font-bold text-[#c9a84c] shrink-0">{formatMoney(bid.bidPrice)}</p>
+ <p className="font-heading text-lg font-bold text-[#4b3f8f] shrink-0">{formatMoney(bid.bidPrice)}</p>
  </div>
  </div>
  );
@@ -552,26 +552,26 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* Bid statistics bar */}
  {minBid !== null && maxBid !== null && avgBid !== null && (
- <div className="mt-4 glass-panel-sm rounded-[6px] p-4">
- <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
- <div className="relative h-2 bg-[#111625] rounded-full mb-3">
+ <div className="mt-4 glass-panel-sm rounded-2xl p-4">
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
+ <div className="relative h-2 bg-[#f4f2ee] rounded-full mb-3">
  <div
- className="absolute h-0.5 bg-[#c9a84c] rounded-none"
+ className="absolute h-0.5 bg-[#4b3f8f] rounded-none"
  style={{
  left: `${Math.max(0, ((minBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
  right: `${100 - Math.min(100, ((maxBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
  }}
  />
  <div
- className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#c9a84c] rounded-full border-2 border-[#0d1120] -ml-1"
+ className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#4b3f8f] rounded-full border-2 border-[#ffffff] -ml-1"
  style={{ left: `${((avgBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100}%` }}
  title={`Avg: ${formatMoney(avgBid)}`}
  />
  </div>
- <div className="flex justify-between text-[11px] text-[#a8997e]">
- <span>Min: <span className="text-[#c9a84c] font-medium">{formatMoney(minBid)}</span></span>
- <span>Avg: <span className="text-[#a8997e] font-medium">{formatMoney(avgBid)}</span></span>
- <span>Max: <span className="text-[#B02020] font-medium">{formatMoney(maxBid)}</span></span>
+ <div className="flex justify-between text-[11px] text-[#6f6a7d]">
+ <span>Min: <span className="text-[#4b3f8f] font-medium">{formatMoney(minBid)}</span></span>
+ <span>Avg: <span className="text-[#6f6a7d] font-medium">{formatMoney(avgBid)}</span></span>
+ <span>Max: <span className="text-[#c14d3a] font-medium">{formatMoney(maxBid)}</span></span>
  </div>
  </div>
  )}
@@ -585,46 +585,46 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {jobMilestones.length > 0 && (
  <div className="glass-panel p-6">
  <div className="flex items-center gap-2 mb-4">
- <CheckCircle2 className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#f0e8d4] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
+ <CheckCircle2 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
  </div>
- <div className="h-2 bg-[#111625] rounded-full mb-4 overflow-hidden">
+ <div className="h-2 bg-[#f4f2ee] rounded-full mb-4 overflow-hidden">
  <div className="decay-bar h-2 transition-all" style={{ width: `${(jobMilestones.filter(m => m.status === "approved").length / jobMilestones.length) * 100}%` }} />
  </div>
  <div className="space-y-3">
  {jobMilestones.map(ms => {
  const statusColors: Record<string, string> = {
- pending: "text-[#a8997e] bg-[#111625] border-[rgba(201,168,76,0.22)]",
- in_progress: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.25)]",
- submitted: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.25)]",
- approved: "text-[#c9a84c] bg-[rgba(201,168,76,0.10)] border-[rgba(201,168,76,0.25)]",
- disputed: "text-[#B02020] bg-[rgba(176,32,32,0.08)] border-[rgba(176,32,32,0.20)]",
+ pending: "text-[#6f6a7d] bg-[#f4f2ee] border-[rgba(75,63,143,0.22)]",
+ in_progress: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.25)]",
+ submitted: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.25)]",
+ approved: "text-[#4b3f8f] bg-[rgba(75,63,143,0.10)] border-[rgba(75,63,143,0.25)]",
+ disputed: "text-[#c14d3a] bg-[rgba(193,77,58,0.08)] border-[rgba(193,77,58,0.20)]",
  };
  return (
- <div key={ms.id} className="glass-panel-sm rounded-[6px] p-4">
+ <div key={ms.id} className="glass-panel-sm rounded-2xl p-4">
  <div className="flex items-center justify-between mb-1">
  <div className="flex items-center gap-2">
- <span className="text-[#a8997e] text-xs font-mono">#{ms.order}</span>
- <span className="text-[#f0e8d4] text-sm font-medium">{ms.title}</span>
+ <span className="text-[#6f6a7d] text-xs font-mono">#{ms.order}</span>
+ <span className="text-[#3d3a45] text-sm font-medium">{ms.title}</span>
  </div>
  <div className="flex items-center gap-2">
  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
  {ms.status.replace("_", " ")}
  </span>
- <span className="text-[#c9a84c] text-sm font-semibold">{formatMoney(ms.amount)}</span>
+ <span className="text-[#4b3f8f] text-sm font-semibold">{formatMoney(ms.amount)}</span>
  </div>
  </div>
- {ms.description && <p className="text-[#a8997e] text-xs mt-1">{ms.description}</p>}
+ {ms.description && <p className="text-[#6f6a7d] text-xs mt-1">{ms.description}</p>}
  <div className="flex gap-2 mt-2">
  {isFreelancer && ms.status === "in_progress" && (
  <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#c9a84c] text-[#050810] border border-transparent px-3 py-1 rounded-[3px] hover:bg-[#d4b55a]/20 transition-colors">
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] border border-transparent px-3 py-1 rounded-full hover:bg-[#3d3373]/20 transition-colors">
  Submit
  </button>
  )}
  {isClient && ms.status === "submitted" && (
  <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#c9a84c] text-[#050810] font-semibold px-3 py-1 rounded-[3px] hover:bg-[#d4b55a] transition-colors">
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] font-semibold px-3 py-1 rounded-full hover:bg-[#3d3373] transition-colors">
  Approve &amp; Release
  </button>
  )}
@@ -643,59 +643,59 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {isAdaptive && (
  <div className="glass-panel p-5">
  <div className="flex items-center gap-2 mb-4">
- <Activity className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#f0e8d4] text-sm font-semibold">Pricing Intelligence</p>
- <span className="text-[11px] bg-[#c9a84c]/20 text-[#c9a84c] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
+ <Activity className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Pricing Intelligence</p>
+ <span className="text-[11px] bg-[#4b3f8f]/20 text-[#4b3f8f] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
  </div>
  <div className="space-y-2.5">
  <div className="flex justify-between items-center">
- <span className="text-[#a8997e] text-xs">Base Decay</span>
- <span className="text-[#a8997e] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
+ <span className="text-[#6f6a7d] text-xs">Base Decay</span>
+ <span className="text-[#6f6a7d] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
  </div>
  <div className="flex justify-between items-center">
- <span className="text-[#a8997e] text-xs">Effective Decay</span>
- <span className="text-[#c9a84c] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
+ <span className="text-[#6f6a7d] text-xs">Effective Decay</span>
+ <span className="text-[#4b3f8f] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
  </div>
  <div className="flex justify-between items-center">
- <span className="text-[#a8997e] text-xs">Demand</span>
+ <span className="text-[#6f6a7d] text-xs">Demand</span>
  {demand ? (
  <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[11px] font-bold`}>
  {demand.label} ({bidderCount} bidder{bidderCount !== 1 ? "s" : ""})
  </span>
  ) : (
- <span className="text-[#a8997e] text-xs">No bids yet</span>
+ <span className="text-[#6f6a7d] text-xs">No bids yet</span>
  )}
  </div>
  {job.lowestCounterBid && (
  <div className="flex justify-between items-center">
- <span className="text-[#a8997e] text-xs">Lowest Counter</span>
- <span className="text-[#c9a84c] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
+ <span className="text-[#6f6a7d] text-xs">Lowest Counter</span>
+ <span className="text-[#4b3f8f] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
  </div>
  )}
  {job.lastBidAt && (
  <div className="flex justify-between items-center">
- <span className="text-[#a8997e] text-xs">Last Activity</span>
- <span className="text-[#a8997e] text-xs">{timeAgo(job.lastBidAt)}</span>
+ <span className="text-[#6f6a7d] text-xs">Last Activity</span>
+ <span className="text-[#6f6a7d] text-xs">{timeAgo(job.lastBidAt)}</span>
  </div>
  )}
  </div>
 
  {/* Price Trajectory Chart (history + P2 projection) */}
- <div className="mt-4 glass-panel-sm rounded-[6px] p-4">
+ <div className="mt-4 glass-panel-sm rounded-2xl p-4">
  <div className="flex items-center justify-between mb-3">
- <p className="text-[#a8997e] text-[11px] uppercase tracking-wider">Price Trajectory</p>
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider">Price Trajectory</p>
  <div className="flex items-center gap-1">
- <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
- <span className="text-[9px] text-[#c9a84c]/60">LIVE</span>
+ <div className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse" />
+ <span className="text-[9px] text-[#4b3f8f]/60">LIVE</span>
  </div>
  </div>
  {/* Extended viewBox 0 0 270 60: 0-200 history, 200-270 projection */}
  <svg viewBox="0 0 270 60" className="w-full h-16" preserveAspectRatio="none">
  <defs>
  <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
- <stop offset="0%" stopColor="#c9a84c" stopOpacity="0.35" />
- <stop offset="50%" stopColor="#c9a84c" stopOpacity="0.1" />
- <stop offset="100%" stopColor="#c9a84c" stopOpacity="0" />
+ <stop offset="0%" stopColor="#4b3f8f" stopOpacity="0.35" />
+ <stop offset="50%" stopColor="#4b3f8f" stopOpacity="0.1" />
+ <stop offset="100%" stopColor="#4b3f8f" stopOpacity="0" />
  </linearGradient>
  <filter id="sparkGlow">
  <feGaussianBlur stdDeviation="1.5" result="b" />
@@ -703,15 +703,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </filter>
  </defs>
  {/* Floor reference line at y=50 (minimumPrice level) across full width */}
- <line x1="0" y1="50" x2="270" y2="50" stroke="rgba(201,168,76,0.35)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.35" />
- <text x="202" y="48" fontSize="5" fill="#8A8A9A" opacity="0.6" fontFamily="monospace">FLOOR</text>
+ <line x1="0" y1="50" x2="270" y2="50" stroke="rgba(75,63,143,0.35)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.35" />
+ <text x="202" y="48" fontSize="5" fill="#b3aec0" opacity="0.6" fontFamily="monospace">FLOOR</text>
  {/* Historical sparkline */}
  {sparklinePoints && (
  <>
  <polygon points={`0,60 ${sparklinePoints} 200,60`} fill="url(#sparkGrad)" />
- <polyline points={sparklinePoints} fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinejoin="round" filter="url(#sparkGlow)" />
+ <polyline points={sparklinePoints} fill="none" stroke="#4b3f8f" strokeWidth="1.5" strokeLinejoin="round" filter="url(#sparkGlow)" />
  {/* Vertical "now" divider */}
- <line x1="200" y1="0" x2="200" y2="60" stroke="#c9a84c" strokeWidth="0.5" opacity="0.2" />
+ <line x1="200" y1="0" x2="200" y2="60" stroke="#4b3f8f" strokeWidth="0.5" opacity="0.2" />
  {/* P2: Projection lines */}
  {projectionData && (
  <>
@@ -719,7 +719,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <polyline
  points={projectionData.pts0}
  fill="none"
- stroke="#c9a84c"
+ stroke="#4b3f8f"
  strokeWidth="1.2"
  strokeDasharray="4,3"
  opacity="0.5"
@@ -729,7 +729,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <polyline
  points={projectionData.pts3}
  fill="none"
- stroke="#c9a84c"
+ stroke="#4b3f8f"
  strokeWidth="1.2"
  strokeDasharray="4,3"
  opacity="0.25"
@@ -743,11 +743,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const cx = parseFloat(lastPt[0]), cy = parseFloat(lastPt[1]);
  return (
  <>
- <circle cx={cx} cy={cy} r={2} fill="none" stroke="#c9a84c" strokeWidth="0.5" opacity="0.4">
+ <circle cx={cx} cy={cy} r={2} fill="none" stroke="#4b3f8f" strokeWidth="0.5" opacity="0.4">
  <animate attributeName="r" from="2" to="8" dur="2s" repeatCount="indefinite" />
  <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
  </circle>
- <circle cx={cx} cy={cy} r={2.5} fill="#c9a84c" filter="url(#sparkGlow)" />
+ <circle cx={cx} cy={cy} r={2.5} fill="#4b3f8f" filter="url(#sparkGlow)" />
  </>
  );
  })()}
@@ -755,20 +755,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  )}
  </svg>
  <div className="flex justify-between mt-1.5">
- <span className="text-[#a8997e] text-[9px]">Posted</span>
- <span className="text-[#c9a84c]/50 text-[9px]">Now ↑</span>
- {!isAtFloor && <span className="text-[#a8997e] text-[9px]">Floor ETA →</span>}
+ <span className="text-[#6f6a7d] text-[9px]">Posted</span>
+ <span className="text-[#4b3f8f]/50 text-[9px]">Now ↑</span>
+ {!isAtFloor && <span className="text-[#6f6a7d] text-[9px]">Floor ETA →</span>}
  </div>
  {/* P2: Scenario labels */}
  {projectionData && (
- <div className="mt-2 pt-2 border-t border-[rgba(201,168,76,0.22)] space-y-1">
+ <div className="mt-2 pt-2 border-t border-[rgba(75,63,143,0.22)] space-y-1">
  <div className="flex items-center gap-1.5">
- <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#c9a84c" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
- <span className="text-[9px] text-[#a8997e]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
+ <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#4b3f8f" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
+ <span className="text-[9px] text-[#6f6a7d]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
  </div>
  <div className="flex items-center gap-1.5">
- <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#c9a84c" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
- <span className="text-[9px] text-[#a8997e]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
+ <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#4b3f8f" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
+ <span className="text-[9px] text-[#6f6a7d]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
  </div>
  </div>
  )}
@@ -777,16 +777,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  )}
 
  {/* ─── P0: Live price card ─── */}
- <div className="glass-panel p-6 relative overflow-hidden hover:border-[rgba(201,168,76,0.35)]/15 transition-colors">
- <div className="absolute top-0 left-0 right-0 h-px bg-[rgba(201,168,76,0.40)]" />
+ <div className="glass-panel p-6 relative overflow-hidden hover:border-[rgba(75,63,143,0.35)]/15 transition-colors">
+ <div className="absolute top-0 left-0 right-0 h-px bg-[rgba(75,63,143,0.40)]" />
  <div className="flex items-center gap-2 mb-3">
- <div className="w-2.5 h-2.5 bg-[#c9a84c] rounded-full animate-glow-ring" />
- <p className="text-[#a8997e] text-sm font-medium">Live Price</p>
+ <div className="w-2.5 h-2.5 bg-[#4b3f8f] rounded-full animate-glow-ring" />
+ <p className="text-[#6f6a7d] text-sm font-medium">Live Price</p>
  </div>
 
  {/* P1: Demand-scaled glow; P0: price-flash animation */}
  <p
- className={`terminal-amount text-4xl text-[#c9a84c] ${priceFlash === "drop" ? "animate-price-flash" : "animate-price-pulse"}`}
+ className={`terminal-amount text-4xl text-[#4b3f8f] ${priceFlash === "drop" ? "animate-price-flash" : "animate-price-pulse"}`}
  style={{ textShadow: priceGlow }}
  >
  {formatMoney(current)}
@@ -794,21 +794,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* P0: 30s delta indicator */}
  {priceDelta > 0.01 && (
- <p className="text-[#B02020] text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
+ <p className="text-[#c14d3a] text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
  )}
 
- <p className="text-[#a8997e] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
+ <p className="text-[#6f6a7d] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
 
  {/* P0: Urgency countdown */}
  <div className="flex items-center gap-1.5 mt-2">
- <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-[#B02020]" : deadlineHrs < 6 ? "text-[#C05B00]" : "text-[#a8997e]"}`} />
+ <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-[#c14d3a]" : deadlineHrs < 6 ? "text-[#7a6a2c]" : "text-[#6f6a7d]"}`} />
  {isAtFloor ? (
- <span className="text-[#a8997e] text-sm">At floor price</span>
+ <span className="text-[#6f6a7d] text-sm">At floor price</span>
  ) : (
  <span className={countdownClass}>{countdownDisplay || formatHoursToFloor(eta)}</span>
  )}
  </div>
- <p className="text-[#a8997e] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
+ <p className="text-[#6f6a7d] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
  </div>
 
  {/* ─── P0: Freelancer Actions / Cooldown ─── */}
@@ -818,12 +818,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="glass-panel p-6 flex flex-col items-center gap-3">
  <svg width={72} height={72} viewBox="0 0 72 72">
  {/* Background ring */}
- <circle cx={36} cy={36} r={RING_R} fill="none" stroke="rgba(201,168,76,0.22)" strokeWidth={5} />
+ <circle cx={36} cy={36} r={RING_R} fill="none" stroke="rgba(75,63,143,0.22)" strokeWidth={5} />
  {/* Depleting ring — starts full, depletes clockwise */}
  <circle
  cx={36} cy={36} r={RING_R}
  fill="none"
- stroke="#c9a84c"
+ stroke="#4b3f8f"
  strokeWidth={5}
  strokeLinecap="round"
  strokeDasharray={RING_C}
@@ -831,13 +831,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  transform="rotate(-90 36 36)"
  style={{ transition: "stroke-dashoffset 1s linear" }}
  />
- <text x={36} y={40} textAnchor="middle" fontSize={11} fill="#f0e8d4" fontFamily="monospace">
+ <text x={36} y={40} textAnchor="middle" fontSize={11} fill="#3d3a45" fontFamily="monospace">
  {Math.ceil(cooldownMinsLeft)}m
  </text>
  </svg>
  <div className="text-center">
- <p className="text-[#a8997e] text-sm font-medium">⏳ Cooldown active</p>
- <p className="text-[#a8997e] text-xs mt-1">
+ <p className="text-[#6f6a7d] text-sm font-medium">⏳ Cooldown active</p>
+ <p className="text-[#6f6a7d] text-xs mt-1">
  Bid again at {new Date((myLastBid ? new Date(myLastBid.createdAt).getTime() : 0) + 30 * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>
  </div>
@@ -852,54 +852,54 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  planName={getUserPlanConfig().name}
  />
  <button onClick={handleAccept}
- className={`btn-primary w-full py-3 rounded-[6px] flex items-center justify-center gap-2 text-sm payment-ready ${justUnlocked ? "animate-glow-ring" : ""}`}>
+ className={`btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready ${justUnlocked ? "animate-glow-ring" : ""}`}>
  <Zap className="h-4 w-4" /> Accept at {formatMoney(current)}
  </button>
 
  <div className="flex items-center gap-3">
- <div className="flex-1 h-px bg-[rgba(201,168,76,0.15)]" />
- <span className="text-xs text-[#a8997e]">or</span>
- <div className="flex-1 h-px bg-[rgba(201,168,76,0.15)]" />
+ <div className="flex-1 h-px bg-[rgba(75,63,143,0.15)]" />
+ <span className="text-xs text-[#6f6a7d]">or</span>
+ <div className="flex-1 h-px bg-[rgba(75,63,143,0.15)]" />
  </div>
 
  {/* ─── P1 + P5 + P10: Enhanced Counter-Bid Form ─── */}
  <div className="glass-panel p-5 space-y-4">
- <p className="text-[#f0e8d4] text-sm font-semibold flex items-center gap-1.5">
- <MessageSquare className="h-4 w-4 text-[#c9a84c]" /> Counter-Bid
+ <p className="text-[#3d3a45] text-sm font-semibold flex items-center gap-1.5">
+ <MessageSquare className="h-4 w-4 text-[#4b3f8f]" /> Counter-Bid
  </p>
 
  {atFloor ? (
- <p className="text-[#a8997e] text-[13px] leading-relaxed p-3 rounded-[6px] bg-[#0d1120] border border-[rgba(201,168,76,0.15)]">
- This job has decayed to its floor price of <span className="text-[#c9a84c] font-medium">{formatMoney(job.minimumPrice)}</span> — accepting and countering at the floor now do the same thing. You can still submit a counter-bid at the floor below if you&apos;d rather have the client review it instead of accepting outright.
+ <p className="text-[#6f6a7d] text-[13px] leading-relaxed p-3 rounded-2xl bg-[#ffffff] border border-[rgba(75,63,143,0.15)]">
+ This job has decayed to its floor price of <span className="text-[#4b3f8f] font-medium">{formatMoney(job.minimumPrice)}</span> — accepting and countering at the floor now do the same thing. You can still submit a counter-bid at the floor below if you&apos;d rather have the client review it instead of accepting outright.
  </p>
  ) : (
  <>
  {/* P5: Smart bid suggestion chips */}
  <div>
- <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
  <div className="grid grid-cols-2 gap-2">
  <button
  onClick={() => setCounterPrice(String(aggressiveBid))}
- className={`text-left p-2.5 rounded-[6px] border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[rgba(201,168,76,0.35)]/50 bg-[#c9a84c]/5" : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[rgba(201,168,76,0.35)]/40"}`}
+ className={`text-left p-2.5 rounded-2xl border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[rgba(75,63,143,0.35)]/50 bg-[#4b3f8f]/5" : "border-[rgba(75,63,143,0.22)] bg-[#ffffff] hover:border-[rgba(75,63,143,0.35)]/40"}`}
  >
- <p className="text-[11px] text-[#a8997e] font-semibold">Aggressive</p>
- <p className="font-heading text-base font-bold text-[#c9a84c]">{formatMoney(aggressiveBid)}</p>
- <p className="text-[9px] text-[#a8997e] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
+ <p className="text-[11px] text-[#6f6a7d] font-semibold">Aggressive</p>
+ <p className="font-heading text-base font-bold text-[#4b3f8f]">{formatMoney(aggressiveBid)}</p>
+ <p className="text-[9px] text-[#6f6a7d] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
  </button>
  <button
  onClick={() => setCounterPrice(String(competitiveBid))}
- className={`text-left p-2.5 rounded-[6px] border transition-all ${Number(counterPrice) === competitiveBid ? "border-blue-500/50 bg-blue-500/5" : "border-[rgba(201,168,76,0.22)] bg-[#0d1120] hover:border-[rgba(201,168,76,0.35)]/20"}`}
+ className={`text-left p-2.5 rounded-2xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-[#4b3f8f]/50 bg-[#4b3f8f]/5" : "border-[rgba(75,63,143,0.22)] bg-[#ffffff] hover:border-[rgba(75,63,143,0.35)]/20"}`}
  >
- <p className="text-[11px] text-[#a8997e] font-semibold">Competitive</p>
- <p className="font-heading text-base font-bold text-[#c9a84c]">{formatMoney(competitiveBid)}</p>
- <p className="text-[9px] text-[#a8997e] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
+ <p className="text-[11px] text-[#6f6a7d] font-semibold">Competitive</p>
+ <p className="font-heading text-base font-bold text-[#4b3f8f]">{formatMoney(competitiveBid)}</p>
+ <p className="text-[9px] text-[#6f6a7d] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
  </button>
  </div>
  </div>
 
  {/* P10: Price slider */}
  <div>
- <div className="flex justify-between text-[11px] text-[#a8997e] mb-1.5">
+ <div className="flex justify-between text-[11px] text-[#6f6a7d] mb-1.5">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  <span>Current {formatMoney(current)}</span>
  </div>
@@ -910,12 +910,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  step={5}
  value={sliderNum > 0 ? sliderNum : aggressiveBid}
  onChange={e => setCounterPrice(e.target.value)}
- className="w-full h-2 bg-[#111625] rounded-full appearance-none cursor-pointer"
+ className="w-full h-2 bg-[#f4f2ee] rounded-full appearance-none cursor-pointer"
  />
  {sliderHourly > 0 && (
- <p className="text-[11px] text-[#a8997e] mt-1.5">
- Effective rate: <span className="text-[#c9a84c] font-medium">{formatMoney(sliderHourly)}/hr</span>
- {bidsBelow > 0 && <span className="text-[#a8997e]"> · below {bidsBelow} of {jobBids.length} bids</span>}
+ <p className="text-[11px] text-[#6f6a7d] mt-1.5">
+ Effective rate: <span className="text-[#4b3f8f] font-medium">{formatMoney(sliderHourly)}/hr</span>
+ {bidsBelow > 0 && <span className="text-[#6f6a7d]"> · below {bidsBelow} of {jobBids.length} bids</span>}
  </p>
  )}
  </div>
@@ -923,18 +923,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {/* P5: Position bar */}
  {posMyBid !== null && (
  <div>
- <p className="text-[#a8997e] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
- <div className="relative h-2 bg-[#111625] rounded-full">
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
+ <div className="relative h-2 bg-[#f4f2ee] rounded-full">
  {/* Min bid marker */}
  {posMinBid !== null && (
- <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-3 bg-[#c9a84c]/40 rounded-[2px] -ml-0.5" style={{ left: `${posMinBid}%` }} title={`Lowest: ${formatMoney(minBid!)}`} />
+ <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-3 bg-[#4b3f8f]/40 rounded-full -ml-0.5" style={{ left: `${posMinBid}%` }} title={`Lowest: ${formatMoney(minBid!)}`} />
  )}
  {/* Your bid marker */}
- <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#c9a84c] rounded-full border-2 border-[#12121A] -ml-1.5 shadow-[0_0_8px_rgba(200,146,61,0.5)]" style={{ left: `${posMyBid}%` }} />
+ <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#4b3f8f] rounded-full border-2 border-[#ffffff] -ml-1.5 shadow-[0_0_8px_rgba(75,63,143,0.5)]" style={{ left: `${posMyBid}%` }} />
  </div>
- <div className="flex justify-between text-[9px] text-[#a8997e] mt-1">
+ <div className="flex justify-between text-[9px] text-[#6f6a7d] mt-1">
  <span>Floor</span>
- <span className="text-[#c9a84c]">↑ you</span>
+ <span className="text-[#4b3f8f]">↑ you</span>
  <span>Current</span>
  </div>
  </div>
@@ -944,7 +944,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* Price text input */}
  <div className="relative">
- <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#a8997e] text-sm pointer-events-none">$</span>
+ <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6a7d] text-sm pointer-events-none">$</span>
  <input
  type="number"
  placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
@@ -954,9 +954,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  />
  </div>
 
- {counterError && <p className="text-[#B02020] text-xs">{counterError}</p>}
+ {counterError && <p className="text-[#c14d3a] text-xs">{counterError}</p>}
  <button onClick={handleCounter}
- className="btn-glass w-full py-3 rounded-[6px] flex items-center justify-center gap-2 text-sm">
+ className="btn-glass w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm">
  <Send className="h-4 w-4" /> Submit Counter-Bid
  </button>
  </div>
@@ -985,23 +985,23 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  )}
 
  {job.status === "accepted" && (
- <div className="glass-panel p-6 text-center border-[rgba(201,168,76,0.30)]">
- <CheckCircle2 className="h-8 w-8 text-[#c9a84c] mx-auto mb-2" />
- <p className="font-heading text-lg font-bold text-[#f0e8d4]">Job Accepted</p>
- <p className="terminal-amount text-2xl text-[#c9a84c] mt-1">{formatMoney(job.finalPrice ?? current)}</p>
+ <div className="glass-panel p-6 text-center border-[rgba(75,63,143,0.30)]">
+ <CheckCircle2 className="h-8 w-8 text-[#4b3f8f] mx-auto mb-2" />
+ <p className="font-heading text-lg font-bold text-[#3d3a45]">Job Accepted</p>
+ <p className="terminal-amount text-2xl text-[#4b3f8f] mt-1">{formatMoney(job.finalPrice ?? current)}</p>
  {job.acceptedBy && (
- <p className="text-[#a8997e] text-xs mt-2">
+ <p className="text-[#6f6a7d] text-xs mt-2">
  Accepted by {users.find(u => u.id === job.acceptedBy)?.fullName ?? "Freelancer"}
  </p>
  )}
  <div className="mt-4 space-y-2">
  <Link href="/inbox">
- <button className="btn-primary w-full py-2.5 rounded-[6px] flex items-center justify-center gap-2 text-sm">
+ <button className="btn-primary w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 text-sm">
  <MessageSquare className="h-4 w-4" /> Message
  </button>
  </Link>
  <Link href="/my-jobs">
- <button className="btn-glass w-full py-2.5 rounded-[6px] text-sm mt-2">
+ <button className="btn-glass w-full py-2.5 rounded-2xl text-sm mt-2">
  View My Jobs
  </button>
  </Link>
@@ -1020,10 +1020,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  ].map(item => (
  <div key={item.label} className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <item.icon className="h-4 w-4 text-[#a8997e]" />
- <span className="text-[#a8997e] text-sm">{item.label}</span>
+ <item.icon className="h-4 w-4 text-[#6f6a7d]" />
+ <span className="text-[#6f6a7d] text-sm">{item.label}</span>
  </div>
- <span className="text-[#f0e8d4] text-sm font-medium">{item.value}</span>
+ <span className="text-[#3d3a45] text-sm font-medium">{item.value}</span>
  </div>
  ))}
  </div>

@@ -18,7 +18,7 @@ interface Props {
  onClose: () => void;
 }
 
-const CONFETTI_COLORS = ["#c9a84c", "#3b3bd4", "#ff6b35", "#d4b55a", "#2f7d54", "#f0e8d4"];
+const CONFETTI_COLORS = ["#4b3f8f", "#9c8fd8", "#e0a23e", "#3d3373", "#4d7245", "#3d3a45"];
 
 function ConfettiParticle({ index }: { index: number }) {
  const color = CONFETTI_COLORS[index % CONFETTI_COLORS.length];
@@ -73,7 +73,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  {/* Close */}
  <button
  onClick={onClose}
- className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-[3px] text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors border border-[rgba(201,168,76,0.22)]"
+ className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-xl text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-colors border border-[rgba(75,63,143,0.22)]"
  >
  <X className="h-4 w-4" />
  </button>
@@ -83,45 +83,45 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  <div
  className="flex h-20 w-20 items-center justify-center rounded-full mb-4 animate-pulse-glow"
  style={{
- background: "rgba(201,168,76,0.12)",
- border: "0.5px solid rgba(201,168,76,0.22)",
+ background: "rgba(75,63,143,0.12)",
+ border: "0.5px solid rgba(75,63,143,0.22)",
  }}
  >
- <CheckCircle2 className="h-10 w-10 text-[#c9a84c]" />
+ <CheckCircle2 className="h-10 w-10 text-[#4b3f8f]" />
  </div>
- <h2 className="text-2xl font-normal text-[#f0e8d4] font-heading">Match Found!</h2>
- <p className="text-[#a8997e] text-sm mt-1">Your auction has a winner</p>
+ <h2 className="text-2xl font-normal text-[#3d3a45] font-heading">Match Found!</h2>
+ <p className="text-[#6f6a7d] text-sm mt-1">Your auction has a winner</p>
  </div>
 
  {/* Job title */}
  <div className="text-center mb-6">
- <p className="text-xs text-[#a8997e] uppercase tracking-wider font-semibold mb-1">Project</p>
- <p className="text-[#f0e8d4] font-normal font-heading">{data.jobTitle}</p>
+ <p className="text-xs text-[#6f6a7d] uppercase tracking-wider font-semibold mb-1">Project</p>
+ <p className="text-[#3d3a45] font-normal font-heading">{data.jobTitle}</p>
  </div>
 
  {/* Match card: client ↔ freelancer */}
  <div className="glass-panel-sm p-4 mb-6">
  <div className="flex items-center justify-between gap-4">
  <div className="flex-1 text-center">
- <div className="h-10 w-10 rounded-full bg-[rgba(201,168,76,0.12)] border-[0.5px] border-[rgba(201,168,76,0.22)] flex items-center justify-center text-sm font-bold text-[#c9a84c] mx-auto mb-1">
+ <div className="h-10 w-10 rounded-full bg-[rgba(75,63,143,0.12)] border-[0.5px] border-[rgba(75,63,143,0.22)] flex items-center justify-center text-sm font-bold text-[#4b3f8f] mx-auto mb-1">
  {data.clientName.slice(0, 2).toUpperCase()}
  </div>
- <p className="text-xs text-[#f0e8d4] font-medium">{data.clientName}</p>
- <p className="text-[10px] text-[#a8997e]">Client</p>
+ <p className="text-xs text-[#3d3a45] font-medium">{data.clientName}</p>
+ <p className="text-[10px] text-[#6f6a7d]">Client</p>
  </div>
 
  <div className="flex flex-col items-center gap-1">
- <div className="text-[#c9a84c] text-xs font-bold tracking-wider">↔ MATCHED</div>
- <div className="h-[0.5px] w-16 bg-[rgba(201,168,76,0.22)]" />
+ <div className="text-[#4b3f8f] text-xs font-bold tracking-wider">↔ MATCHED</div>
+ <div className="h-[0.5px] w-16 bg-[rgba(75,63,143,0.22)]" />
  </div>
 
  <div className="flex-1 text-center">
- <div className="h-10 w-10 rounded-full bg-[rgba(201,168,76,0.12)] border-[0.5px] border-[rgba(201,168,76,0.22)] flex items-center justify-center text-sm font-bold text-[#c9a84c] mx-auto mb-1">
+ <div className="h-10 w-10 rounded-full bg-[rgba(75,63,143,0.12)] border-[0.5px] border-[rgba(75,63,143,0.22)] flex items-center justify-center text-sm font-bold text-[#4b3f8f] mx-auto mb-1">
  {data.freelancerName.slice(0, 2).toUpperCase()}
  </div>
- <p className="text-xs text-[#f0e8d4] font-medium">{data.freelancerName}</p>
+ <p className="text-xs text-[#3d3a45] font-medium">{data.freelancerName}</p>
  {data.freelancerScore !== undefined && (
- <p className="text-[10px] text-[#c9a84c]">GS {data.freelancerScore}</p>
+ <p className="text-[10px] text-[#4b3f8f]">GS {data.freelancerScore}</p>
  )}
  </div>
  </div>
@@ -130,8 +130,8 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  {/* Price display */}
  <div className="glass-panel-sm p-4 mb-6">
  <div className="flex items-center justify-between mb-3">
- <span className="text-xs text-[#a8997e] uppercase tracking-wider font-semibold">Final Price</span>
- <span className="text-2xl font-normal text-[#c9a84c] font-heading terminal-amount">
+ <span className="text-xs text-[#6f6a7d] uppercase tracking-wider font-semibold">Final Price</span>
+ <span className="text-2xl font-normal text-[#4b3f8f] font-heading terminal-amount">
  ${data.finalPrice.toLocaleString()}
  </span>
  </div>
@@ -139,15 +139,15 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  {/* Savings bar */}
  {savings > 0 && (
  <>
- <div className="h-0.5 bg-[#1a1f30] mb-2">
+ <div className="h-0.5 bg-[#f0edfa] mb-2">
  <div
  className="h-0.5 decay-bar"
  style={{ width: `${savingsPct}%` }}
  />
  </div>
  <div className="flex items-center justify-between text-xs">
- <span className="text-[#a8997e]">Started at ${data.startingPrice.toLocaleString()}</span>
- <span className="flex items-center gap-1 text-[#c9a84c] font-semibold">
+ <span className="text-[#6f6a7d]">Started at ${data.startingPrice.toLocaleString()}</span>
+ <span className="flex items-center gap-1 text-[#4b3f8f] font-semibold">
  <TrendingDown className="h-3 w-3" />
  Saved ${savings.toLocaleString()} ({savingsPct}%)
  </span>
@@ -159,12 +159,12 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  {/* Action buttons */}
  <div className="flex gap-3">
  <Link href={`/jobs/${data.jobId}`} className="flex-1" onClick={onClose}>
- <button className="btn-primary w-full py-3 text-sm rounded-[3px]">
+ <button className="btn-primary w-full py-3 text-sm rounded-full">
  View Contract
  </button>
  </Link>
  <Link href="/inbox" className="flex-1" onClick={onClose}>
- <button className="btn-glass w-full py-3 text-sm rounded-[3px]">
+ <button className="btn-glass w-full py-3 text-sm rounded-full">
  <MessageSquare className="h-4 w-4" />
  Message
  </button>
@@ -173,7 +173,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
 
  <div className="mt-3 text-center">
  <Link href={`/jobs/${data.jobId}`} onClick={onClose}>
- <button className="text-xs text-[#a8997e] hover:text-[#c9a84c] transition-colors flex items-center gap-1 mx-auto">
+ <button className="text-xs text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors flex items-center gap-1 mx-auto">
  <Star className="h-3 w-3" /> Leave a Review
  </button>
  </Link>

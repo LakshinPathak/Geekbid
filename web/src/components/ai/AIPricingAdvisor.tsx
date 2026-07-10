@@ -25,9 +25,9 @@ type Props = {
 };
 
 const STRATEGY_COLOR: Record<string, string> = {
-  aggressive: "text-[#e57373]",
-  balanced: "text-[#c9a84c]",
-  premium: "text-[#4caf7d]",
+  aggressive: "text-[#96543f]",
+  balanced: "text-[#4b3f8f]",
+  premium: "text-[#4d7245]",
 };
 
 export default function AIPricingAdvisor({ title, skills, category, estimatedHours, recentJobs, onApply }: Props) {
@@ -67,57 +67,57 @@ export default function AIPricingAdvisor({ title, skills, category, estimatedHou
   }
 
   return (
-    <div className="rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#0d1120] overflow-hidden">
+    <div className="rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#ffffff] overflow-hidden">
       <button
         onClick={() => result ? setOpen(o => !o) : analyze()}
         disabled={loading}
-        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(201,168,76,0.06)] transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(75,63,143,0.06)] transition-colors disabled:opacity-50"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-[#c9a84c]">
+        <span className="flex items-center gap-2 text-sm font-semibold text-[#4b3f8f]">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4" />}
           AI Pricing Advisor
         </span>
-        {result && (open ? <ChevronUp className="h-3.5 w-3.5 text-[#a8997e]" /> : <ChevronDown className="h-3.5 w-3.5 text-[#a8997e]" />)}
+        {result && (open ? <ChevronUp className="h-3.5 w-3.5 text-[#6f6a7d]" /> : <ChevronDown className="h-3.5 w-3.5 text-[#6f6a7d]" />)}
       </button>
 
-      {error && <div className="px-4 pb-3 text-xs text-[#e57373]">{error}</div>}
+      {error && <div className="px-4 pb-3 text-xs text-[#96543f]">{error}</div>}
 
       {result && open && (
-        <div className="border-t border-[rgba(201,168,76,0.12)] px-4 py-4 space-y-4">
+        <div className="border-t border-[rgba(75,63,143,0.12)] px-4 py-4 space-y-4">
           {/* Prices */}
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <p className="text-[9px] text-[#a8997e] uppercase tracking-wider mb-1">Starting Price</p>
-              <p className="font-heading text-lg text-[#c9a84c]">${result.recommendedStartingPrice.toLocaleString()}</p>
+              <p className="text-[9px] text-[#6f6a7d] uppercase tracking-wider mb-1">Starting Price</p>
+              <p className="font-heading text-lg text-[#4b3f8f]">${result.recommendedStartingPrice.toLocaleString()}</p>
             </div>
             <div className="text-center">
-              <p className="text-[9px] text-[#a8997e] uppercase tracking-wider mb-1">Floor Price</p>
-              <p className="font-heading text-lg text-[#f0e8d4]">${result.recommendedFloorPrice.toLocaleString()}</p>
+              <p className="text-[9px] text-[#6f6a7d] uppercase tracking-wider mb-1">Floor Price</p>
+              <p className="font-heading text-lg text-[#3d3a45]">${result.recommendedFloorPrice.toLocaleString()}</p>
             </div>
             <div className="text-center">
-              <p className="text-[9px] text-[#a8997e] uppercase tracking-wider mb-1">Market Rate</p>
-              <p className="font-heading text-lg text-[#a8997e]">${result.marketRate.toLocaleString()}</p>
+              <p className="text-[9px] text-[#6f6a7d] uppercase tracking-wider mb-1">Market Rate</p>
+              <p className="font-heading text-lg text-[#6f6a7d]">${result.marketRate.toLocaleString()}</p>
             </div>
           </div>
 
           {/* Strategy + Expected bids */}
           <div className="flex items-center justify-between text-xs">
-            <span className={`font-semibold capitalize ${STRATEGY_COLOR[result.pricingStrategy] ?? "text-[#c9a84c]"}`}>
+            <span className={`font-semibold capitalize ${STRATEGY_COLOR[result.pricingStrategy] ?? "text-[#4b3f8f]"}`}>
               <TrendingUp className="h-3.5 w-3.5 inline mr-1" />
               {result.pricingStrategy} strategy
             </span>
-            <span className="text-[#a8997e]">~{result.expectedBids} bids expected</span>
+            <span className="text-[#6f6a7d]">~{result.expectedBids} bids expected</span>
           </div>
 
           {/* Rationale */}
-          <p className="text-xs text-[#a8997e] leading-relaxed">{result.rationale}</p>
+          <p className="text-xs text-[#6f6a7d] leading-relaxed">{result.rationale}</p>
 
           {/* Tips */}
           {result.tips.length > 0 && (
             <ul className="space-y-1">
               {result.tips.map((t, i) => (
-                <li key={i} className="text-xs text-[#f0e8d4] flex items-start gap-1.5">
-                  <span className="text-[#c9a84c] mt-0.5">•</span>{t}
+                <li key={i} className="text-xs text-[#3d3a45] flex items-start gap-1.5">
+                  <span className="text-[#4b3f8f] mt-0.5">•</span>{t}
                 </li>
               ))}
             </ul>
@@ -127,7 +127,7 @@ export default function AIPricingAdvisor({ title, skills, category, estimatedHou
           {onApply && (
             <button
               onClick={() => onApply(result.recommendedStartingPrice, result.recommendedFloorPrice)}
-              className="w-full py-2 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors"
+              className="w-full py-2 rounded-full text-sm font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors"
             >
               Apply These Prices
             </button>
@@ -136,7 +136,7 @@ export default function AIPricingAdvisor({ title, skills, category, estimatedHou
           <button
             onClick={analyze}
             disabled={loading}
-            className="w-full py-1.5 rounded-[3px] text-xs text-[#a8997e] border border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c] transition-colors"
+            className="w-full py-1.5 rounded-full text-xs text-[#6f6a7d] border border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f] transition-colors"
           >
             {loading ? "Analyzing..." : "Re-analyze"}
           </button>
