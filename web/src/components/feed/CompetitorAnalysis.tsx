@@ -153,16 +153,16 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  >
  {/* Left: name + bar */}
  <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 mb-1.5">
+ <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1.5">
  <span className="text-sm font-semibold text-[#3d3a45]">{cat.label}</span>
- <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
+ <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)] whitespace-nowrap">
  {cat.jobCount} job{cat.jobCount !== 1 ? "s" : ""}
  </span>
- <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${comp.bg} ${comp.text2} border border-[rgba(75,63,143,0.22)]`}>
+ <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${comp.bg} ${comp.text2} border border-[rgba(75,63,143,0.22)]`}>
  {comp.text} comp.
  </span>
  {cat.hasMySkill && (
- <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#4d7245]/20 text-[#4d7245] border border-[rgba(75,63,143,0.22)]">
+ <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#4d7245]/20 text-[#4d7245] border border-[rgba(75,63,143,0.22)] whitespace-nowrap">
  ✓ My Skills
  </span>
  )}

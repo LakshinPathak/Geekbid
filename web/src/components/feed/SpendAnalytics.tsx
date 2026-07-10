@@ -77,7 +77,6 @@ export default function SpendAnalytics({
  ];
 
  const maxChart = Math.max(...monthlySpend.map(d => d.value), 1);
- const hasAnySpend = monthlySpend.some(d => d.value > 0);
 
  return (
  <div className="space-y-3">
@@ -105,7 +104,6 @@ export default function SpendAnalytics({
  ))}
  </div>
 
- {hasAnySpend && (
  <div className="glass-panel feed-glass-card rounded-2xl p-4 border border-[rgba(75,63,143,0.22)]">
  <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold mb-3">Monthly Spend</p>
  <div className="flex items-end gap-2 h-28">
@@ -118,8 +116,8 @@ export default function SpendAnalytics({
  </p>
  <div className="w-full flex justify-center" style={{ height: "80px" }}>
  <div
- className="w-full max-w-[28px] rounded-t-[3px] bg-[#4b3f8f] transition-all duration-700"
- style={{ height: d.value > 0 ? `${Math.max(pct, 4)}%` : "1px" }}
+ className={`w-full max-w-[28px] rounded-t-[3px] transition-all duration-700 ${d.value > 0 ? "bg-[#4b3f8f]" : "bg-[rgba(75,63,143,0.18)]"}`}
+ style={{ height: d.value > 0 ? `${Math.max(pct, 4)}%` : "6px" }}
  />
  </div>
  <p className="text-[10px] text-[#6f6a7d] font-medium">{d.month}</p>
@@ -128,7 +126,6 @@ export default function SpendAnalytics({
  })}
  </div>
  </div>
- )}
  </div>
  );
 }
