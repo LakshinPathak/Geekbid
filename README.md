@@ -174,11 +174,19 @@ screenshots turned out to be screenshot-stitching artifacts of
 bar) — real in-browser scrolling was unaffected. A few horizontally
 scrolling rows (notifications filter tabs, the landing comparison table,
 admin data tables) were already correctly implemented with
-`overflow-x-auto` on their own container. Two non-layout issues were found
-and left alone as out of scope: admin login unconditionally redirects to
-`/feed` instead of `/admin` (routing bug, identical at any viewport), and
-the admin users/jobs tables' pagination returns one row per page regardless
-of viewport (pre-existing data/API bug, reproduces identically on desktop).
+`overflow-x-auto` on their own container.
+
+Two more (non-layout, but found during the same pass and fixed on request):
+admin login unconditionally redirected every user to `/feed` instead of
+`/admin`, so admins landed on a page that immediately 403'd against
+freelancer-only endpoints — all three post-auth redirect paths (login,
+register, Google OAuth) now route by `role`. And `sanitizeNumber(null,
+default)` in `sanitize.ts` returned `0` instead of `default` (`Number(null)`
+is `0`, which passes `Number.isFinite`), so `sanitizePagination` silently
+clamped `limit` to `1` whenever a caller omitted it — which the admin
+users/jobs list always does — making every admin table show exactly one
+row per page regardless of viewport. Fixed at the root by treating
+`null`/`undefined`/`""` as "absent" before coercing to a number.
 
 ---
 
