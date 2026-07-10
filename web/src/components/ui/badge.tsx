@@ -5,18 +5,18 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
- "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-[#c9a84c]/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
+ "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-[#4b3f8f]/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
  {
  variants: {
  variant: {
- default: "bg-[#c9a84c] text-[#050810] [a&]:hover:bg-[#c9a84c]/90",
+ default: "bg-[#4b3f8f] text-[#ffffff] [a&]:hover:bg-[#4b3f8f]/90",
  secondary:
- "bg-[#111625] text-[#f0e8d4] [a&]:hover:bg-[#111625]/90",
+ "bg-[#f4f2ee] text-[#3d3a45] [a&]:hover:bg-[#f4f2ee]/90",
  destructive:
- "bg-[#c0392b] text-[#f0e8d4] focus-visible:ring-destructive/20 dark:bg-[#c0392b]/60 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-[#c0392b]/90",
+ "bg-[#c14d3a] text-[#3d3a45] focus-visible:ring-destructive/20 dark:bg-[#c14d3a]/60 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-[#c14d3a]/90",
  outline:
- "border-[rgba(201,168,76,0.22)] text-[#f0e8d4] [a&]:hover:bg-[rgba(201,168,76,0.12)] [a&]:hover:text-[#050810]",
- ghost: "[a&]:hover:bg-[rgba(201,168,76,0.12)] [a&]:hover:text-[#050810]",
+ "border-[rgba(75,63,143,0.22)] text-[#3d3a45] [a&]:hover:bg-[rgba(75,63,143,0.12)] [a&]:hover:text-[#ffffff]",
+ ghost: "[a&]:hover:bg-[rgba(75,63,143,0.12)] [a&]:hover:text-[#ffffff]",
  link: "text-primary underline-offset-4 [a&]:hover:underline",
  },
  },

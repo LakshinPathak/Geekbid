@@ -5,28 +5,28 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
- "inline-flex shrink-0 items-center justify-center gap-2 rounded-[3px] text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-[#c9a84c]/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+ "inline-flex shrink-0 items-center justify-center gap-2 rounded-full text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-[#4b3f8f]/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
  {
  variants: {
  variant: {
- default: "bg-[#c9a84c] text-[#050810] hover:bg-[#c9a84c]/90",
+ default: "bg-[#4b3f8f] text-[#ffffff] hover:bg-[#4b3f8f]/90",
  destructive:
- "bg-[#c0392b] text-[#f0e8d4] hover:bg-[#c0392b]/90 focus-visible:ring-destructive/20 dark:bg-[#c0392b]/60 dark:focus-visible:ring-destructive/40",
+ "bg-[#c14d3a] text-[#3d3a45] hover:bg-[#c14d3a]/90 focus-visible:ring-destructive/20 dark:bg-[#c14d3a]/60 dark:focus-visible:ring-destructive/40",
  outline:
- "border bg-[#080b14]  hover:bg-[rgba(201,168,76,0.12)] hover:text-[#050810] dark:border-[rgba(201,168,76,0.22)] dark:bg-[#0a0e1a]/30 dark:hover:bg-[#0a0e1a]/50",
+ "border bg-[#fbfaf7]  hover:bg-[rgba(75,63,143,0.12)] hover:text-[#ffffff] dark:border-[rgba(75,63,143,0.22)] dark:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/50",
  secondary:
- "bg-[#111625] text-[#f0e8d4] hover:bg-[#111625]/80",
+ "bg-[#f4f2ee] text-[#3d3a45] hover:bg-[#f4f2ee]/80",
  ghost:
- "hover:bg-[rgba(201,168,76,0.12)] hover:text-[#050810] dark:hover:bg-[rgba(201,168,76,0.12)]/50",
+ "hover:bg-[rgba(75,63,143,0.12)] hover:text-[#ffffff] dark:hover:bg-[rgba(75,63,143,0.12)]/50",
  link: "text-primary underline-offset-4 hover:underline",
  },
  size: {
  default: "h-9 px-4 py-2 has-[>svg]:px-3",
- xs: "h-6 gap-1 rounded-[3px] px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
- sm: "h-8 gap-1.5 rounded-[3px] px-3 has-[>svg]:px-2.5",
- lg: "h-10 rounded-[3px] px-6 has-[>svg]:px-4",
+ xs: "h-6 gap-1 rounded-full px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
+ sm: "h-8 gap-1.5 rounded-full px-3 has-[>svg]:px-2.5",
+ lg: "h-10 rounded-full px-6 has-[>svg]:px-4",
  icon: "size-9",
- "icon-xs": "size-6 rounded-[3px] [&_svg:not([class*='size-'])]:size-3",
+ "icon-xs": "size-6 rounded-full [&_svg:not([class*='size-'])]:size-3",
  "icon-sm": "size-8",
  "icon-lg": "size-10",
  },

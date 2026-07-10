@@ -537,6 +537,10 @@ input:focus, textarea:focus, select:focus { outline: none; }
   outline: none;
 }
 .glass-input::placeholder { color: #b3aec0; }
+/* Multi-line inputs can't take the pill radius — a 99px corner on a tall
+   rectangle clips into an oval and cuts off text (e.g. placeholder text
+   sliced by the corner curve). Textareas get the card radius instead. */
+textarea.glass-input { border-radius: 16px; }
 .glass-input.input-error {
   border-color: rgba(193,77,58,0.60);
 }

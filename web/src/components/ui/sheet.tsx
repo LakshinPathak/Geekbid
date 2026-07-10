@@ -60,7 +60,7 @@ function SheetContent({
  <SheetPrimitive.Content
  data-slot="sheet-content"
  className={cn(
- "fixed z-50 flex flex-col gap-4 bg-[#080b14] transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
+ "fixed z-50 flex flex-col gap-4 bg-[#fbfaf7] transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
  side === "right" &&
  "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out- data-[state=open]:slide-in- sm:max-w-sm",
  side === "left" &&
@@ -75,7 +75,7 @@ function SheetContent({
  >
  {children}
  {showCloseButton && (
- <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-[#080b14] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-[#c9a84c] focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-[#111625]">
+ <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-[#fbfaf7] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-[#4b3f8f] focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-[#f4f2ee]">
  <XIcon className="size-4" />
  <span className="sr-only">Close</span>
  </SheetPrimitive.Close>
@@ -112,7 +112,7 @@ function SheetTitle({
  return (
  <SheetPrimitive.Title
  data-slot="sheet-title"
- className={cn("font-semibold text-[#f0e8d4]", className)}
+ className={cn("font-semibold text-[#3d3a45]", className)}
  {...props}
  />
  )
@@ -125,7 +125,7 @@ function SheetDescription({
  return (
  <SheetPrimitive.Description
  data-slot="sheet-description"
- className={cn("text-sm text-[#a8997e]", className)}
+ className={cn("text-sm text-[#6f6a7d]", className)}
  {...props}
  />
  )
