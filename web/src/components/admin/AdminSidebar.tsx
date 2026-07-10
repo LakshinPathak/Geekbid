@@ -3,8 +3,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Briefcase, DollarSign,
-  AlertTriangle, Settings, ScrollText, Shield, ArrowLeft,
+  AlertTriangle, Settings, ScrollText, ArrowLeft,
 } from "lucide-react";
+import { LogoMark, LogoWordmark } from "@/components/Logo";
 
 const NAV = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -23,11 +24,9 @@ export default function AdminSidebar() {
     <aside className="w-64 shrink-0 flex flex-col h-full bg-[#ffffff] border-r border-[rgba(75,63,143,0.18)]">
       {/* Brand */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-[rgba(75,63,143,0.12)]">
-        <div className="h-8 w-8 rounded-xl bg-[rgba(75,63,143,0.12)] flex items-center justify-center">
-          <Shield className="h-4 w-4 text-[#4b3f8f]" />
-        </div>
+        <LogoMark className="h-8 w-8" />
         <div>
-          <p className="font-heading text-sm font-bold text-[#3d3a45]">GeekBid</p>
+          <LogoWordmark className="font-heading text-sm font-bold" />
           <p className="text-[10px] text-[#6f6a7d]">Admin Console</p>
         </div>
       </div>

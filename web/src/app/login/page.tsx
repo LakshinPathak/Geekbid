@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 import {
- Zap, ArrowRight, Code, Briefcase,
+ ArrowRight, Code, Briefcase,
  Mail, Lock, User, Loader2, Eye, EyeOff,
  TrendingDown, CheckCircle2,
 } from "lucide-react";
@@ -171,13 +172,7 @@ function LoginPageContent() {
  {/* Logo */}
  <div className="relative z-10">
  <Link href="/" className="flex items-center gap-2.5">
- <div className="flex h-9 w-9 items-center justify-center rounded-xl text-[#ffffff]"
- style={{ background: "#4b3f8f" }}>
- <Zap className="h-4 w-4" />
- </div>
- <span className="font-heading text-2xl font-bold" style={{ color: "#3d3a45" }}>
- GeekBid
- </span>
+ <Logo markClassName="h-9 w-9" textClassName="font-heading text-2xl font-bold" />
  </Link>
  </div>
 
@@ -304,13 +299,7 @@ function LoginPageContent() {
  {/* Mobile logo */}
  <div className="lg:hidden flex items-center gap-2.5 mb-8">
  <Link href="/" className="flex items-center gap-2.5">
- <div className="flex h-9 w-9 items-center justify-center rounded-xl text-[#ffffff]"
- style={{ background: "#4b3f8f" }}>
- <Zap className="h-4 w-4" />
- </div>
- <span className="font-heading text-xl font-bold" style={{ color: "#3d3a45" }}>
- GeekBid
- </span>
+ <Logo markClassName="h-9 w-9" textClassName="font-heading text-xl font-bold" />
  </Link>
  </div>
 

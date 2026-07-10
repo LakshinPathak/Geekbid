@@ -1,0 +1,7 @@
+<svg width="260" height="60" viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="30" cy="30" r="20" fill="#453B78"/>
+  <path d="M25 21 L18 30 L25 39" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M35 21 L42 30 L35 39" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="30" cy="30" r="2.6" fill="#4ADE80"/>
+  <text x="62" y="38" font-family="'Segoe UI', Arial, sans-serif" font-size="26" font-weight="700" fill="#26243A">Geek<tspan fill="#453B78">Bid</tspan></text>
+</svg>

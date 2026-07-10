@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 /* Fixed, hand-authored dot positions for the footer "constellation"
    background — deterministic (no Math.random at render). */
@@ -34,10 +34,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff]">
-                <Zap className="h-4 w-4" />
-              </div>
-              <span className="text-base font-serif font-normal text-[#3d3a45]">GeekBid</span>
+              <Logo markClassName="h-8 w-8" textClassName="text-base font-serif font-normal" />
             </div>
             <p className="text-sm text-[#6f6a7d] leading-relaxed">
               The reverse-auction marketplace for engineering talent.

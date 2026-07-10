@@ -13,6 +13,7 @@ import {
  CreditCard, X, Menu, Repeat,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 
 const NAV_ITEMS = [
@@ -71,12 +72,7 @@ export default function Navbar() {
  <div className="mx-auto max-w-[1600px] flex h-14 items-center justify-between px-4 sm:px-6">
  {/* Logo */}
  <Link href="/feed" className="flex items-center gap-2.5">
- <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">
- G
- </div>
- <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45] hidden sm:block">
- GeekBid
- </span>
+ <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans hidden sm:block" />
  </Link>
 
  {/* Center nav — desktop */}
@@ -207,10 +203,7 @@ export default function Navbar() {
  {/* Drawer header */}
  <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(75,63,143,0.22)]">
  <div className="flex items-center gap-2.5">
- <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">
- G
- </div>
- <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45]">GeekBid</span>
+ <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans" />
  </div>
  <button
  className="h-8 w-8 flex items-center justify-center rounded-full text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-colors"

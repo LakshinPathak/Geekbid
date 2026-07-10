@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Shield, Lock, Loader2, AlertTriangle } from "lucide-react";
 import { useApp } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 interface Props {
   onVerified: () => void;
@@ -51,12 +52,7 @@ export default function AdminKeyGate({ onVerified }: Props) {
         <div className="flex flex-col items-center text-center mb-6">
           {/* GeekBid Logo */}
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-sm font-black font-sans">
-              G
-            </div>
-            <span className="text-lg font-bold tracking-[0.03em] font-sans text-[#3d3a45]">
-              GeekBid
-            </span>
+            <Logo markClassName="h-9 w-9" textClassName="text-lg font-bold tracking-[0.03em] font-sans" />
           </div>
           <div className="h-14 w-14 rounded-full bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.22)] flex items-center justify-center mb-4">
             <Shield className="h-7 w-7 text-[#4b3f8f]" />

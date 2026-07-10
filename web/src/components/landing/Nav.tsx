@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useActiveSection } from "./hooks";
 import ScrollProgress from "./ScrollProgress";
+import { Logo } from "@/components/Logo";
 
 const NAV_LINKS = [
   { id: "how-it-works", label: "How it Works" },
@@ -27,8 +28,7 @@ export default function Nav() {
       <ScrollProgress />
       <div className="flex h-14 items-center justify-between px-8 max-w-[1400px] mx-auto">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">G</div>
-          <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45]">GeekBid</span>
+          <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans" />
         </div>
         <div className="hidden md:flex items-center gap-6 text-[11px] tracking-[0.09em] uppercase text-[#6f6a7d] font-sans">
           {NAV_LINKS.map((link) => (
