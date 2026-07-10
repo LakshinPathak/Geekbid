@@ -100,26 +100,26 @@ export default function AssessmentsPage() {
  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
- <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+ <div className="bg-[#fbfaf7] h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
  // Quiz result screen
  if (quizResult) {
  return (
- <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
+ <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
  <div className="glass-panel p-8 max-w-md text-center animate-fade-in-up">
  {quizResult.passed ? (
- <CheckCircle2 className="h-16 w-16 text-[#c9a84c] mx-auto mb-4 animate-pulse-glow" />
+ <CheckCircle2 className="h-16 w-16 text-[#4b3f8f] mx-auto mb-4 animate-pulse-glow" />
  ) : (
- <XCircle className="h-16 w-16 text-[#B02020] mx-auto mb-4" />
+ <XCircle className="h-16 w-16 text-[#c14d3a] mx-auto mb-4" />
  )}
- <h2 className="font-heading text-2xl font-bold text-[#f0e8d4] mb-2">
+ <h2 className="font-heading text-2xl font-bold text-[#3d3a45] mb-2">
  {quizResult.passed ? "Congratulations!" : "Not Quite"}
  </h2>
- <p className="font-heading text-4xl font-bold text-[#c9a84c] mb-2 terminal-amount">{quizResult.score}%</p>
- <p className="text-[#a8997e] text-sm mb-6">
+ <p className="font-heading text-4xl font-bold text-[#4b3f8f] mb-2 terminal-amount">{quizResult.score}%</p>
+ <p className="text-[#6f6a7d] text-sm mb-6">
  {quizResult.passed
  ? `You've earned the ${quiz?.skill} Verified badge and +50 GeekScore!`
  : `You need ${quiz?.passingScore}% to pass. Try again in 30 days.`}
@@ -140,16 +140,16 @@ export default function AssessmentsPage() {
  const secs = timeLeft % 60;
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
  {/* Quiz header */}
  <div className="flex items-center justify-between mb-6">
  <div>
- <h1 className="font-heading text-xl font-bold text-[#f0e8d4]">{quiz.skill} Assessment</h1>
- <p className="text-[#a8997e] text-sm">Question {currentQ + 1} of {quiz.questions.length}</p>
+ <h1 className="font-heading text-xl font-bold text-[#3d3a45]">{quiz.skill} Assessment</h1>
+ <p className="text-[#6f6a7d] text-sm">Question {currentQ + 1} of {quiz.questions.length}</p>
  </div>
- <div className={`flex items-center gap-2 px-4 py-2 rounded-[6px] border glass-panel-sm ${
- timeLeft < 60 ? "!border-[rgba(176,32,32,0.30)] text-[#B02020]" : "text-[#a8997e]"
+ <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl border glass-panel-sm ${
+ timeLeft < 60 ? "!border-[rgba(193,77,58,0.30)] text-[#c14d3a]" : "text-[#6f6a7d]"
  }`}>
  <Timer className="h-4 w-4" />
  <span className="font-mono text-lg font-bold">{mins}:{secs.toString().padStart(2, "0")}</span>
@@ -157,22 +157,22 @@ export default function AssessmentsPage() {
  </div>
 
  {/* Progress */}
- <div className="h-2 bg-[#111625] rounded-full mb-8 overflow-hidden">
- <div className="h-2 bg-[#c9a84c] rounded-full transition-all" style={{ width: `${((currentQ + 1) / quiz.questions.length) * 100}%` }} />
+ <div className="h-2 bg-[#f4f2ee] rounded-full mb-8 overflow-hidden">
+ <div className="h-2 bg-[#4b3f8f] rounded-full transition-all" style={{ width: `${((currentQ + 1) / quiz.questions.length) * 100}%` }} />
  </div>
 
  {/* Question */}
  <div className="glass-panel p-6 sm:p-8 animate-fade-in-up">
- <p className="text-[#f0e8d4] text-lg font-medium mb-6">{q.question}</p>
+ <p className="text-[#3d3a45] text-lg font-medium mb-6">{q.question}</p>
  <div className="space-y-3">
  {q.options.map((opt, i) => (
  <button key={i} onClick={() => { const a = [...answers]; a[currentQ] = i; setAnswers(a); }}
- className={`w-full text-left p-4 rounded-[6px] border transition-all ${
+ className={`w-full text-left p-4 rounded-2xl border transition-all ${
  answers[currentQ] === i
- ? "border-[rgba(201,168,76,0.35)] bg-[rgba(201,168,76,0.12)] text-[#f0e8d4]"
- : "border-[rgba(201,168,76,0.22)] bg-[#0d1120]/50 text-[#a8997e] hover:border-[#8A8A9A]/30 hover:bg-[#111625]"
+ ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#3d3a45]"
+ : "border-[rgba(75,63,143,0.22)] bg-[#ffffff]/50 text-[#6f6a7d] hover:border-[#b3aec0]/30 hover:bg-[#f4f2ee]"
  }`}>
- <span className="font-mono text-xs text-[#a8997e] mr-3">{String.fromCharCode(65 + i)}</span>
+ <span className="font-mono text-xs text-[#6f6a7d] mr-3">{String.fromCharCode(65 + i)}</span>
  {opt}
  </button>
  ))}
@@ -206,14 +206,14 @@ export default function AssessmentsPage() {
 
  // Assessment list
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
- <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
 
  <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gradient">Skill Assessments</h1>
- <p className="text-[#a8997e] text-sm mt-1">Pass an assessment to earn a Verified badge and +50 GeekScore</p>
+ <p className="text-[#6f6a7d] text-sm mt-1">Pass an assessment to earn a Verified badge and +50 GeekScore</p>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
  {assessments.map((a, idx) => {
@@ -221,12 +221,12 @@ export default function AssessmentsPage() {
  const passed = myResult?.passed;
  return (
  <div key={a.id}
- className={`glass-panel p-6 animate-fade-in-up ${passed ? "border-[rgba(201,168,76,0.40)]" : ""}`}
+ className={`glass-panel p-6 animate-fade-in-up ${passed ? "border-[rgba(75,63,143,0.40)]" : ""}`}
  style={{ animationDelay: `${idx * 0.08}s` }}>
  <div className="flex items-center justify-between mb-3">
  <div className="flex items-center gap-2">
- <Brain className="h-5 w-5 text-[#c9a84c]" />
- <h3 className="font-heading text-lg font-semibold text-[#f0e8d4]">{a.skill}</h3>
+ <Brain className="h-5 w-5 text-[#4b3f8f]" />
+ <h3 className="font-heading text-lg font-semibold text-[#3d3a45]">{a.skill}</h3>
  </div>
  {passed && (
  <span className="badge-completed flex items-center gap-1">
@@ -234,14 +234,14 @@ export default function AssessmentsPage() {
  </span>
  )}
  </div>
- <div className="flex items-center gap-4 text-[#a8997e] text-xs mb-4">
+ <div className="flex items-center gap-4 text-[#6f6a7d] text-xs mb-4">
  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {a.timeLimit / 60} min</span>
  <span>{a.questionCount} questions</span>
  <span>Pass: {a.passingScore}%</span>
  </div>
  {myResult && (
- <p className="text-[#a8997e] text-xs mb-3">
- Last score: <span className={passed ? "text-[#c9a84c]" : "text-[#B02020]"}>{myResult.score}%</span>
+ <p className="text-[#6f6a7d] text-xs mb-3">
+ Last score: <span className={passed ? "text-[#4b3f8f]" : "text-[#c14d3a]"}>{myResult.score}%</span>
  </p>
  )}
  <button onClick={() => startQuiz(a.id)}

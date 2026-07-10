@@ -71,32 +71,32 @@ export default function SettingsPage() {
  };
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#080b14] grid-bg flex items-center justify-center">
- <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg flex items-center justify-center">
+ <div className="bg-[#fbfaf7] h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
- <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
 
  <div className="animate-fade-in-up">
- <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4]">API Settings</h1>
- <p className="text-[#a8997e] text-sm mt-1">Manage your API keys for programmatic access</p>
+ <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#3d3a45]">API Settings</h1>
+ <p className="text-[#6f6a7d] text-sm mt-1">Manage your API keys for programmatic access</p>
  </div>
 
  {!hasApiAccess ? (
  /* Free plan: no key-management UI — just the upgrade CTA */
  <div className="glass-card mt-8 animate-fade-in-up text-center py-10" style={{ animationDelay: "100ms" }}>
- <Lock className="h-8 w-8 text-[#a8997e] mx-auto mb-3" />
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-1">API access requires Plus or Premium</h2>
- <p className="text-[#a8997e] text-sm max-w-sm mx-auto">
+ <Lock className="h-8 w-8 text-[#6f6a7d] mx-auto mb-3" />
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-1">API access requires Plus or Premium</h2>
+ <p className="text-[#6f6a7d] text-sm max-w-sm mx-auto">
  Upgrade your plan to generate API keys and access the GeekBid API programmatically.
  </p>
- <Link href="/pricing" className="btn-primary inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-[6px] text-sm payment-ready">
+ <Link href="/pricing" className="btn-primary inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-2xl text-sm payment-ready">
  View Plans
  </Link>
  </div>
@@ -104,35 +104,35 @@ export default function SettingsPage() {
  <>
  {/* Create key */}
  <div className="glass-card mt-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
- <Plus className="h-4 w-4 text-[#c9a84c]" /> Generate API Key
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-4 flex items-center gap-2">
+ <Plus className="h-4 w-4 text-[#4b3f8f]" /> Generate API Key
  </h2>
  <div className="flex gap-2">
  <input
  value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
  onKeyDown={e => e.key === "Enter" && createKey()}
  placeholder="Key name (e.g. Production, CI/CD)"
- className="glass-input flex-1 h-11 rounded-[6px] text-sm"
+ className="glass-input flex-1 h-11 rounded-2xl text-sm"
  />
  <button onClick={createKey} disabled={creating || !newKeyName.trim()}
- className="btn-primary h-11 px-4 sm:px-6 rounded-[6px] text-sm payment-ready disabled:opacity-40">
+ className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm payment-ready disabled:opacity-40">
  {creating ? "Generating..." : "Generate"}
  </button>
  </div>
 
  {newKeyValue && (
- <div className="mt-4 bg-[rgba(201,168,76,0.08)] border border-[rgba(201,168,76,0.25)] rounded-[6px] p-4 animate-fade-in-up">
+ <div className="mt-4 bg-[rgba(75,63,143,0.08)] border border-[rgba(75,63,143,0.25)] rounded-2xl p-4 animate-fade-in-up">
  <div className="flex items-center gap-2 mb-2">
- <AlertTriangle className="h-4 w-4 text-[#c9a84c]" />
- <p className="text-[#c9a84c] text-xs font-semibold">Copy this key now — it won&apos;t be shown again</p>
+ <AlertTriangle className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#4b3f8f] text-xs font-semibold">Copy this key now — it won&apos;t be shown again</p>
  </div>
  <div className="flex gap-2">
  <code className="settings-key-display flex-1 break-all">
  {newKeyValue}
  </code>
  <button onClick={handleCopy}
- className={`h-10 px-3 rounded-[3px] transition-all self-start ${
- copied ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[rgba(201,168,76,0.40)]" : "btn-glass"
+ className={`h-10 px-3 rounded-full transition-all self-start ${
+ copied ? "bg-[#4b3f8f]/20 text-[#4b3f8f] border border-[rgba(75,63,143,0.40)]" : "btn-glass"
  }`}>
  <Copy className="h-4 w-4" />
  </button>
@@ -140,41 +140,41 @@ export default function SettingsPage() {
  </div>
  )}
 
- <p className="text-[#a8997e] text-xs mt-3">
+ <p className="text-[#6f6a7d] text-xs mt-3">
  {planConfig.name} plan: up to {planConfig.limits.maxApiKeys} active keys, {planConfig.apiRateLimit} req/min.
  </p>
  </div>
 
  {/* Existing keys */}
  <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
- <Key className="h-4 w-4 text-[#c9a84c]" /> Active Keys
- <span className="text-xs font-normal text-[#a8997e] bg-[#111625] px-2 py-0.5 rounded-full">{keys.length}</span>
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-4 flex items-center gap-2">
+ <Key className="h-4 w-4 text-[#4b3f8f]" /> Active Keys
+ <span className="text-xs font-normal text-[#6f6a7d] bg-[#f4f2ee] px-2 py-0.5 rounded-full">{keys.length}</span>
  </h2>
 
  {keys.length === 0 ? (
  <div className="py-6 text-center">
- <Key className="h-8 w-8 text-[#a8997e] mx-auto mb-2" />
- <p className="text-[#a8997e] text-sm">No API keys yet. Generate one above.</p>
+ <Key className="h-8 w-8 text-[#6f6a7d] mx-auto mb-2" />
+ <p className="text-[#6f6a7d] text-sm">No API keys yet. Generate one above.</p>
  </div>
  ) : (
  <div className="space-y-2">
  {keys.map(k => (
- <div key={k.id} className="tx-row flex items-center justify-between rounded-[6px] p-4 transition-colors">
+ <div key={k.id} className="tx-row flex items-center justify-between rounded-2xl p-4 transition-colors">
  <div>
- <p className="text-[#f0e8d4] text-sm font-medium">{k.name}</p>
- <p className="text-[#a8997e] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
- <div className="flex items-center gap-3 mt-1 text-[#a8997e] text-xs">
+ <p className="text-[#3d3a45] text-sm font-medium">{k.name}</p>
+ <p className="text-[#6f6a7d] text-xs font-mono mt-0.5 terminal-amount">{k.prefix}•••••••</p>
+ <div className="flex items-center gap-3 mt-1 text-[#6f6a7d] text-xs">
  <span className="flex items-center gap-1">
  <Clock className="h-3 w-3" /> Created {new Date(k.createdAt).toLocaleDateString()}
  </span>
  {k.lastUsedAt && (
- <span className="text-[#a8997e]">Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>
+ <span className="text-[#6f6a7d]">Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>
  )}
  </div>
  </div>
  <button onClick={() => revokeKey(k.id)}
- className="text-[#B02020]/60 hover:text-[#B02020] transition-colors p-2 rounded-[3px] hover:bg-[rgba(176,32,32,0.08)]">
+ className="text-[#c14d3a]/60 hover:text-[#c14d3a] transition-colors p-2 rounded-full hover:bg-[rgba(193,77,58,0.08)]">
  <Trash2 className="h-4 w-4" />
  </button>
  </div>
@@ -187,21 +187,21 @@ export default function SettingsPage() {
 
  {/* API Docs */}
  <div className="glass-card mt-6 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
- <Code2 className="h-4 w-4 text-[#c9a84c]" /> API Documentation
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-4 flex items-center gap-2">
+ <Code2 className="h-4 w-4 text-[#4b3f8f]" /> API Documentation
  </h2>
  <div className="space-y-3">
- <div className="glass-panel-sm rounded-[6px] p-4">
- <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">GET /api/v1/jobs</p>
- <p className="text-[#a8997e] text-sm">List jobs. Query params: status, category, page, limit</p>
- <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ <div className="glass-panel-sm rounded-2xl p-4">
+ <p className="text-[#4b3f8f] text-xs font-mono mb-1 terminal-amount">GET /api/v1/jobs</p>
+ <p className="text-[#6f6a7d] text-sm">List jobs. Query params: status, category, page, limit</p>
+ <code className="block mt-2 text-[#6f6a7d] text-xs font-mono bg-[#ffffff]/50 rounded-full px-3 py-2">
  curl -H &quot;X-API-Key: gbk_your_key&quot; /api/v1/jobs?status=open&amp;limit=10
  </code>
  </div>
- <div className="glass-panel-sm rounded-[6px] p-4">
- <p className="text-[#c9a84c] text-xs font-mono mb-1 terminal-amount">POST /api/v1/jobs</p>
- <p className="text-[#a8997e] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
- <code className="block mt-2 text-[#a8997e] text-xs font-mono bg-[#0d1120]/50 rounded-[3px] px-3 py-2">
+ <div className="glass-panel-sm rounded-2xl p-4">
+ <p className="text-[#4b3f8f] text-xs font-mono mb-1 terminal-amount">POST /api/v1/jobs</p>
+ <p className="text-[#6f6a7d] text-sm">Create a new job. Body: title, startingPrice, minimumPrice, etc.</p>
+ <code className="block mt-2 text-[#6f6a7d] text-xs font-mono bg-[#ffffff]/50 rounded-full px-3 py-2">
  curl -X POST -H &quot;X-API-Key: gbk_your_key&quot; -d &#123;&quot;title&quot;:&quot;...&quot;&#125; /api/v1/jobs
  </code>
  </div>
