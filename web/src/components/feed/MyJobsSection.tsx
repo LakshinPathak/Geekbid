@@ -37,22 +37,22 @@ interface Props {
 
 // ── Demand badge ───────────────────────────────────────────────────
 function getDemandBadge(count: number) {
- if (count === 0) return { label: "No Bids", cls: "text-[#e57373] bg-[rgba(192,57,43,0.2)] border-[rgba(201,168,76,0.22)]" };
- if (count <= 2) return { label: "Interested", cls: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]" };
- if (count <= 5) return { label: "In Demand", cls: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]" };
- return { label: "🔥 Hot", cls: "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]" };
+ if (count === 0) return { label: "No Bids", cls: "text-[#96543f] bg-[rgba(193,77,58,0.2)] border-[rgba(75,63,143,0.22)]" };
+ if (count <= 2) return { label: "Interested", cls: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]" };
+ if (count <= 5) return { label: "In Demand", cls: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]" };
+ return { label: "🔥 Hot", cls: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]" };
 }
 
 // ── Single bid row inside the expanded panel ───────────────────────
 function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  const isTop = rank === 1;
  return (
- <div className={`flex items-center gap-3 px-4 py-3 rounded-[3px] border ${
- isTop ? "bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]" : "bg-[#0a0e1a] border-transparent"
+ <div className={`flex items-center gap-3 px-4 py-3 rounded-full border ${
+ isTop ? "bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]" : "bg-[#ffffff] border-transparent"
  }`}>
  {/* Rank */}
- <span className={`w-6 h-6 rounded-[3px] flex items-center justify-center text-[11px] font-bold shrink-0 ${
- isTop ? "bg-[#c9a84c] text-[#080b14]" : "bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]"
+ <span className={`w-6 h-6 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ${
+ isTop ? "bg-[#4b3f8f] text-[#fbfaf7]" : "bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]"
  }`}>
  {rank}
  </span>
@@ -66,21 +66,21 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
 
  {/* Name + GeekScore */}
  <div className="flex-1 min-w-0 overflow-hidden">
- <p className="text-xs font-semibold text-[#f0e8d4] truncate">
+ <p className="text-xs font-semibold text-[#3d3a45] truncate">
  {user?.fullName ?? "Unknown"}
  {user?.plan === "plus" && (
- <span className="ml-1.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-[#2980b9] text-[#f0e8d4]">Plus</span>
+ <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#4b3f8f] text-[#ffffff]">Plus</span>
  )}
  {user?.plan === "premium" && (
- <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold bg-gradient-to-r from-[#c9a84c] to-[#8a5fd6] text-[#0d0f1a]">
+ <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-gradient-to-r from-[#4b3f8f] to-[#9c8fd8] text-[#ffffff]">
  <Crown className="h-2.5 w-2.5" /> Premium
  </span>
  )}
  </p>
  <div className="flex items-center gap-2 mt-0.5 truncate">
- <span className="text-[10px] text-[#a8997e]">GS {user?.geekScore ?? 0}</span>
+ <span className="text-[10px] text-[#6f6a7d]">GS {user?.geekScore ?? 0}</span>
  {(user?.averageRating ?? 0) > 0 && (
- <span className="flex items-center gap-0.5 text-[10px] text-[#c9a84c]">
+ <span className="flex items-center gap-0.5 text-[10px] text-[#4b3f8f]">
  <Star className="h-2.5 w-2.5" />
  {user!.averageRating!.toFixed(1)} ({user?.totalReviews ?? 0})
  </span>
@@ -91,7 +91,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  {/* Bid message excerpt */}
  {bid.message && (
  <div className="hidden sm:block max-w-[120px] min-w-0">
- <p className="text-[10px] text-[#a8997e] italic line-clamp-1">
+ <p className="text-[10px] text-[#6f6a7d] italic line-clamp-1">
  &ldquo;{bid.message}&rdquo;
  </p>
  </div>
@@ -99,11 +99,11 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
 
  {/* Price */}
  <div className="text-right shrink-0">
- <p className={`font-heading text-sm ${isTop ? "text-[#c9a84c]" : "text-[#f0e8d4]"}`}>
+ <p className={`font-heading text-sm ${isTop ? "text-[#4b3f8f]" : "text-[#3d3a45]"}`}>
  {formatMoney(bid.bidPrice)}
  </p>
  {bid.createdAt && (
- <p className="text-[9px] text-[#a8997e]">
+ <p className="text-[9px] text-[#6f6a7d]">
  {new Date(bid.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
  </p>
  )}
@@ -146,17 +146,17 @@ function MyJobCard({
  };
 
  const healthBadgeCls =
- health.label === "Urgent" ? "text-[#e57373] bg-[rgba(192,57,43,0.2)] border-[rgba(201,168,76,0.22)]" :
- health.label === "Needs Attention" ? "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]" :
- "text-[#c9a84c] bg-[rgba(201,168,76,0.12)] border-[rgba(201,168,76,0.22)]";
+ health.label === "Urgent" ? "text-[#96543f] bg-[rgba(193,77,58,0.2)] border-[rgba(75,63,143,0.22)]" :
+ health.label === "Needs Attention" ? "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]" :
+ "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.22)]";
 
  return (
  <div
  ref={cardRef}
- className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate rounded-[6px] border border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)] transition-all duration-200 overflow-hidden relative"
+ className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate rounded-2xl border border-[rgba(75,63,143,0.22)] hover:border-[rgba(75,63,143,0.35)] transition-all duration-200 overflow-hidden relative"
  >
  {job.status === "open" && (
- <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#4caf7d] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
+ <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#4d7245] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
  )}
 
  {/* ── Card body (links to job detail) ───────────────────── */}
@@ -167,30 +167,30 @@ function MyJobCard({
  <div>
  <div className="flex items-start justify-between gap-2 mb-2">
  <div className="flex flex-wrap gap-1.5">
- <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${healthBadgeCls}`}>
+ <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${healthBadgeCls}`}>
  <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
  {health.label}
  </span>
- <span className={`px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${demand.cls}`}>
+ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${demand.cls}`}>
  {demand.label}
  </span>
- <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">
+ <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
  My Job
  </span>
  </div>
  </div>
 
- <h3 className="font-heading text-[15px] text-[#f0e8d4] leading-snug line-clamp-2 hover:text-[#c9a84c] transition-colors">
+ <h3 className="font-heading text-[15px] text-[#3d3a45] leading-snug line-clamp-2 hover:text-[#4b3f8f] transition-colors">
  {job.title}
  </h3>
 
  {/* Skills */}
  <div className="flex flex-wrap gap-1 mt-2">
  {job.skillsRequired.slice(0, 4).map(s => (
- <span key={s} className="px-2 py-0.5 rounded-[2px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">{s}</span>
+ <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">{s}</span>
  ))}
  {job.skillsRequired.length > 4 && (
- <span className="px-2 py-0.5 rounded-[2px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">
+ <span className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
  +{job.skillsRequired.length - 4}
  </span>
  )}
@@ -201,36 +201,36 @@ function MyJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#a8997e] uppercase tracking-wider">Current Price</span>
- <p className="font-heading text-2xl text-[#f0e8d4]">{formatMoney(current)}</p>
+ <span className="text-[11px] text-[#6f6a7d] uppercase tracking-wider">Current Price</span>
+ <p className="font-heading text-2xl text-[#3d3a45]">{formatMoney(current)}</p>
  </div>
  {savings > 0 && (
  <div className="text-right">
- <span className="text-[11px] text-[#a8997e] uppercase tracking-wider">Saved</span>
- <p className="font-heading text-lg text-[#4caf7d]">-{formatMoney(savings)}</p>
+ <span className="text-[11px] text-[#6f6a7d] uppercase tracking-wider">Saved</span>
+ <p className="font-heading text-lg text-[#4d7245]">-{formatMoney(savings)}</p>
  </div>
  )}
  </div>
 
  {/* Decay bar */}
  <div className="space-y-1">
- <div className="h-0.5 w-full bg-[#1a1f30]">
+ <div className="h-0.5 w-full bg-[#f0edfa]">
  <div
- className="h-full rounded-full bg-[#c9a84c] transition-all duration-500"
+ className="h-full rounded-full bg-[#4b3f8f] transition-all duration-500"
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#a8997e]">
+ <div className="flex justify-between text-[10px] text-[#6f6a7d]">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
- {hoursLeft > 0 && <span className="text-[#c9a84c] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} left</span>}
+ {hoursLeft > 0 && <span className="text-[#4b3f8f] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} left</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
  </div>
  </div>
  </div>
 
  {/* Footer stats */}
- <div className="flex items-center justify-between pt-3 border-t border-[rgba(201,168,76,0.22)]">
- <div className="flex items-center gap-3 text-[11px] text-[#a8997e]">
+ <div className="flex items-center justify-between pt-3 border-t border-[rgba(75,63,143,0.22)]">
+ <div className="flex items-center gap-3 text-[11px] text-[#6f6a7d]">
  <span className="flex items-center gap-1">
  <Users className="h-3 w-3" />
  {bidCount} bid{bidCount !== 1 ? "s" : ""}
@@ -252,13 +252,13 @@ function MyJobCard({
  {bidCount > 0 ? (
  <button
  onClick={handleAccept}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors"
+ className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors"
  >
  <CheckCircle className="h-3 w-3" />
  Accept Best
  </button>
  ) : (
- <span className="text-[11px] text-[#a8997e]/60 italic">Waiting for bids…</span>
+ <span className="text-[11px] text-[#6f6a7d]/60 italic">Waiting for bids…</span>
  )}
  </div>
  </div>
@@ -270,16 +270,16 @@ function MyJobCard({
  {bidCount > 0 ? (
  <button
  onClick={() => setBidsOpen(o => !o)}
- className="w-full flex items-center justify-between px-5 py-2.5 border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] hover:bg-[#111625] transition-colors text-xs font-semibold text-[#a8997e]"
+ className="w-full flex items-center justify-between px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] hover:bg-[#f4f2ee] transition-colors text-xs font-semibold text-[#6f6a7d]"
  >
  <span className="flex items-center gap-1.5">
- <Zap className="h-3.5 w-3.5 text-[#c9a84c]" />
+ <Zap className="h-3.5 w-3.5 text-[#4b3f8f]" />
  {bidsOpen ? "Hide" : "View"} {bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
- <ChevronDown className={`h-4 w-4 text-[#a8997e] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#6f6a7d] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
  </button>
  ) : (
- <div className="w-full flex items-center gap-1.5 px-5 py-2.5 border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] text-xs font-medium text-[#a8997e]/60">
+ <div className="w-full flex items-center gap-1.5 px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] text-xs font-medium text-[#6f6a7d]/60">
  <AlertCircle className="h-3.5 w-3.5" />
  No bids yet — consider lowering the price or broadening required skills
  </div>
@@ -287,8 +287,8 @@ function MyJobCard({
 
  {/* ── Expanded bids feed ─────────────────────────────────── */}
  {bidsOpen && (
- <div className="border-t border-[rgba(201,168,76,0.12)] bg-[#0a0e1a]/50 px-4 py-4 space-y-2">
- <p className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold mb-3">
+ <div className="border-t border-[rgba(75,63,143,0.12)] bg-[#ffffff]/50 px-4 py-4 space-y-2">
+ <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold mb-3">
  Active Bids — sorted by lowest price
  </p>
  {jobBids.slice(0, 8).map((bid, i) => {
@@ -298,8 +298,8 @@ function MyJobCard({
  );
  })}
  {jobBids.length > 8 && (
- <p className="text-[10px] text-[#a8997e] text-center pt-1">
- +{jobBids.length - 8} more bids — <Link href={`/jobs/${jobId}`} className="text-[#c9a84c] hover:underline">view all</Link>
+ <p className="text-[10px] text-[#6f6a7d] text-center pt-1">
+ +{jobBids.length - 8} more bids — <Link href={`/jobs/${jobId}`} className="text-[#4b3f8f] hover:underline">view all</Link>
  </p>
  )}
  </div>
@@ -333,8 +333,8 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
 
  if (jobs.length === 0) return (
  <div className="space-y-3">
- <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#a8997e] flex items-center gap-2">
- <span className="w-3 h-px bg-[#c9a84c] inline-block" />
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+ <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
  My Posted Jobs
  </h2>
  <div className="card border-dashed flex flex-col items-center gap-2 pb-8">
@@ -344,7 +344,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  subtitle="Post your first job and freelancers will start bidding immediately."
  />
  <Link href="/post-job">
- <button className="flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
+ <button className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors font-sans">
  <Plus className="h-4 w-4" />
  Post Your First Job
  </button>
@@ -359,30 +359,30 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  {/* ── Header row ─────────────────────────────────────────── */}
  <div className="flex items-center justify-between">
  <div>
- <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#a8997e] flex items-center gap-2">
- <span className="w-3 h-px bg-[#c9a84c] inline-block" />
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+ <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
  My Posted Jobs
  </h2>
- <p className="text-[11px] text-[#a8997e] mt-0.5 font-sans">
+ <p className="text-[11px] text-[#6f6a7d] mt-0.5 font-sans">
  {jobs.length} active · {totalBids} total bid{totalBids !== 1 ? "s" : ""} received
  </p>
  </div>
 
  <div className="flex items-center gap-2">
  {hotCount > 0 && (
- <div className="px-2.5 py-1.5 rounded-[3px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[9px] text-[#c9a84c] uppercase tracking-wider font-sans">🔥 Hot</p>
- <p className="font-serif text-sm text-[#c9a84c]">{hotCount}</p>
+ <div className="px-2.5 py-1.5 rounded-full bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.22)] text-right">
+ <p className="text-[9px] text-[#4b3f8f] uppercase tracking-wider font-sans">🔥 Hot</p>
+ <p className="font-serif text-sm text-[#4b3f8f]">{hotCount}</p>
  </div>
  )}
  {noBidCount > 0 && (
- <div className="px-2.5 py-1.5 rounded-[3px] bg-[rgba(192,57,43,0.2)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[9px] text-[#e57373] uppercase tracking-wider font-sans">No Bids</p>
- <p className="font-serif text-sm text-[#e57373]">{noBidCount}</p>
+ <div className="px-2.5 py-1.5 rounded-full bg-[rgba(193,77,58,0.2)] border border-[rgba(75,63,143,0.22)] text-right">
+ <p className="text-[9px] text-[#96543f] uppercase tracking-wider font-sans">No Bids</p>
+ <p className="font-serif text-sm text-[#96543f]">{noBidCount}</p>
  </div>
  )}
  <Link href="/post-job">
- <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[11px] font-semibold bg-[#c9a84c] text-[#080b14] hover:bg-[#d4b55a] transition-colors font-sans">
+ <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-[#4b3f8f] text-[#fbfaf7] hover:bg-[#3d3373] transition-colors font-sans">
  <Plus className="h-3.5 w-3.5" />
  Post New
  </button>
@@ -393,7 +393,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  {/* ── Filter tabs ─────────────────────────────────────────── */}
  <div className="relative flex items-center gap-2">
  <span
- className="feed-tab-indicator absolute rounded-[3px] bg-[#c9a84c] -z-0"
+ className="feed-tab-indicator absolute rounded-full bg-[#4b3f8f] -z-0"
  style={{ left: indicator.left, width: indicator.width, top: 0, bottom: 0 }}
  aria-hidden="true"
  />
@@ -406,10 +406,10 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  key={tab.key}
  ref={(el) => { tabRefs.current[tab.key] = el; }}
  onClick={() => setFilter(tab.key as typeof filter)}
- className={`relative z-10 px-3 py-1.5 rounded-[3px] text-[11px] font-sans font-semibold transition-colors border ${
+ className={`relative z-10 px-3 py-1.5 rounded-full text-[11px] font-sans font-semibold transition-colors border ${
  filter === tab.key
- ? "text-[#080b14] border-transparent"
- : "bg-transparent text-[#a8997e] border-[rgba(201,168,76,0.22)] hover:border-[#c9a84c]"
+ ? "text-[#fbfaf7] border-transparent"
+ : "bg-transparent text-[#6f6a7d] border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f]"
  }`}
  >
  {tab.label}
@@ -419,9 +419,9 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
 
  {/* ── No-bids alert ───────────────────────────────────────── */}
  {noBidCount > 0 && (
- <div className="flex items-start gap-2.5 px-4 py-3 rounded-[3px] bg-[rgba(192,57,43,0.2)] border border-[rgba(201,168,76,0.22)]">
- <AlertCircle className="h-4 w-4 text-[#e57373] shrink-0 mt-0.5" />
- <p className="text-[11px] text-[#e57373] leading-relaxed font-sans">
+ <div className="flex items-start gap-2.5 px-4 py-3 rounded-full bg-[rgba(193,77,58,0.2)] border border-[rgba(75,63,143,0.22)]">
+ <AlertCircle className="h-4 w-4 text-[#96543f] shrink-0 mt-0.5" />
+ <p className="text-[11px] text-[#96543f] leading-relaxed font-sans">
  <strong>{noBidCount} job{noBidCount !== 1 ? "s" : ""}</strong> have received no bids yet.
  Consider lowering the starting price or broadening required skills.
  </p>

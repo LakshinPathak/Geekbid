@@ -3,8 +3,8 @@
 
 export function SkeletonKpiCard() {
   return (
-    <div className="glass-panel rounded-[3px] p-4 border border-[rgba(201,168,76,0.22)] flex items-center gap-3">
-      <div className="feed-skeleton w-9 h-9 rounded-[3px] shrink-0" />
+    <div className="glass-panel rounded-2xl p-4 border border-[rgba(75,63,143,0.22)] flex items-center gap-3">
+      <div className="feed-skeleton w-9 h-9 rounded-xl shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="feed-skeleton h-2.5 w-16 rounded" />
         <div className="feed-skeleton h-4 w-20 rounded" />
@@ -28,8 +28,8 @@ export function SkeletonJobCard() {
       </div>
       <div className="feed-skeleton h-6 w-24 rounded" />
       <div className="feed-skeleton h-0.5 w-full rounded" />
-      <div className="mt-auto pt-3 border-t border-[rgba(201,168,76,0.15)]">
-        <div className="feed-skeleton h-8 w-full rounded-[3px]" />
+      <div className="mt-auto pt-3 border-t border-[rgba(75,63,143,0.15)]">
+        <div className="feed-skeleton h-8 w-full rounded-xl" />
       </div>
     </div>
   );
@@ -37,7 +37,7 @@ export function SkeletonJobCard() {
 
 export function SkeletonRow() {
   return (
-    <div className="glass-panel rounded-[3px] p-4 flex items-center gap-3">
+    <div className="glass-panel rounded-2xl p-4 flex items-center gap-3">
       <div className="feed-skeleton h-9 w-9 rounded-full shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="feed-skeleton h-3 w-1/3 rounded" />

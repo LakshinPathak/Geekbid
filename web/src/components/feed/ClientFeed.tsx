@@ -147,8 +147,8 @@ export default function ClientFeed() {
  };
 
  if (!mounted) return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120]">
- <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#ffffff]">
+ <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
@@ -157,28 +157,28 @@ export default function ClientFeed() {
  const firstName = currentUser?.fullName?.split(" ")[0];
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#ffffff] grid-bg">
 
  {/* ── Header ──────────────────────────────────────────────── */}
- <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
+ <div className="glass-panel border-b border-[rgba(75,63,143,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
  <div className="feed-header-mesh" aria-hidden="true" />
  <div className="feed-header-shimmer-line" aria-hidden="true" />
  <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
  <div>
  <div className="flex items-center gap-2.5 mb-1">
- <Settings className="h-5 w-5 text-[#c9a84c]" />
- <h1 className="font-heading text-xl font-bold text-[#f0e8d4]">Procurement Terminal</h1>
+ <Settings className="h-5 w-5 text-[#4b3f8f]" />
+ <h1 className="font-heading text-xl font-bold text-[#3d3a45]">Procurement Terminal</h1>
  </div>
  {firstName && (
- <p className="text-[#c9a84c] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
+ <p className="text-[#4b3f8f] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
  )}
- <p className="text-[#a8997e] text-sm">
+ <p className="text-[#6f6a7d] text-sm">
  {kpis.openJobs} active job{kpis.openJobs !== 1 ? "s" : ""}
  {kpis.totalSavings > 0 && ` · $${Math.round(kpis.totalSavings).toLocaleString()} saved from decay`}
  </p>
  {lastRefreshed && (
- <p className="text-[#a8997e]/60 text-[10px] flex items-center gap-1.5 mt-1">
- <span className="h-1.5 w-1.5 rounded-full bg-[#4caf7d] animate-pulse inline-block" />
+ <p className="text-[#6f6a7d]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <span className="h-1.5 w-1.5 rounded-full bg-[#4d7245] animate-pulse inline-block" />
  Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>
  )}
@@ -186,7 +186,7 @@ export default function ClientFeed() {
 
  <div className="flex items-center gap-3">
  <Link href="/post-job">
- <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#c9a84c] text-[#050810] border border-transparent hover:bg-[rgba(201,168,76,0.12)] transition-colors text-sm font-semibold">
+ <button className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#4b3f8f] text-[#ffffff] border border-transparent hover:bg-[rgba(75,63,143,0.12)] transition-colors text-sm font-semibold">
  <Plus className="h-4 w-4" />
  Post Job
  </button>

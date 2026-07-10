@@ -11,13 +11,13 @@ function UsageBar({ label, used, limit }: { label: string; used: number; limit: 
   const pct = isUnlimited ? 0 : Math.min(100, limit > 0 ? (used / limit) * 100 : 100);
   return (
     <div className="min-w-[110px]">
-      <div className="flex items-center justify-between text-[10px] text-[#a8997e] mb-1">
+      <div className="flex items-center justify-between text-[10px] text-[#6f6a7d] mb-1">
         <span>{label}</span>
         <span>{isUnlimited ? `${used} used` : `${used}/${limit}`}</span>
       </div>
-      <div className="h-1 rounded-full bg-[#111625] overflow-hidden">
+      <div className="h-1 rounded-full bg-[#f4f2ee] overflow-hidden">
         <div
-          className={`h-full rounded-full ${pct >= 90 ? "bg-[#e57373]" : "bg-[#c9a84c]"}`}
+          className={`h-full rounded-full ${pct >= 90 ? "bg-[#96543f]" : "bg-[#4b3f8f]"}`}
           style={{ width: isUnlimited ? "8%" : `${pct}%` }}
         />
       </div>
@@ -39,14 +39,14 @@ export default function SubscriptionWidget() {
   const nextTier: 'plus' | 'premium' | null = tier === "free" ? "plus" : tier === "plus" ? "premium" : null;
 
   return (
-    <div className="glass-panel-sm rounded-[6px] p-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+    <div className="glass-panel-sm rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
       <div className="flex items-center gap-3 shrink-0">
-        <div className={`h-9 w-9 rounded-[6px] flex items-center justify-center ${tier === "free" ? "bg-[#111625]" : "bg-[#c9a84c]/12"}`}>
-          <Icon className={`h-4 w-4 ${tier === "free" ? "text-[#a8997e]" : "text-[#c9a84c]"}`} />
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${tier === "free" ? "bg-[#f4f2ee]" : "bg-[#4b3f8f]/12"}`}>
+          <Icon className={`h-4 w-4 ${tier === "free" ? "text-[#6f6a7d]" : "text-[#4b3f8f]"}`} />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[#f0e8d4]">{config.name} plan</p>
-          <p className="text-[11px] text-[#a8997e]">
+          <p className="text-sm font-semibold text-[#3d3a45]">{config.name} plan</p>
+          <p className="text-[11px] text-[#6f6a7d]">
             ${config.price}{config.price > 0 ? "/mo" : ""} · {config.platformFeePercent}% platform fee
           </p>
         </div>
@@ -59,14 +59,14 @@ export default function SubscriptionWidget() {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <Link href="/pricing" className="text-[11px] text-[#a8997e] hover:text-[#f0e8d4] transition-colors whitespace-nowrap">
+        <Link href="/pricing" className="text-[11px] text-[#6f6a7d] hover:text-[#3d3a45] transition-colors whitespace-nowrap">
           Manage subscription
         </Link>
         {nextTier && (
           <button
             onClick={() => startCheckout(nextTier)}
             disabled={!!processingPlan}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-[6px] bg-[#c9a84c] text-[#050810] text-xs font-semibold hover:bg-[#d4b55a] transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#4b3f8f] text-[#ffffff] text-xs font-semibold hover:bg-[#3d3373] transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {processingPlan === nextTier ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
             Upgrade to {nextTier === "plus" ? "Plus" : "Premium"}

@@ -48,10 +48,10 @@ export default function FreelancerJobCard({
 
  // Match badge color
  const matchColor = matchScore >= 75
- ? "bg-[#2e7d52]/12 text-[#4caf7d] border-[rgba(201,168,76,0.22)]"
+ ? "bg-[#4d7245]/12 text-[#4d7245] border-[rgba(75,63,143,0.22)]"
  : matchScore >= 50
- ? "bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border-[rgba(201,168,76,0.22)]"
- : "bg-[#111625] text-[#a8997e] border-[rgba(201,168,76,0.15)]";
+ ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border-[rgba(75,63,143,0.22)]"
+ : "bg-[#f4f2ee] text-[#6f6a7d] border-[rgba(75,63,143,0.15)]";
 
  // Effective hourly
  const elapsedHrs = (now.getTime() - new Date(job.postedAt).getTime()) / 3600000;
@@ -74,7 +74,7 @@ export default function FreelancerJobCard({
  <Link href={`/jobs/${jobId}`} className="block group">
  <div ref={cardRef} className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate p-5 transition-all duration-200 h-full flex flex-col gap-4 relative">
  {job.status === "open" && (
- <span className="absolute top-3 left-3 h-2 w-2 rounded-full bg-[#4caf7d] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
+ <span className="absolute top-3 left-3 h-2 w-2 rounded-full bg-[#4d7245] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
  )}
 
  {/* ── Header: badges + title ─────────────────────────────────────── */}
@@ -82,45 +82,45 @@ export default function FreelancerJobCard({
  <div className="flex items-start justify-between gap-2 mb-2">
  <div className="flex flex-wrap gap-1.5">
  {/* Match % badge */}
- <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${matchColor}`}>
+ <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${matchColor}`}>
  {matchScore}% Match
  </span>
  {/* Competition badge */}
- <span className={`px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${comp.color} ${comp.bg} ${comp.border}`}>
+ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${comp.color} ${comp.bg} ${comp.border}`}>
  {comp.label}
  </span>
  {hasMyBid && myBidRank && myBidRank > 0 && (
- <span className={`px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold border ${
- myBidRank === 1 ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40" :
- myBidRank === 2 ? "bg-[#c0c0c0]/15 text-[#d8d8d8] border-[#c0c0c0]/30" :
- myBidRank === 3 ? "bg-[#cd7f32]/15 text-[#e0a06e] border-[#cd7f32]/30" :
- "bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border-[rgba(201,168,76,0.22)]"
+ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+ myBidRank === 1 ? "bg-[#4b3f8f]/20 text-[#4b3f8f] border-[#4b3f8f]/40" :
+ myBidRank === 2 ? "bg-[#c0c0c0]/15 text-[#3d3a45] border-[#c0c0c0]/30" :
+ myBidRank === 3 ? "bg-[#cd7f32]/15 text-[#a08a3c] border-[#cd7f32]/30" :
+ "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border-[rgba(75,63,143,0.22)]"
  }`}>
  {myBidRank === 1 ? "🥇" : myBidRank === 2 ? "🥈" : myBidRank === 3 ? "🥉" : ""} Rank #{myBidRank}
  </span>
  )}
  {hasMyBid && (!myBidRank || myBidRank === 0) && (
- <span className="px-2.5 py-0.5 rounded-[3px] text-[11px] font-semibold bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]">
+ <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">
  Bid Placed
  </span>
  )}
  </div>
- <ChevronRight className="h-4 w-4 text-[#a8997e] group-hover:text-[#c9a84c] transition-colors shrink-0 mt-0.5" />
+ <ChevronRight className="h-4 w-4 text-[#6f6a7d] group-hover:text-[#4b3f8f] transition-colors shrink-0 mt-0.5" />
  </div>
 
- <h3 className="font-heading text-[15px] font-normal text-[#f0e8d4] leading-snug group-hover:text-[#c9a84c] transition-colors line-clamp-2">
+ <h3 className="font-heading text-[15px] font-normal text-[#3d3a45] leading-snug group-hover:text-[#4b3f8f] transition-colors line-clamp-2">
  {job.title}
  </h3>
 
  {/* Skill checklist */}
  <div className="flex flex-wrap gap-1.5 mt-2">
  {matchedSkills.slice(0, 3).map(s => (
- <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-[3px] text-[11px] bg-[#2e7d52]/12 text-[#4caf7d] border border-[#2e7d52]/22">
+ <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#4d7245]/12 text-[#4d7245] border border-[#4d7245]/22">
  ✓ {s}
  </span>
  ))}
  {missingSkills.slice(0, 2).map(s => (
- <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-[3px] text-[11px] bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]">
+ <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">
  ✗ {s}
  </span>
  ))}
@@ -131,13 +131,13 @@ export default function FreelancerJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider">Current Price</span>
- <p className="font-heading text-2xl font-normal text-[#f0e8d4]">{formatMoney(current)}</p>
+ <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider">Current Price</span>
+ <p className="font-heading text-2xl font-normal text-[#3d3a45]">{formatMoney(current)}</p>
  </div>
  {hourlyRate && (
  <div className="text-right">
- <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider">Effective/hr</span>
- <p className="font-heading text-lg font-normal text-[#a8997e]">${hourlyRate}/hr</p>
+ <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider">Effective/hr</span>
+ <p className="font-heading text-lg font-normal text-[#6f6a7d]">${hourlyRate}/hr</p>
  </div>
  )}
  </div>
@@ -145,21 +145,21 @@ export default function FreelancerJobCard({
  {/* Price trajectory */}
  <div className="flex items-center gap-1.5 text-xs mb-2">
  <span className={trajectory.color}>{trajectory.icon}</span>
- <span className="text-[#a8997e] font-medium">{trajectory.label}</span>
- <span className="text-[#a8997e]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
+ <span className="text-[#6f6a7d] font-medium">{trajectory.label}</span>
+ <span className="text-[#6f6a7d]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
  </div>
 
  {/* Decay bar */}
  <div className="space-y-1">
- <div className="h-0.5 w-full bg-[#1a1f30]">
+ <div className="h-0.5 w-full bg-[#f0edfa]">
  <div
- className="h-full bg-[#c9a84c] transition-all duration-500"
+ className="h-full bg-[#4b3f8f] transition-all duration-500"
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#a8997e] font-medium">
+ <div className="flex justify-between text-[10px] text-[#6f6a7d] font-medium">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
- {hoursLeft > 0 && <span className="text-[#c9a84c] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} to floor</span>}
+ {hoursLeft > 0 && <span className="text-[#4b3f8f] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} to floor</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
  </div>
  </div>
@@ -168,33 +168,33 @@ export default function FreelancerJobCard({
  {/* ── Client info ─────────────────────────────────────────────────── */}
  {clientName && (
  <div className="flex items-center gap-2">
- <User className="h-3 w-3 text-[#a8997e] shrink-0" />
- <span className="text-[10px] text-[#a8997e] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
- <div className="w-5 h-5 rounded-full bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)] flex items-center justify-center text-[9px] font-bold shrink-0">
+ <User className="h-3 w-3 text-[#6f6a7d] shrink-0" />
+ <span className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
+ <div className="w-5 h-5 rounded-full bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] flex items-center justify-center text-[9px] font-bold shrink-0">
  {clientName[0]}
  </div>
- <span className="text-xs text-[#a8997e] truncate">{clientName}</span>
+ <span className="text-xs text-[#6f6a7d] truncate">{clientName}</span>
  {clientRating && (
- <span className="text-[11px] text-[#c9a84c] font-semibold shrink-0">⭐ {clientRating.toFixed(1)}{clientReviewCount ? ` (${clientReviewCount})` : ""}</span>
+ <span className="text-[11px] text-[#4b3f8f] font-semibold shrink-0">⭐ {clientRating.toFixed(1)}{clientReviewCount ? ` (${clientReviewCount})` : ""}</span>
  )}
  </div>
  )}
 
  {/* ── Footer: stats + CTA ─────────────────────────────────────────── */}
- <div className="mt-auto pt-3 border-t border-[rgba(201,168,76,0.15)]">
+ <div className="mt-auto pt-3 border-t border-[rgba(75,63,143,0.15)]">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-3 text-[11px] text-[#a8997e] font-medium">
+ <div className="flex items-center gap-3 text-[11px] text-[#6f6a7d] font-medium">
  {job.estimatedHours && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#a8997e]" />{job.estimatedHours}h
+ <Clock className="h-3 w-3 text-[#6f6a7d]" />{job.estimatedHours}h
  </span>
  )}
  <span className="flex items-center gap-1">
- <Users className="h-3 w-3 text-[#a8997e]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
+ <Users className="h-3 w-3 text-[#6f6a7d]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
  {hoursLeft > 0 && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#a8997e]" />{formatHoursToFloor(hoursLeft)} left
+ <Clock className="h-3 w-3 text-[#6f6a7d]" />{formatHoursToFloor(hoursLeft)} left
  </span>
  )}
  </div>

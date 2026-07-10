@@ -24,11 +24,11 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#a8997e] flex items-center gap-2">
-          <span className="w-3 h-px bg-[#c9a84c] inline-block" />
+        <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+          <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
           Recommended For You
         </h2>
-        <span className="text-[11px] text-[#a8997e]">Top {Math.min(jobs.length, 5)} matches</span>
+        <span className="text-[11px] text-[#6f6a7d]">Top {Math.min(jobs.length, 5)} matches</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -62,54 +62,54 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
               href={`/jobs/${jobId}`}
               className="group"
             >
-              <div className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(201,168,76,0.40)] transition-colors duration-200 relative">
+              <div className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(75,63,143,0.40)] transition-colors duration-200 relative">
                 {isNew && (
-                  <span className="absolute -top-1.5 -right-1.5 h-5 px-1.5 rounded-[3px] bg-[#c9a84c] text-[#050810] text-[9px] font-bold flex items-center justify-center feed-badge-pop z-10">
+                  <span className="absolute -top-1.5 -right-1.5 h-5 px-1.5 rounded-full bg-[#4b3f8f] text-[#ffffff] text-[9px] font-bold flex items-center justify-center feed-badge-pop z-10">
                     NEW
                   </span>
                 )}
 
                 {/* Row 1: match badge + comp label */}
                 <div className="flex items-center justify-between">
-                  <span className={`text-[9px] font-bold tracking-[0.09em] uppercase px-2 py-0.5 rounded-[2px] font-sans ${
+                  <span className={`text-[9px] font-bold tracking-[0.09em] uppercase px-2 py-0.5 rounded-full font-sans ${
                     isHighMatch
-                      ? "bg-[#c9a84c] text-[#050810]"
+                      ? "bg-[#4b3f8f] text-[#ffffff]"
                       : isMidMatch
-                      ? "bg-[rgba(201,168,76,0.15)] text-[#c9a84c] border border-[rgba(201,168,76,0.35)]"
-                      : "bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.15)]"
+                      ? "bg-[rgba(75,63,143,0.15)] text-[#4b3f8f] border border-[rgba(75,63,143,0.35)]"
+                      : "bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]"
                   }`}>
                     {matchScore}% Match
                   </span>
-                  <span className={`text-[9px] font-bold tracking-[0.09em] uppercase px-2 py-0.5 rounded-[2px] font-sans ${comp.color} ${comp.bg} border ${comp.border}`}>
+                  <span className={`text-[9px] font-bold tracking-[0.09em] uppercase px-2 py-0.5 rounded-full font-sans ${comp.color} ${comp.bg} border ${comp.border}`}>
                     {comp.label}
                   </span>
                 </div>
 
                 {/* Row 2: title */}
-                <p className="text-sm font-serif font-normal text-[#f0e8d4] leading-snug line-clamp-2 group-hover:text-[#c9a84c] transition-colors">
+                <p className="text-sm font-serif font-normal text-[#3d3a45] leading-snug line-clamp-2 group-hover:text-[#4b3f8f] transition-colors">
                   {job.title}
                 </p>
 
                 {/* Row 3: price + hourly */}
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-serif font-normal text-[#f0e8d4] tabular-nums">
+                  <span className="text-xl font-serif font-normal text-[#3d3a45] tabular-nums">
                     {formatMoney(current)}
                   </span>
                   {hourlyRate && (
-                    <span className="text-xs text-[#c9a84c] font-sans">${hourlyRate}/hr</span>
+                    <span className="text-xs text-[#4b3f8f] font-sans">${hourlyRate}/hr</span>
                   )}
                 </div>
 
                 {/* Row 4: flat progress bar */}
-                <div className="h-0.5 bg-[#1a1f30]">
-                  <div className="h-0.5 bg-[#c9a84c]" style={{ width: `${decayPct}%` }} />
+                <div className="h-0.5 bg-[#f0edfa]">
+                  <div className="h-0.5 bg-[#4b3f8f]" style={{ width: `${decayPct}%` }} />
                 </div>
 
                 {/* Row 5: trajectory */}
                 <div className="flex items-center gap-1.5 text-[11px] font-sans">
                   <span className={trajectory.color}>{trajectory.icon}</span>
-                  <span className="text-[#a8997e]">{trajectory.label}</span>
-                  <span className="text-[#a8997e] ml-auto">{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
+                  <span className="text-[#6f6a7d]">{trajectory.label}</span>
+                  <span className="text-[#6f6a7d] ml-auto">{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
                 </div>
 
                 {/* QuickBid */}
@@ -118,7 +118,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                     e.preventDefault();
                     if (onQuickBid) onQuickBid(jobId);
                   }}
-                  className="mt-auto btn-primary w-full justify-center text-[11px] tracking-[0.06em] uppercase py-2 rounded-[3px]"
+                  className="mt-auto btn-primary w-full justify-center text-[11px] tracking-[0.06em] uppercase py-2 rounded-full"
                 >
                   <Zap className="h-3 w-3" />
                   QuickBid

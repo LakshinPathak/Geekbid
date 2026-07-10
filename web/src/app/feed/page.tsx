@@ -14,8 +14,8 @@ export default function FeedPage() {
  // Loading state — both feeds handle their own loading skeleton internally
  if (!mounted) {
  return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#0d1120]">
- <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#ffffff]">
+ <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
  }

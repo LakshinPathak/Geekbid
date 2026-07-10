@@ -69,30 +69,30 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
       onClick={handleClose}
     >
       <div
-        className={`w-full max-w-md rounded-[6px] border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
-        style={{ background: "#0d1120", borderColor: "rgba(201,168,76,0.22)" }}
+        className={`w-full max-w-md rounded-2xl border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
+        style={{ background: "#ffffff", borderColor: "rgba(75,63,143,0.22)" }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="font-serif font-normal text-xl text-[#f0e8d4]">Invite to Bid</h2>
-            <p className="text-[11px] text-[#a8997e] mt-0.5">
-              Invite <span className="text-[#c9a84c]">{freelancerName}</span> to one of your open jobs
+            <h2 className="font-serif font-normal text-xl text-[#3d3a45]">Invite to Bid</h2>
+            <p className="text-[11px] text-[#6f6a7d] mt-0.5">
+              Invite <span className="text-[#4b3f8f]">{freelancerName}</span> to one of your open jobs
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="h-8 w-8 rounded-[3px] flex items-center justify-center hover:bg-[#111625] transition-colors"
+            className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
           >
-            <X className="h-4 w-4 text-[#a8997e]" />
+            <X className="h-4 w-4 text-[#6f6a7d]" />
           </button>
         </div>
 
         {myOpenJobs.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-[#a8997e]">No open jobs available.</p>
-            <p className="text-xs text-[#a8997e] mt-1 opacity-70">Post a job first, then invite freelancers to bid.</p>
+            <p className="text-sm text-[#6f6a7d]">No open jobs available.</p>
+            <p className="text-xs text-[#6f6a7d] mt-1 opacity-70">Post a job first, then invite freelancers to bid.</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
@@ -103,26 +103,26 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
                 <button
                   key={jid}
                   onClick={() => setSelectedJobId(jid)}
-                  className="w-full text-left rounded-[6px] px-4 py-3 border transition-all"
+                  className="w-full text-left rounded-2xl px-4 py-3 border transition-all"
                   style={{
-                    background: isSelected ? "rgba(201,168,76,0.08)" : "#111625",
-                    borderColor: isSelected ? "rgba(201,168,76,0.35)" : "rgba(201,168,76,0.12)",
+                    background: isSelected ? "rgba(75,63,143,0.08)" : "#f4f2ee",
+                    borderColor: isSelected ? "rgba(75,63,143,0.35)" : "rgba(75,63,143,0.12)",
                   }}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
-                           style={{ borderColor: isSelected ? "#c9a84c" : "#a8997e" }}>
-                        {isSelected && <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#c9a84c" }} />}
+                           style={{ borderColor: isSelected ? "#4b3f8f" : "#6f6a7d" }}>
+                        {isSelected && <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#4b3f8f" }} />}
                       </div>
                       <div className="min-w-0">
-                        <span className="text-sm text-[#f0e8d4] truncate block">{job.title}</span>
+                        <span className="text-sm text-[#3d3a45] truncate block">{job.title}</span>
                         {freelancerBidJobIds.has(jid) && (
-                          <span className="text-[10px] text-[#4caf7d] font-medium">✓ Already bid on this job</span>
+                          <span className="text-[10px] text-[#4d7245] font-medium">✓ Already bid on this job</span>
                         )}
                       </div>
                     </div>
-                    <span className="text-sm font-serif shrink-0" style={{ color: "#c9a84c" }}>
+                    <span className="text-sm font-serif shrink-0" style={{ color: "#4b3f8f" }}>
                       {formatMoney(getCurrentPrice(job, now))}
                     </span>
                   </div>

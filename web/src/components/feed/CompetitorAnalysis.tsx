@@ -35,9 +35,9 @@ function getCategoryLabel(cat: string) {
 }
 
 function competitionBadge(avgBids: number) {
- if (avgBids >= 5) return { text: "High", bg: "bg-[rgba(192,57,43,0.2)]", text2: "text-[#e57373]" };
- if (avgBids >= 2) return { text: "Medium", bg: "bg-[rgba(201,168,76,0.12)]", text2: "text-[#c9a84c]" };
- return { text: "Low", bg: "bg-[rgba(47,125,84,0.12)]", text2: "text-[#4caf7d]" };
+ if (avgBids >= 5) return { text: "High", bg: "bg-[rgba(193,77,58,0.2)]", text2: "text-[#96543f]" };
+ if (avgBids >= 2) return { text: "Medium", bg: "bg-[rgba(75,63,143,0.12)]", text2: "text-[#4b3f8f]" };
+ return { text: "Low", bg: "bg-[rgba(47,125,84,0.12)]", text2: "text-[#4d7245]" };
 }
 
 export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) {
@@ -108,23 +108,23 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  {/* ── Section header ─────────────────────────────── */}
  <div className="flex items-center justify-between">
  <div>
- <h2 className="text-sm font-normal font-heading text-[#f0e8d4] uppercase tracking-wider flex items-center gap-2">
- <BarChart2 className="h-4 w-4 text-[#c9a84c]" />
+ <h2 className="text-sm font-normal font-heading text-[#3d3a45] uppercase tracking-wider flex items-center gap-2">
+ <BarChart2 className="h-4 w-4 text-[#4b3f8f]" />
  Market Pricing Intelligence
  </h2>
- <p className="text-[11px] text-[#a8997e] mt-0.5">
+ <p className="text-[11px] text-[#6f6a7d] mt-0.5">
  Bid smarter — {mktJobs.length} live jobs across {categoryStats.length} categories
  </p>
  </div>
  {/* Summary pills */}
  <div className="flex items-center gap-2">
- <div className="px-3 py-1.5 rounded-[3px] bg-[#111625] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Market Avg</p>
- <p className="font-heading text-sm font-normal text-[#f0e8d4]">{formatMoney(overallAvg)}</p>
+ <div className="px-3 py-1.5 rounded-full bg-[#f4f2ee] border border-[rgba(75,63,143,0.22)] text-right">
+ <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Market Avg</p>
+ <p className="font-heading text-sm font-normal text-[#3d3a45]">{formatMoney(overallAvg)}</p>
  </div>
- <div className="px-3 py-1.5 rounded-[3px] bg-[rgba(192,57,43,0.1)] border border-[rgba(201,168,76,0.22)] text-right">
- <p className="text-[10px] text-[#a8997e] uppercase tracking-wider">Avg Decay</p>
- <p className="font-heading text-sm font-normal text-[#e57373]">-{formatMoney(overallDecay)}/hr</p>
+ <div className="px-3 py-1.5 rounded-full bg-[rgba(193,77,58,0.1)] border border-[rgba(75,63,143,0.22)] text-right">
+ <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Avg Decay</p>
+ <p className="font-heading text-sm font-normal text-[#96543f]">-{formatMoney(overallDecay)}/hr</p>
  </div>
  </div>
  </div>
@@ -133,7 +133,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── LEFT: Category breakdown ────────────────── */}
  <div className="space-y-2">
- <p className="text-[11px] text-[#a8997e] font-semibold uppercase tracking-wider px-1">
+ <p className="text-[11px] text-[#6f6a7d] font-semibold uppercase tracking-wider px-1">
  By Category
  </p>
 
@@ -144,37 +144,37 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  return (
  <div key={cat.category}
- className="glass-panel feed-glass-card rounded-[6px] border border-[rgba(201,168,76,0.22)] overflow-hidden"
+ className="glass-panel feed-glass-card rounded-2xl border border-[rgba(75,63,143,0.22)] overflow-hidden"
  >
  {/* Row */}
  <button
  onClick={() => setExpandedCat(isOpen ? null : cat.category)}
- className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#111625] transition-colors text-left"
+ className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#f4f2ee] transition-colors text-left"
  >
  {/* Left: name + bar */}
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 mb-1.5">
- <span className="text-sm font-semibold text-[#f0e8d4]">{cat.label}</span>
- <span className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium bg-[#111625] text-[#a8997e] border border-[rgba(201,168,76,0.22)]">
+ <span className="text-sm font-semibold text-[#3d3a45]">{cat.label}</span>
+ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
  {cat.jobCount} job{cat.jobCount !== 1 ? "s" : ""}
  </span>
- <span className={`px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium ${comp.bg} ${comp.text2} border border-[rgba(201,168,76,0.22)]`}>
+ <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${comp.bg} ${comp.text2} border border-[rgba(75,63,143,0.22)]`}>
  {comp.text} comp.
  </span>
  {cat.hasMySkill && (
- <span className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium bg-[#2e7d52]/20 text-[#4caf7d] border border-[rgba(201,168,76,0.22)]">
+ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#4d7245]/20 text-[#4d7245] border border-[rgba(75,63,143,0.22)]">
  ✓ My Skills
  </span>
  )}
  </div>
  {/* Price bar */}
- <div className="h-0.5 w-full bg-[#1a1f30]">
+ <div className="h-0.5 w-full bg-[#f0edfa]">
  <div
- className="h-full rounded-full bg-[#c9a84c] transition-all duration-500"
+ className="h-full rounded-full bg-[#4b3f8f] transition-all duration-500"
  style={{ width: `${barPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#a8997e] mt-1">
+ <div className="flex justify-between text-[10px] text-[#6f6a7d] mt-1">
  <span>Min {formatMoney(cat.minPrice)}</span>
  <span>Max {formatMoney(cat.maxPrice)}</span>
  </div>
@@ -182,23 +182,23 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* Right: avg price + decay */}
  <div className="shrink-0 text-right">
- <p className="font-heading text-base font-normal text-[#f0e8d4]">{formatMoney(cat.avgPrice)}</p>
- <p className="text-[10px] text-[#e57373] flex items-center justify-end gap-0.5">
+ <p className="font-heading text-base font-normal text-[#3d3a45]">{formatMoney(cat.avgPrice)}</p>
+ <p className="text-[10px] text-[#96543f] flex items-center justify-end gap-0.5">
  <TrendingDown className="h-2.5 w-2.5" />
  -{formatMoney(cat.avgDecay)}/hr
  </p>
  </div>
 
- <ChevronDown className={`h-4 w-4 text-[#a8997e] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#6f6a7d] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
  </button>
 
  {/* Expanded: job-level breakdown */}
  {isOpen && (
- <div className="border-t border-[rgba(201,168,76,0.15)] bg-[#0a0e1a] px-4 py-3 overflow-x-auto">
+ <div className="border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] px-4 py-3 overflow-x-auto">
  {/* Column headers */}
- <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(201,168,76,0.15)] mb-2 min-w-[320px]">
+ <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(75,63,143,0.15)] mb-2 min-w-[320px]">
  {["Job", "Price", "Decay/hr", "Bids"].map(h => (
- <span key={h} className="text-[10px] text-[#a8997e] font-semibold uppercase last:text-right">
+ <span key={h} className="text-[10px] text-[#6f6a7d] font-semibold uppercase last:text-right">
  {h}
  </span>
  ))}
@@ -206,16 +206,16 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  {cat.catJobs.map(j => (
  <div
  key={j.id ?? j._id}
- className="grid grid-cols-[1fr_90px_80px_72px] gap-2 py-1.5 border-b border-[rgba(201,168,76,0.15)] last:border-0 min-w-[320px]"
+ className="grid grid-cols-[1fr_90px_80px_72px] gap-2 py-1.5 border-b border-[rgba(75,63,143,0.15)] last:border-0 min-w-[320px]"
  >
- <span className="text-[11px] text-[#f0e8d4] truncate">{j.title}</span>
- <span className="text-[11px] font-normal font-heading text-[#f0e8d4]">
+ <span className="text-[11px] text-[#3d3a45] truncate">{j.title}</span>
+ <span className="text-[11px] font-normal font-heading text-[#3d3a45]">
  {formatMoney(getCurrentPrice(j, now))}
  </span>
- <span className="text-[11px] text-[#e57373]">
+ <span className="text-[11px] text-[#96543f]">
  -{formatMoney(j.decayRatePerHour)}
  </span>
- <span className="text-[11px] text-[#a8997e] text-right">
+ <span className="text-[11px] text-[#6f6a7d] text-right">
  {j.bidCount ?? 0}
  </span>
  </div>
@@ -229,8 +229,8 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── RIGHT: Skill demand ─────────────────────── */}
  <div className="space-y-3">
- <p className="text-[11px] text-[#a8997e] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
- <Flame className="h-3.5 w-3.5 text-[#c9a84c]" />
+ <p className="text-[11px] text-[#6f6a7d] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
+ <Flame className="h-3.5 w-3.5 text-[#4b3f8f]" />
  Hot Skills by Demand
  </p>
 
@@ -240,28 +240,28 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  return (
  <div
  key={skill.skill}
- className="glass-panel feed-glass-card rounded-[6px] border border-[rgba(201,168,76,0.22)] px-3 py-2.5"
+ className="glass-panel feed-glass-card rounded-2xl border border-[rgba(75,63,143,0.22)] px-3 py-2.5"
  >
  <div className="flex items-center gap-2 mb-1.5">
- <span className="text-[10px] font-bold text-[#a8997e] w-5 shrink-0">
+ <span className="text-[10px] font-bold text-[#6f6a7d] w-5 shrink-0">
  #{i + 1}
  </span>
  <span className={`flex-1 text-xs font-semibold truncate ${
- skill.isMine ? "text-[#4caf7d]" : "text-[#f0e8d4]"
+ skill.isMine ? "text-[#4d7245]" : "text-[#3d3a45]"
  }`}>
  {skill.skill}{skill.isMine ? " ✓" : ""}
  </span>
- <span className="text-[10px] text-[#a8997e] shrink-0">
+ <span className="text-[10px] text-[#6f6a7d] shrink-0">
  {skill.count} job{skill.count !== 1 ? "s" : ""}
  </span>
- <span className="text-[10px] font-bold text-[#c9a84c] shrink-0">
+ <span className="text-[10px] font-bold text-[#4b3f8f] shrink-0">
  {formatMoney(skill.avgPrice)}
  </span>
  </div>
  {/* Demand bar */}
- <div className="h-1 w-full bg-[#1a1f30] rounded-full overflow-hidden">
+ <div className="h-1 w-full bg-[#f0edfa] rounded-full overflow-hidden">
  <div
- className="h-full rounded-full bg-[#c9a84c]/60 transition-all duration-500"
+ className="h-full rounded-full bg-[#4b3f8f]/60 transition-all duration-500"
  style={{ width: `${barPct}%` }}
  />
  </div>
@@ -271,11 +271,11 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  </div>
 
  {/* Pricing insight callout */}
- <div className="p-3.5 rounded-[6px] bg-[#0a0e1a] border border-[rgba(201,168,76,0.22)]">
- <p className="text-[11px] font-bold text-[#c9a84c] mb-1.5 flex items-center gap-1.5">
+ <div className="p-3.5 rounded-2xl bg-[#ffffff] border border-[rgba(75,63,143,0.22)]">
+ <p className="text-[11px] font-bold text-[#4b3f8f] mb-1.5 flex items-center gap-1.5">
  💡 Pricing Insight
  </p>
- <p className="text-[11px] text-[#a8997e] leading-relaxed">
+ <p className="text-[11px] text-[#6f6a7d] leading-relaxed">
  Market avg decay is <strong>{formatMoney(overallDecay)}/hr</strong>. 
  Most competitive category: <strong>{categoryStats[0]?.label ?? "—"}</strong> with{" "}
  <strong>{categoryStats[0]?.avgBids.toFixed(1) ?? "—"} avg bids</strong> per job.

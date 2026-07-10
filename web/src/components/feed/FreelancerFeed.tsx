@@ -287,8 +287,8 @@ export default function FreelancerFeed() {
  const hasAdvancedFilters = filterBudget || filterCompetition || filterHourlyRate;
 
  if (!mounted) return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#080b14]">
- <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#fbfaf7]">
+ <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
@@ -297,27 +297,27 @@ export default function FreelancerFeed() {
  const firstName = currentUser?.fullName?.split(" ")[0];
 
  return (
- <div className="min-h-screen bg-[#0d1120] grid-bg">
+ <div className="min-h-screen bg-[#ffffff] grid-bg">
 
  {/* ── Header ──────────────────────────────────────────────── */}
- <div className="glass-panel border-b border-[rgba(201,168,76,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
+ <div className="glass-panel border-b border-[rgba(75,63,143,0.22)] py-5 px-4 sm:px-6 relative overflow-hidden" style={{ borderRadius: 0 }}>
  <div className="feed-header-mesh" aria-hidden="true" />
  <div className="feed-header-shimmer-line" aria-hidden="true" />
  <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
  <div>
  <div className="flex items-center gap-2.5 mb-1">
- <Target className="h-5 w-5 text-[#c9a84c]" />
- <h1 className="font-heading text-xl font-bold text-[#f0e8d4]">Mission Control</h1>
+ <Target className="h-5 w-5 text-[#4b3f8f]" />
+ <h1 className="font-heading text-xl font-bold text-[#3d3a45]">Mission Control</h1>
  </div>
  {firstName && (
- <p className="text-[#c9a84c] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
+ <p className="text-[#4b3f8f] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
  )}
- <p className="text-[#a8997e] text-sm">
+ <p className="text-[#6f6a7d] text-sm">
  {kpis.matchedJobs} matches · {kpis.bidsUsed}/{kpis.bidLimit} bids used · {kpis.winRate}% win rate
  </p>
  {lastRefreshed && (
- <p className="text-[#a8997e]/60 text-[10px] flex items-center gap-1.5 mt-1">
- <span className="h-1.5 w-1.5 rounded-full bg-[#4caf7d] animate-pulse inline-block" />
+ <p className="text-[#6f6a7d]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <span className="h-1.5 w-1.5 rounded-full bg-[#4d7245] animate-pulse inline-block" />
  Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>
  )}
@@ -325,7 +325,7 @@ export default function FreelancerFeed() {
 
  <div className="flex items-center gap-3">
  <Link href="/profile">
- <button className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] bg-[#050810] text-[#f0e8d4] border-0 hover:bg-[#111625] transition-colors text-sm font-medium">
+ <button className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#ffffff] text-[#3d3a45] border-0 hover:bg-[#f4f2ee] transition-colors text-sm font-medium">
  My Profile
  </button>
  </Link>
@@ -367,81 +367,81 @@ export default function FreelancerFeed() {
  {/* 4. All Open Jobs ───────────────────────────────────── */}
  <div>
  <div className="flex items-center justify-between mb-5">
- <h2 className="text-base font-semibold text-[#f0e8d4] uppercase tracking-wider">
+ <h2 className="text-base font-semibold text-[#3d3a45] uppercase tracking-wider">
  All Open Jobs
  </h2>
- <span className="text-[11px] text-[#a8997e] font-medium">{filteredJobs.length} jobs</span>
+ <span className="text-[11px] text-[#6f6a7d] font-medium">{filteredJobs.length} jobs</span>
  </div>
 
  {/* ── Filter Toolbar ────────────────────────────────────── */}
- <div className="glass-panel rounded-[6px] border border-[rgba(201,168,76,0.22)] mb-5 overflow-visible">
+ <div className="glass-panel rounded-2xl border border-[rgba(75,63,143,0.22)] mb-5 overflow-visible">
 
  {/* Main row */}
  <div className="flex flex-wrap items-center gap-2 px-4 py-3">
 
  {/* Search */}
  <div className="relative flex-1 min-w-0">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#a8997e]" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6f6a7d]" />
  <input
  ref={searchInputRef}
  type="text"
  placeholder="Search jobs or skills..."
  value={search}
  onChange={e => setSearch(e.target.value)}
- className="w-full h-9 pl-8 pr-14 text-sm bg-[#111625] border border-[rgba(201,168,76,0.22)] rounded-[6px] text-[#f0e8d4] placeholder:text-[#8A9BAA] outline-none focus:border-[rgba(201,168,76,0.35)]/60 transition-colors"
+ className="w-full h-9 pl-8 pr-14 text-sm bg-[#f4f2ee] border border-[rgba(75,63,143,0.22)] rounded-2xl text-[#3d3a45] placeholder:text-[#b3aec0] outline-none focus:border-[rgba(75,63,143,0.35)]/60 transition-colors"
  />
  {search ? (
  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
- <X className="h-3 w-3 text-[#a8997e]" />
+ <X className="h-3 w-3 text-[#6f6a7d]" />
  </button>
  ) : (
- <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#a8997e]/60 border border-[rgba(201,168,76,0.15)] rounded px-1.5 py-0.5 pointer-events-none">
+ <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#6f6a7d]/60 border border-[rgba(75,63,143,0.15)] rounded px-1.5 py-0.5 pointer-events-none">
  ⌘K
  </kbd>
  )}
  </div>
 
  {/* Divider */}
- <div className="h-6 w-px bg-[rgba(201,168,76,0.22)] shrink-0" />
+ <div className="h-6 w-px bg-[rgba(75,63,143,0.22)] shrink-0" />
 
  {/* Category select — styled pill */}
  <div className="relative shrink-0">
  <select
  value={filterCategory}
  onChange={e => setFilterCategory(e.target.value)}
- className="h-9 pl-3 pr-7 text-xs font-medium rounded-[6px] border border-[rgba(201,168,76,0.22)] bg-[#111625] text-[#a8997e] outline-none appearance-none cursor-pointer hover:border-[rgba(201,168,76,0.35)]/50 transition-colors"
+ className="h-9 pl-3 pr-7 text-xs font-medium rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="all">All Categories</option>
  {JOB_CATEGORIES.map(c => (
  <option key={c.value} value={c.value}>{c.label}</option>
  ))}
  </select>
- <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#a8997e]" />
+ <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#6f6a7d]" />
  </div>
 
  {/* Divider */}
- <div className="h-6 w-px bg-[rgba(201,168,76,0.22)] shrink-0" />
+ <div className="h-6 w-px bg-[rgba(75,63,143,0.22)] shrink-0" />
 
  {/* Sort chip */}
  <div ref={sortMenuRef} className="relative shrink-0">
  <button
  onClick={() => setShowSortMenu(v => !v)}
- className={`h-9 px-3 text-xs font-semibold rounded-[6px] border flex items-center gap-1.5 transition-all ${
+ className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 transition-all ${
  sortBy !== "best_match"
- ? "border-[rgba(201,168,76,0.35)] bg-[rgba(201,168,76,0.12)] text-[#c9a84c]"
- : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
+ ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
  {FREELANCER_SORTS.find(s => s.value === sortBy)?.label ?? "Sort"}
  <ChevronDown className={`h-3 w-3 transition-transform ${showSortMenu ? "rotate-180" : ""}`} />
  </button>
  {showSortMenu && (
- <div className="absolute left-0 top-11 z-50 glass-panel border border-[rgba(201,168,76,0.22)] rounded-[6px] py-1 min-w-[160px] ">
+ <div className="absolute left-0 top-11 z-50 glass-panel border border-[rgba(75,63,143,0.22)] rounded-2xl py-1 min-w-[160px] ">
  {FREELANCER_SORTS.map(s => (
  <button
  key={s.value}
  onClick={() => { setSortBy(s.value); setShowSortMenu(false); }}
- className={`w-full text-left px-4 py-2 text-xs hover:bg-[#111625] transition-colors ${sortBy === s.value ? "text-[#c9a84c] font-semibold" : "text-[#a8997e]"}`}
+ className={`w-full text-left px-4 py-2 text-xs hover:bg-[#f4f2ee] transition-colors ${sortBy === s.value ? "text-[#4b3f8f] font-semibold" : "text-[#6f6a7d]"}`}
  >
  {s.label}
  </button>
@@ -454,30 +454,30 @@ export default function FreelancerFeed() {
  <div ref={skillPickerRef} className="relative shrink-0">
  <button
  onClick={() => setShowSkillPicker(v => !v)}
- className={`h-9 px-3 text-xs font-semibold rounded-[6px] border flex items-center gap-1.5 transition-all ${
+ className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 transition-all ${
  filterSkills.length > 0
- ? "border-[rgba(201,168,76,0.35)] bg-[rgba(201,168,76,0.12)] text-[#c9a84c]"
- : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
+ ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
- Skills {filterSkills.length > 0 && <span className="feed-badge-pop bg-[#c9a84c] text-[#050810] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
+ Skills {filterSkills.length > 0 && <span className="feed-badge-pop bg-[#4b3f8f] text-[#ffffff] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
  <ChevronDown className={`h-3 w-3 transition-transform ${showSkillPicker ? "rotate-180" : ""}`} />
  </button>
  {showSkillPicker && (
- <div className="absolute left-0 top-11 z-50 glass-panel border border-[rgba(201,168,76,0.22)] rounded-[6px] p-3 w-[260px] ">
+ <div className="absolute left-0 top-11 z-50 glass-panel border border-[rgba(75,63,143,0.22)] rounded-2xl p-3 w-[260px] ">
  <div className="flex flex-wrap gap-1.5 max-h-[200px] overflow-y-auto">
  {SKILL_TAXONOMY.slice(0, 24).map(s => (
  <button
  key={s}
  onClick={() => setFilterSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
- className={`px-2 py-1 rounded-[3px] text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[#c9a84c] text-[#050810] border-transparent" : "bg-[#111625] text-[#f0e8d4] border-[rgba(201,168,76,0.22)] hover:border-[rgba(201,168,76,0.35)]"}`}
+ className={`px-2 py-1 rounded-full text-[11px] border transition-colors ${filterSkills.includes(s) ? "bg-[#4b3f8f] text-[#ffffff] border-transparent" : "bg-[#f4f2ee] text-[#3d3a45] border-[rgba(75,63,143,0.22)] hover:border-[rgba(75,63,143,0.35)]"}`}
  >
  {s}
  </button>
  ))}
  </div>
  {filterSkills.length > 0 && (
- <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-[#B02020] hover:opacity-70 transition-opacity">
+ <button onClick={() => setFilterSkills([])} className="w-full mt-2 text-[11px] text-[#c14d3a] hover:opacity-70 transition-opacity">
  Clear all
  </button>
  )}
@@ -488,26 +488,26 @@ export default function FreelancerFeed() {
  {/* Advanced chip */}
  <button
  onClick={() => setShowAdvanced(v => !v)}
- className={`h-9 px-3 text-xs font-semibold rounded-[6px] border flex items-center gap-1.5 shrink-0 transition-all ${
+ className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 shrink-0 transition-all ${
  hasAdvancedFilters
- ? "border-[rgba(201,168,76,0.35)] bg-[rgba(201,168,76,0.12)] text-[#c9a84c]"
- : "border-[rgba(201,168,76,0.22)] bg-transparent text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/50"
+ ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
- Filters {hasAdvancedFilters && <span className="feed-badge-pop h-1.5 w-1.5 rounded-full bg-[#c9a84c]" />}
+ Filters {hasAdvancedFilters && <span className="feed-badge-pop h-1.5 w-1.5 rounded-full bg-[#4b3f8f]" />}
  <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
  </button>
  </div>
 
  {/* Advanced drawer */}
  <div className={`feed-drawer ${showAdvanced ? "open" : ""}`}>
- <div className="border-t border-[rgba(201,168,76,0.22)]/50 px-4 py-3 flex flex-wrap items-center gap-2">
- <span className="text-[11px] text-[#a8997e] font-medium uppercase tracking-wider mr-1">Advanced:</span>
+ <div className="border-t border-[rgba(75,63,143,0.22)]/50 px-4 py-3 flex flex-wrap items-center gap-2">
+ <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider mr-1">Advanced:</span>
 
  <select
  value={filterBudget}
  onChange={e => setFilterBudget(e.target.value as BudgetFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-[3px] border border-[rgba(201,168,76,0.22)] bg-[#111625] text-[#a8997e] outline-none appearance-none cursor-pointer hover:border-[rgba(201,168,76,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">All Budgets</option>
  <option value="0-500">Under $500</option>
@@ -519,7 +519,7 @@ export default function FreelancerFeed() {
  <select
  value={filterCompetition}
  onChange={e => setFilterCompetition(e.target.value as CompetitionFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-[3px] border border-[rgba(201,168,76,0.22)] bg-[#111625] text-[#a8997e] outline-none appearance-none cursor-pointer hover:border-[rgba(201,168,76,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">All Competition</option>
  <option value="low">Low (&lt;3 bids)</option>
@@ -530,7 +530,7 @@ export default function FreelancerFeed() {
  <select
  value={filterHourlyRate}
  onChange={e => setFilterHourlyRate(e.target.value as HourlyFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-[3px] border border-[rgba(201,168,76,0.22)] bg-[#111625] text-[#a8997e] outline-none appearance-none cursor-pointer hover:border-[rgba(201,168,76,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">Any $/hr</option>
  <option value="30">$30+/hr</option>
@@ -542,7 +542,7 @@ export default function FreelancerFeed() {
  {hasAdvancedFilters && (
  <button
  onClick={() => { setFilterBudget(""); setFilterCompetition(""); setFilterHourlyRate(""); }}
- className="h-8 px-3 text-[11px] font-semibold text-[#B02020] hover:opacity-70 transition-opacity rounded-[3px] border border-[#B02020]/30"
+ className="h-8 px-3 text-[11px] font-semibold text-[#c14d3a] hover:opacity-70 transition-opacity rounded-full border border-[#c14d3a]/30"
  >
  Reset
  </button>
