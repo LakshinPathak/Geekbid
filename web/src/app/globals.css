@@ -160,6 +160,8 @@
   --sidebar-ring: 249 39% 40%;
 }
 
+@layer components {
+
 body {
   background: #fbfaf7;
   color: #6f6a7d;
@@ -1322,3 +1324,5 @@ textarea.glass-input { border-radius: 16px; }
   background-size: 200% auto;
   animation: text-shimmer 5s linear infinite;
 }
+
+} /* end @layer components */
