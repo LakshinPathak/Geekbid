@@ -61,7 +61,9 @@ function GeekScoreRing({ pct, color }: { pct: number; color: string }) {
       <circle
         className="geekscore-ring"
         cx="28" cy="28" r={r}
+        fill="none"
         stroke={color}
+        strokeWidth="5"
         strokeDasharray={c}
         strokeDashoffset={dash}
       />

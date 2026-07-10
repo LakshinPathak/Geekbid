@@ -59,6 +59,16 @@ for the exact page list; don't re-derive it here.
 - [ ] Logo mark is vertically centered in the header bar (not
   optically off-center due to padding/line-height mismatch with
   adjacent nav items or the hamburger icon)
+- [ ] Logo (the shared `<Logo>`/`<LogoMark>`/`<LogoWordmark>` components
+  in `web/src/components/Logo.tsx`) renders the full circular `< >`
+  bracket mark + green online dot + two-tone "Geek"/"Bid" wordmark
+  correctly at mobile width — mark isn't squished into an oval, the
+  wordmark doesn't wrap onto its own line under the mark, and the gap
+  between mark and wordmark stays consistent with desktop. Since every
+  page now imports this one shared component, a bug here is sitewide —
+  but flex/gap context differs per call site (nav bar vs. login side
+  panel vs. mobile drawer vs. footer), so still spot-check each, don't
+  assume "fixed once" covers every usage
 - [ ] Logo doesn't collide with, or sit too close to, the
   hamburger/menu icon or any right-side avatar/icon at the narrowest
   tested width
@@ -91,6 +101,15 @@ for the exact page list; don't re-derive it here.
   found earlier (`.glass-input pl-10` losing to unlayered CSS); re-check
   every icon-prefixed input/button specifically, since that fix was
   verified on desktop width but not explicitly re-checked at mobile
+- [ ] Category and skill labels don't overflow or clip now that the
+  taxonomy is wider than the original tech-only set — `JOB_CATEGORIES`
+  in `web/src/lib/utils.ts` now includes longer strings ("Graphics &
+  Design", "Writing & Translation", "Video & Animation") than the old
+  tech-only labels, and `SKILL_TAXONOMY` has 15 additional skills. Any
+  fixed-width badge/pill/`truncate` sized against the old, shorter
+  label set is a likely mobile overflow candidate — check job-card
+  category badges, the Talent Pool skill tags, and admin job/user
+  tables specifically
 
 ### Forms & inputs
 - [ ] All inputs/textareas/selects are full-width and don't overflow
@@ -125,6 +144,37 @@ for the exact page list; don't re-derive it here.
   a stacked/card layout on mobile — confirm which pattern each table
   currently uses and that it actually works, not just "doesn't visibly
   break in a screenshot"
+
+### Filter / pill rows
+- [ ] Horizontal pill rows (Talent Pool skill filters in
+  `TalentPool.tsx`, job category filters, "All / 🔥 Hot / ⚠ No Bids"
+  segmented filters in `MyJobsSection.tsx`) don't overflow the viewport
+  or force page-level horizontal scroll at mobile width — confirm each
+  row either wraps cleanly onto multiple lines or scrolls horizontally
+  *within its own container* (`overflow-x-auto` on the row itself, not
+  the page)
+- [ ] With the expanded skill taxonomy there can now be significantly
+  more pills than before (e.g. Talent Pool showed 10+ skill-filter
+  buttons in one row during testing) — re-check pill rows specifically
+  for this, since they may have only been visually verified with the
+  smaller pre-expansion skill set
+
+### Charts & data visualizations
+- [ ] Bar charts (client-side "Monthly Spend" in `SpendAnalytics.tsx`,
+  freelancer-side earnings chart in `app/earnings/page.tsx`) fit their
+  6 monthly columns within 390px width without the `$` value labels
+  overlapping each other or wrapping — each column is a
+  `flex-1 flex flex-col items-center` cell, so verify the label text
+  size doesn't force a column wider than its fair share on the
+  narrowest tested viewport
+- [ ] Near-zero/empty-month bars (rendered at a fixed minimum height,
+  not zero, when a month has $0) remain visually distinguishable from
+  populated bars at mobile size — they shouldn't disappear entirely or
+  become indistinguishable from the chart's baseline/gridline
+- [ ] A client/freelancer with zero jobs/earnings in every month (the
+  chart's fully-empty state) still renders its month labels and axis
+  correctly rather than collapsing or hiding — check a fresh test
+  account with no history, not just accounts with data
 
 ### Touch & interaction
 - [ ] Every clickable/tappable element meets a reasonable minimum touch
