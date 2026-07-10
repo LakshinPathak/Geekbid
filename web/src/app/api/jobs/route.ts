@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
  );
  }
 
- const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "qa", "other"];
+ const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "writing", "video", "qa", "other"];
  const jobCategory = validCategories.includes(category) ? category : "other";
 
  const db = await getDb();

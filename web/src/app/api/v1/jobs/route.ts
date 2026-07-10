@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
  // Same category whitelist and job cap as the internal job-creation API —
  // jobs created through the API-key door must follow the same rules as jobs
  // created through the UI, not bypass them.
- const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "qa", "other"];
+ const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "writing", "video", "qa", "other"];
 
  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
  const config = await getPlanConfigWithOverrides(user?.plan, db);

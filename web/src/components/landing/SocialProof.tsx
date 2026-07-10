@@ -4,15 +4,15 @@ const TICKER_ITEMS = [
   { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
   { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
   { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
-  { icon: "✅", text: "React Dashboard · $1,650 · matched in 3h 20m" },
-  { icon: "⚡", text: "Mobile App · $3,000 · hired at $1,800" },
-  { icon: "🛡️", text: "Cloud Infra · $900 · dispute resolved in 24h" },
+  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
+  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
   { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
   { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
   { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
-  { icon: "✅", text: "React Dashboard · $1,650 · matched in 3h 20m" },
-  { icon: "⚡", text: "Mobile App · $3,000 · hired at $1,800" },
-  { icon: "🛡️", text: "Cloud Infra · $900 · dispute resolved in 24h" },
+  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
+  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
 ];
 
 export default function SocialProof() {

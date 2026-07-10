@@ -65,7 +65,7 @@ export type User = {
  avatarPublicId?: string;
 };
 
-export type JobCategory = 'ai_ml' | 'web_dev' | 'mobile' | 'devops' | 'security' | 'data_eng' | 'blockchain' | 'design' | 'qa' | 'other';
+export type JobCategory = 'ai_ml' | 'web_dev' | 'mobile' | 'devops' | 'security' | 'data_eng' | 'blockchain' | 'design' | 'writing' | 'video' | 'qa' | 'other';
 
 export const JOB_CATEGORIES: { value: JobCategory; label: string }[] = [
  { value: 'ai_ml', label: 'AI/ML' },
@@ -75,7 +75,9 @@ export const JOB_CATEGORIES: { value: JobCategory; label: string }[] = [
  { value: 'security', label: 'Security' },
  { value: 'data_eng', label: 'Data Engineering' },
  { value: 'blockchain', label: 'Blockchain/Web3' },
- { value: 'design', label: 'Design' },
+ { value: 'design', label: 'Graphics & Design' },
+ { value: 'writing', label: 'Writing & Translation' },
+ { value: 'video', label: 'Video & Animation' },
  { value: 'qa', label: 'QA/Testing' },
  { value: 'other', label: 'Other' },
 ];
@@ -199,4 +201,7 @@ export const SKILL_TAXONOMY = [
  'Smart Contracts', 'DeFi Protocols', 'NFT Platforms',
  'ETL Pipelines', 'Spark', 'Kafka', 'Airflow',
  'Flutter', 'iOS (Swift)', 'Android (Kotlin)',
+ 'Logo Design', 'Vector Illustration', 'Branding', 'UI/UX Design', 'Figma',
+ 'Copywriting', 'Content Writing', 'Translation', 'Technical Writing', 'SEO Writing',
+ 'Video Editing', 'Motion Graphics', '2D Animation', '3D Animation', 'Voice Over',
 ];

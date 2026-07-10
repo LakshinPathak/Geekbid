@@ -63,8 +63,8 @@ function LoginPageContent() {
  const [tickerIndex, setTickerIndex] = useState(0);
  const TICKER_JOBS = [
    { title: "AI Chatbot Build", price: 647, decay: 15, floor: 500, start: 2400, progress: 27 },
-   { title: "K8s Cluster Hardening", price: 1100, decay: 20, floor: 600, start: 1800, progress: 58 },
-   { title: "DeFi Yield Audit", price: 2200, decay: 35, floor: 800, start: 3500, progress: 23 },
+   { title: "Brand Logo + Kit", price: 750, decay: 12, floor: 400, start: 1200, progress: 45 },
+   { title: "Explainer Video Edit", price: 1100, decay: 20, floor: 600, start: 2000, progress: 58 },
  ];
 
  useEffect(() => {
