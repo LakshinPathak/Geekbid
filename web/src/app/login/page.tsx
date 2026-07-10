@@ -304,8 +304,9 @@ function LoginPageContent() {
  </Link>
  </div>
 
- {/* Tab switcher */}
- <div className="inline-flex p-1 mb-8 rounded-full"
+ {/* Tab switcher — centered on mobile (matches the logo above it),
+     left-aligned on desktop where it sits above left-aligned form copy */}
+ <div className="flex w-fit mx-auto lg:mx-0 p-1 mb-8 rounded-full"
  style={{ background: "rgba(75,63,143,0.08)", border: "1px solid rgba(75,63,143,0.12)" }}>
  <button
  onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
