@@ -2,6 +2,28 @@
 
 The frontend + API layer of the GeekBid reverse-auction freelance marketplace.
 
+**v18** — Full sitewide retheme, "Royal Dark" (navy/gold/serif/flat) → "Pastel
+Indigo" (cream/indigo/sans/soft-shadow/pill-shaped), color/shape only — no
+backend, CRUD, or functional changes. Sourced from 4 Fable 5 mockups analyzed
+in parallel, distilled into a token spec (`NEW_THEME.md`) with a verified WCAG
+contrast pass, then executed in 9 phases across every page for both
+client/freelancer and admin: `globals.css` foundation → shared chrome → auth/
+landing → feed → job lifecycle → people/comms → money/account → admin → a
+final full-tree audit. Each phase was verified live with Playwright (zero
+console errors) and committed separately on `v18`. Notable fixes found along
+the way: a `.glass-input` CSS rule that pill-radius'd `<textarea>` elements
+into ovals that clipped placeholder/body text on 10+ pages (message
+composers, dispute forms, bios, job descriptions); 6 plain `.ts` files
+(`feed-helpers.ts`, `pricing.ts`, `utils.ts`'s `GEEK_TIERS`, the Razorpay
+checkout theme color, transactional email HTML templates, and the landing
+page's feature/testimonial data) that a `*.tsx`-only sweep had silently
+skipped despite feeding already-retouched pages; the `components/ui/*`
+shadcn primitives (Button, Card, Dialog, etc.) never being scheduled in any
+phase; and several rainbow/off-palette decorative colors (skill-tier badges,
+GeekScore ramp, confetti, chart gradients) consolidated into the new
+single-accent-family palette. Full spec: [`../NEW_THEME.md`](../NEW_THEME.md),
+page-by-page execution map: [`../FRONTEND_PAGES.md`](../FRONTEND_PAGES.md).
+
 **v17** — Real Free/Plus/Premium SaaS tiering, executed in 5 phases: `src/lib/plans.ts` as
 the single source of truth for tier numbers; quota enforcement (jobs, bids, AI, teams,
 invites, featured boosts, API keys) on **every** tier via atomic `findOneAndUpdate` checks,
@@ -70,7 +92,7 @@ background-color mismatches. Full write-up:
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 (`@import "tailwindcss"`) |
-| Design system | Royal Dark — `#080b14` bg · `#c9a84c` gold · `#f0e8d4` ivory · Fraunces serif + Plus Jakarta Sans (v17 refinement) |
+| Design system | Pastel Indigo (v18) — `#fbfaf7` cream bg · `#4b3f8f` indigo accent · `#3d3a45` text · Plus Jakarta Sans + IBM Plex Mono (was "Royal Dark": `#080b14` navy · `#c9a84c` gold · Fraunces serif) |
 | State | React Context (`src/lib/store.tsx`) |
 | Database | MongoDB Atlas (native driver) |
 | Auth | JWT + bcrypt + Google OAuth 2.0 |
@@ -315,29 +337,41 @@ const {
 
 All routes documented in the root [README.md](../README.md#api-reference-full). v10 additions: `/api/upload/sign`, `/api/upload/delete`, and 8 `/api/ai/*` routes. v17 additions: `/api/user/plan`, `/api/admin/users/[id]/plan`, `/api/subscriptions`, `/api/webhooks/razorpay`, `/api/cron/reconcile-subscriptions`, `/api/cron/retry-webhooks`.
 
-## Design Tokens
+## Design Tokens (v18 — "Pastel Indigo")
 
 ```css
 /* Backgrounds */
---bg-base:    #080b14   /* page background */
---bg-panel:   #0d1120   /* glass panel */
---bg-card:    #0a0d18   /* card surface */
---bg-input:   #111625   /* input field */
+--bg-base:    #fbfaf7   /* page background — warm cream */
+--bg-panel:   #fbfaf7   /* glass panel */
+--bg-card:    #ffffff   /* card surface */
+--bg-input:   #ffffff   /* input field (pill-shaped) */
+--bg-muted:   #f4f2ee   /* muted/neutral tile */
 
 /* Text */
---text-primary: #f0e8d4  /* ivory — headings and body */
---text-muted:   #a8997e  /* warm gray — labels, hints */
+--text-primary:   #3d3a45  /* near-black plum-gray — headings and body */
+--text-secondary: #6f6a7d  /* labels, meta text */
+--text-tertiary:  #b3aec0  /* decorative micro-text only — low contrast by design */
 
 /* Accent */
---gold:       #c9a84c   /* gold — CTAs, prices, active states */
---gold-dim:   rgba(201,168,76,0.22)  /* border default */
---gold-hover: rgba(201,168,76,0.35)  /* border hover */
+--accent:       #4b3f8f   /* deep indigo — CTAs, prices, active states */
+--accent-mid:   #9c8fd8   /* progress fills, chart lines, focus rings */
+--accent-hover: #3d3373   /* button hover / deep variant */
+--accent-dim:   rgba(75,63,143,0.22)  /* border default */
+--accent-hover-border: rgba(75,63,143,0.35)  /* border hover */
 
-/* Status */
---success:    #4caf7d
---danger:     #e57373
---info:       #60a5fa
+/* Status — deliberately no saturated red; terracotta reads calmer */
+--success: #4d7245
+--danger:  #96543f   /* readable/body use; #b06a56 for large/decorative only */
+--warning: #7a6a2c   /* readable/body use; #a08a3c for large/decorative only */
+
+/* Shape — full inversion from the old sharp/flat 2-6px scale */
+--radius-pill: 99px   /* buttons, badges, pills — universal */
+--radius-card: 16px   /* cards */
+--radius-tile: 12px   /* stat tiles, outer wrappers */
 ```
+
+Full rationale, the complete old→new token mapping, and the WCAG contrast
+audit behind these choices: [`../NEW_THEME.md`](../NEW_THEME.md).
 
 ## CSS Animation Classes (globals.css)
 
@@ -347,7 +381,7 @@ All routes documented in the root [README.md](../README.md#api-reference-full). 
 | `animate-fade-in-right` | Slide in from right |
 | `animate-subtle-float` | Gentle vertical float loop |
 | `animate-marquee` | Horizontal scroll (social proof) |
-| `animate-card-border-glow` | Pulsing gold border |
+| `animate-card-border-glow` | Pulsing indigo border (v18 — was gold) |
 | `animate-live-breathe` | Opacity oscillation |
 | `animate-price-tick` | Green flash on price change |
 | `progress-shimmer` | Shimmer sweep on progress bar |

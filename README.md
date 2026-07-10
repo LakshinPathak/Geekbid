@@ -5,7 +5,11 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v17** — Real Free/Plus/Premium SaaS tiering: a single source-of-truth
+**Current version: v18** — A full sitewide visual retheme: "Royal Dark"
+(navy/gold) → "Pastel Indigo" (cream/indigo), color and shape only, zero
+backend/CRUD changes. See [What's in v18](#whats-in-v18).
+
+**v17** — Real Free/Plus/Premium SaaS tiering: a single source-of-truth
 plan config, quota enforcement on every plan-gated resource (not just free), pay-per-boost
 featured-job monetization, and full Razorpay recurring subscription billing (code-complete,
 pending real Razorpay Plans). Also on `main`/`master` — `v17` was fast-forwarded onto both
@@ -17,24 +21,25 @@ See [What's in v17](#whats-in-v17).
 ## Table of Contents
 
 1. [How It Works](#how-it-works)
-2. [What's in v17](#whats-in-v17)
-3. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
-4. [Project Structure](#project-structure)
-5. [Tech Stack](#tech-stack)
-6. [Core Domain Model](#core-domain-model)
-7. [Features](#features)
-8. [Frontend Page Map](#frontend-page-map)
-9. [API Reference (full)](#api-reference-full)
-10. [Quick Start](#quick-start)
-11. [Docker](#docker)
-12. [Microservice Backend (experimental)](#microservice-backend-experimental)
-13. [Deployment (Vercel)](#deployment-vercel)
-14. [CI/CD Pipeline](#cicd-pipeline)
-15. [Environment Variables](#environment-variables)
-16. [Security](#security)
-17. [Troubleshooting](#troubleshooting)
-18. [Version History](#version-history)
-19. [License](#license)
+2. [What's in v18](#whats-in-v18)
+3. [What's in v17](#whats-in-v17)
+4. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
+5. [Project Structure](#project-structure)
+6. [Tech Stack](#tech-stack)
+7. [Core Domain Model](#core-domain-model)
+8. [Features](#features)
+9. [Frontend Page Map](#frontend-page-map)
+10. [API Reference (full)](#api-reference-full)
+11. [Quick Start](#quick-start)
+12. [Docker](#docker)
+13. [Microservice Backend (experimental)](#microservice-backend-experimental)
+14. [Deployment (Vercel)](#deployment-vercel)
+15. [CI/CD Pipeline](#cicd-pipeline)
+16. [Environment Variables](#environment-variables)
+17. [Security](#security)
+18. [Troubleshooting](#troubleshooting)
+19. [Version History](#version-history)
+20. [License](#license)
 
 ---
 
@@ -58,6 +63,51 @@ $400 ─────────────────────────
       ↑
    Posted   1h    2h    3h    4h
 ```
+
+---
+
+## What's in v18
+
+A full sitewide visual retheme — "Royal Dark" (navy background, gold accent,
+Fraunces serif, flat/sharp shapes) → "Pastel Indigo" (cream background, deep
+indigo accent, sans-only, soft shadows, pill-shaped buttons/badges and
+16px-radius cards). Scope was deliberately colors/shape only: every backend
+route, CRUD flow, and piece of business logic is untouched.
+
+**Source**: 4 Fable 5 mockup files (freelancer feed, job detail, landing
+hero, open jobs/market intel) were analyzed in parallel by 4 sub-agents,
+cross-checked for consistency, and distilled into a single token spec —
+[`NEW_THEME.md`](./NEW_THEME.md) — including a full old→new hex mapping and
+a WCAG contrast audit that caught (and corrected) several mockup color pairs
+that would have failed AA at the text sizes they're actually used at.
+
+**Execution**: a 9-phase plan on branch `v18` — `globals.css` foundation
+(tokens, shared component classes, shape/shadow scale) → shared chrome (nav,
+layout, fonts) → auth + marketing → feed & discovery → job lifecycle → people
+& comms → money & account → admin → a final full-tree audit. Every phase was
+verified live with Playwright (zero console errors) and committed
+separately. Full page-by-page map, current-state CSS/hex audit, and the
+9-phase execution plan: [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md).
+
+**Bugs found along the way** (beyond the recolor itself):
+- A `.glass-input` CSS rule picked up the universal pill-radius sweep, which
+  is correct for single-line inputs but breaks `<textarea>` elements — a
+  99px corner on a tall rectangle clips into an oval and slices off text.
+  Affected 10+ textareas sitewide (message composers, dispute/review forms,
+  bios, job descriptions). Fixed with a `textarea.glass-input` override.
+- 6 plain `.ts` files (not `.tsx`) were silently skipped by the initial
+  `*.tsx`-only sweep despite feeding pages already marked complete:
+  `feed-helpers.ts` (job-card badge colors), `pricing.ts` (demand-level
+  badge), `utils.ts`'s `GEEK_TIERS`, the Razorpay checkout theme color,
+  the transactional email HTML templates, and the landing page's
+  feature/testimonial data array.
+- The `components/ui/*` shadcn primitives (Button, Card, Dialog, Input,
+  Select, etc.) were listed as shared dependencies but never actually
+  scheduled in any phase — caught in the final audit.
+- Several rainbow/off-palette decorative colors (skill-tier badges, the
+  GeekScore progress ramp, confetti, chart gradients) that predated this
+  retheme were consolidated into the new single-accent-family palette for
+  consistency.
 
 ---
 
@@ -437,7 +487,7 @@ Geekbid/
 | Layer | Technology |
 |-------|-----------|
 | **Frontend** | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
-| **Styling** | Tailwind CSS v4, "Royal Dark" design system — `#080b14` bg, `#c9a84c` gold, `#f0e8d4` ivory, Fraunces serif + Plus Jakarta Sans (v17 refinement — see [v17 refinements](#v17-refinements-post-phase-4)) |
+| **Styling** | Tailwind CSS v4, "Pastel Indigo" design system — `#fbfaf7` cream bg, `#4b3f8f` indigo accent, `#3d3a45` text, Plus Jakarta Sans + IBM Plex Mono (v18 — see [What's in v18](#whats-in-v18); was "Royal Dark" navy/gold/Fraunces) |
 | **UI Components** | Radix UI primitives, Lucide icons, Sonner toasts |
 | **State** | React Context + `useCallback` (`web/src/lib/store.tsx`) — no external state library |
 | **Auth** | JWT (`jose`), bcrypt (12 rounds), Google OAuth 2.0, HttpOnly refresh cookies, dual-role accounts |
@@ -1085,6 +1135,7 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
+| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md)) |
 | `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
