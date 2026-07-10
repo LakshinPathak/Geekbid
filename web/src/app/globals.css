@@ -47,9 +47,9 @@
      next/font/google (see layout.tsx) rather than a render-blocking Google
      Fonts <link>/@import — the var(--font-fraunces)/var(--font-jakarta)
      custom properties are what next/font actually injects. */
-  --font-serif: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  --font-serif: var(--font-jakarta), system-ui, sans-serif;
   --font-sans:  var(--font-jakarta), system-ui, sans-serif;
-  --font-mono:  'Courier New', monospace;
+  --font-mono:  var(--font-plex-mono), 'Courier New', monospace;
 }
 
 /* ── Royal Dark Design Tokens ──────────────────────────────────── */
@@ -669,9 +669,9 @@ input:focus, textarea:focus, select:focus { outline: none; }
 }
 
 /* ── Typography Utilities ────────────────────────────────── */
-.font-heading  { font-family: var(--font-serif); font-weight: 400; }
+.font-heading  { font-family: var(--font-sans); font-weight: 500; }
 .font-body     { font-family: var(--font-sans); }
-.font-mono-il  { font-family: 'Courier New', monospace; }
+.font-mono-il  { font-family: var(--font-mono); }
 
 /* ── Job Card ────────────────────────────────────────────── */
 .job-card {

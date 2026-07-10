@@ -71,10 +71,10 @@ export default function Navbar() {
  <div className="mx-auto max-w-[1600px] flex h-14 items-center justify-between px-4 sm:px-6">
  {/* Logo */}
  <Link href="/feed" className="flex items-center gap-2.5">
- <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">
+ <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">
  G
  </div>
- <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4] hidden sm:block">
+ <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45] hidden sm:block">
  GeekBid
  </span>
  </Link>
@@ -88,13 +88,13 @@ export default function Navbar() {
  <span
  className={`relative text-[11px] tracking-[0.09em] uppercase font-sans transition-colors duration-200 pb-0.5 ${
  isActive
- ? "text-[#c9a84c] border-b border-[#c9a84c]"
- : "text-[#a8997e] hover:text-[#a8997e]"
+ ? "text-[#4b3f8f] border-b border-[#4b3f8f]"
+ : "text-[#6f6a7d] hover:text-[#6f6a7d]"
  }`}
  >
  {item.label}
  {item.hasBadge && unreadCount > 0 && (
- <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a84c] text-[9px] font-bold text-[#080b14] px-1">
+ <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#4b3f8f] text-[9px] font-bold text-[#ffffff] px-1">
  {unreadCount > 9 ? "9+" : unreadCount}
  </span>
  )}
@@ -110,72 +110,72 @@ export default function Navbar() {
  <div className="hidden md:block">
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
- <button className="flex items-center gap-2 h-9 px-2 hover:bg-[#111625] rounded-[3px] transition-colors outline-none">
+ <button className="flex items-center gap-2 h-9 px-2 hover:bg-[#f4f2ee] rounded-full transition-colors outline-none">
  <CloudinaryAvatar
  avatarUrl={currentUser.avatarUrl}
  avatarInitial={currentUser.avatarInitial || currentUser.fullName?.slice(0, 2)?.toUpperCase() || "U"}
  size="sm"
  />
  <div className="hidden md:flex flex-col items-start">
- <span className="text-sm font-semibold text-[#f0e8d4] leading-tight">{currentUser.fullName}</span>
- <span className="text-[11px] text-[#a8997e] capitalize">{currentUser.role}</span>
+ <span className="text-sm font-semibold text-[#3d3a45] leading-tight">{currentUser.fullName}</span>
+ <span className="text-[11px] text-[#6f6a7d] capitalize">{currentUser.role}</span>
  </div>
- <ChevronDown className="h-3.5 w-3.5 text-[#a8997e]" />
+ <ChevronDown className="h-3.5 w-3.5 text-[#6f6a7d]" />
  </button>
  </DropdownMenuTrigger>
  <DropdownMenuContent
  align="end"
- className="w-56 z-[200] bg-[#0d1120] border border-[rgba(201,168,76,0.22)] rounded-[6px] p-1.5"
+ className="w-56 z-[200] bg-[#ffffff] border border-[rgba(75,63,143,0.22)] rounded-2xl p-1.5"
  sideOffset={8}
  >
  <div className="px-3 py-2.5">
- <p className="text-sm font-semibold text-[#f0e8d4]">{currentUser.fullName}</p>
- <p className="text-xs text-[#a8997e] mt-0.5">{currentUser.email}</p>
+ <p className="text-sm font-semibold text-[#3d3a45]">{currentUser.fullName}</p>
+ <p className="text-xs text-[#6f6a7d] mt-0.5">{currentUser.email}</p>
  </div>
- <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
+ <DropdownMenuSeparator className="bg-[rgba(75,63,143,0.15)]" />
  {otherRoles.length > 0 && (
  <>
  {otherRoles.map((r) => (
  <DropdownMenuItem
  key={r}
  onClick={() => handleSwitchRole(r as "freelancer" | "client")}
- className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]"
+ className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]"
  >
- <Repeat className="h-4 w-4 mr-2.5 text-[#c9a84c]" /> Switch to {r}
+ <Repeat className="h-4 w-4 mr-2.5 text-[#4b3f8f]" /> Switch to {r}
  </DropdownMenuItem>
  ))}
- <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
+ <DropdownMenuSeparator className="bg-[rgba(75,63,143,0.15)]" />
  </>
  )}
- <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <User className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Profile
+ <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <User className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> Profile
  </DropdownMenuItem>
  {currentUser.role === "client" && (
- <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <PlusCircle className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Post a Job
+ <DropdownMenuItem onClick={() => router.push("/post-job")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <PlusCircle className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> Post a Job
  </DropdownMenuItem>
  )}
- <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <Briefcase className="h-4 w-4 mr-2.5 text-[#a8997e]" /> My Jobs
+ <DropdownMenuItem onClick={() => router.push("/my-jobs")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <Briefcase className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> My Jobs
  </DropdownMenuItem>
  {currentUser.role === "freelancer" && (
- <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <DollarSign className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Earnings
+ <DropdownMenuItem onClick={() => router.push("/earnings")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <DollarSign className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> Earnings
  </DropdownMenuItem>
  )}
- <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <CreditCard className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Payments
+ <DropdownMenuItem onClick={() => router.push("/payments")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <CreditCard className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> Payments
  </DropdownMenuItem>
  {currentUser.role === "admin" && (
- <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <Shield className="h-4 w-4 mr-2.5 text-[#c9a84c]" /> Admin Panel
+ <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <Shield className="h-4 w-4 mr-2.5 text-[#4b3f8f]" /> Admin Panel
  </DropdownMenuItem>
  )}
- <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-[3px] cursor-pointer py-2.5 text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] focus:text-[#f0e8d4] focus:bg-[#111625]">
- <Settings className="h-4 w-4 mr-2.5 text-[#a8997e]" /> Settings
+ <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-xl cursor-pointer py-2.5 text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] focus:text-[#3d3a45] focus:bg-[#f4f2ee]">
+ <Settings className="h-4 w-4 mr-2.5 text-[#6f6a7d]" /> Settings
  </DropdownMenuItem>
- <DropdownMenuSeparator className="bg-[rgba(201,168,76,0.15)]" />
- <DropdownMenuItem onClick={handleLogout} className="rounded-[3px] cursor-pointer py-2.5 text-[#e57373] focus:text-[#e57373] focus:bg-[rgba(192,57,43,0.2)]">
+ <DropdownMenuSeparator className="bg-[rgba(75,63,143,0.15)]" />
+ <DropdownMenuItem onClick={handleLogout} className="rounded-xl cursor-pointer py-2.5 text-[#96543f] focus:text-[#96543f] focus:bg-[rgba(193,77,58,0.12)]">
  <LogOut className="h-4 w-4 mr-2.5" /> Sign Out
  </DropdownMenuItem>
  </DropdownMenuContent>
@@ -184,7 +184,7 @@ export default function Navbar() {
 
  {/* Mobile hamburger */}
  <button
- className="md:hidden flex items-center justify-center h-9 w-9 rounded-[3px] text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors"
+ className="md:hidden flex items-center justify-center h-9 w-9 rounded-full text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-colors"
  onClick={() => setMobileOpen(true)}
  aria-label="Open menu"
  >
@@ -205,15 +205,15 @@ export default function Navbar() {
  {/* Drawer panel */}
  <div className="absolute right-0 top-0 h-full w-[85vw] max-w-sm mobile-nav-overlay animate-slide-in-right flex flex-col">
  {/* Drawer header */}
- <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,168,76,0.22)]">
+ <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(75,63,143,0.22)]">
  <div className="flex items-center gap-2.5">
- <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">
+ <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">
  G
  </div>
- <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">GeekBid</span>
+ <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45]">GeekBid</span>
  </div>
  <button
- className="h-8 w-8 flex items-center justify-center rounded-[3px] text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-colors"
+ className="h-8 w-8 flex items-center justify-center rounded-full text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-colors"
  onClick={() => setMobileOpen(false)}
  aria-label="Close menu"
  >
@@ -222,7 +222,7 @@ export default function Navbar() {
  </div>
 
  {/* User info */}
- <div className="px-6 py-4 border-b border-[rgba(201,168,76,0.22)]">
+ <div className="px-6 py-4 border-b border-[rgba(75,63,143,0.22)]">
  <div className="flex items-center gap-3">
  <CloudinaryAvatar
  avatarUrl={currentUser.avatarUrl}
@@ -230,8 +230,8 @@ export default function Navbar() {
  size="md"
  />
  <div>
- <p className="text-sm font-semibold text-[#f0e8d4]">{currentUser.fullName}</p>
- <p className="text-xs text-[#a8997e] capitalize">{currentUser.role} · {currentUser.email}</p>
+ <p className="text-sm font-semibold text-[#3d3a45]">{currentUser.fullName}</p>
+ <p className="text-xs text-[#6f6a7d] capitalize">{currentUser.role} · {currentUser.email}</p>
  </div>
  </div>
  </div>
@@ -247,16 +247,16 @@ export default function Navbar() {
  onClick={() => setMobileOpen(false)}
  >
  <div
- className={`relative flex items-center gap-3 px-4 py-3.5 rounded-[3px] text-sm font-medium transition-all duration-200 ${
+ className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
  isActive
- ? "bg-[#c9a84c] text-[#080b14] border border-transparent"
- : "text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625]"
+ ? "bg-[#4b3f8f] text-[#ffffff] border border-transparent"
+ : "text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee]"
  }`}
  >
  <item.icon className="h-5 w-5" />
  {item.label}
  {item.hasBadge && unreadCount > 0 && (
- <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#c9a84c] text-[11px] font-bold text-[#080b14] px-1">
+ <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#4b3f8f] text-[11px] font-bold text-[#ffffff] px-1">
  {unreadCount > 9 ? "9+" : unreadCount}
  </span>
  )}
@@ -265,7 +265,7 @@ export default function Navbar() {
  );
  })}
 
- <div className="border-t border-[rgba(201,168,76,0.22)] my-2 pt-2">
+ <div className="border-t border-[rgba(75,63,143,0.22)] my-2 pt-2">
  {[
  { href: "/profile", label: "Profile", icon: User },
  { href: "/my-jobs", label: "My Jobs", icon: Briefcase },
@@ -276,7 +276,7 @@ export default function Navbar() {
  ...(currentUser.role === "admin" ? [{ href: "/admin", label: "Admin Panel", icon: Shield }] : []),
  ].map((item) => (
  <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
- <div className="flex items-center gap-3 px-4 py-3.5 rounded-[3px] text-sm font-medium text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[#111625] transition-all duration-200">
+ <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-all duration-200">
  <item.icon className="h-5 w-5" />
  {item.label}
  </div>
@@ -286,10 +286,10 @@ export default function Navbar() {
  </nav>
 
  {/* Sign out */}
- <div className="px-4 py-4 border-t border-[rgba(201,168,76,0.22)]">
+ <div className="px-4 py-4 border-t border-[rgba(75,63,143,0.22)]">
  <button
  onClick={() => { setMobileOpen(false); handleLogout(); }}
- className="flex items-center gap-3 w-full px-4 py-3.5 rounded-[3px] text-sm font-medium text-[#e57373] hover:bg-[rgba(192,57,43,0.2)] transition-colors"
+ className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-[#96543f] hover:bg-[rgba(193,77,58,0.12)] transition-colors"
  >
  <LogOut className="h-5 w-5" />
  Sign Out

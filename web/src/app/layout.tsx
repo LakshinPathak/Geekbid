@@ -1,22 +1,19 @@
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { ConditionalNavbar } from "@/components/conditional-navbar";
 import MobileBottomNav from "@/components/mobile-bottom-nav";
 
-// Replaces the previous Inter (body) + bare Georgia system-serif (headings)
-// pairing — that combination is one of the most common "this looks
-// AI-generated" tells (Inter everywhere, a generic system-serif fallback
-// stack instead of an actual chosen display face). Fraunces is a genuine
-// contrast-axis pairing against a humanist sans, giving the "Royal Dark"
-// premium-editorial identity real character instead of a default.
-const fraunces = Fraunces({
+// Pastel Indigo theme: headings use the sans face at weight 500 (no serif
+// display face), and a real monospace face carries every numeric/price
+// value — see NEW_THEME.md §2/§5.
+const plexMono = IBM_Plex_Mono({
  subsets: ["latin"],
- variable: "--font-fraunces",
+ variable: "--font-plex-mono",
  display: "swap",
- weight: ["300", "400", "500", "600"],
+ weight: ["400", "500"],
 });
 
 const jakarta = Plus_Jakarta_Sans({
@@ -47,17 +44,17 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`dark ${fraunces.variable} ${jakarta.variable}`}
- style={{ background: '#080b14' }}
+ className={`${plexMono.variable} ${jakarta.variable}`}
+ style={{ background: '#fbfaf7' }}
  suppressHydrationWarning
  >
  {/* next/font's variable classes must live on <html>, not <body> — Tailwind's
  @theme inline block defines --font-sans/--font-serif on :root (which is
  the <html> element), and CSS custom properties only inherit downward, so
  :root can't see a var() defined on its own child <body>. */}
- <body className="antialiased bg-[#080b14] text-[#a8997e]">
+ <body className="antialiased bg-[#fbfaf7] text-[#6f6a7d]">
  <AppProvider>
- <div className="min-h-screen flex flex-col bg-[#080b14]">
+ <div className="min-h-screen flex flex-col bg-[#fbfaf7]">
  <ConditionalNavbar />
  <MobileBottomNav />
  <main className="flex-1 pb-16 md:pb-0">{children}</main>
