@@ -109,6 +109,28 @@ separately. Full page-by-page map, current-state CSS/hex audit, and the
   retheme were consolidated into the new single-accent-family palette for
   consistency.
 
+**Two structural bugs found in live production testing after the 9 phases**
+(both fixed on `v18`):
+- The shadcn `components/ui/*` primitives carry `dark:` Tailwind variants
+  that respond to the browser's `prefers-color-scheme` by default (no
+  `@custom-variant dark` is configured anywhere) — invisible under the old
+  all-dark theme since the overrides pointed to similarly-dark values, but
+  once the base theme went light, any user with their OS/browser in dark
+  mode would see inconsistent dark patches on buttons/inputs/selects/badges.
+  Removed the `dark:` variants entirely, plus hardcoded the toast theme to
+  `"light"` in `sonner.tsx` (it was deriving from `next-themes`, which has
+  no `ThemeProvider` configured, silently defaulting to `"system"`) — this
+  app has one fixed palette and no theme toggle.
+- Every custom class in `globals.css` (`.card`, `.btn-primary`,
+  `.glass-input`, etc.) was plain, unlayered CSS. Per the CSS cascade spec,
+  unlayered styles always outrank anything inside `@layer utilities` —
+  which silently defeated one-off Tailwind overrides combined with those
+  classes sitewide (e.g. `className="glass-input pl-10"` — the `pl-10` was
+  being ignored). Visible as a `$` icon overlapping the amount text on the
+  payments page, and identically anywhere else the pattern was used. Fixed
+  by wrapping the component classes in `@layer components`, matching
+  Tailwind v4's intended `theme, base, components, utilities` cascade order.
+
 ---
 
 ## What's in v17
@@ -1135,7 +1157,7 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md)) |
+| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`) (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md)) |
 | `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |

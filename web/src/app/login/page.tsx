@@ -181,20 +181,40 @@ function LoginPageContent() {
  </Link>
  </div>
 
- {/* Hero text */}
- <div className="relative z-10 flex-1 flex flex-col justify-center">
+ {/* Hero text — eyebrow + headline shift to match the active tab (and,
+     while registering, the selected role) so the branding panel always
+     reads as relevant to what the visitor is about to do, not just
+     generic marketing copy. Keyed by mode/role so React remounts this
+     block on every switch, replaying the fade-in-up entrance. */}
+ <div key={mode === "register" ? `register-${role}` : "login"}
+      className="relative z-10 flex-1 flex flex-col justify-center animate-fade-in-up">
    <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-5"
       style={{ color: "#6f6a7d" }}>
-     Reverse Auction Marketplace
+     {mode === "register" ? "Join 2,400+ Engineers & Clients" : "Reverse Auction Marketplace"}
    </p>
-   <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
-       style={{ color: "#3d3a45" }}>
-     The marketplace where{" "}
-     <span style={{ color: "#4b3f8f" }}>
-       {PHRASES[phraseIndex].substring(0, charIndex)}
-     </span>
-     <span className="animate-pulse" style={{ color: "#4b3f8f" }}>|</span>
-   </h1>
+   {mode === "login" ? (
+     <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
+         style={{ color: "#3d3a45" }}>
+       The marketplace where{" "}
+       <span style={{ color: "#4b3f8f" }}>
+         {PHRASES[phraseIndex].substring(0, charIndex)}
+       </span>
+       <span className="animate-pulse" style={{ color: "#4b3f8f" }}>|</span>
+     </h1>
+   ) : (
+     <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
+         style={{ color: "#3d3a45" }}>
+       {role === "client" ? (
+         <>Post a job. Watch the{" "}
+           <span style={{ color: "#4b3f8f" }}>price find itself.</span>
+         </>
+       ) : (
+         <>Start bidding on{" "}
+           <span style={{ color: "#4b3f8f" }}>real work, today.</span>
+         </>
+       )}
+     </h1>
+   )}
 
    {/* Stats row */}
    <div className="grid grid-cols-3 gap-4 mt-10 mb-6">

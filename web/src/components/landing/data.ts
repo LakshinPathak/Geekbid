@@ -165,10 +165,10 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     quote: "I switched from Upwork after my first job on GeekBid. The price decay means I actually get fair market rates instead of racing to the bottom.",
-    name: "Priya Sharma",
+    name: "Emma Johnson",
     title: "Senior Full-Stack Developer",
     company: "Independent",
-    avatar: "PS",
+    avatar: "EJ",
     photo: "https://randomuser.me/api/portraits/women/44.jpg",
     avatarGrad: "from-[#4b3f8f]/40 to-[#3d3373]/60",
     ring: "shadow-[0_0_0_2px_rgba(75,63,143,0.5)]",

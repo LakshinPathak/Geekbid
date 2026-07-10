@@ -18,7 +18,7 @@ const LOG_POOL = [
   "marcus_k bid $2,640 on ML Recommendation Engine",
   "Price crossed $2,000 · Payments Gateway Integration",
   "Escrow released · $1,750 · Kubernetes Migration",
-  "priya_codes bid $2,910 on Mobile App Redesign",
+  "alex_codes bid $2,910 on Mobile App Redesign",
   "New job posted · Terraform Infra Audit · $3,600 start",
   "8 bids in the last hour · GraphQL API Gateway",
   "Accepted at floor $1,450 · Legacy Data Migration",

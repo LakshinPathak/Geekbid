@@ -21,8 +21,25 @@ skipped despite feeding already-retouched pages; the `components/ui/*`
 shadcn primitives (Button, Card, Dialog, etc.) never being scheduled in any
 phase; and several rainbow/off-palette decorative colors (skill-tier badges,
 GeekScore ramp, confetti, chart gradients) consolidated into the new
-single-accent-family palette. Full spec: [`../NEW_THEME.md`](../NEW_THEME.md),
-page-by-page execution map: [`../FRONTEND_PAGES.md`](../FRONTEND_PAGES.md).
+single-accent-family palette.
+
+Two more structural bugs surfaced in live production testing after the
+9 phases landed, both fixed on `v18`: (1) the shadcn primitives carried
+`dark:` Tailwind variants that respond to OS/browser `prefers-color-scheme`
+by default (no `@custom-variant dark` is configured) — invisible in the old
+all-dark theme, but painted inconsistent dark patches on buttons/inputs/
+selects/badges for any user with their system in dark mode once the base
+theme went light. Removed, since this app has exactly one fixed palette, no
+theme toggle. (2) every custom class in `globals.css` (`.card`, `.btn-primary`,
+`.glass-input`, etc.) was plain unlayered CSS, which per the cascade spec
+always outranks anything in `@layer utilities` — silently defeating
+one-off Tailwind overrides like `className="glass-input pl-10"` sitewide
+(visible as a `$` icon overlapping input text on the payments page, among
+other spots). Fixed by wrapping the component classes in `@layer components`,
+matching Tailwind v4's intended layer order.
+
+Full spec: [`../NEW_THEME.md`](../NEW_THEME.md), page-by-page execution map:
+[`../FRONTEND_PAGES.md`](../FRONTEND_PAGES.md).
 
 **v17** — Real Free/Plus/Premium SaaS tiering, executed in 5 phases: `src/lib/plans.ts` as
 the single source of truth for tier numbers; quota enforcement (jobs, bids, AI, teams,
