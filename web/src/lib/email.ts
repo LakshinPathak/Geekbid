@@ -122,22 +122,22 @@ export function wrapHtml(title: string, content: string): string {
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#FCFAF4;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;">
- <table width="100%" cellpadding="0" cellspacing="0" style="background:#FCFAF4;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#fbfaf7;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;">
+ <table width="100%" cellpadding="0" cellspacing="0" style="background:#fbfaf7;padding:40px 16px;">
  <tr>
  <td align="center">
- <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#FCFAF4;border-radius:16px;border:1px solid #E4DDD0;overflow:hidden;">
+ <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fbfaf7;border-radius:16px;border:1px solid #ece9e2;overflow:hidden;">
  <!-- Logo -->
  <tr>
  <td style="padding:32px 32px 0;text-align:center;">
  <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">
- <span style="color:#182739;">Geek</span><span style="color:#C8923D;">Bid</span>
+ <span style="color:#3d3a45;">Geek</span><span style="color:#4b3f8f;">Bid</span>
  </div>
- <div style="color:#7B8694;font-size:12px;margin-top:4px;letter-spacing:0.5px;">WHERE CODE MEETS OPPORTUNITY</div>
+ <div style="color:#6f6a7d;font-size:12px;margin-top:4px;letter-spacing:0.5px;">WHERE CODE MEETS OPPORTUNITY</div>
  </td>
  </tr>
  <!-- Divider -->
- <tr><td style="padding:16px 32px 0;"><div style="border-top:1px solid #1E1E2A;"></div></td></tr>
+ <tr><td style="padding:16px 32px 0;"><div style="border-top:1px solid #ece9e2;"></div></td></tr>
  <!-- Content -->
  <tr>
  <td style="padding:24px 32px 32px;">
@@ -146,16 +146,16 @@ export function wrapHtml(title: string, content: string): string {
  </tr>
  <!-- Footer -->
  <tr>
- <td style="padding:20px 32px;border-top:1px solid #1E1E2A;text-align:center;">
- <p style="color:#7B8694;font-size:12px;margin:0;">
+ <td style="padding:20px 32px;border-top:1px solid #ece9e2;text-align:center;">
+ <p style="color:#6f6a7d;font-size:12px;margin:0;">
  © ${new Date().getFullYear()} GeekBid — Adaptive freelance marketplace
  </p>
- <p style="color:#7B8694;font-size:11px;margin:8px 0 0;">
- <a href="${APP_URL}" style="color:#C8923D;text-decoration:none;">geekbid.io</a>
+ <p style="color:#6f6a7d;font-size:11px;margin:8px 0 0;">
+ <a href="${APP_URL}" style="color:#4b3f8f;text-decoration:none;">geekbid.io</a>
  &nbsp;·&nbsp;
- <a href="${APP_URL}/feed" style="color:#7B8694;text-decoration:none;">Browse Jobs</a>
+ <a href="${APP_URL}/feed" style="color:#6f6a7d;text-decoration:none;">Browse Jobs</a>
  &nbsp;·&nbsp;
- <a href="${APP_URL}/settings" style="color:#7B8694;text-decoration:none;">Unsubscribe</a>
+ <a href="${APP_URL}/settings" style="color:#6f6a7d;text-decoration:none;">Unsubscribe</a>
  </p>
  </td>
  </tr>
@@ -182,32 +182,32 @@ export function infoCard(rows: [string, string][]): string {
  .map(
  ([label, value]) => `
  <tr>
- <td style="color:#7B8694;font-size:13px;padding:8px 12px;border-bottom:1px solid #E4DDD0;">${label}</td>
- <td style="color:#182739;font-size:13px;padding:8px 12px;text-align:right;font-weight:600;border-bottom:1px solid #E4DDD0;">${value}</td>
+ <td style="color:#6f6a7d;font-size:13px;padding:8px 12px;border-bottom:1px solid #ece9e2;">${label}</td>
+ <td style="color:#3d3a45;font-size:13px;padding:8px 12px;text-align:right;font-weight:600;border-bottom:1px solid #ece9e2;">${value}</td>
  </tr>`
  )
  .join("");
 
  return `
- <table width="100%" cellpadding="0" cellspacing="0" style="background:#FCFAF4;border-radius:12px;overflow:hidden;margin:20px 0;">
+ <table width="100%" cellpadding="0" cellspacing="0" style="background:#fbfaf7;border-radius:12px;overflow:hidden;margin:20px 0;">
  ${rowsHtml}
  </table>`;
 }
 
 export function heading(text: string): string {
- return `<h1 style="color:#182739;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">${text}</h1>`;
+ return `<h1 style="color:#3d3a45;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">${text}</h1>`;
 }
 
 export function subtext(text: string): string {
- return `<p style="color:#7B8694;font-size:14px;line-height:1.7;margin:0 0 4px;">${text}</p>`;
+ return `<p style="color:#6f6a7d;font-size:14px;line-height:1.7;margin:0 0 4px;">${text}</p>`;
 }
 
 export function highlight(text: string): string {
- return `<strong style="color:#C8923D;">${text}</strong>`;
+ return `<strong style="color:#4b3f8f;">${text}</strong>`;
 }
 
 function userName(text: string): string {
- return `<strong style="color:#182739;">${text}</strong>`;
+ return `<strong style="color:#3d3a45;">${text}</strong>`;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -376,8 +376,8 @@ export async function sendNewReviewEmail(to: string, revieweeName: string, revie
  html: wrapHtml("New Review", `
  ${heading("You received a review! ⭐")}
  ${subtext(`${revieweeName}, ${userName(reviewerName)} left you a review on a completed project.`)}
- <div style="text-align:center;margin:20px 0;"><span style="color:#F59E0B;font-size:32px;letter-spacing:4px;">${stars}</span></div>
- ${comment ? `<div style="background:#FCFAF4;border-radius:12px;padding:16px 20px;margin:16px 0;border-left:3px solid #C8923D;"><p style="color:#182739;font-size:14px;font-style:italic;margin:0;line-height:1.6;">"${comment}"</p><p style="color:#7B8694;font-size:12px;margin:10px 0 0;">— ${reviewerName} on "${jobTitle}"</p></div>` : ""}
+ <div style="text-align:center;margin:20px 0;"><span style="color:#e0a23e;font-size:32px;letter-spacing:4px;">${stars}</span></div>
+ ${comment ? `<div style="background:#fbfaf7;border-radius:12px;padding:16px 20px;margin:16px 0;border-left:3px solid #4b3f8f;"><p style="color:#3d3a45;font-size:14px;font-style:italic;margin:0;line-height:1.6;">"${comment}"</p><p style="color:#6f6a7d;font-size:12px;margin:10px 0 0;">— ${reviewerName} on "${jobTitle}"</p></div>` : ""}
  ${subtext("Reviews contribute to your GeekScore and help you land more projects.")}
  ${ctaButton("View Your Profile →", `${APP_URL}/profile`)}
  `),

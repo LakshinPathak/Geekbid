@@ -126,7 +126,7 @@ export function useSubscriptionCheckout() {
         name: "GeekBid",
         description: `${targetPlan === "plus" ? "Plus" : "Premium"} subscription`,
         prefill: { name: currentUser?.fullName || "", email: currentUser?.email || "" },
-        theme: { color: "#c9a84c" },
+        theme: { color: "#4b3f8f" },
         handler: async (response: Record<string, string>) => {
           const verifyData = await verifyCheckout(token, response);
           if (verifyData.verified) {

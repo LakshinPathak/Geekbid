@@ -182,11 +182,11 @@ export type AssessmentResult = {
 
 // Geek Score
 export const GEEK_TIERS = [
- { min: 0, max: 199, label: 'Newbie', color: '#6B7280' },
- { min: 200, max: 399, label: 'Script Kiddie', color: '#34D399' },
- { min: 400, max: 599, label: 'Code Monkey', color: '#60A5FA' },
- { min: 600, max: 799, label: 'Senior Geek', color: '#A78BFA' },
- { min: 800, max: 1000, label: '10x Engineer', color: '#F59E0B' },
+ { min: 0, max: 199, label: 'Newbie', color: '#b3aec0' },
+ { min: 200, max: 399, label: 'Script Kiddie', color: '#4d7245' },
+ { min: 400, max: 599, label: 'Code Monkey', color: '#9c8fd8' },
+ { min: 600, max: 799, label: 'Senior Geek', color: '#3d3373' },
+ { min: 800, max: 1000, label: '10x Engineer', color: '#4b3f8f' },
 ];
 export const getGeekTier = (score: number) => GEEK_TIERS.find((t) => score >= t.min && score <= t.max) ?? GEEK_TIERS[0];
 

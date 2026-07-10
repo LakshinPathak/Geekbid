@@ -176,22 +176,22 @@ export function getDemandLevel(uniqueBidderCount: number): DemandLevel | null {
  if (uniqueBidderCount <= 2)
  return {
  label: "Interested",
- color: "text-blue-400",
- bgColor: "bg-blue-500/10",
- borderColor: "border-blue-500/20",
+ color: "text-[#9c8fd8]",
+ bgColor: "bg-[#9c8fd8]/10",
+ borderColor: "border-[#9c8fd8]/20",
  };
  if (uniqueBidderCount <= 4)
  return {
  label: "In Demand",
- color: "text-yellow-400",
- bgColor: "bg-yellow-500/10",
- borderColor: "border-yellow-500/20",
+ color: "text-[#a08a3c]",
+ bgColor: "bg-[#a08a3c]/10",
+ borderColor: "border-[#a08a3c]/20",
  };
  return {
  label: "🔥 Hot",
- color: "text-orange-400",
- bgColor: "bg-orange-500/10",
- borderColor: "border-orange-500/20",
+ color: "text-[#e0a23e]",
+ bgColor: "bg-[#e0a23e]/10",
+ borderColor: "border-[#e0a23e]/20",
  };
 }
 
