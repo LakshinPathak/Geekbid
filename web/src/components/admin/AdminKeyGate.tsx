@@ -43,59 +43,59 @@ export default function AdminKeyGate({ onVerified }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050810]/95 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#ffffff]/95 backdrop-blur-sm">
       <div className="glass-panel w-full max-w-sm mx-4 overflow-hidden animate-scale-in">
         {/* Gold accent top strip */}
-        <div className="h-0.5 w-full bg-[#c9a84c]" />
+        <div className="h-0.5 w-full bg-[#4b3f8f]" />
         <div className="p-8">
         <div className="flex flex-col items-center text-center mb-6">
           {/* GeekBid Logo */}
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[4px] bg-[#c9a84c] text-[#050810] text-sm font-black font-sans">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-sm font-black font-sans">
               G
             </div>
-            <span className="text-lg font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">
+            <span className="text-lg font-bold tracking-[0.03em] font-sans text-[#3d3a45]">
               GeekBid
             </span>
           </div>
-          <div className="h-14 w-14 rounded-full bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] flex items-center justify-center mb-4">
-            <Shield className="h-7 w-7 text-[#c9a84c]" />
+          <div className="h-14 w-14 rounded-full bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.22)] flex items-center justify-center mb-4">
+            <Shield className="h-7 w-7 text-[#4b3f8f]" />
           </div>
-          <h2 className="font-heading text-xl text-[#f0e8d4]">Admin Access Required</h2>
-          <p className="text-sm text-[#a8997e] mt-1.5">Enter your admin access key to continue</p>
+          <h2 className="font-heading text-xl text-[#3d3a45]">Admin Access Required</h2>
+          <p className="text-sm text-[#6f6a7d] mt-1.5">Enter your admin access key to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex items-center gap-2.5 glass-input rounded-[6px] px-3 py-3">
-            <Lock className="h-4 w-4 text-[#a8997e] shrink-0" />
+          <div className="flex items-center gap-2.5 glass-input rounded-2xl px-3 py-3">
+            <Lock className="h-4 w-4 text-[#6f6a7d] shrink-0" />
             <input
               type="password"
               value={key}
               onChange={e => setKey(e.target.value)}
               placeholder="Enter your secret admin key"
               autoFocus
-              className="flex-1 bg-transparent text-sm text-[#f0e8d4] placeholder:text-[#a8997e]/50 outline-none border-none"
+              className="flex-1 bg-transparent text-sm text-[#3d3a45] placeholder:text-[#6f6a7d]/50 outline-none border-none"
             />
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[rgba(176,32,32,0.08)] border border-[rgba(176,32,32,0.2)]">
-              <AlertTriangle className="h-4 w-4 text-[#e57373] shrink-0" />
-              <p className="text-xs text-[#e57373]">{error}</p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[rgba(193,77,58,0.08)] border border-[rgba(193,77,58,0.2)]">
+              <AlertTriangle className="h-4 w-4 text-[#96543f] shrink-0" />
+              <p className="text-xs text-[#96543f]">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading || !key.trim()}
-            className="btn-primary w-full py-3 rounded-[6px] text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
             {loading ? "Verifying..." : "Enter Admin Panel"}
           </button>
         </form>
 
-        <p className="text-center text-[11px] text-[#a8997e]/60 mt-4">
+        <p className="text-center text-[11px] text-[#6f6a7d]/60 mt-4">
           This key is separate from your login password. Session expires on browser close.
         </p>
         </div>

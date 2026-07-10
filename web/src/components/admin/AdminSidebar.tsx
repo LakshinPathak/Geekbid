@@ -20,15 +20,15 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col h-full bg-[#050810] border-r border-[rgba(201,168,76,0.18)]">
+    <aside className="w-64 shrink-0 flex flex-col h-full bg-[#ffffff] border-r border-[rgba(75,63,143,0.18)]">
       {/* Brand */}
-      <div className="flex items-center gap-2.5 px-5 py-5 border-b border-[rgba(201,168,76,0.12)]">
-        <div className="h-8 w-8 rounded-[6px] bg-[rgba(201,168,76,0.12)] flex items-center justify-center">
-          <Shield className="h-4 w-4 text-[#c9a84c]" />
+      <div className="flex items-center gap-2.5 px-5 py-5 border-b border-[rgba(75,63,143,0.12)]">
+        <div className="h-8 w-8 rounded-xl bg-[rgba(75,63,143,0.12)] flex items-center justify-center">
+          <Shield className="h-4 w-4 text-[#4b3f8f]" />
         </div>
         <div>
-          <p className="font-heading text-sm font-bold text-[#f0e8d4]">GeekBid</p>
-          <p className="text-[10px] text-[#a8997e]">Admin Console</p>
+          <p className="font-heading text-sm font-bold text-[#3d3a45]">GeekBid</p>
+          <p className="text-[10px] text-[#6f6a7d]">Admin Console</p>
         </div>
       </div>
 
@@ -40,10 +40,10 @@ export default function AdminSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium transition-all ${
                 active
-                  ? "bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)]"
-                  : "text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[rgba(255,255,255,0.03)]"
+                  ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)]"
+                  : "text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[rgba(255,255,255,0.03)]"
               }`}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -54,10 +54,10 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-[rgba(201,168,76,0.12)]">
+      <div className="px-3 py-4 border-t border-[rgba(75,63,143,0.12)]">
         <Link
           href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm text-[#a8997e] hover:text-[#f0e8d4] hover:bg-[rgba(255,255,255,0.03)] transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[rgba(255,255,255,0.03)] transition-all"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" />
           Back to Platform
