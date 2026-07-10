@@ -13,18 +13,18 @@ function FeatureCard({ feature, idx, inView }: { feature: Feature; idx: number; 
   return (
     <div
       ref={cardRef}
-      className="group job-card landing-glass-card landing-tilt-card p-8 relative hover:border-[rgba(201,168,76,0.32)] transition-all duration-300"
+      className="group job-card landing-glass-card landing-tilt-card p-8 relative hover:border-[rgba(75,63,143,0.32)] transition-all duration-300"
       style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.6s ease ${150 + idx * 80}ms, transform 0.6s ease ${150 + idx * 80}ms` }}
     >
       <div className="relative z-10">
         <div
-          className={`h-14 w-14 rounded-[6px] ${feature.iconBg} border ${feature.iconBorder} flex items-center justify-center mb-6 transition-colors ${inView ? "landing-icon-pop" : ""}`}
+          className={`h-14 w-14 rounded-xl ${feature.iconBg} border ${feature.iconBorder} flex items-center justify-center mb-6 transition-colors ${inView ? "landing-icon-pop" : ""}`}
           style={{ animationDelay: `${150 + idx * 80}ms` }}
         >
           <feature.icon className={`h-6 w-6 ${feature.iconColor}`} />
         </div>
-        <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{feature.title}</h3>
-        <p className="text-sm sm:text-base text-[#a8997e] leading-relaxed">{feature.desc}</p>
+        <h3 className="text-lg font-serif font-normal text-[#3d3a45] mb-2">{feature.title}</h3>
+        <p className="text-sm sm:text-base text-[#6f6a7d] leading-relaxed">{feature.desc}</p>
       </div>
     </div>
   );
@@ -34,11 +34,11 @@ export default function Features() {
   const featuresSection = useInView(0.08);
 
   return (
-    <section id="features" ref={featuresSection.ref} className="relative py-24 sm:py-32 border-t border-[rgba(201,168,76,0.22)]">
+    <section id="features" ref={featuresSection.ref} className="relative py-24 sm:py-32 border-t border-[rgba(75,63,143,0.22)]">
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="text-center mb-16" style={{ opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#c9a84c] before:inline-block">Platform Features</p>
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto">
+          <p className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] mb-4 before:content-['_'] before:w-3 before:h-px before:bg-[#4b3f8f] before:inline-block">Platform Features</p>
+          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#3d3a45] leading-tight max-w-3xl mx-auto">
             Everything you need to hire and deliver, built in
           </h2>
         </div>
@@ -50,7 +50,7 @@ export default function Features() {
         </div>
       </div>
 
-      <SectionDivider variant="wave" fill="#080b14" flip />
+      <SectionDivider variant="wave" fill="#fbfaf7" flip />
     </section>
   );
 }

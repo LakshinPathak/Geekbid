@@ -8,7 +8,7 @@ interface SectionDividerProps {
 /** Reusable SVG divider rendered between landing-page sections. Pure/stateless. */
 export default function SectionDivider({
   variant = "wave",
-  fill = "#050810",
+  fill = "#ffffff",
   flip = false,
   className = "",
 }: SectionDividerProps) {

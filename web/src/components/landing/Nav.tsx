@@ -23,20 +23,20 @@ export default function Nav() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-[rgba(201,168,76,0.22)] bg-[#050810]">
+    <nav className="sticky top-0 z-50 w-full border-b border-[rgba(75,63,143,0.22)] bg-[#ffffff]">
       <ScrollProgress />
       <div className="flex h-14 items-center justify-between px-8 max-w-[1400px] mx-auto">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810] text-xs font-black font-sans">G</div>
-          <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#f0e8d4]">GeekBid</span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff] text-xs font-black font-sans">G</div>
+          <span className="text-sm font-bold tracking-[0.03em] font-sans text-[#3d3a45]">GeekBid</span>
         </div>
-        <div className="hidden md:flex items-center gap-6 text-[11px] tracking-[0.09em] uppercase text-[#a8997e] font-sans">
+        <div className="hidden md:flex items-center gap-6 text-[11px] tracking-[0.09em] uppercase text-[#6f6a7d] font-sans">
           {NAV_LINKS.map((link) => (
             <a
               key={link.id}
               href={`#${link.id}`}
               onClick={(e) => handleNavClick(e, link.id)}
-              className={`hover:text-[#c9a84c] transition-colors duration-200 ${activeId === link.id ? "landing-nav-link-active" : ""}`}
+              className={`hover:text-[#4b3f8f] transition-colors duration-200 ${activeId === link.id ? "landing-nav-link-active" : ""}`}
             >
               {link.label}
             </a>
@@ -44,10 +44,10 @@ export default function Nav() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <button className="hidden sm:block text-[11px] tracking-[0.06em] uppercase text-[#a8997e] hover:text-[#c9a84c] transition-colors font-sans">Sign In</button>
+            <button className="hidden sm:block text-[11px] tracking-[0.06em] uppercase text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors font-sans">Sign In</button>
           </Link>
           <Link href="/login?tab=register&role=client">
-            <button className="flex items-center gap-2 btn-primary text-[11px] tracking-[0.07em] uppercase px-4 py-2 rounded-[3px]">
+            <button className="flex items-center gap-2 btn-primary text-[11px] tracking-[0.07em] uppercase px-4 py-2 rounded-full">
               Get Started <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           </Link>

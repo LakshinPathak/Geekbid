@@ -63,12 +63,12 @@ export default function PriceDecayDemo() {
 
       <div className="card animate-card-border-glow relative">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(201,168,76,0.22)]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(75,63,143,0.22)]">
           <div>
-            <p className="text-[9px] font-sans uppercase tracking-[0.12em] text-[#a8997e]">Live Price Decay</p>
-            <p className="text-xs text-[#a8997e] mt-0.5 font-sans">AI Chatbot Development</p>
+            <p className="text-[9px] font-sans uppercase tracking-[0.12em] text-[#6f6a7d]">Live Price Decay</p>
+            <p className="text-xs text-[#6f6a7d] mt-0.5 font-sans">AI Chatbot Development</p>
           </div>
-          <span className="text-[9px] font-bold tracking-[0.09em] uppercase font-sans px-2 py-1 rounded-[2px] bg-[#c9a84c] text-[#050810] animate-live-breathe">LIVE</span>
+          <span className="text-[9px] font-bold tracking-[0.09em] uppercase font-sans px-2 py-1 rounded-full bg-[#4b3f8f] text-[#ffffff] animate-live-breathe">LIVE</span>
         </div>
 
         {/* Price */}
@@ -78,24 +78,24 @@ export default function PriceDecayDemo() {
             <div
               key={s.id}
               className="absolute animate-spark pointer-events-none"
-              style={{ left: `calc(40% + ${s.x}px)`, bottom: "65%", width: 3, height: 3, borderRadius: "50%", background: "#c9a84c", zIndex: 20 }}
+              style={{ left: `calc(40% + ${s.x}px)`, bottom: "65%", width: 3, height: 3, borderRadius: "50%", background: "#4b3f8f", zIndex: 20 }}
             />
           ))}
           <div className="flex items-baseline gap-2 mb-3">
             <span key={flashCount} className="text-4xl sm:text-5xl font-serif font-normal tabular-nums animate-price-tick" style={{ display: "inline-block" }}>
               ${price.toLocaleString()}
             </span>
-            <span className="text-sm text-[#c9a84c] font-sans">↘ -${DECAY}/hr</span>
+            <span className="text-sm text-[#4b3f8f] font-sans">↘ -${DECAY}/hr</span>
           </div>
 
           {/* Progress bar: flat 2px track per Royal spec */}
-          <div className="h-0.5 bg-[#1a1f30] mb-1.5">
+          <div className="h-0.5 bg-[#f0edfa] mb-1.5">
             <div
               className="h-0.5 transition-all duration-150 ease-linear progress-shimmer"
               style={{ width: `${100 - pct}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] font-sans text-[#a8997e]">
+          <div className="flex justify-between text-[10px] font-sans text-[#6f6a7d]">
             <span>Floor: ${MIN.toLocaleString()}</span>
             <span>Start: $2,400</span>
           </div>
@@ -107,17 +107,17 @@ export default function PriceDecayDemo() {
               { label: "Watching", value: "23" },
               { label: "Left", value: `${Math.max(64 - elapsed, 0)}h` },
             ].map((s) => (
-              <div key={s.label} className="rounded-[3px] border border-[rgba(201,168,76,0.22)] py-2 text-center bg-[#050810]">
-                <p className="text-sm font-serif font-normal text-[#f0e8d4]">{s.value}</p>
-                <p className="text-[9px] font-sans uppercase tracking-[0.09em] text-[#a8997e] mt-0.5">{s.label}</p>
+              <div key={s.label} className="rounded-xl border border-[rgba(75,63,143,0.22)] py-2 text-center bg-[#ffffff]">
+                <p className="text-sm font-serif font-normal text-[#3d3a45]">{s.value}</p>
+                <p className="text-[9px] font-sans uppercase tracking-[0.09em] text-[#6f6a7d] mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Accept button */}
-        <div className="px-4 pb-4 border-t border-[rgba(201,168,76,0.22)] pt-3">
-          <button className="btn-primary w-full justify-center text-[11px] tracking-[0.07em] uppercase py-2.5 rounded-[3px]">
+        <div className="px-4 pb-4 border-t border-[rgba(75,63,143,0.22)] pt-3">
+          <button className="btn-primary w-full justify-center text-[11px] tracking-[0.07em] uppercase py-2.5 rounded-full">
             Accept at ${price.toLocaleString()}
           </button>
         </div>

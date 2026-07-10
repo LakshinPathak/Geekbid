@@ -51,7 +51,7 @@ export default function Hero() {
         {PARTICLES.map((p, i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-[#c9a84c] animate-ember"
+            className="absolute rounded-full bg-[#4b3f8f] animate-ember"
             style={{
               left: p.left,
               bottom: "10%",
@@ -67,25 +67,25 @@ export default function Hero() {
       {/* Animated subtle dot-grid background */}
       <div
         className="absolute inset-0 pointer-events-none animate-hero-grid"
-        style={{ backgroundImage: "radial-gradient(circle, rgba(201,168,76,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+        style={{ backgroundImage: "radial-gradient(circle, rgba(75,63,143,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
       />
       {/* Scan-line — subtle CRT sweep */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="hero-scan-line" />
       </div>
       {/* Ambient glows with breathing animation */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#c9a84c]/[0.06] rounded-full blur-[160px] pointer-events-none animate-breathe" />
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/[0.04] rounded-full blur-[130px] pointer-events-none animate-breathe" style={{ animationDelay: "2s", animationDuration: "12s" }} />
-      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(201,168,76,0.3)] to-transparent pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#4b3f8f]/[0.06] rounded-full blur-[160px] pointer-events-none animate-breathe" />
+      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-[#4b3f8f]/[0.04] rounded-full blur-[130px] pointer-events-none animate-breathe" style={{ animationDelay: "2s", animationDuration: "12s" }} />
+      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#9c8fd8]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(75,63,143,0.3)] to-transparent pointer-events-none" />
 
       <div className="relative w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left: Copy — staggered entrance */}
         <div className="text-center lg:text-left">
           {/* Badge */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0ms" }}>
-            <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#c9a84c] border border-[rgba(201,168,76,0.22)] px-3 py-1.5 rounded-[2px] mb-6 font-sans cursor-default">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse inline-block" />
+            <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] px-3 py-1.5 rounded-full mb-6 font-sans cursor-default">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse inline-block" />
               Live · Reverse Auction Platform
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#a8997e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
+          <p className="text-lg sm:text-xl text-[#6f6a7d] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
             The reverse-auction pricing engine for tech talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
           </p>
 
@@ -117,7 +117,7 @@ export default function Hero() {
           <div className="flex flex-col sm:flex-row gap-3 mt-0 justify-center lg:justify-start">
             <div className="animate-fade-in-up" style={{ animationDelay: "600ms" }}>
               <Link href="/login?tab=register&role=client">
-                <button className="group btn-primary text-base px-10 py-4 rounded-[3px]">
+                <button className="group btn-primary text-base px-10 py-4 rounded-full">
                   Start Free
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
@@ -125,7 +125,7 @@ export default function Hero() {
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: "750ms" }}>
               <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>
-                <button className="group btn-ghost text-base px-10 py-4 rounded-[3px]">
+                <button className="group btn-ghost text-base px-10 py-4 rounded-full">
                   <Code className="h-4 w-4" /> See Pricing
                 </button>
               </a>
@@ -135,7 +135,7 @@ export default function Hero() {
           {/* Trust badges */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-6">
             {TRUST_BADGES.map((b, i) => (
-              <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#a8997e] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
+              <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#6f6a7d] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
                 <span>{b.icon}</span>
                 <span>{b.text}</span>
               </div>

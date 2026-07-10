@@ -17,13 +17,13 @@ const CONSTELLATION_DOTS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[rgba(201,168,76,0.22)] py-12 sm:py-16 bg-[#050810] relative overflow-hidden">
+    <footer className="border-t border-[rgba(75,63,143,0.22)] py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
       {/* Constellation background */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {CONSTELLATION_DOTS.map((d, i) => (
           <span
             key={i}
-            className="landing-constellation-dot absolute h-1 w-1 rounded-full bg-[#c9a84c]"
+            className="landing-constellation-dot absolute h-1 w-1 rounded-full bg-[#4b3f8f]"
             style={{ top: d.top, left: d.left, animationDelay: d.delay }}
           />
         ))}
@@ -34,50 +34,50 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#c9a84c] text-[#050810]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#4b3f8f] text-[#ffffff]">
                 <Zap className="h-4 w-4" />
               </div>
-              <span className="text-base font-serif font-normal text-[#f0e8d4]">GeekBid</span>
+              <span className="text-base font-serif font-normal text-[#3d3a45]">GeekBid</span>
             </div>
-            <p className="text-sm text-[#a8997e] leading-relaxed">
+            <p className="text-sm text-[#6f6a7d] leading-relaxed">
               The reverse-auction marketplace for engineering talent.
             </p>
           </div>
 
           {/* Platform */}
           <div>
-            <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Platform</p>
+            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Platform</p>
             <div className="flex flex-col gap-2.5">
-              <Link href="/feed" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Browse Jobs</Link>
-              <Link href="/post-job" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Post a Job</Link>
-              <Link href="/login?role=freelancer" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Find Work</Link>
-              <Link href="/pricing" className="text-sm text-[#a8997e] hover:text-[#f0e8d4] transition-colors">Pricing</Link>
+              <Link href="/feed" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Browse Jobs</Link>
+              <Link href="/post-job" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Post a Job</Link>
+              <Link href="/login?role=freelancer" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Find Work</Link>
+              <Link href="/pricing" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Pricing</Link>
             </div>
           </div>
           {/* Company */}
           <div>
-            <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Company</p>
+            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Company</p>
             <div className="flex flex-col gap-2.5">
-              <span className="text-sm text-[#a8997e]">About Us</span>
-              <span className="text-sm text-[#a8997e]">Careers</span>
-              <span className="text-sm text-[#a8997e]">Blog</span>
-              <span className="text-sm text-[#a8997e]">Contact</span>
+              <span className="text-sm text-[#6f6a7d]">About Us</span>
+              <span className="text-sm text-[#6f6a7d]">Careers</span>
+              <span className="text-sm text-[#6f6a7d]">Blog</span>
+              <span className="text-sm text-[#6f6a7d]">Contact</span>
             </div>
           </div>
           {/* Legal */}
           <div>
-            <p className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-widest mb-4">Legal</p>
+            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Legal</p>
             <div className="flex flex-col gap-2.5">
-              <span className="text-sm text-[#a8997e]">Terms of Service</span>
-              <span className="text-sm text-[#a8997e]">Privacy Policy</span>
-              <span className="text-sm text-[#a8997e]">Cookie Policy</span>
+              <span className="text-sm text-[#6f6a7d]">Terms of Service</span>
+              <span className="text-sm text-[#6f6a7d]">Privacy Policy</span>
+              <span className="text-sm text-[#6f6a7d]">Cookie Policy</span>
             </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[rgba(201,168,76,0.22)]">
-          <p className="text-xs text-[#a8997e]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[rgba(75,63,143,0.22)]">
+          <p className="text-xs text-[#6f6a7d]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

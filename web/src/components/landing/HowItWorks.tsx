@@ -12,19 +12,19 @@ function StepCard({ step, idx, inView }: { step: Step; idx: number; inView: bool
   return (
     <div
       ref={cardRef}
-      className="group glass-card landing-glass-card landing-tilt-card hover:border-[rgba(201,168,76,0.35)] transition-all duration-300 relative overflow-hidden"
+      className="group glass-card landing-glass-card landing-tilt-card hover:border-[rgba(75,63,143,0.35)] transition-all duration-300 relative overflow-hidden"
       style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.6s ease ${200 + idx * 80}ms, transform 0.6s ease ${200 + idx * 80}ms` }}
     >
-      <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#c9a84c] border border-[rgba(201,168,76,0.28)] bg-[rgba(201,168,76,0.06)] px-1.5 py-0.5 rounded-[2px] tracking-wider">{step.num}</span>
+      <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#4b3f8f] border border-[rgba(75,63,143,0.28)] bg-[rgba(75,63,143,0.06)] px-1.5 py-0.5 rounded-full tracking-wider">{step.num}</span>
       <div className="relative z-10">
         <div
-          className={`h-10 w-10 rounded-[6px] border ${step.accent} flex items-center justify-center mb-5 ${inView ? "landing-icon-pop" : ""}`}
+          className={`h-10 w-10 rounded-xl border ${step.accent} flex items-center justify-center mb-5 ${inView ? "landing-icon-pop" : ""}`}
           style={{ animationDelay: `${200 + idx * 80}ms` }}
         >
           <step.icon className="h-5 w-5" />
         </div>
-        <h3 className="text-lg font-serif font-normal text-[#f0e8d4] mb-2">{step.title}</h3>
-        <p className="text-sm sm:text-base text-[#a8997e] leading-relaxed">{step.desc}</p>
+        <h3 className="text-lg font-serif font-normal text-[#3d3a45] mb-2">{step.title}</h3>
+        <p className="text-sm sm:text-base text-[#6f6a7d] leading-relaxed">{step.desc}</p>
       </div>
     </div>
   );
@@ -37,10 +37,10 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
   return (
     <div className="mt-20 sm:mt-28">
       <div className="text-center mb-10 sm:mb-14" style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-        <h3 className="landing-header-glow text-2xl sm:text-4xl font-serif font-normal text-[#f0e8d4] leading-tight max-w-3xl mx-auto text-balance">
-          From posting to payment in <span className="text-[#c9a84c]">four</span> simple steps
+        <h3 className="landing-header-glow text-2xl sm:text-4xl font-serif font-normal text-[#3d3a45] leading-tight max-w-3xl mx-auto text-balance">
+          From posting to payment in <span className="text-[#4b3f8f]">four</span> simple steps
         </h3>
-        <p className="text-base text-[#a8997e] max-w-xl mx-auto mt-4">
+        <p className="text-base text-[#6f6a7d] max-w-xl mx-auto mt-4">
           Traditional hiring is slow, expensive, and opaque. GeekBid&apos;s algorithmic pricing finds the true market rate automatically.
         </p>
       </div>
@@ -51,9 +51,9 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
             <StepCard step={s} idx={idx} inView={inView} />
             {idx < STEPS.length - 1 && (
               <div className="hidden lg:flex items-center justify-center mt-8 relative">
-                <div className="w-full border-t border-dashed border-[rgba(201,168,76,0.28)]" />
+                <div className="w-full border-t border-dashed border-[rgba(75,63,143,0.28)]" />
                 <div
-                  className="landing-connector-dot absolute h-1.5 w-1.5 rounded-full bg-[#c9a84c]"
+                  className="landing-connector-dot absolute h-1.5 w-1.5 rounded-full bg-[#4b3f8f]"
                   style={{ animationDelay: `${idx * 0.4}s` }}
                   aria-hidden="true"
                 />
@@ -65,23 +65,23 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
 
       {/* Price decay formula callout — collapsed by default to save vertical space */}
       <details className="mt-10 glass-panel p-5 sm:p-6 text-center scanline group">
-        <summary className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#a8997e] cursor-pointer list-none hover:text-[#c9a84c] transition-colors">
+        <summary className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] cursor-pointer list-none hover:text-[#4b3f8f] transition-colors">
           ◈ View the Price Decay Formula ◈
         </summary>
         <div className="mt-5">
-          <p className="text-xl sm:text-2xl md:text-3xl font-mono-il text-[#a8997e] tracking-tight">
-            <span className="text-[#c9a84c]">currentPrice</span>
+          <p className="text-xl sm:text-2xl md:text-3xl font-mono-il text-[#6f6a7d] tracking-tight">
+            <span className="text-[#4b3f8f]">currentPrice</span>
             {" = max("}
-            <span className="text-[#f0e8d4]/80">startPrice</span>
+            <span className="text-[#3d3a45]/80">startPrice</span>
             {" − "}
-            <span className="text-[#c9a84c]">decayRate</span>
+            <span className="text-[#4b3f8f]">decayRate</span>
             {" × "}
-            <span className="text-[#c9a84c]">hours</span>
+            <span className="text-[#4b3f8f]">hours</span>
             {", "}
-            <span className="text-[#f0e8d4]/80">floor</span>
+            <span className="text-[#3d3a45]/80">floor</span>
             {")"}
           </p>
-          <p className="text-sm text-[#a8997e] mt-3">Prices never go below your configured minimum. You control the speed.</p>
+          <p className="text-sm text-[#6f6a7d] mt-3">Prices never go below your configured minimum. You control the speed.</p>
         </div>
       </details>
     </div>

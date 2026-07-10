@@ -19,7 +19,7 @@ export default function LandingGate({ children }: { children: ReactNode }) {
   if (!mounted || currentUser) return null;
 
   return (
-    <div className="bg-[#080b14] text-[#f0e8d4] overflow-x-hidden">
+    <div className="bg-[#fbfaf7] text-[#3d3a45] overflow-x-hidden">
       {children}
     </div>
   );

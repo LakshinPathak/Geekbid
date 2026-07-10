@@ -900,22 +900,20 @@ input:focus, textarea:focus, select:focus { outline: none; }
   position: absolute;
   inset: -10%;
   background:
-    radial-gradient(circle at 20% 30%, rgba(201,168,76,0.10) 0%, transparent 45%),
-    radial-gradient(circle at 80% 20%, rgba(96,165,250,0.07) 0%, transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(168,85,247,0.06) 0%, transparent 45%);
+    radial-gradient(circle at 20% 30%, rgba(156,143,216,0.08) 0%, transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(156,143,216,0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(75,63,143,0.04) 0%, transparent 45%);
   animation: mesh-drift 22s ease-in-out infinite;
   will-change: transform;
   pointer-events: none;
 }
 
 /* ── Grain/noise overlay (static, no animation) ───────────────── */
+/* Neutered for Pastel Indigo (NEW_THEME.md §1/§9.4): film-grain noise
+   read as "dark moody premium", clashes with the calm flat pastel look.
+   Class kept (still referenced in landing components) but now a no-op. */
 .landing-grain-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.035;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  display: none;
 }
 
 /* ── Gradient-shimmer headline text (layers on .text-gradient) ── */
@@ -924,7 +922,7 @@ input:focus, textarea:focus, select:focus { outline: none; }
   100% { background-position: 200% 50%; }
 }
 .landing-gradient-shimmer {
-  background: linear-gradient(110deg, #c9a84c 20%, #f0e8d4 40%, #c9a84c 60%);
+  background: linear-gradient(110deg, #4b3f8f 20%, #3d3a45 40%, #4b3f8f 60%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -946,7 +944,7 @@ input:focus, textarea:focus, select:focus { outline: none; }
   position: absolute;
   inset: -20%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,168,76,0.35) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(75,63,143,0.35) 0%, transparent 70%);
   filter: blur(24px);
   animation: glow-pulse-tick 0.9s ease-out;
   pointer-events: none;
@@ -957,7 +955,7 @@ input:focus, textarea:focus, select:focus { outline: none; }
 .landing-mouse-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(201,168,76,0.08), transparent 70%);
+  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(75,63,143,0.08), transparent 70%);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -976,13 +974,13 @@ input:focus, textarea:focus, select:focus { outline: none; }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   background: rgba(13,17,32,0.55);
-  box-shadow: inset 0 1px 0 rgba(201,168,76,0.08);
+  box-shadow: inset 0 1px 0 rgba(75,63,143,0.08);
 }
 @media (max-width: 767px) {
   .landing-glass-card {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: #0d1120;
+    background: #ffffff;
   }
 }
 
@@ -1013,9 +1011,10 @@ input:focus, textarea:focus, select:focus { outline: none; }
 @keyframes conic-rotate {
   to { --angle: 360deg; }
 }
+/* Simplified for Pastel Indigo (§9.4): mockups use a static featured-
+   card border (NEW_THEME.md §4), not a rotating scan-glow. */
 .landing-testimonial-border {
-  background: conic-gradient(from var(--angle), rgba(201,168,76,0.05), rgba(201,168,76,0.55), rgba(201,168,76,0.05) 50%, rgba(201,168,76,0.4), rgba(201,168,76,0.05));
-  animation: conic-rotate 6s linear infinite;
+  background: #9c8fd8;
 }
 
 /* ── Scroll progress bar ──────────────────────────────────────── */
@@ -1024,16 +1023,16 @@ input:focus, textarea:focus, select:focus { outline: none; }
   top: 0;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, #8a6e2f, #c9a84c, #f0e8d4);
+  background: linear-gradient(90deg, #3d3373, #4b3f8f, #3d3a45);
   z-index: 60;
   will-change: width;
 }
 
 /* ── Active nav link (scroll-spy highlight) ───────────────────── */
-.landing-nav-link-active { color: #c9a84c !important; }
+.landing-nav-link-active { color: #4b3f8f !important; }
 
 /* ── Section header text-glow ──────────────────────────────────── */
-.landing-header-glow { text-shadow: 0 0 28px rgba(201,168,76,0.35); }
+.landing-header-glow { text-shadow: 0 0 28px rgba(75,63,143,0.35); }
 
 /* ── Icon micro-animation on section reveal (one-shot) ────────── */
 @keyframes icon-pop {
@@ -1057,19 +1056,14 @@ input:focus, textarea:focus, select:focus { outline: none; }
   100% { top: 30%; left: 20%; }
 }
 @keyframes fake-cursor-click {
-  0%, 85%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
-  90%           { box-shadow: 0 0 0 10px rgba(201,168,76,0.25); }
-  95%           { box-shadow: 0 0 0 18px rgba(201,168,76,0); }
+  0%, 85%, 100% { box-shadow: 0 0 0 0 rgba(75,63,143,0); }
+  90%           { box-shadow: 0 0 0 10px rgba(75,63,143,0.25); }
+  95%           { box-shadow: 0 0 0 18px rgba(75,63,143,0); }
 }
+/* Neutered for Pastel Indigo (§9.4): no mockup shows an animated demo
+   cursor; doesn't fit the calm/boutique motion language. No-op. */
 .landing-fake-cursor {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 3px 50% 50% 50%;
-  background: #c9a84c;
-  animation: fake-cursor-path 9s ease-in-out infinite, fake-cursor-click 9s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 10;
+  display: none;
 }
 @media (max-width: 1023px) {
   .landing-fake-cursor { display: none; }
@@ -1087,7 +1081,9 @@ input:focus, textarea:focus, select:focus { outline: none; }
   0%, 100% { opacity: 0.15; }
   50%      { opacity: 0.65; }
 }
-.landing-constellation-dot { animation: twinkle 3s ease-in-out infinite; }
+/* Neutered for Pastel Indigo (§9.4): starfield twinkle reads as dark
+   sci-fi, wrong on a cream footer. No-op (dot stays static/invisible). */
+.landing-constellation-dot { animation: none; opacity: 0; }
 
 /* ── Market terminal log line entrance (PriceDecayShowcase) ────── */
 @keyframes log-line-in {
@@ -1143,31 +1139,28 @@ input:focus, textarea:focus, select:focus { outline: none; }
   padding: 1px;
   transition: background 0.3s ease;
 }
+/* Simplified for Pastel Indigo (§9.4): static featured-border, not a
+   rotating scan-glow — matches NEW_THEME.md §4 "featured card" recipe. */
 .faq-glow-border {
-  background: conic-gradient(from var(--angle), rgba(201,168,76,0.05), rgba(201,168,76,0.6), rgba(201,168,76,0.05) 50%, rgba(201,168,76,0.45), rgba(201,168,76,0.05));
-  animation: conic-rotate 5s linear infinite;
+  background: #9c8fd8;
 }
 .faq-number {
   font-family: 'Courier New', monospace;
   font-size: 11px;
-  color: rgba(201,168,76,0.45);
+  color: rgba(75,63,143,0.45);
   letter-spacing: 0.05em;
   transition: color 0.25s ease;
 }
-.faq-item.active .faq-number { color: #c9a84c; }
+.faq-item.active .faq-number { color: #4b3f8f; }
 .faq-icon-badge {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .faq-item.active .faq-icon-badge {
   transform: scale(1.06);
-  box-shadow: 0 0 16px rgba(201,168,76,0.22);
+  box-shadow: 0 0 16px rgba(75,63,143,0.15);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .faq-glow-border {
-    animation: none !important;
-  }
-}
+
 
 /* ═══════════════════════════════════════════════════════════════
    FEED PAGES — PREMIUM DASHBOARD REDESIGN (NEW, ADDITIVE)
