@@ -10,6 +10,9 @@ interface SpendAnalyticsProps {
  totalSavings: number;
  avgDecayRate: number;
  openJobs: number;
+ /** Real per-month spend, computed by the caller from actual job postings
+     (see ClientFeed.tsx) — never mocked/randomized here. */
+ monthlySpend: { key: string; month: string; value: number }[];
  loading?: boolean;
 }
 
@@ -19,6 +22,7 @@ export default function SpendAnalytics({
  totalSavings,
  avgDecayRate,
  openJobs,
+ monthlySpend,
  loading = false,
 }: SpendAnalyticsProps) {
  if (loading) {
@@ -72,7 +76,11 @@ export default function SpendAnalytics({
  },
  ];
 
+ const maxChart = Math.max(...monthlySpend.map(d => d.value), 1);
+ const hasAnySpend = monthlySpend.some(d => d.value > 0);
+
  return (
+ <div className="space-y-3">
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  {stats.map(s => (
  <div
@@ -95,6 +103,32 @@ export default function SpendAnalytics({
  </div>
  </div>
  ))}
+ </div>
+
+ {hasAnySpend && (
+ <div className="glass-panel feed-glass-card rounded-2xl p-4 border border-[rgba(75,63,143,0.22)]">
+ <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold mb-3">Monthly Spend</p>
+ <div className="flex items-end gap-2 h-28">
+ {monthlySpend.map((d) => {
+ const pct = maxChart > 0 ? (d.value / maxChart) * 100 : 0;
+ return (
+ <div key={d.key} className="flex-1 flex flex-col items-center gap-1.5">
+ <p className="text-[9px] text-[#6f6a7d] font-medium whitespace-nowrap">
+ {d.value > 0 ? formatMoney(d.value) : ""}
+ </p>
+ <div className="w-full flex justify-center" style={{ height: "80px" }}>
+ <div
+ className="w-full max-w-[28px] rounded-t-[3px] bg-[#4b3f8f] transition-all duration-700"
+ style={{ height: d.value > 0 ? `${Math.max(pct, 4)}%` : "1px" }}
+ />
+ </div>
+ <p className="text-[10px] text-[#6f6a7d] font-medium">{d.month}</p>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
  </div>
  );
 }

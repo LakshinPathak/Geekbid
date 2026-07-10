@@ -87,6 +87,33 @@ export default function ClientFeed() {
  [jobs, uid]
  );
 
+ // Real monthly spend history — every job this client has ever posted
+ // (any status), bucketed by the calendar month it was actually posted
+ // in, for the last 6 months ending this month. No mock/random data:
+ // a month with nothing posted in it renders as $0, not a fabricated
+ // number.
+ const monthlySpend = useMemo(() => {
+ const months: { key: string; month: string; value: number }[] = [];
+ for (let i = 5; i >= 0; i--) {
+ const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+ months.push({
+ key: `${d.getFullYear()}-${d.getMonth()}`,
+ month: d.toLocaleDateString("en-US", { month: "short" }),
+ value: 0,
+ });
+ }
+ const byKey = new Map(months.map(m => [m.key, m]));
+ jobs
+ .filter(j => j.clientId === uid)
+ .forEach(j => {
+ const posted = new Date(j.postedAt);
+ const key = `${posted.getFullYear()}-${posted.getMonth()}`;
+ const bucket = byKey.get(key);
+ if (bucket) bucket.value += j.startingPrice;
+ });
+ return months;
+ }, [jobs, uid, now]);
+
  // KPIs (from API or local fallback)
  const kpis = useMemo(() => {
  if (dashboard) return dashboard;
@@ -207,6 +234,7 @@ export default function ClientFeed() {
  avgBidPrice={kpis.avgBidPrice}
  totalSavings={kpis.totalSavings}
  avgDecayRate={kpis.avgDecayRate}
+ monthlySpend={monthlySpend}
  openJobs={kpis.openJobs}
  loading={loading}
  />
