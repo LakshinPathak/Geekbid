@@ -140,6 +140,46 @@ end-to-end. Seeded the live `geekbid` database with 3 new freelancer
 personas and 4 new jobs across the new categories so the feed and talent
 pool show real breadth immediately.
 
+**Mobile/responsive QA pass** (also on `v18`): a full mobile-viewport sweep
+across every page in [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md) at 390×844,
+360×800, and 768×1024 using Playwright, both roles + admin, per the checklist
+in [`RESPONSIVE.md`](./RESPONSIVE.md). Found and fixed:
+- The client feed's "Monthly Spend" chart was gated behind `hasAnySpend`, so
+  a fresh account with zero spend in every month never rendered the
+  chart/month-labels/axis at all; zero-value months also rendered a literal
+  1px bar, effectively invisible. Now the card always renders and zero
+  months show a faint but visible baseline bar.
+- The post-job wizard's "Recommended" badge on the Adaptive pricing-mode
+  card had no wrap, clipping to "Recomme…" at mobile width.
+- The payments page's transaction-filter row (`All/Held/Released/…/Refresh`)
+  had no `overflow-x-auto` or wrap, so it silently clipped under an ancestor
+  `overflow-hidden` — the Refresh control was unreachable on mobile.
+- The freelancer feed's Market Pricing Intelligence category cards
+  overlapped their price value with the category's badge row (job count /
+  competition / "My Skills") whenever the category label or badge text was
+  long enough — e.g. "Web Development" + "Medium comp." collided with the
+  price. Now the badge row wraps.
+- The counter-bid/decay-curve slider thumb was only 14×14px — hard to grab
+  with a finger. Bumped to 22×22px sitewide (`input[type="range"]` in
+  `globals.css`).
+- The admin sidebar (`AdminSidebar.tsx`) had no responsive behavior at all —
+  a permanent `w-64` column that squeezed every admin page into a ~134px-wide
+  strip at mobile width. Converted to an off-canvas drawer (hidden by
+  default under `lg:`, hamburger-triggered, closes via X or backdrop tap),
+  matching the pattern already used by the main app's mobile nav.
+
+Also confirmed (not bugs): several things that looked broken in full-page
+screenshots turned out to be screenshot-stitching artifacts of
+`position: sticky`/`fixed` elements (the sticky nav, the fixed bottom tab
+bar) — real in-browser scrolling was unaffected. A few horizontally
+scrolling rows (notifications filter tabs, the landing comparison table,
+admin data tables) were already correctly implemented with
+`overflow-x-auto` on their own container. Two non-layout issues were found
+and left alone as out of scope: admin login unconditionally redirects to
+`/feed` instead of `/admin` (routing bug, identical at any viewport), and
+the admin users/jobs tables' pagination returns one row per page regardless
+of viewport (pre-existing data/API bug, reproduces identically on desktop).
+
 ---
 
 ## What's in v17
@@ -1166,7 +1206,7 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`) (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md)) |
+| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
 | `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
