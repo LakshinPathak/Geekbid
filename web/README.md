@@ -38,6 +38,21 @@ one-off Tailwind overrides like `className="glass-input pl-10"` sitewide
 other spots). Fixed by wrapping the component classes in `@layer components`,
 matching Tailwind v4's intended layer order.
 
+Also on `v18`, but a separate feature (not part of the retheme): the
+category taxonomy expanded past dev/tech-only. `JobCategory` and
+`JOB_CATEGORIES` (`lib/utils.ts`) gained `writing` (Writing & Translation)
+and `video` (Video & Animation), `design` was relabeled "Graphics &
+Design," and `SKILL_TAXONOMY` gained 15 matching skills — mirrored into
+the server-side category whitelist in both job-creation routes and the
+AI smart-search prompt's category enum, so the new values are actually
+accepted end-to-end, not just selectable in a dropdown that silently
+falls back to "other." The live database (`geekbid` on the shared Atlas
+cluster) was seeded with 3 new freelancer personas (a designer, a
+copywriter, a video editor/animator) and 4 new open jobs across the new
+categories, so the feed/talent-pool/market-intelligence panels show
+real breadth immediately rather than only after someone manually posts
+a non-tech job.
+
 Full spec: [`../NEW_THEME.md`](../NEW_THEME.md), page-by-page execution map:
 [`../FRONTEND_PAGES.md`](../FRONTEND_PAGES.md).
 

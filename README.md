@@ -131,6 +131,15 @@ separately. Full page-by-page map, current-state CSS/hex audit, and the
   by wrapping the component classes in `@layer components`, matching
   Tailwind v4's intended `theme, base, components, utilities` cascade order.
 
+**Also on `v18`, a separate feature**: expanded the category taxonomy past
+dev/tech-only, matching a general Fiverr-style marketplace scope. Added
+`writing` (Writing & Translation) and `video` (Video & Animation)
+categories plus 15 matching skills, mirrored into the server-side category
+whitelist and the AI smart-search prompt so the values are accepted
+end-to-end. Seeded the live `geekbid` database with 3 new freelancer
+personas and 4 new jobs across the new categories so the feed and talent
+pool show real breadth immediately.
+
 ---
 
 ## What's in v17
