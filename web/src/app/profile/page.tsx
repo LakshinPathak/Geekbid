@@ -19,16 +19,16 @@ function GeekScoreRing({ score }: { score: number }) {
  const offset = circumference - pct * circumference;
 
  const tierColor =
- score >= 1000 ? "#c084fc" :
- score >= 800 ? "#22d3ee" :
- score >= 500 ? "#facc15" :
- score >= 200 ? "#d1d5db" :
- "#fb923c";
+ score >= 1000 ? "#3d3373" :
+ score >= 800 ? "#4b3f8f" :
+ score >= 500 ? "#9c8fd8" :
+ score >= 200 ? "#c9c0e8" :
+ "#b3aec0";
 
  return (
- <div className="bg-[#080b14] relative w-24 h-24 mx-auto">
+ <div className="bg-[#fbfaf7] relative w-24 h-24 mx-auto">
  <svg width="96" height="96" viewBox="0 0 100 100" className="-rotate-90">
- <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(59,75,61,0.3)" strokeWidth="6" />
+ <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(236,233,226,0.3)" strokeWidth="6" />
  <circle
  cx="50" cy="50" r="42"
  fill="none"
@@ -42,7 +42,7 @@ function GeekScoreRing({ score }: { score: number }) {
  </svg>
  <div className="absolute inset-0 flex flex-col items-center justify-center">
  <span className="font-heading text-lg font-normal" style={{ color: tierColor }}>{score}</span>
- <span className="text-[10px] text-[#a8997e]">GS™</span>
+ <span className="text-[10px] text-[#6f6a7d]">GS™</span>
  </div>
  </div>
  );
@@ -121,8 +121,8 @@ export default function ProfilePage() {
  const toggleSkill = (s: string) => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
  if (!mounted || !currentUser) return (
- <div className="flex items-center justify-center min-h-[60vh] bg-[#080b14]">
- <div className="h-8 w-8 border-2 border-[#c9a84c]/40 border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#fbfaf7]">
+ <div className="h-8 w-8 border-2 border-[#4b3f8f]/40 border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
@@ -144,7 +144,7 @@ export default function ProfilePage() {
  ];
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-8">
 
  {/* ── Profile Header Card ── */}
@@ -159,27 +159,27 @@ export default function ProfilePage() {
 
  {/* Info */}
  <div className="flex-1 text-center sm:text-left">
- <h1 className="font-heading text-3xl font-normal text-[#f0e8d4] flex items-center justify-center sm:justify-start gap-2">
+ <h1 className="font-heading text-3xl font-normal text-[#3d3a45] flex items-center justify-center sm:justify-start gap-2">
  {currentUser.fullName}
  {currentUser.isVerified && (
- <CheckCircle2 className="h-5 w-5 text-[#c9a84c]" />
+ <CheckCircle2 className="h-5 w-5 text-[#4b3f8f]" />
  )}
  </h1>
- <p className="text-[#a8997e] text-sm mt-0.5">{currentUser.email}</p>
+ <p className="text-[#6f6a7d] text-sm mt-0.5">{currentUser.email}</p>
  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
  <span className="badge-active capitalize">
  {currentUser.role}
  </span>
  {currentUser.averageRating != null && currentUser.averageRating > 0 && (
- <span className="flex items-center gap-1 bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border border-[rgba(201,168,76,0.22)] rounded-[3px] px-3 py-1 text-xs font-medium">
- <Star className="h-3 w-3 fill-[#c9a84c]" /> {currentUser.averageRating.toFixed(1)} ({currentUser.totalReviews})
+ <span className="flex items-center gap-1 bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] rounded-full px-3 py-1 text-xs font-medium">
+ <Star className="h-3 w-3 fill-[#4b3f8f]" /> {currentUser.averageRating.toFixed(1)} ({currentUser.totalReviews})
  </span>
  )}
  {currentUser.availability && (
- <span className={`rounded-[3px] px-3 py-1 text-xs font-medium border ${
- currentUser.availability === "available" ? "bg-[rgba(201,168,76,0.12)] text-[#c9a84c] border-[rgba(201,168,76,0.22)]" :
- currentUser.availability === "part-time" ? "bg-[#111625] text-[#a8997e] border-[rgba(201,168,76,0.22)]" :
- "bg-[rgba(192,57,43,0.2)] text-[#e57373] border-[rgba(201,168,76,0.22)]"
+ <span className={`rounded-full px-3 py-1 text-xs font-medium border ${
+ currentUser.availability === "available" ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border-[rgba(75,63,143,0.22)]" :
+ currentUser.availability === "part-time" ? "bg-[#f4f2ee] text-[#6f6a7d] border-[rgba(75,63,143,0.22)]" :
+ "bg-[rgba(193,77,58,0.2)] text-[#96543f] border-[rgba(75,63,143,0.22)]"
  }`}>
  {currentUser.availability}
  </span>
@@ -191,7 +191,7 @@ export default function ProfilePage() {
  {isFreelancer && (
  <div className="text-center shrink-0">
  <GeekScoreRing score={currentUser.geekScore ?? 0} />
- <p className="text-[#a8997e] text-xs font-medium mt-1">
+ <p className="text-[#6f6a7d] text-xs font-medium mt-1">
  <span style={{ color: tier.color }}>{tier.label}</span>
  </p>
  </div>
@@ -201,10 +201,10 @@ export default function ProfilePage() {
  {/* Stats row */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
  {stats.map(s => (
- <div key={s.label} className="glass-panel-sm rounded-[6px] p-3 text-center">
- <s.icon className="h-4 w-4 text-[#a8997e] mx-auto mb-1.5" />
- <p className="font-heading text-lg font-normal text-[#f0e8d4]">{s.value}</p>
- <p className="text-[11px] text-[#a8997e]">{s.label}</p>
+ <div key={s.label} className="glass-panel-sm rounded-2xl p-3 text-center">
+ <s.icon className="h-4 w-4 text-[#6f6a7d] mx-auto mb-1.5" />
+ <p className="font-heading text-lg font-normal text-[#3d3a45]">{s.value}</p>
+ <p className="text-[11px] text-[#6f6a7d]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -218,13 +218,13 @@ export default function ProfilePage() {
  return (
  <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
  <div className="flex items-center gap-2 mb-4">
- <Star className="h-4 w-4 text-[#c9a84c]" />
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4]">
+ <Star className="h-4 w-4 text-[#4b3f8f]" />
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45]">
  Reviews ({myReviews.length})
  </h2>
  {currentUser.averageRating && (
- <span className="ml-auto flex items-center gap-1 text-[#c9a84c] text-sm font-semibold">
- <Star className="h-4 w-4 fill-[#c9a84c]" /> {currentUser.averageRating.toFixed(1)}
+ <span className="ml-auto flex items-center gap-1 text-[#4b3f8f] text-sm font-semibold">
+ <Star className="h-4 w-4 fill-[#4b3f8f]" /> {currentUser.averageRating.toFixed(1)}
  </span>
  )}
  </div>
@@ -241,17 +241,17 @@ export default function ProfilePage() {
  size="xs"
  />
  <div>
- <p className="text-[#f0e8d4] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
- <p className="text-[#a8997e] text-xs capitalize">{review.reviewerRole}</p>
+ <p className="text-[#3d3a45] text-sm font-medium">{reviewer?.fullName ?? "User"}</p>
+ <p className="text-[#6f6a7d] text-xs capitalize">{review.reviewerRole}</p>
  </div>
  </div>
  <div className="flex gap-0.5">
  {[1, 2, 3, 4, 5].map(s => (
- <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? "text-[#c9a84c] fill-[#c9a84c]" : "text-[rgba(201,168,76,0.25)]"}`} />
+ <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? "text-[#4b3f8f] fill-[#4b3f8f]" : "text-[rgba(75,63,143,0.25)]"}`} />
  ))}
  </div>
  </div>
- {review.comment && <p className="text-[#a8997e] text-sm">{review.comment}</p>}
+ {review.comment && <p className="text-[#6f6a7d] text-sm">{review.comment}</p>}
  </div>
  );
  })}
@@ -264,28 +264,28 @@ export default function ProfilePage() {
  {referralStats && (
  <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
  <div className="flex items-center gap-2 mb-4">
- <Share2 className="h-4 w-4 text-[#c9a84c]" />
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4]">Referral Program</h2>
+ <Share2 className="h-4 w-4 text-[#4b3f8f]" />
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45]">Referral Program</h2>
  </div>
- <div className="glass-panel-sm rounded-[6px] p-4 mb-4">
- <p className="text-[#a8997e] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
+ <div className="glass-panel-sm rounded-2xl p-4 mb-4">
+ <p className="text-[#6f6a7d] text-xs uppercase tracking-wider font-semibold mb-2">Your Referral Link</p>
  <div className="flex gap-2">
  <input
  readOnly
  value={`${typeof window !== "undefined" ? window.location.origin : ""}/login?ref=${referralStats.referralCode}`}
- className="flex-1 glass-input h-10 rounded-[3px] text-sm"
+ className="flex-1 glass-input h-10 rounded-full text-sm"
  />
  <button
  onClick={() => {
  navigator.clipboard.writeText(`${window.location.origin}/login?ref=${referralStats.referralCode}`);
  toast.success("Link copied!");
  }}
- className="btn-primary h-10 px-4 rounded-[3px] text-sm"
+ className="btn-primary h-10 px-4 rounded-full text-sm"
  >
  <Copy className="h-3.5 w-3.5" /> Copy
  </button>
  </div>
- <p className="text-[#a8997e] text-xs mt-2">Code: <span className="text-[#c9a84c] font-mono-il">{referralStats.referralCode}</span></p>
+ <p className="text-[#6f6a7d] text-xs mt-2">Code: <span className="text-[#4b3f8f] font-mono-il">{referralStats.referralCode}</span></p>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  {[
@@ -294,10 +294,10 @@ export default function ProfilePage() {
  { label: "Completed", value: String(referralStats.completed), icon: Star },
  { label: "Credits", value: `$${referralStats.totalCredits}`, icon: DollarSign },
  ].map(s => (
- <div key={s.label} className="glass-panel-sm rounded-[6px] p-3 text-center">
- <s.icon className="h-4 w-4 text-[#a8997e] mx-auto mb-1.5" />
- <p className="font-heading text-lg font-bold text-[#f0e8d4]">{s.value}</p>
- <p className="text-[11px] text-[#a8997e]">{s.label}</p>
+ <div key={s.label} className="glass-panel-sm rounded-2xl p-3 text-center">
+ <s.icon className="h-4 w-4 text-[#6f6a7d] mx-auto mb-1.5" />
+ <p className="font-heading text-lg font-bold text-[#3d3a45]">{s.value}</p>
+ <p className="text-[11px] text-[#6f6a7d]">{s.label}</p>
  </div>
  ))}
  </div>
@@ -307,13 +307,13 @@ export default function ProfilePage() {
  {/* ── Edit Profile Form ── */}
  <div className="glass-panel p-6 sm:p-8 mt-6 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
  <div className="flex items-center gap-2 mb-6">
- <Pencil className="h-4 w-4 text-[#c9a84c]" />
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4]">Edit Profile</h2>
+ <Pencil className="h-4 w-4 text-[#4b3f8f]" />
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45]">Edit Profile</h2>
  </div>
 
  {/* Profile Photo */}
  <div className="mb-6">
-   <p className="text-[#a8997e] text-xs font-medium mb-3">Profile Photo</p>
+   <p className="text-[#6f6a7d] text-xs font-medium mb-3">Profile Photo</p>
    <AvatarUploader
      currentAvatarUrl={currentUser.avatarUrl}
      avatarInitial={currentUser.avatarInitial}
@@ -331,15 +331,15 @@ export default function ProfilePage() {
  </div>
 
  {/* Section 1 — Personal Info */}
- <p className="text-[#c9a84c] text-xs uppercase tracking-wider font-semibold mb-4">Personal Info</p>
+ <p className="text-[#4b3f8f] text-xs uppercase tracking-wider font-semibold mb-4">Personal Info</p>
  <div className="space-y-4">
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Full Name</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Full Name</label>
  <div className="relative">
- <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
  value={fullName} onChange={e => setFullName(e.target.value)}
- className="w-full h-11 glass-input rounded-[6px] text-sm"
+ className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  placeholder="Your full name"
  />
@@ -347,22 +347,22 @@ export default function ProfilePage() {
  </div>
 
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Bio</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Bio</label>
  <textarea
  value={bio} onChange={e => setBio(e.target.value)} rows={3}
- className="w-full p-3 glass-input rounded-[6px] text-sm resize-none"
+ className="w-full p-3 glass-input rounded-2xl text-sm resize-none"
  placeholder="Tell us about yourself..."
  />
  </div>
 
  {currentUser.role === "client" && (
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Company</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Company</label>
  <div className="relative">
- <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
  value={company} onChange={e => setCompany(e.target.value)}
- className="w-full h-11 glass-input rounded-[6px] text-sm"
+ className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  placeholder="Company name"
  />
@@ -374,28 +374,28 @@ export default function ProfilePage() {
  {/* Section 2 — Professional (freelancer only) */}
  {isFreelancer && (
  <>
- <div className="h-px bg-[rgba(201,168,76,0.15)] my-6" />
- <p className="text-[#c9a84c] text-xs uppercase tracking-wider font-semibold mb-4">Professional</p>
+ <div className="h-px bg-[rgba(75,63,143,0.15)] my-6" />
+ <p className="text-[#4b3f8f] text-xs uppercase tracking-wider font-semibold mb-4">Professional</p>
  <div className="space-y-4">
  {/* Skills */}
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-2 block">Skills</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-2 block">Skills</label>
  {skills.length > 0 && (
  <div className="flex flex-wrap gap-1.5 mb-3">
  {skills.map(s => (
- <span key={s} className="inline-flex items-center gap-1 bg-[#c9a84c] text-[#050810] border border-transparent rounded-full px-3 py-1 text-xs transition-colors">
+ <span key={s} className="inline-flex items-center gap-1 bg-[#4b3f8f] text-[#ffffff] border border-transparent rounded-full px-3 py-1 text-xs transition-colors">
  {s}
- <button onClick={() => toggleSkill(s)} className="hover:text-[#f0e8d4] transition-colors">
+ <button onClick={() => toggleSkill(s)} className="hover:text-[#3d3a45] transition-colors">
  <X className="h-3 w-3" />
  </button>
  </span>
  ))}
  </div>
  )}
- <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto p-3 glass-panel-sm rounded-[6px]">
+ <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto p-3 glass-panel-sm rounded-2xl">
  {SKILL_TAXONOMY.filter(s => !skills.includes(s)).map(s => (
  <button key={s} onClick={() => toggleSkill(s)}
- className="bg-[#111625] text-[#a8997e] rounded-[3px] px-2.5 py-1 text-xs hover:bg-[#c9a84c] hover:text-[#050810] hover:border-transparent border border-transparent transition-all duration-200">
+ className="bg-[#f4f2ee] text-[#6f6a7d] rounded-full px-2.5 py-1 text-xs hover:bg-[#4b3f8f] hover:text-[#ffffff] hover:border-transparent border border-transparent transition-all duration-200">
  {s}
  </button>
  ))}
@@ -405,21 +405,21 @@ export default function ProfilePage() {
  {/* Hourly Rate */}
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
  <div className="relative">
- <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
- className="w-full h-11 glass-input rounded-[6px] text-sm"
+ className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  />
  </div>
  </div>
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
  <div className="relative">
- <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
- className="w-full h-11 glass-input rounded-[6px] text-sm"
+ className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  />
  </div>
@@ -428,18 +428,18 @@ export default function ProfilePage() {
 
  {/* Availability */}
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-2 block">Availability</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-2 block">Availability</label>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  {([
- { value: "available", label: "Available", dot: "bg-[#c9a84c]" },
+ { value: "available", label: "Available", dot: "bg-[#4b3f8f]" },
  { value: "part-time", label: "Part-time", dot: "bg-yellow-500" },
  { value: "unavailable", label: "Unavailable", dot: "bg-red-400" },
  ] as const).map(opt => (
  <button key={opt.value} onClick={() => setAvailability(opt.value)}
- className={`p-3 rounded-[6px] border text-center text-sm transition-all duration-300 ${
+ className={`p-3 rounded-2xl border text-center text-sm transition-all duration-300 ${
  availability === opt.value
- ? "border-[rgba(201,168,76,0.35)] bg-[rgba(201,168,76,0.10)] text-[#f0e8d4] shadow-[var(--shadow-accent)]"
- : "border-[rgba(201,168,76,0.22)] bg-[#0d1120]/50 text-[#a8997e] hover:border-[rgba(201,168,76,0.35)]/40"
+ ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.10)] text-[#3d3a45] shadow-[var(--shadow-accent)]"
+ : "border-[rgba(75,63,143,0.22)] bg-[#ffffff]/50 text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/40"
  }`}>
  <div className={`h-2 w-2 rounded-full ${opt.dot} mx-auto mb-1.5`} />
  {opt.label}
@@ -450,13 +450,13 @@ export default function ProfilePage() {
 
  {/* GitHub */}
  <div>
- <label className="text-[#a8997e] text-xs font-medium mb-1.5 block">GitHub Username</label>
+ <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">GitHub Username</label>
  <div className="flex gap-2">
  <div className="relative flex-1">
- <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
  value={githubUsername} onChange={e => { setGithubUsername(e.target.value); setGithubChallenge(null); }}
- className="w-full h-11 glass-input rounded-[6px] text-sm"
+ className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  placeholder="your-github-handle"
  />
@@ -480,25 +480,25 @@ export default function ProfilePage() {
  }
  }}
  disabled={verifyingGithub || !githubUsername.trim()}
- className="h-11 px-4 btn-primary rounded-[6px] text-sm disabled:opacity-40 shrink-0"
+ className="h-11 px-4 btn-primary rounded-2xl text-sm disabled:opacity-40 shrink-0"
  >
  {verifyingGithub ? "Verifying..." : githubChallenge ? "Confirm" : currentUser?.githubVerified ? "Re-verify" : "Verify"}
  </button>
  </div>
  {githubChallenge && (
- <div className="mt-2 p-3 bg-[rgba(122,82,24,0.08)] border border-[rgba(201,168,76,0.35)]/30 rounded-[6px]">
- <p className="text-[#a8997e] text-xs">
+ <div className="mt-2 p-3 bg-[rgba(122,106,44,0.08)] border border-[rgba(75,63,143,0.35)]/30 rounded-2xl">
+ <p className="text-[#6f6a7d] text-xs">
  To prove you own this GitHub account, add this code to your bio at{" "}
- <a href="https://github.com/settings/profile" target="_blank" rel="noreferrer" className="text-[#c9a84c] underline">github.com/settings/profile</a>, then click Confirm.
+ <a href="https://github.com/settings/profile" target="_blank" rel="noreferrer" className="text-[#4b3f8f] underline">github.com/settings/profile</a>, then click Confirm.
  </p>
- <code className="block mt-1.5 text-[#c9a84c] text-xs font-mono select-all">{githubChallenge}</code>
+ <code className="block mt-1.5 text-[#4b3f8f] text-xs font-mono select-all">{githubChallenge}</code>
  </div>
  )}
  {currentUser?.githubVerified && !githubChallenge && (
- <div className="flex items-center gap-3 mt-2 p-3 bg-[rgba(122,82,24,0.08)] border border-[rgba(201,168,76,0.35)]/30 rounded-[6px]">
- <CheckCircle2 className="h-4 w-4 text-[#c9a84c]" />
- <span className="text-[#c9a84c] text-xs font-medium">Verified</span>
- <span className="text-[#a8997e] text-xs">
+ <div className="flex items-center gap-3 mt-2 p-3 bg-[rgba(122,106,44,0.08)] border border-[rgba(75,63,143,0.35)]/30 rounded-2xl">
+ <CheckCircle2 className="h-4 w-4 text-[#4b3f8f]" />
+ <span className="text-[#4b3f8f] text-xs font-medium">Verified</span>
+ <span className="text-[#6f6a7d] text-xs">
  {currentUser.githubData?.publicRepos ?? 0} repos · {currentUser.githubData?.followers ?? 0} followers
  </span>
  </div>
@@ -509,27 +509,27 @@ export default function ProfilePage() {
  )}
 
  {/* Section 3 — Account */}
- <div className="h-px bg-[rgba(201,168,76,0.15)] my-6" />
- <p className="text-[#c9a84c] text-xs uppercase tracking-wider font-semibold mb-4">Account</p>
+ <div className="h-px bg-[rgba(75,63,143,0.15)] my-6" />
+ <p className="text-[#4b3f8f] text-xs uppercase tracking-wider font-semibold mb-4">Account</p>
 
- <div className="bg-red-500/5 border border-[rgba(176,32,32,0.20)] rounded-[6px] p-4">
+ <div className="bg-red-500/5 border border-[rgba(193,77,58,0.20)] rounded-2xl p-4">
  <div className="flex items-start gap-3">
- <AlertTriangle className="h-5 w-5 text-[#B02020] shrink-0 mt-0.5" />
+ <AlertTriangle className="h-5 w-5 text-[#c14d3a] shrink-0 mt-0.5" />
  <div className="flex-1">
- <p className="text-sm font-medium text-[#B02020]">Delete Account</p>
- <p className="text-xs text-[#a8997e] mt-0.5">This action is irreversible. All your data will be permanently removed.</p>
+ <p className="text-sm font-medium text-[#c14d3a]">Delete Account</p>
+ <p className="text-xs text-[#6f6a7d] mt-0.5">This action is irreversible. All your data will be permanently removed.</p>
  {!showDeleteConfirm ? (
  <button onClick={() => setShowDeleteConfirm(true)}
- className="mt-3 bg-[rgba(176,32,32,0.08)] text-[#B02020] border border-[rgba(176,32,32,0.20)] hover:bg-red-500/20 px-4 py-2 rounded-[3px] text-xs font-medium transition-colors">
+ className="mt-3 bg-[rgba(193,77,58,0.08)] text-[#c14d3a] border border-[rgba(193,77,58,0.20)] hover:bg-red-500/20 px-4 py-2 rounded-full text-xs font-medium transition-colors">
  Delete Account
  </button>
  ) : (
  <div className="flex items-center gap-2 mt-3">
- <button className="bg-red-500 text-[#f0e8d4] px-4 py-2 rounded-[3px] text-xs font-semibold hover:bg-red-600 transition-colors">
+ <button className="bg-red-500 text-[#3d3a45] px-4 py-2 rounded-full text-xs font-semibold hover:bg-red-600 transition-colors">
  Confirm Delete
  </button>
  <button onClick={() => setShowDeleteConfirm(false)}
- className="text-[#a8997e] text-xs hover:text-[#f0e8d4] transition-colors">
+ className="text-[#6f6a7d] text-xs hover:text-[#3d3a45] transition-colors">
  Cancel
  </button>
  </div>
@@ -544,10 +544,10 @@ export default function ProfilePage() {
  <button
  onClick={handleSave}
  disabled={!hasChanges || saving}
- className={`flex items-center justify-center gap-2 px-8 py-3 rounded-[6px] font-semibold text-sm transition-all ${
+ className={`flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-semibold text-sm transition-all ${
  hasChanges && !saving
  ? "btn-primary glow-green-sm cursor-pointer"
- : "bg-[#111625] text-[#a8997e] cursor-not-allowed"
+ : "bg-[#f4f2ee] text-[#6f6a7d] cursor-not-allowed"
  }`}
  >
  {saving ? (

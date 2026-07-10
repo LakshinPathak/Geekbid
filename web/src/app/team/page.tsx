@@ -78,30 +78,30 @@ export default function TeamPage() {
  };
 
  if (!mounted || loading) return (
- <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
- <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+ <div className="bg-[#fbfaf7] h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
  // No team yet — create one
  if (!team) {
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-lg mx-auto px-4 sm:px-6 py-12">
- <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
  <div className="glass-panel p-8 text-center animate-fade-in-up">
- <Users className="h-12 w-12 text-[#a8997e] mx-auto mb-4" />
- <h1 className="font-heading text-2xl font-bold text-[#f0e8d4] mb-2">Create a Team</h1>
- <p className="text-[#a8997e] text-sm mb-6">Group your organization under a shared billing and job management umbrella.</p>
+ <Users className="h-12 w-12 text-[#6f6a7d] mx-auto mb-4" />
+ <h1 className="font-heading text-2xl font-bold text-[#3d3a45] mb-2">Create a Team</h1>
+ <p className="text-[#6f6a7d] text-sm mb-6">Group your organization under a shared billing and job management umbrella.</p>
  <input
  value={teamName} onChange={e => setTeamName(e.target.value)}
  placeholder="Team name"
- className="glass-input rounded-[6px] mb-4"
+ className="glass-input rounded-2xl mb-4"
  />
  <button onClick={createTeam} disabled={creating || !teamName.trim()}
- className="btn-primary w-full py-3 rounded-[6px] text-sm disabled:opacity-40">
+ className="btn-primary w-full py-3 rounded-2xl text-sm disabled:opacity-40">
  {creating ? "Creating..." : "Create Team"}
  </button>
  </div>
@@ -113,21 +113,21 @@ export default function TeamPage() {
  const isOwner = team.ownerId === (currentUser?.id ?? currentUser?._id);
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
- <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#a8997e] text-sm hover:text-[#c9a84c] transition-colors mb-6">
+ <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
 
- <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#f0e8d4] mb-1 animate-fade-in-up">{team.name}</h1>
- <p className="text-[#a8997e] text-sm mb-6">{isOwner ? "You're the team owner" : "Team member"}</p>
+ <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#3d3a45] mb-1 animate-fade-in-up">{team.name}</h1>
+ <p className="text-[#6f6a7d] text-sm mb-6">{isOwner ? "You're the team owner" : "Team member"}</p>
 
  {team.status === "over_limit" && (
- <div className="flex items-start gap-3 rounded-[6px] border border-[rgba(229,115,115,0.3)] bg-[rgba(229,115,115,0.06)] px-4 py-3 mb-6">
- <AlertTriangle className="h-4 w-4 text-[#e57373] mt-0.5 shrink-0" />
+ <div className="flex items-start gap-3 rounded-2xl border border-[rgba(150,84,63,0.3)] bg-[rgba(150,84,63,0.06)] px-4 py-3 mb-6">
+ <AlertTriangle className="h-4 w-4 text-[#96543f] mt-0.5 shrink-0" />
  <div className="text-sm">
- <p className="text-[#e57373] font-medium">Your team is over your plan&apos;s seat limit</p>
- <p className="text-[#a8997e] text-xs mt-0.5">
+ <p className="text-[#96543f] font-medium">Your team is over your plan&apos;s seat limit</p>
+ <p className="text-[#6f6a7d] text-xs mt-0.5">
  {isOwner
  ? `Remove members to fit your plan${team.seatDeadline ? ` by ${new Date(team.seatDeadline).toLocaleDateString()}` : ""}, or the most recently added members will be removed automatically.`
  : "The team owner needs to reduce team size to match their current plan."}
@@ -136,11 +136,11 @@ export default function TeamPage() {
  </div>
  )}
  {team.status === "frozen" && (
- <div className="flex items-start gap-3 rounded-[6px] border border-[rgba(229,115,115,0.3)] bg-[rgba(229,115,115,0.06)] px-4 py-3 mb-6">
- <AlertTriangle className="h-4 w-4 text-[#e57373] mt-0.5 shrink-0" />
+ <div className="flex items-start gap-3 rounded-2xl border border-[rgba(150,84,63,0.3)] bg-[rgba(150,84,63,0.06)] px-4 py-3 mb-6">
+ <AlertTriangle className="h-4 w-4 text-[#96543f] mt-0.5 shrink-0" />
  <div className="text-sm">
- <p className="text-[#e57373] font-medium">This team is frozen</p>
- <p className="text-[#a8997e] text-xs mt-0.5">The owner&apos;s plan no longer includes team seats. Upgrade to Plus or Premium to reactivate.</p>
+ <p className="text-[#96543f] font-medium">This team is frozen</p>
+ <p className="text-[#6f6a7d] text-xs mt-0.5">The owner&apos;s plan no longer includes team seats. Upgrade to Plus or Premium to reactivate.</p>
  </div>
  </div>
  )}
@@ -153,31 +153,31 @@ export default function TeamPage() {
  { icon: DollarSign, label: "Total Spend", value: formatMoney(team.analytics.totalSpend) },
  ].map((s, i) => (
  <div key={s.label} className="finance-card p-4 text-center animate-fade-in-up" style={{ animationDelay: `${i * 0.05}s` }}>
- <s.icon className="h-5 w-5 text-[#a8997e] mx-auto mb-2" />
- <p className="font-heading text-xl font-bold text-[#f0e8d4] terminal-amount">{s.value}</p>
- <p className="text-[11px] text-[#a8997e]">{s.label}</p>
+ <s.icon className="h-5 w-5 text-[#6f6a7d] mx-auto mb-2" />
+ <p className="font-heading text-xl font-bold text-[#3d3a45] terminal-amount">{s.value}</p>
+ <p className="text-[11px] text-[#6f6a7d]">{s.label}</p>
  </div>
  ))}
  </div>
 
  {/* Members */}
  <div className="glass-panel p-6 mb-6">
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
- <Users className="h-4 w-4 text-[#c9a84c]" /> Members ({team.members.length})
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-4 flex items-center gap-2">
+ <Users className="h-4 w-4 text-[#4b3f8f]" /> Members ({team.members.length})
  </h2>
  <div className="space-y-3">
  {team.members.map(m => (
- <div key={m.id} className="flex items-center gap-3 bg-[#0d1120] border border-[rgba(201,168,76,0.22)] rounded-[6px] p-3 tx-row">
+ <div key={m.id} className="flex items-center gap-3 bg-[#ffffff] border border-[rgba(75,63,143,0.22)] rounded-2xl p-3 tx-row">
  <CloudinaryAvatar
  avatarUrl={m.avatarUrl}
  avatarInitial={m.avatarInitial}
  size="md"
  />
  <div className="flex-1">
- <p className="text-[#f0e8d4] text-sm font-medium">{m.fullName}</p>
- <p className="text-[#a8997e] text-xs">{m.email}</p>
+ <p className="text-[#3d3a45] text-sm font-medium">{m.fullName}</p>
+ <p className="text-[#6f6a7d] text-xs">{m.email}</p>
  </div>
- <span className={`text-xs px-2 py-0.5 rounded-full ${m.id === team.ownerId ? "badge-active" : "text-[#a8997e]"}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-full ${m.id === team.ownerId ? "badge-active" : "text-[#6f6a7d]"}`}>
  {m.id === team.ownerId ? "Owner" : "Member"}
  </span>
  </div>
@@ -188,26 +188,26 @@ export default function TeamPage() {
  {/* Invite */}
  {isOwner && (
  <div className="glass-panel p-6">
- <h2 className="font-heading text-lg font-semibold text-[#f0e8d4] mb-4 flex items-center gap-2">
- <Mail className="h-4 w-4 text-[#c9a84c]" /> Invite Members
+ <h2 className="font-heading text-lg font-semibold text-[#3d3a45] mb-4 flex items-center gap-2">
+ <Mail className="h-4 w-4 text-[#4b3f8f]" /> Invite Members
  </h2>
  <div className="flex gap-2">
  <input
  value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
  placeholder="colleague@company.com"
- className="glass-input flex-1 rounded-[6px]"
+ className="glass-input flex-1 rounded-2xl"
  />
  <button onClick={inviteMember}
- className="btn-primary h-11 px-4 sm:px-6 rounded-[6px] text-sm flex items-center gap-1">
+ className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm flex items-center gap-1">
  <Plus className="h-4 w-4" /> Invite
  </button>
  </div>
  {team.invites.length > 0 && (
  <div className="mt-4 space-y-2">
  {team.invites.map((inv, i) => (
- <div key={i} className="flex items-center justify-between glass-panel-sm px-3 py-2 rounded-[3px]">
- <span className="text-[#a8997e] text-sm">{inv.email}</span>
- <span className={`text-xs ${inv.status === "accepted" ? "text-[#c9a84c]" : "text-[#c9a84c]"}`}>
+ <div key={i} className="flex items-center justify-between glass-panel-sm px-3 py-2 rounded-2xl">
+ <span className="text-[#6f6a7d] text-sm">{inv.email}</span>
+ <span className={`text-xs ${inv.status === "accepted" ? "text-[#4b3f8f]" : "text-[#4b3f8f]"}`}>
  {inv.status}
  </span>
  </div>

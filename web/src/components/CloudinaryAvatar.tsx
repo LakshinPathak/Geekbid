@@ -66,11 +66,11 @@ export default function CloudinaryAvatar({
             quality="auto"
             format="auto"
             alt={avatarInitial}
-            style={{ borderRadius: '50%', border: '0.5px solid rgba(201,168,76,0.22)', objectFit: 'cover' }}
+            style={{ borderRadius: '50%', border: '0.5px solid rgba(75,63,143,0.22)', objectFit: 'cover' }}
           />
           {showOnlineIndicator && (
             <span
-              className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#080b14] ${isOnline ? 'bg-green-400' : 'bg-[#a8997e]'}`}
+              className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#fbfaf7] ${isOnline ? 'bg-green-400' : 'bg-[#6f6a7d]'}`}
             />
           )}
         </div>
@@ -85,11 +85,11 @@ export default function CloudinaryAvatar({
             width={px}
             height={px}
             onError={() => setFailedUrl(avatarUrl)}
-            style={{ borderRadius: '50%', border: '0.5px solid rgba(201,168,76,0.22)', objectFit: 'cover', width: px, height: px }}
+            style={{ borderRadius: '50%', border: '0.5px solid rgba(75,63,143,0.22)', objectFit: 'cover', width: px, height: px }}
           />
           {showOnlineIndicator && (
             <span
-              className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#080b14] ${isOnline ? 'bg-green-400' : 'bg-[#a8997e]'}`}
+              className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#fbfaf7] ${isOnline ? 'bg-green-400' : 'bg-[#6f6a7d]'}`}
             />
           )}
         </div>
@@ -101,17 +101,17 @@ export default function CloudinaryAvatar({
     <div
       style={{
         ...wrapperStyle,
-        background: 'rgba(201,168,76,0.12)',
-        border: '0.5px solid rgba(201,168,76,0.22)',
+        background: 'rgba(75,63,143,0.12)',
+        border: '0.5px solid rgba(75,63,143,0.22)',
       }}
       className={className}
     >
-      <span className={`font-bold text-[#c9a84c] select-none ${text}`}>
+      <span className={`font-bold text-[#4b3f8f] select-none ${text}`}>
         {avatarInitial || '?'}
       </span>
       {showOnlineIndicator && (
         <span
-          className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#080b14] ${isOnline ? 'bg-green-400' : 'bg-[#a8997e]'}`}
+          className={`${indicator} rounded-full absolute bottom-0 right-0 border-2 border-[#fbfaf7] ${isOnline ? 'bg-green-400' : 'bg-[#6f6a7d]'}`}
         />
       )}
     </div>

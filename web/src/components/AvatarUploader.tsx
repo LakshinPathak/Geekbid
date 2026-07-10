@@ -29,19 +29,19 @@ export default function AvatarUploader({
           theme: "minimal",
           styles: {
             palette: {
-              window: "#0d1120",
-              windowBorder: "#c9a84c",
-              tabIcon: "#c9a84c",
-              menuIcons: "#a8997e",
-              textDark: "#f0e8d4",
-              textLight: "#080b14",
-              link: "#c9a84c",
-              action: "#c9a84c",
-              inactiveTabIcon: "#a8997e",
-              error: "#e57373",
-              inProgress: "#c9a84c",
-              complete: "#4caf7d",
-              sourceBg: "#111625",
+              window: "#ffffff",
+              windowBorder: "#4b3f8f",
+              tabIcon: "#4b3f8f",
+              menuIcons: "#6f6a7d",
+              textDark: "#3d3a45",
+              textLight: "#fbfaf7",
+              link: "#4b3f8f",
+              action: "#4b3f8f",
+              inactiveTabIcon: "#6f6a7d",
+              error: "#96543f",
+              inProgress: "#4b3f8f",
+              complete: "#4d7245",
+              sourceBg: "#f4f2ee",
             },
           },
         }}
@@ -87,7 +87,7 @@ export default function AvatarUploader({
             <button
               type="button"
               onClick={() => open()}
-              className="text-sm px-4 py-2 rounded-[3px] bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.22)] text-[#c9a84c] hover:bg-[rgba(201,168,76,0.2)] transition-colors flex items-center gap-2"
+              className="text-sm px-4 py-2 rounded-full bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.22)] text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.2)] transition-colors flex items-center gap-2"
             >
               <Camera className="h-3.5 w-3.5" />
               {currentAvatarUrl ? "Change Photo" : "Upload Photo"}
@@ -99,7 +99,7 @@ export default function AvatarUploader({
           <button
             type="button"
             onClick={onRemove}
-            className="text-sm px-4 py-2 rounded-[3px] bg-[rgba(192,57,43,0.1)] border border-[rgba(192,57,43,0.2)] text-[#e57373] hover:bg-[rgba(192,57,43,0.2)] transition-colors flex items-center gap-2"
+            className="text-sm px-4 py-2 rounded-full bg-[rgba(193,77,58,0.1)] border border-[rgba(193,77,58,0.2)] text-[#96543f] hover:bg-[rgba(193,77,58,0.2)] transition-colors flex items-center gap-2"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Remove

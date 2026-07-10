@@ -11,11 +11,11 @@ import {
 type FilterType = "all" | "price_drop" | "counter_bid" | "payment" | "job_match";
 
 const ICON_CONFIG: Record<string, { icon: typeof Zap; bg: string; color: string }> = {
- price_drop: { icon: TrendingDown, bg: "bg-[rgba(176,32,32,0.08)]", color: "text-[#B02020]" },
- counter_bid: { icon: MessageSquare, bg: "bg-[rgba(201,168,76,0.12)]", color: "text-[#c9a84c]" },
- payment: { icon: DollarSign, bg: "bg-[rgba(201,168,76,0.12)]", color: "text-[#c9a84c]" },
- job_match: { icon: Zap, bg: "bg-[#111625]", color: "text-[#a8997e]" },
- general: { icon: Bell, bg: "bg-[#111625]", color: "text-[#a8997e]" },
+ price_drop: { icon: TrendingDown, bg: "bg-[rgba(193,77,58,0.08)]", color: "text-[#c14d3a]" },
+ counter_bid: { icon: MessageSquare, bg: "bg-[rgba(75,63,143,0.12)]", color: "text-[#4b3f8f]" },
+ payment: { icon: DollarSign, bg: "bg-[rgba(75,63,143,0.12)]", color: "text-[#4b3f8f]" },
+ job_match: { icon: Zap, bg: "bg-[#f4f2ee]", color: "text-[#6f6a7d]" },
+ general: { icon: Bell, bg: "bg-[#f4f2ee]", color: "text-[#6f6a7d]" },
 };
 
 const FILTER_TABS: { key: FilterType; label: string }[] = [
@@ -48,20 +48,20 @@ export default function NotificationsPage() {
  }, [myNotifs, filter]);
 
  if (!mounted) return (
- <div className="min-h-screen flex items-center justify-center bg-[#0d1120]">
- <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.22)] border-t-transparent rounded-full animate-spin" />
+ <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
+ <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.22)] border-t-transparent rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
  {/* Header */}
  <div className="flex items-center justify-between mb-6 animate-fade-in-up">
  <div className="flex items-center gap-3">
- <h1 className="font-heading text-2xl font-bold text-[#f0e8d4]">Notifications</h1>
+ <h1 className="font-heading text-2xl font-bold text-[#3d3a45]">Notifications</h1>
  {unreadCount > 0 && (
- <span className="bg-[#c9a84c] text-[#050810] text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse-glow">
+ <span className="bg-[#4b3f8f] text-[#ffffff] text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse-glow">
  {unreadCount}
  </span>
  )}
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
  {unreadCount > 0 && (
  <button
  onClick={markAllRead}
- className="btn-ghost flex items-center gap-1.5 text-sm px-4 py-2 rounded-[6px]"
+ className="btn-ghost flex items-center gap-1.5 text-sm px-4 py-2 rounded-2xl"
  >
  <CheckCheck className="h-4 w-4" />
  Mark all read
@@ -79,15 +79,15 @@ export default function NotificationsPage() {
 
  {/* Filter Tabs */}
  <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
- <div className="glass-panel-sm p-1 rounded-[6px] inline-flex gap-1">
+ <div className="glass-panel-sm p-1 rounded-2xl inline-flex gap-1">
  {FILTER_TABS.map(tab => (
  <button
  key={tab.key}
  onClick={() => setFilter(tab.key)}
- className={`px-4 py-1.5 rounded-[3px] text-sm font-medium whitespace-nowrap transition-all ${
+ className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
  filter === tab.key
- ? "bg-[#c9a84c] text-[#050810] border border-transparent"
- : "text-[#a8997e] hover:text-[#f0e8d4]"
+ ? "bg-[#4b3f8f] text-[#ffffff] border border-transparent"
+ : "text-[#6f6a7d] hover:text-[#3d3a45]"
  }`}
  >
  {tab.label}
@@ -99,13 +99,13 @@ export default function NotificationsPage() {
  {/* Notification List */}
  {displayNotifs.length === 0 ? (
  <div className="glass-panel p-12 text-center animate-fade-in-up">
- <div className="mx-auto h-16 w-16 rounded-[6px] glass-panel-sm flex items-center justify-center mb-4">
- <Bell className="h-7 w-7 text-[#a8997e]" />
+ <div className="mx-auto h-16 w-16 rounded-xl glass-panel-sm flex items-center justify-center mb-4">
+ <Bell className="h-7 w-7 text-[#6f6a7d]" />
  </div>
- <h3 className="text-lg font-heading font-bold text-[#f0e8d4] mb-1">
+ <h3 className="text-lg font-heading font-bold text-[#3d3a45] mb-1">
  {filter !== "all" ? "No notifications in this category" : "You're all caught up!"}
  </h3>
- <p className="text-sm text-[#a8997e]">
+ <p className="text-sm text-[#6f6a7d]">
  {filter !== "all"
  ? "Try a different filter"
  : "We'll notify you when something happens"}
@@ -125,25 +125,25 @@ export default function NotificationsPage() {
  markNotificationRead(n.id);
  if (n.jobId) router.push(`/jobs/${n.jobId}`);
  }}
- className={`notif-card p-4 flex items-start gap-4 cursor-pointer hover:border-[rgba(201,168,76,0.35)]/30 animate-fade-in-up ${
+ className={`notif-card p-4 flex items-start gap-4 cursor-pointer hover:border-[rgba(75,63,143,0.35)]/30 animate-fade-in-up ${
  isUnread ? "unread" : ""
  }`}
  style={{ animationDelay: `${i * 50}ms` }}
  >
  {/* Icon */}
- <div className={`w-10 h-10 rounded-[6px] flex items-center justify-center shrink-0 ${config.bg}`}>
+ <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>
  <IconComp className={`h-5 w-5 ${config.color}`} />
  </div>
 
  {/* Content */}
  <div className="flex-1 min-w-0">
- <p className={`text-sm ${isUnread ? "font-medium text-[#f0e8d4]" : "text-[#a8997e]"}`}>
+ <p className={`text-sm ${isUnread ? "font-medium text-[#3d3a45]" : "text-[#6f6a7d]"}`}>
  {n.title}
  </p>
  {n.body && (
- <p className="text-xs text-[#a8997e] mt-0.5 line-clamp-2">{n.body}</p>
+ <p className="text-xs text-[#6f6a7d] mt-0.5 line-clamp-2">{n.body}</p>
  )}
- <p className="text-[11px] text-[#a8997e] mt-1 flex items-center gap-1">
+ <p className="text-[11px] text-[#6f6a7d] mt-1 flex items-center gap-1">
  <Clock className="h-3 w-3" />
  {timeAgo(n.createdAt)}
  </p>
@@ -151,7 +151,7 @@ export default function NotificationsPage() {
 
  {/* Unread indicator */}
  {isUnread && (
- <span className="w-2 h-2 bg-[#c9a84c] rounded-full shrink-0 mt-2 unread-dot" />
+ <span className="w-2 h-2 bg-[#4b3f8f] rounded-full shrink-0 mt-2 unread-dot" />
  )}
  </div>
  );

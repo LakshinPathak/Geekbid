@@ -78,26 +78,26 @@ function InboxContent() {
  };
 
  if (!mounted) return (
- <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
- <div className="bg-[#080b14] h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+ <div className="bg-[#fbfaf7] h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  );
 
  return (
- <div className="min-h-screen bg-[#080b14] grid-bg">
+ <div className="min-h-screen bg-[#fbfaf7] grid-bg">
  <div className="flex h-[calc(100vh-64px)]">
  {/* Left Sidebar — Room List */}
- <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[rgba(201,168,76,0.22)] glass-panel`} style={{ borderRadius: 0 }}>
+ <div className={`${selectedRoom ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-[rgba(75,63,143,0.22)] glass-panel`} style={{ borderRadius: 0 }}>
  {/* Header */}
- <div className="glass-panel-sm p-4" style={{ borderRadius: 0, borderBottom: '1px solid rgba(59,75,61,0.3)' }}>
- <h2 className="font-heading text-xl font-bold text-[#f0e8d4] mb-3">Messages</h2>
+ <div className="glass-panel-sm p-4" style={{ borderRadius: 0, borderBottom: '1px solid rgba(236,233,226,0.3)' }}>
+ <h2 className="font-heading text-xl font-bold text-[#3d3a45] mb-3">Messages</h2>
  <div className="relative">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8997e]" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
  value={searchQuery}
  onChange={e => setSearchQuery(e.target.value)}
  placeholder="Search conversations..."
- className="glass-input pl-10 h-10 text-sm rounded-[6px]"
+ className="glass-input pl-10 h-10 text-sm rounded-2xl"
  />
  </div>
  </div>
@@ -106,14 +106,14 @@ function InboxContent() {
  <div className="flex-1 overflow-y-auto">
  {filteredRooms.length === 0 ? (
  <div className="text-center py-16 px-4">
- <div className="mx-auto h-14 w-14 rounded-[6px] glass-panel-sm flex items-center justify-center mb-3">
- <Users className="h-6 w-6 text-[#a8997e]" />
+ <div className="mx-auto h-14 w-14 rounded-xl glass-panel-sm flex items-center justify-center mb-3">
+ <Users className="h-6 w-6 text-[#6f6a7d]" />
  </div>
- <p className="text-sm text-[#a8997e] font-medium">No conversations yet</p>
- <p className="text-xs text-[#a8997e] mt-1">Start chatting by accepting a job</p>
+ <p className="text-sm text-[#6f6a7d] font-medium">No conversations yet</p>
+ <p className="text-xs text-[#6f6a7d] mt-1">Start chatting by accepting a job</p>
  </div>
  ) : (
- <div className="divide-y divide-[rgba(201,168,76,0.22)]">
+ <div className="divide-y divide-[rgba(75,63,143,0.22)]">
  {filteredRooms.map(room => {
  const otherUser = getOtherUser(room);
  const lastMsg = chatMessages.filter(m => m.roomId === room.id).pop();
@@ -126,8 +126,8 @@ function InboxContent() {
  onClick={() => setSelectedRoom(room.id)}
  className={`w-full text-left px-4 py-3 transition-all ${
  isSelected
- ? "bg-[#111625] border-l-2 border-l-[#c9a84c]"
- : "hover:bg-[#111625] border-l-2 border-l-transparent"
+ ? "bg-[#f4f2ee] border-l-2 border-l-[#4b3f8f]"
+ : "hover:bg-[#f4f2ee] border-l-2 border-l-transparent"
  }`}
  >
  <div className="flex items-start gap-3">
@@ -139,16 +139,16 @@ function InboxContent() {
  />
  <div className="flex-1 min-w-0">
  <div className="flex items-center justify-between">
- <p className="text-sm font-medium truncate text-[#f0e8d4]">
+ <p className="text-sm font-medium truncate text-[#3d3a45]">
  {otherUser?.fullName ?? "Unknown"}
  </p>
  {lastMsg && (
- <span className="text-[11px] text-[#a8997e] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
+ <span className="text-[11px] text-[#6f6a7d] shrink-0 ml-2">{timeAgo(lastMsg.createdAt)}</span>
  )}
  </div>
- <p className="text-[#a8997e] text-[11px] truncate mt-0.5">{jobTitle}</p>
+ <p className="text-[#6f6a7d] text-[11px] truncate mt-0.5">{jobTitle}</p>
  {lastMsg && (
- <p className="text-[#a8997e] text-xs truncate mt-0.5">{lastMsg.text}</p>
+ <p className="text-[#6f6a7d] text-xs truncate mt-0.5">{lastMsg.text}</p>
  )}
  </div>
  </div>
@@ -165,20 +165,20 @@ function InboxContent() {
  {!selectedRoom ? (
  <div className="flex-1 flex items-center justify-center text-center px-4">
  <div>
- <div className="h-16 w-16 rounded-[6px] glass-panel-sm flex items-center justify-center mx-auto mb-4">
- <MessageSquare className="h-7 w-7 text-[#a8997e]" />
+ <div className="h-16 w-16 rounded-xl glass-panel-sm flex items-center justify-center mx-auto mb-4">
+ <MessageSquare className="h-7 w-7 text-[#6f6a7d]" />
  </div>
- <h3 className="text-lg font-heading font-bold text-[#f0e8d4] mb-1">Select a conversation</h3>
- <p className="text-sm text-[#a8997e] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
+ <h3 className="text-lg font-heading font-bold text-[#3d3a45] mb-1">Select a conversation</h3>
+ <p className="text-sm text-[#6f6a7d] max-w-sm">Choose a conversation from the sidebar to start chatting</p>
  </div>
  </div>
  ) : (
  <>
  {/* Chat header */}
- <div className="glass-panel-sm p-4 flex items-center justify-between px-4 sm:px-6" style={{ borderRadius: 0, borderBottom: '1px solid rgba(59,75,61,0.3)' }}>
+ <div className="glass-panel-sm p-4 flex items-center justify-between px-4 sm:px-6" style={{ borderRadius: 0, borderBottom: '1px solid rgba(236,233,226,0.3)' }}>
  <div className="flex items-center gap-3">
  <button
- className="md:hidden h-8 w-8 rounded-[3px] border border-[rgba(201,168,76,0.22)] flex items-center justify-center text-[#a8997e] hover:bg-[#111625] transition-colors"
+ className="md:hidden h-8 w-8 rounded-xl border border-[rgba(75,63,143,0.22)] flex items-center justify-center text-[#6f6a7d] hover:bg-[#f4f2ee] transition-colors"
  onClick={() => setSelectedRoom(null)}
  >
  <ArrowLeft className="h-4 w-4" />
@@ -189,15 +189,15 @@ function InboxContent() {
  size="md"
  />
  <div>
- <p className="font-heading text-base font-semibold text-[#f0e8d4]">
+ <p className="font-heading text-base font-semibold text-[#3d3a45]">
  {getOtherUser(activeRoom!)?.fullName ?? "Unknown"}
  </p>
- <p className="text-[#a8997e] text-xs">
+ <p className="text-[#6f6a7d] text-xs">
  {getJobTitle(activeRoom!.jobId)}
  </p>
  </div>
  </div>
- <Link href={`/jobs/${activeRoom!.jobId}`} className="text-[#c9a84c] text-sm hover:text-[#c9a84c] transition-colors flex items-center gap-1">
+ <Link href={`/jobs/${activeRoom!.jobId}`} className="text-[#4b3f8f] text-sm hover:text-[#4b3f8f] transition-colors flex items-center gap-1">
  View Job <ExternalLink className="h-3 w-3" />
  </Link>
  </div>
@@ -207,7 +207,7 @@ function InboxContent() {
  <div className="space-y-4 max-w-2xl mx-auto">
  {roomMessages.length === 0 ? (
  <div className="text-center py-12">
- <p className="text-sm text-[#a8997e]">No messages yet. Start the conversation!</p>
+ <p className="text-sm text-[#6f6a7d]">No messages yet. Start the conversation!</p>
  </div>
  ) : (
  roomMessages.map(msg => {
@@ -218,16 +218,16 @@ function InboxContent() {
  <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
  <div className={`max-w-[70%] ${
  isMine
- ? "chat-bubble-self text-[#f0e8d4]"
- : "chat-bubble-other text-[#f0e8d4]"
+ ? "chat-bubble-self text-[#3d3a45]"
+ : "chat-bubble-other text-[#3d3a45]"
  } px-4 py-2.5`}>
  {!isMine && (
- <p className="text-[#c9a84c] text-[11px] font-medium mb-0.5">
+ <p className="text-[#4b3f8f] text-[11px] font-medium mb-0.5">
  {sender?.fullName ?? "Unknown"}
  </p>
  )}
  <p className="text-sm leading-relaxed">{msg.text}</p>
- <p className={`text-[11px] mt-1 text-[#a8997e] ${isMine ? "text-right" : ""}`}>
+ <p className={`text-[11px] mt-1 text-[#6f6a7d] ${isMine ? "text-right" : ""}`}>
  {timeAgo(msg.createdAt)}
  </p>
  </div>
@@ -239,7 +239,7 @@ function InboxContent() {
  </div>
 
  {/* Message input bar */}
- <div className="glass-panel-sm px-4 sm:px-6 py-4 pb-4" style={{ borderRadius: 0, borderTop: '1px solid rgba(59,75,61,0.3)' }}>
+ <div className="glass-panel-sm px-4 sm:px-6 py-4 pb-4" style={{ borderRadius: 0, borderTop: '1px solid rgba(236,233,226,0.3)' }}>
  <form
  onSubmit={(e) => { e.preventDefault(); handleSend(); }}
  className="flex items-center gap-3 max-w-2xl mx-auto"
@@ -248,12 +248,12 @@ function InboxContent() {
  value={text}
  onChange={e => setText(e.target.value)}
  placeholder="Type a message..."
- className="glass-input flex-1 h-11 text-sm rounded-[6px]"
+ className="glass-input flex-1 h-11 text-sm rounded-2xl"
  />
  <button
  type="submit"
  disabled={!text.trim()}
- className="btn-primary w-11 h-11 rounded-[6px] flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 p-0"
+ className="btn-primary w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 p-0"
  >
  <Send className="h-[18px] w-[18px]" />
  </button>
@@ -270,8 +270,8 @@ function InboxContent() {
 export default function InboxPage() {
  return (
  <Suspense fallback={
- <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
- <div className="h-8 w-8 border-2 border-[rgba(201,168,76,0.40)] border-t-[#c9a84c] rounded-full animate-spin" />
+ <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+ <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>
  }>
  <InboxContent />
