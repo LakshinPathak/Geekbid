@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import crypto from "crypto";
 import { sendPaymentConfirmationEmail } from "@/lib/email";
+import { ObjectId } from "mongodb";
 import { splitEscrow, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/money";
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder";
@@ -215,7 +216,13 @@ export async function PATCH(req: NextRequest) {
  });
  }
 
- const escrow = splitEscrow(grossAmount, DEFAULT_PLATFORM_FEE_PERCENT);
+ // Use the fee locked onto the job at creation time (blueprint §17), not a
+ // flat default — otherwise a Plus/Premium client's 7%/5% rate silently
+ // becomes 10% the moment their escrow is actually funded.
+ const feeJob = jobId && ObjectId.isValid(jobId)
+ ? await db.collection("jobs").findOne({ _id: ObjectId.createFromHexString(jobId) }, { projection: { platformFeePercent: 1 } })
+ : null;
+ const escrow = splitEscrow(grossAmount, feeJob?.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
  const platformFee = escrow.platformFee;
  const netAmount = escrow.netAmount;
 

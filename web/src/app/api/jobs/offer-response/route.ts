@@ -54,7 +54,8 @@ export async function PATCH(req: NextRequest) {
  }
 
  if (response === "accepted") {
- const escrow = splitEscrow(job.startingPrice, DEFAULT_PLATFORM_FEE_PERCENT);
+ // Use the fee locked onto the job at creation time (blueprint §17).
+ const escrow = splitEscrow(job.startingPrice, job.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
  await db.collection("transactions").insertOne({
  jobId,
  clientId: job.clientId,

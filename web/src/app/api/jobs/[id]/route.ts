@@ -144,7 +144,10 @@ export async function PATCH(
  if (!awardedJob) {
  return NextResponse.json({ error: "Job was already accepted by another request" }, { status: 409 });
  }
- const escrow = splitEscrow(finalPrice, DEFAULT_PLATFORM_FEE_PERCENT);
+ // Use the fee locked onto the job at creation time (blueprint §17), not a
+ // flat default — a Plus/Premium client's 7%/5% rate must not silently
+ // become 10% just because escrow release re-derives the split here.
+ const escrow = splitEscrow(finalPrice, awardJob.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
  await db.collection("transactions").insertOne({
  jobId: id, clientId: awardJob.clientId, freelancerId,
  grossAmount: escrow.gross, platformFee: escrow.platformFee,
@@ -399,8 +402,8 @@ export async function PATCH(
  createdAt: acceptedAt,
  });
 
- // Create escrow transaction
- const escrow = splitEscrow(finalPrice, DEFAULT_PLATFORM_FEE_PERCENT);
+ // Create escrow transaction — use the job's locked fee (§17), not the flat default.
+ const escrow = splitEscrow(finalPrice, job.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
  await db.collection("transactions").insertOne({
  jobId: id,
  clientId: job.clientId,
