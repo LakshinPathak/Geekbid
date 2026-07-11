@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import { hashSync } from "bcryptjs";
 import crypto from "crypto";
 import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // GET /api/keys — list user's API keys (masked)
 export async function GET(req: NextRequest) {
@@ -85,14 +86,17 @@ export async function POST(req: NextRequest) {
 
  const result = await db.collection("api_keys").insertOne(doc);
 
- return NextResponse.json({
+ return withPlanHeader(
+ NextResponse.json({
  id: result.insertedId.toString(),
  name: doc.name,
  key: rawKey,
  prefix,
  createdAt: doc.createdAt,
  warning: "This is the only time you will see this key. Store it securely.",
- }, { status: 201 });
+ }, { status: 201 }),
+ keyUser?.plan ?? "free"
+ );
  } catch (err) {
  console.error("[Keys POST Error]", err);
  return NextResponse.json({ error: "Failed to generate key" }, { status: 500 });

@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendTeamInviteEmail } from "@/lib/email";
 import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // GET /api/teams — get user's team
 export async function GET(req: NextRequest) {
@@ -97,9 +98,12 @@ export async function POST(req: NextRequest) {
  { $set: { teamId: result.insertedId.toString(), teamRole: "owner" } }
  );
 
- return NextResponse.json(
+ return withPlanHeader(
+ NextResponse.json(
  { ...team, _id: result.insertedId.toString(), id: result.insertedId.toString() },
  { status: 201 }
+ ),
+ creator?.plan ?? "free"
  );
  } catch (err) {
  console.error("[Teams POST Error]", err);
@@ -152,7 +156,7 @@ export async function PATCH(req: NextRequest) {
  inviter?.name ?? "Someone"
  ).catch(() => {});
 
- return NextResponse.json({ ok: true, message: "Invite sent" });
+ return withPlanHeader(NextResponse.json({ ok: true, message: "Invite sent" }), owner?.plan ?? "free");
  }
 
  if (action === "accept") {

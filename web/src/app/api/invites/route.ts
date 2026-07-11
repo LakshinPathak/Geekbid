@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 /**
  * GET /api/invites — fetch invites for the current user (protected)
@@ -157,9 +158,12 @@ export async function POST(req: NextRequest) {
       createdAt: now,
     });
 
-    return NextResponse.json(
-      { ...invite, _id: result.insertedId.toString(), id: result.insertedId.toString() },
-      { status: 201 }
+    return withPlanHeader(
+      NextResponse.json(
+        { ...invite, _id: result.insertedId.toString(), id: result.insertedId.toString() },
+        { status: 201 }
+      ),
+      client?.plan ?? "free"
     );
   } catch (err) {
     console.error("[Invites POST Error]", err);
