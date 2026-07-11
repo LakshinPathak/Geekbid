@@ -220,7 +220,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const avgBid = bidPrices.length > 0 ? bidPrices.reduce((s, p) => s + p, 0) / bidPrices.length : null;
  const myBidsOnJob = jobBids.filter(b => b.freelancerId === uid);
  const myLowestBid = myBidsOnJob.length > 0 ? Math.min(...myBidsOnJob.map(b => b.bidPrice)) : null;
- const myRank = myLowestBid !== null ? jobBids.filter(b => b.bidPrice < myLowestBid).length + 1 : null;
+ // jobBids only ever contains bids this viewer is authorized to see (their
+ // own, or all of them if they own the job) — never competitors' bids on a
+ // job they don't own. A rank computed against jobBids would silently
+ // undercount real competition. job.lowestCounterBid is a public aggregate
+ // field instead: if it still equals my own lowest bid, no one has beaten
+ // it (the field only ever updates downward to a genuinely lower price).
+ const amILeading = myLowestBid !== null && job.lowestCounterBid != null
+ ? myLowestBid <= job.lowestCounterBid
+ : null;
 
  // P1: Smart bid suggestions
  const aggressiveBid = Math.round(job.minimumPrice + (current - job.minimumPrice) * 0.3);
@@ -506,12 +514,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <p className="text-[#3d3a45] text-sm font-semibold">Live Bids ({displayBidCount})</p>
  {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
  </div>
- {isFreelancer && myRank !== null && (
- <span className="text-[11px] text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border border-[rgba(75,63,143,0.30)] rounded-full px-2.5 py-0.5">
- Your bid #{myRank} of {jobBids.length}
+ {isFreelancer && amILeading !== null && (
+ <span className={`text-[11px] rounded-full px-2.5 py-0.5 border ${amILeading ? "text-[#4d7245] bg-[#4d7245]/10 border-[#4d7245]/20" : "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.30)]"}`}>
+ {amILeading ? "Your bid is the lowest" : `Lowest counter: ${formatMoney(job.lowestCounterBid ?? myLowestBid ?? 0)}`}
  </span>
  )}
- {isFreelancer && myRank === null && (jobBids.length > 0 || hasHiddenBids) && (
+ {isFreelancer && amILeading === null && (jobBids.length > 0 || hasHiddenBids) && (
  <span className="text-[11px] text-[#6f6a7d]">You haven't bid yet</span>
  )}
  </div>
@@ -519,7 +527,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {jobBids.length === 0 ? (
  hasHiddenBids ? (
  <p className="text-[#6f6a7d] text-sm">
- {bidderCount} {bidderCount === 1 ? "bid has" : "bids have"} already been placed on this job. Bid details are private — place your own counter-bid to see how you compare.
+ {bidderCount} {bidderCount === 1 ? "bid has" : "bids have"} already been placed on this job. Bid identities and messages stay private to the client — check Lowest Counter above for the current benchmark.
  </p>
  ) : (
  <p className="text-[#6f6a7d] text-sm">No bids yet. Be the first!</p>
