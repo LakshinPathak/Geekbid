@@ -170,6 +170,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const effectiveRate = isAdaptive ? getEffectiveDecayRate(job.decayRatePerHour, bidderCount, elapsedHrs) : job.decayRatePerHour;
  const demand = getDemandLevel(bidderCount);
  const isHot = bidderCount >= 5;
+ // GET /api/bids only returns bids the caller placed or bids on jobs the
+ // caller posted (privacy fix — bids carry freelancer identity + price).
+ // For a freelancer viewing someone else's job they haven't bid on yet,
+ // jobBids is correctly empty even when job.bidCount says otherwise —
+ // distinguish "genuinely no bids" from "bids exist but are hidden from
+ // this viewer" so the panel doesn't contradict the Demand/Lowest Counter
+ // fields shown elsewhere on the same page.
+ const hasHiddenBids = jobBids.length === 0 && bidderCount > 0;
+ const displayBidCount = jobBids.length > 0 ? jobBids.length : bidderCount;
 
  // P2: Forward projection for adaptive chart
  const projectionData = (() => {
@@ -494,7 +503,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="flex items-center justify-between mb-4">
  <div className="flex items-center gap-2">
  <MessageSquare className="h-4 w-4 text-[#4b3f8f]" />
- <p className="text-[#3d3a45] text-sm font-semibold">Live Bids ({jobBids.length})</p>
+ <p className="text-[#3d3a45] text-sm font-semibold">Live Bids ({displayBidCount})</p>
  {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
  </div>
  {isFreelancer && myRank !== null && (
@@ -502,13 +511,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  Your bid #{myRank} of {jobBids.length}
  </span>
  )}
- {isFreelancer && myRank === null && jobBids.length > 0 && (
+ {isFreelancer && myRank === null && (jobBids.length > 0 || hasHiddenBids) && (
  <span className="text-[11px] text-[#6f6a7d]">You haven't bid yet</span>
  )}
  </div>
 
  {jobBids.length === 0 ? (
+ hasHiddenBids ? (
+ <p className="text-[#6f6a7d] text-sm">
+ {bidderCount} {bidderCount === 1 ? "bid has" : "bids have"} already been placed on this job. Bid details are private — place your own counter-bid to see how you compare.
+ </p>
+ ) : (
  <p className="text-[#6f6a7d] text-sm">No bids yet. Be the first!</p>
+ )
  ) : (
  <>
  <div className="space-y-3">
