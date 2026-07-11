@@ -120,6 +120,15 @@ export async function PATCH(req: NextRequest) {
  // sync here since this endpoint independently duplicates that one's
  // resolve behavior. split_50_50 intentionally left unhandled — no
  // partial-payout mechanism exists (a transaction has one recipient).
+ //
+ // CAS filter must match "disputed", not "held": by the time a dispute
+ // reaches resolution, PATCH /api/transactions {action:"dispute"} has
+ // already flipped the linked transaction held -> disputed. A filter of
+ // escrowStatus:"held" here can never match a transaction that went
+ // through the real dispute-raise flow, so this updateOne silently
+ // matched zero documents every time — confirmed live via
+ // CRUD_TEST_FINAL.md Phase 9/10 (raised a real dispute, resolved as
+ // pay_freelancer, escrowStatus stayed "disputed" instead of "released").
  if (newStatus === "resolved" && disputeBefore.transactionId) {
  let txUpdate: Record<string, unknown> | null = null;
  if (resolutionType === "refund_client") {
@@ -130,7 +139,7 @@ export async function PATCH(req: NextRequest) {
  if (txUpdate) {
  try {
  await db.collection("transactions").updateOne(
- { _id: new ObjectId(disputeBefore.transactionId), escrowStatus: "held" },
+ { _id: new ObjectId(disputeBefore.transactionId), escrowStatus: "disputed" },
  { $set: txUpdate }
  );
  } catch (err) {

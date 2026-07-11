@@ -100,6 +100,15 @@ export async function PATCH(req: NextRequest) {
   // no partial-payout mechanism anywhere in the app yet (a transaction has
   // one recipient), so it's intentionally left as a status-only resolution
   // until that's built; the admin should follow up via a manual payout.
+  //
+  // CAS filter must match "disputed", not "held": PATCH /api/transactions
+  // {action:"dispute"} already flips the linked transaction held->disputed
+  // when the dispute is raised, well before it ever reaches resolution
+  // here. A filter of escrowStatus:"held" can never match a transaction
+  // that went through the real dispute-raise flow, so this updateOne
+  // silently matched zero documents every time — confirmed live via
+  // CRUD_TEST_FINAL.md Phase 9/10/20 (raised a real dispute, resolved as
+  // pay_freelancer, escrowStatus stayed "disputed" instead of "released").
   if (status === "resolved" && dispute.transactionId) {
     let txUpdate: Record<string, unknown> | null = null;
     if (resolutionType === "refund_client") {
@@ -110,7 +119,7 @@ export async function PATCH(req: NextRequest) {
     if (txUpdate) {
       try {
         await db.collection("transactions").updateOne(
-          { _id: ObjectId.createFromHexString(dispute.transactionId), escrowStatus: "held" },
+          { _id: ObjectId.createFromHexString(dispute.transactionId), escrowStatus: "disputed" },
           { $set: txUpdate }
         );
       } catch (err) {
