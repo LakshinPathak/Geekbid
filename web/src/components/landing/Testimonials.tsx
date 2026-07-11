@@ -3,45 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, CheckCircle2 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
-import { useInView, useSlotDigits } from "./hooks";
-import { TESTIMONIALS, STATS } from "./data";
-
-/* Slot-machine rolling digits — same treatment the standalone Stats
-   section used before it was folded into this trust strip. */
-function SlotNumber({ digits }: { digits: number[] }) {
-  return (
-    <>
-      {digits.map((d, i) => (
-        <span key={i} className="landing-slot-digit">
-          <span
-            className="landing-slot-track"
-            style={{ transform: `translateY(-${d}em)` }}
-          >
-            {Array.from({ length: 10 }, (_, n) => (
-              <span key={n}>{n}</span>
-            ))}
-          </span>
-        </span>
-      ))}
-    </>
-  );
-}
-
-function DecimalSlotNumber({ value, enabled }: { value: number; enabled: boolean }) {
-  // value*10 animated as an integer (e.g. 1.2 -> 0..12), then re-split
-  // with a decimal point — the count-then-divide trick for the one
-  // stat that isn't a whole number ($1.2M).
-  const digits = useSlotDigits(value * 10, 2000, enabled);
-  const asString = digits.join("");
-  const whole = asString.slice(0, -1) || "0";
-  const decimal = asString.slice(-1);
-  return <>{whole}.{decimal}</>;
-}
-
-// Labels for the trust strip — same STATS values/order as the old
-// standalone Stats section, with two labels reworded to read better
-// alongside testimonials ("Total Paid Out" vs "Total Volume").
-const TRUST_STRIP_LABELS = ["Active Freelancers", "Total Paid Out", "Client Satisfaction", "Avg Match Time"];
+import { useInView } from "./hooks";
+import { TESTIMONIALS } from "./data";
 
 export default function Testimonials() {
   const testimonialsSection = useInView(0.1);
@@ -49,10 +12,6 @@ export default function Testimonials() {
   const carouselPausedRef = useRef(false);
   const [activeDot, setActiveDot] = useState(0);
   const lastDotRef = useRef(0);
-
-  const slot0 = useSlotDigits(STATS[0].value, 1800, testimonialsSection.inView);
-  const slot2 = useSlotDigits(STATS[2].value, 1800, testimonialsSection.inView);
-  const slot3 = useSlotDigits(STATS[3].value, 1400, testimonialsSection.inView);
 
   useEffect(() => {
     const el = carouselRef.current;
@@ -70,7 +29,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section id="testimonials" ref={testimonialsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(75,63,143,0.22)] relative overflow-hidden">
+    <section id="testimonials" ref={testimonialsSection.ref} className="py-16 sm:py-24 border-t border-[rgba(75,63,143,0.22)] relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#4b3f8f]/[0.03] rounded-full blur-[120px]" />
@@ -167,23 +126,6 @@ export default function Testimonials() {
               className="rounded-full transition-all duration-300"
               style={{ width: activeDot === i ? 20 : 6, height: 6, background: activeDot === i ? "#4b3f8f" : "rgba(168,153,126,0.35)" }}
             />
-          ))}
-        </div>
-
-        {/* Bottom trust strip — animated slot-machine digits (folded in from the old standalone Stats section) */}
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {STATS.map((s, i) => (
-            <div key={s.label} className="text-center">
-              <p className="text-xl landing-num text-[#4b3f8f] tabular-nums">
-                {s.prefix}
-                {i === 0 && <SlotNumber digits={slot0} />}
-                {i === 1 && <DecimalSlotNumber value={STATS[1].value} enabled={testimonialsSection.inView} />}
-                {i === 2 && <SlotNumber digits={slot2} />}
-                {i === 3 && <SlotNumber digits={slot3} />}
-                {s.suffix}
-              </p>
-              <p className="landing-label text-[#6f6a7d] mt-0.5">{TRUST_STRIP_LABELS[i]}</p>
-            </div>
           ))}
         </div>
       </div>

@@ -144,7 +144,6 @@ export const COMPARISONS: Comparison[] = [
   { feature: "Pricing", geekbid: "Market-driven, transparent", traditional: "Opaque, inflated rates" },
   { feature: "Payment Security", geekbid: "Built-in escrow + disputes", traditional: "Invoice and hope" },
   { feature: "Reputation", geekbid: "GeekScore™ data-driven", traditional: "Subjective reviews" },
-  { feature: "Communication", geekbid: "Integrated real-time chat", traditional: "Scattered across email/Slack" },
 ];
 
 export const TESTIMONIALS: Testimonial[] = [

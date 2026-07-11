@@ -6,7 +6,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 /* Closing section: hook (badge + headline), then one shared pair of CTA buttons. */
 export default function CTA() {
   return (
-    <section className="py-24 sm:py-32 border-t border-[rgba(75,63,143,0.22)] relative grid-bg overflow-hidden">
+    <section className="py-14 sm:py-20 border-t border-[rgba(75,63,143,0.22)] relative grid-bg overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="landing-cta-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#4b3f8f]/[0.09] rounded-full blur-[160px]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(75,63,143,0.4)] to-transparent" />
@@ -26,7 +26,7 @@ export default function CTA() {
         </p>
       </div>
 
-      <div className="mx-auto max-w-5xl px-5 text-center relative z-10 mt-16">
+      <div className="mx-auto max-w-5xl px-5 text-center relative z-10 mt-10">
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/login?tab=register&role=client">
             <button className="group btn-primary text-base px-12 py-4 rounded-full">

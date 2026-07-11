@@ -2,7 +2,7 @@
 
 import { Zap, Check, X } from "lucide-react";
 import { useInView } from "./hooks";
-import { COMPARISONS, FEATURES } from "./data";
+import { COMPARISONS } from "./data";
 
 /** Nested content only (no <section> of its own) — rendered inside
  *  WhyGeekBidSection alongside PricingSection so "why us" and "what
@@ -23,19 +23,6 @@ export default function Comparison() {
           <p className="landing-subhead text-base text-[#6f6a7d] max-w-lg mx-auto mt-5">
             Everything built into the platform, and how it stacks up against the old way of sourcing freelance talent.
           </p>
-        </div>
-
-        {/* Platform features — icon strip (folded in from the old standalone Features section) */}
-        <div
-          className="flex flex-wrap items-center justify-center gap-3 mb-14"
-          style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(16px)", transition: "opacity 0.6s ease 80ms, transform 0.6s ease 80ms" }}
-        >
-          {FEATURES.map((f) => (
-            <div key={f.title} className={`flex items-center gap-2 pl-2.5 pr-4 py-2 rounded-full border ${f.iconBorder} ${f.iconBg}`}>
-              <f.icon className={`h-5 w-5 ${f.iconColor}`} />
-              <span className="text-xs font-medium text-[#3d3a45] whitespace-nowrap">{f.title}</span>
-            </div>
-          ))}
         </div>
 
         <div className="overflow-x-auto">
