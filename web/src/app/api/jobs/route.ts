@@ -96,6 +96,32 @@ export async function POST(req: NextRequest) {
  );
  }
 
+ // Price/hours fields were previously only coerced with Number(), so an
+ // omitted field silently became NaN and was stored as-is (a broken job
+ // that decays/renders incorrectly for everyone who opens it) — validate
+ // before any quota is consumed.
+ const numStartingPrice = Number(startingPrice);
+ const numMinimumPrice = Number(minimumPrice);
+ const numDecayRate = Number(decayRatePerHour);
+ const numEstimatedHours = Number(estimatedHours);
+ if (
+ !Number.isFinite(numStartingPrice) || numStartingPrice <= 0 ||
+ !Number.isFinite(numMinimumPrice) || numMinimumPrice < 0 ||
+ !Number.isFinite(numDecayRate) || numDecayRate < 0 ||
+ !Number.isFinite(numEstimatedHours) || numEstimatedHours <= 0
+ ) {
+ return NextResponse.json(
+ { error: "startingPrice, minimumPrice, decayRatePerHour, and estimatedHours must all be valid non-negative numbers (startingPrice and estimatedHours must be greater than 0)" },
+ { status: 400 }
+ );
+ }
+ if (numMinimumPrice > numStartingPrice) {
+ return NextResponse.json(
+ { error: "minimumPrice cannot be greater than startingPrice" },
+ { status: 400 }
+ );
+ }
+
  const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "writing", "video", "qa", "other"];
  const jobCategory = validCategories.includes(category) ? category : "other";
 
@@ -137,10 +163,10 @@ export async function POST(req: NextRequest) {
  title,
  description: description ?? "",
  skillsRequired: skillsRequired ?? [],
- startingPrice: Number(startingPrice),
- minimumPrice: Number(minimumPrice),
- decayRatePerHour: Number(decayRatePerHour),
- estimatedHours: Number(estimatedHours),
+ startingPrice: numStartingPrice,
+ minimumPrice: numMinimumPrice,
+ decayRatePerHour: numDecayRate,
+ estimatedHours: numEstimatedHours,
  postedAt: now,
  deadlineAt:
  deadlineAt ?? new Date(Date.now() + 48 * 3600000).toISOString(),
@@ -158,7 +184,7 @@ export async function POST(req: NextRequest) {
  lastBidAt: null,
  lowestCounterBid: null,
  priceHistory: [
- { price: Number(startingPrice), at: now, event: "posted" },
+ { price: numStartingPrice, at: now, event: "posted" },
  ],
  };
 
@@ -181,7 +207,7 @@ export async function POST(req: NextRequest) {
  if (poster?.email) {
  sendJobPostedEmail(
  poster.email, poster.name ?? "Client",
- title, Number(startingPrice), Number(minimumPrice),
+ title, numStartingPrice, numMinimumPrice,
  job.pricingMode, job.deadlineAt, jobCategory, jobId
  ).catch(() => {});
  }

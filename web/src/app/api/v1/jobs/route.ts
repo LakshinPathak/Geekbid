@@ -148,9 +148,32 @@ export async function POST(req: NextRequest) {
  const body = await req.json();
  const { title, description, skillsRequired, startingPrice, minimumPrice, decayRatePerHour, estimatedHours, deadlineAt, category } = body;
 
- if (!title || !startingPrice || !minimumPrice) {
+ if (!title) {
  return NextResponse.json(
- { success: false, error: { code: "ERR_VALIDATION", message: "title, startingPrice, and minimumPrice required" } },
+ { success: false, error: { code: "ERR_VALIDATION", message: "title required" } },
+ { status: 400 }
+ );
+ }
+
+ // A truthy-only check (!startingPrice) lets a non-numeric truthy string
+ // like "abc" through, which Number() then silently turns into NaN — same
+ // gap as the internal /api/jobs route, closed the same way here.
+ const numStartingPrice = Number(startingPrice);
+ const numMinimumPrice = Number(minimumPrice);
+ const numDecayRate = Number(decayRatePerHour) || 10;
+ const numEstimatedHours = Number(estimatedHours) || 0;
+ if (
+ !Number.isFinite(numStartingPrice) || numStartingPrice <= 0 ||
+ !Number.isFinite(numMinimumPrice) || numMinimumPrice < 0
+ ) {
+ return NextResponse.json(
+ { success: false, error: { code: "ERR_VALIDATION", message: "startingPrice and minimumPrice must be valid numbers (startingPrice greater than 0, minimumPrice not negative)" } },
+ { status: 400 }
+ );
+ }
+ if (numMinimumPrice > numStartingPrice) {
+ return NextResponse.json(
+ { success: false, error: { code: "ERR_VALIDATION", message: "minimumPrice cannot be greater than startingPrice" } },
  { status: 400 }
  );
  }
@@ -192,10 +215,10 @@ export async function POST(req: NextRequest) {
  clientId: userId,
  title, description: description ?? "",
  skillsRequired: skillsRequired ?? [],
- startingPrice: Number(startingPrice),
- minimumPrice: Number(minimumPrice),
- decayRatePerHour: Number(decayRatePerHour) || 10,
- estimatedHours: Number(estimatedHours) || 0,
+ startingPrice: numStartingPrice,
+ minimumPrice: numMinimumPrice,
+ decayRatePerHour: numDecayRate,
+ estimatedHours: numEstimatedHours,
  postedAt: now,
  deadlineAt: deadlineAt ?? new Date(Date.now() + 48 * 3600000).toISOString(),
  status: "open",
@@ -209,7 +232,7 @@ export async function POST(req: NextRequest) {
  uniqueBidderCount: 0,
  lastBidAt: null,
  lowestCounterBid: null,
- priceHistory: [{ price: Number(startingPrice), at: now, event: "posted" }],
+ priceHistory: [{ price: numStartingPrice, at: now, event: "posted" }],
  };
 
  const result = await db.collection("jobs").insertOne(job);

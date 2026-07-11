@@ -1001,13 +1001,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
 
- await fetchBids();
+ // Also refresh jobs — the server updates the job's own demand-signal
+ // fields (bidCount, uniqueBidderCount, lowestCounterBid, priceHistory)
+ // on every bid, and the Pricing Intelligence panel reads those fields
+ // straight off the job, not derived from the bids list.
+ await Promise.all([fetchBids(), fetchJobs()]);
  return { ok: true, message: "Counter-bid submitted" };
  } catch {
  return { ok: false, message: "Failed to place bid" };
  }
  },
- [jobs, now, currentUser, getValidToken, fetchBids]
+ [jobs, now, currentUser, getValidToken, fetchBids, fetchJobs]
  );
 
  // ── Post Job (with DB call) ───────────────────────────────
