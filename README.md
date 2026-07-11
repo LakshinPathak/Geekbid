@@ -210,6 +210,22 @@ applying them across every landing component actually rendered by
 imported anywhere — left untouched). Verified live in-browser and against
 the deployed production site.
 
+**Landing page viewport reduction** (also on `v18`): a live-browser
+measurement (Playwright, 1440×900) found the page at 6.79 viewport-heights,
+with three spots restating the same information more than once — a
+feature-chip strip in `Comparison.tsx` that duplicated the comparison
+table directly below it, a weak "Communication" comparison row, and a
+testimonials-section stats strip repeating the same 2,400+/$1.2M/94%/<4hr
+figures already shown in the hero's live ticker and the CTA's "Join
+2,400+ freelancers" badge — the third appearance of the same numbers on
+one page. Removed the chip strip and the stats strip (plus its now-dead
+slot-machine digit code in `Testimonials.tsx`), trimmed the comparison
+table to 5 rows, and tightened oversized section padding in
+`WhyGeekBidSection.tsx`/`CTA.tsx`. Net: 6.79 → 6.08 viewports with no
+change to the hero, the price-decay showcase, or the pricing cards —
+verified live in-browser section-by-section (Why GeekBid 2.03→1.64,
+Testimonials 1.11→0.92, CTA 0.78→0.65 viewports), zero console errors.
+
 **CRUD re-audit pass** (also on `v18`): a fresh, phase-wise CRUD test plan
 was written from scratch by reading every route handler's actual
 validation/ownership/state-machine logic —
