@@ -66,10 +66,10 @@ export default function PricingSection() {
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#3d3a45]">
+          <h2 className="landing-h2 text-3xl sm:text-5xl text-[#3d3a45]">
             Start free. <span className="text-[#4b3f8f]">Scale when you win.</span>
           </h2>
-          <p className="text-[#6f6a7d] text-sm mt-3 max-w-xl mx-auto">
+          <p className="landing-subhead text-[#6f6a7d] text-base sm:text-lg mt-3 max-w-xl mx-auto">
             Every plan includes the full reverse-auction engine, escrow protection, and AI tools.
             Paid tiers raise your limits and cut your platform fee — from 10% down to 5%.
           </p>
@@ -86,16 +86,16 @@ export default function PricingSection() {
               }`}
             >
               {tier.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#4b3f8f] text-[#ffffff] text-[10px] font-bold tracking-widest px-3 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#4b3f8f] text-[#ffffff] landing-label px-3 py-1 rounded-full">
                   MOST POPULAR
                 </span>
               )}
               <div className="flex items-center gap-2 mb-3">
                 <tier.icon className={`h-4 w-4 ${tier.highlight ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`} />
-                <h3 className="font-serif text-lg text-[#3d3a45]">{tier.config.name}</h3>
+                <h3 className="landing-card-title text-lg text-[#3d3a45]">{tier.config.name}</h3>
               </div>
               <div className="mb-2">
-                <span className="font-serif text-4xl text-[#3d3a45]">${tier.config.price}</span>
+                <span className="landing-num text-4xl text-[#3d3a45]">${tier.config.price}</span>
                 <span className="text-[#6f6a7d] text-sm ml-1.5">{tier.period}</span>
               </div>
               <p className="text-[#6f6a7d] text-xs mb-6">{tier.tagline}</p>

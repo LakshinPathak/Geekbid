@@ -34,7 +34,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <Logo markClassName="h-8 w-8" textClassName="text-base font-serif font-normal" />
+              <Logo markClassName="h-8 w-8" textClassName="text-base font-bold tracking-[0.03em] font-sans" />
             </div>
             <p className="text-sm text-[#6f6a7d] leading-relaxed">
               The reverse-auction marketplace for engineering talent.
@@ -43,7 +43,7 @@ export default function Footer() {
 
           {/* Platform */}
           <div>
-            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Platform</p>
+            <p className="landing-label text-[#4b3f8f] mb-4">Platform</p>
             <div className="flex flex-col gap-2.5">
               <Link href="/feed" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Browse Jobs</Link>
               <Link href="/post-job" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Post a Job</Link>
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
           {/* Company */}
           <div>
-            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Company</p>
+            <p className="landing-label text-[#4b3f8f] mb-4">Company</p>
             <div className="flex flex-col gap-2.5">
               <span className="text-sm text-[#6f6a7d]">About Us</span>
               <span className="text-sm text-[#6f6a7d]">Careers</span>
@@ -63,7 +63,7 @@ export default function Footer() {
           </div>
           {/* Legal */}
           <div>
-            <p className="text-[11px] font-semibold text-[#4b3f8f] uppercase tracking-widest mb-4">Legal</p>
+            <p className="landing-label text-[#4b3f8f] mb-4">Legal</p>
             <div className="flex flex-col gap-2.5">
               <span className="text-sm text-[#6f6a7d]">Terms of Service</span>
               <span className="text-sm text-[#6f6a7d]">Privacy Policy</span>

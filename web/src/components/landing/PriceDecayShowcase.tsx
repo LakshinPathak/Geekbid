@@ -81,7 +81,7 @@ function MarketTerminal() {
       <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-[rgba(75,63,143,0.22)]">
         <div className="flex items-center gap-2.5">
           <span className="h-1.5 w-1.5 rounded-full bg-[#4b3f8f] animate-live-breathe inline-block" />
-          <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-[#4b3f8f]">Live Market</span>
+          <span className="landing-label text-[#4b3f8f]">Live Market</span>
         </div>
         <span className="text-[11px] text-[#6f6a7d] font-mono-il">GB-AUCTION//01</span>
       </div>
@@ -154,10 +154,10 @@ export default function PriceDecayShowcase() {
             transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#3d3a45] leading-[1.15] text-balance">
+          <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#3d3a45] text-balance">
             The price is never fixed. It&apos;s falling right now.
           </h2>
-          <p className="text-base sm:text-lg text-[#6f6a7d] leading-relaxed mt-5 max-w-md">
+          <p className="landing-subhead text-base sm:text-lg text-[#6f6a7d] mt-5 max-w-md">
             Every job on GeekBid starts high and decays automatically — hour by hour — until a freelancer accepts or the client awards the lowest bid. No haggling. No back-and-forth emails. Just the market finding its real number, live.
           </p>
           <Link href="#how-it-works" className="inline-flex mt-8">

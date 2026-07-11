@@ -65,10 +65,10 @@ export default function PriceDecayDemo() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(75,63,143,0.22)]">
           <div>
-            <p className="text-[9px] font-sans uppercase tracking-[0.12em] text-[#6f6a7d]">Live Price Decay</p>
+            <p className="landing-label text-[#6f6a7d]">Live Price Decay</p>
             <p className="text-xs text-[#6f6a7d] mt-0.5 font-sans">AI Chatbot Development</p>
           </div>
-          <span className="text-[9px] font-bold tracking-[0.09em] uppercase font-sans px-2 py-1 rounded-full bg-[#4b3f8f] text-[#ffffff] animate-live-breathe">LIVE</span>
+          <span className="landing-label px-2 py-1 rounded-full bg-[#4b3f8f] text-[#ffffff] animate-live-breathe">LIVE</span>
         </div>
 
         {/* Price */}
@@ -82,7 +82,7 @@ export default function PriceDecayDemo() {
             />
           ))}
           <div className="flex items-baseline gap-2 mb-3">
-            <span key={flashCount} className="text-4xl sm:text-5xl font-serif font-normal tabular-nums animate-price-tick" style={{ display: "inline-block" }}>
+            <span key={flashCount} className="text-4xl sm:text-5xl landing-num tabular-nums animate-price-tick" style={{ display: "inline-block" }}>
               ${price.toLocaleString()}
             </span>
             <span className="text-sm text-[#4b3f8f] font-sans">↘ -${DECAY}/hr</span>
@@ -108,8 +108,8 @@ export default function PriceDecayDemo() {
               { label: "Left", value: `${Math.max(64 - elapsed, 0)}h` },
             ].map((s) => (
               <div key={s.label} className="rounded-xl border border-[rgba(75,63,143,0.22)] py-2 text-center bg-[#ffffff]">
-                <p className="text-sm font-serif font-normal text-[#3d3a45]">{s.value}</p>
-                <p className="text-[9px] font-sans uppercase tracking-[0.09em] text-[#6f6a7d] mt-0.5">{s.label}</p>
+                <p className="text-sm landing-num text-[#3d3a45]">{s.value}</p>
+                <p className="landing-label text-[#6f6a7d] mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
@@ -117,7 +117,7 @@ export default function PriceDecayDemo() {
 
         {/* Accept button */}
         <div className="px-4 pb-4 border-t border-[rgba(75,63,143,0.22)] pt-3">
-          <button className="btn-primary w-full justify-center text-[11px] tracking-[0.07em] uppercase py-2.5 rounded-full">
+          <button className="btn-primary w-full justify-center landing-label py-2.5 rounded-full">
             Accept at ${price.toLocaleString()}
           </button>
         </div>

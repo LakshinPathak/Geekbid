@@ -80,10 +80,10 @@ export default function Testimonials() {
 
       <div className="mx-auto max-w-[1400px] px-5 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#3d3a45] leading-tight">
+          <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#3d3a45]">
             Loved by engineers<br className="hidden sm:block" /> and clients alike
           </h2>
-          <p className="text-base text-[#6f6a7d] max-w-md mx-auto mt-4">Real results from real people using GeekBid to hire and get hired.</p>
+          <p className="landing-subhead text-base text-[#6f6a7d] max-w-md mx-auto mt-4">Real results from real people using GeekBid to hire and get hired.</p>
         </div>
 
         {/* Auto-scrolling carousel */}
@@ -113,7 +113,7 @@ export default function Testimonials() {
 
                   {/* Top row: role tag + stars */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className={`text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full border ${t.tagBg}`}>{t.tag}</span>
+                    <span className={`landing-label px-2.5 py-1 rounded-full border ${t.tagBg}`}>{t.tag}</span>
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star key={s} className="h-3.5 w-3.5 fill-[#4b3f8f] text-[#4b3f8f]" />
@@ -122,7 +122,7 @@ export default function Testimonials() {
                   </div>
 
                   {/* Quote */}
-                  <blockquote className="font-serif font-normal text-[#3d3a45] text-base leading-relaxed flex-1 mb-6">
+                  <blockquote className="text-[#3d3a45] text-base leading-relaxed flex-1 mb-6">
                     &ldquo;{t.quote}&rdquo;
                   </blockquote>
 
@@ -174,7 +174,7 @@ export default function Testimonials() {
         <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           {STATS.map((s, i) => (
             <div key={s.label} className="text-center">
-              <p className="text-xl font-serif text-[#4b3f8f] tabular-nums">
+              <p className="text-xl landing-num text-[#4b3f8f] tabular-nums">
                 {s.prefix}
                 {i === 0 && <SlotNumber digits={slot0} />}
                 {i === 1 && <DecimalSlotNumber value={STATS[1].value} enabled={testimonialsSection.inView} />}
@@ -182,7 +182,7 @@ export default function Testimonials() {
                 {i === 3 && <SlotNumber digits={slot3} />}
                 {s.suffix}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-[#6f6a7d] mt-0.5">{TRUST_STRIP_LABELS[i]}</p>
+              <p className="landing-label text-[#6f6a7d] mt-0.5">{TRUST_STRIP_LABELS[i]}</p>
             </div>
           ))}
         </div>

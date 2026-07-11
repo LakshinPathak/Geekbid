@@ -30,7 +30,7 @@ export default function Nav() {
         <div className="flex items-center gap-2.5">
           <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans" />
         </div>
-        <div className="hidden md:flex items-center gap-6 text-[11px] tracking-[0.09em] uppercase text-[#6f6a7d] font-sans">
+        <div className="hidden md:flex items-center gap-6 landing-label text-[#6f6a7d]">
           {NAV_LINKS.map((link) => (
             <a
               key={link.id}
@@ -44,10 +44,10 @@ export default function Nav() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <button className="hidden sm:block text-[11px] tracking-[0.06em] uppercase text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors font-sans">Sign In</button>
+            <button className="hidden sm:block landing-label text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors">Sign In</button>
           </Link>
           <Link href="/login?tab=register&role=client">
-            <button className="flex items-center gap-2 btn-primary text-[11px] tracking-[0.07em] uppercase px-4 py-2 rounded-full">
+            <button className="flex items-center gap-2 btn-primary landing-label px-4 py-2 rounded-full">
               Get Started <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           </Link>

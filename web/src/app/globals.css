@@ -45,8 +45,12 @@
 
   /* Font families — exposed as Tailwind utilities. Self-hosted via
      next/font/google (see layout.tsx) rather than a render-blocking Google
-     Fonts <link>/@import — the var(--font-fraunces)/var(--font-jakarta)
-     custom properties are what next/font actually injects. */
+     Fonts <link>/@import. NOTE: there is no serif/display face loaded —
+     --font-serif is kept only for backward compat with older call sites
+     outside the landing page; it resolves to the exact same Jakarta Sans
+     as --font-sans. Do not add new font-serif usages — use the
+     .landing-* typography classes (landing page) or .font-heading
+     (rest of the app) instead. */
   --font-serif: var(--font-jakarta), system-ui, sans-serif;
   --font-sans:  var(--font-jakarta), system-ui, sans-serif;
   --font-mono:  var(--font-plex-mono), 'Courier New', monospace;
@@ -1036,6 +1040,86 @@ textarea.glass-input { border-radius: 16px; }
 
 /* ── Active nav link (scroll-spy highlight) ───────────────────── */
 .landing-nav-link-active { color: #4b3f8f !important; }
+
+/* ── Typography system — the only heading/label/number treatments used
+   on the landing page. Replaces the old ad hoc mix of raw `font-serif`
+   (misleading name — see --font-serif note above, it's sans),
+   `.font-heading` (defined but never actually used here), and per-file
+   `font-normal` overrides that gave equivalent headings different
+   weights with no design reason. Tailwind still owns responsive size
+   steps (text-3xl sm:text-5xl etc.) in each component's className —
+   these classes only fix family/weight/line-height/tracking. ──────── */
+
+/* Biggest tier — Hero H1 and the closing CTA H2 bookend the page with
+   matching display treatment. */
+.landing-display {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+/* Section headlines — Comparison, Testimonials, PriceDecayShowcase,
+   PricingSection all read as the same tier of "section intro". */
+.landing-h2 {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* Sub-section headline nested one level inside a section that already
+   has its own H2 (e.g. the 4-step explainer inside PriceDecayShowcase). */
+.landing-h3 {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* Card-level titles (feature/step cards, pricing tier names) — a
+   distinct, slightly heavier tier from the display/section headlines
+   above, used consistently instead of some cards getting font-normal
+   and others inheriting the global 500 by accident. */
+.landing-card-title {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+/* Paragraph directly under a section H2/H3 — was ranging from
+   text-sm to text-lg with no responsive step depending on the file. */
+.landing-subhead {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Big "above the headline" eyebrow badge — Hero + CTA only (the two
+   bookend sections). */
+.landing-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Everything else that's a small uppercase UI micro-label (nav links,
+   footer column headers, in-card labels, badges) — was 9 different
+   letter-spacing values and 3 near-identical pixel sizes across the
+   page for the exact same visual role. */
+.landing-label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Every numeral on the landing page (prices, stats, counters) — the
+   app's own design intent (layout.tsx) is "a real monospace face
+   carries every numeric/price value"; Stats/Testimonials' big trust-
+   strip numbers were the one place still rendering in the sans face. */
+.landing-num {
+  font-family: var(--font-mono);
+}
 
 /* ── Section header text-glow ──────────────────────────────────── */
 .landing-header-glow { text-shadow: 0 0 28px rgba(75,63,143,0.35); }

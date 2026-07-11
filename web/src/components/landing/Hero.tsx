@@ -84,13 +84,13 @@ export default function Hero() {
         <div className="text-center lg:text-left">
           {/* Badge */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0ms" }}>
-            <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] px-3 py-1.5 rounded-full mb-6 font-sans cursor-default">
+            <div className="inline-flex items-center gap-2 landing-eyebrow text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] px-3 py-1.5 rounded-full mb-6 cursor-default">
               <span className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse inline-block" />
               Live · Reverse Auction Platform
             </div>
           </div>
 
-          <h1 className="landing-header-glow text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-normal leading-[1.18] mb-5">
+          <h1 className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-5">
             <span className="block">
               {HEADLINE_LINE_1.split(" ").map((word, i) => (
                 <span

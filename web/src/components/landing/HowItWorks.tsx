@@ -23,7 +23,7 @@ function StepCard({ step, idx, inView }: { step: Step; idx: number; inView: bool
         >
           <step.icon className="h-5 w-5" />
         </div>
-        <h3 className="text-lg font-serif font-normal text-[#3d3a45] mb-2">{step.title}</h3>
+        <h3 className="landing-card-title text-lg text-[#3d3a45] mb-2">{step.title}</h3>
         <p className="text-sm sm:text-base text-[#6f6a7d] leading-relaxed">{step.desc}</p>
       </div>
     </div>
@@ -37,10 +37,10 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
   return (
     <div className="mt-20 sm:mt-28">
       <div className="text-center mb-10 sm:mb-14" style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-        <h3 className="landing-header-glow text-2xl sm:text-4xl font-serif font-normal text-[#3d3a45] leading-tight max-w-3xl mx-auto text-balance">
+        <h3 className="landing-header-glow landing-h3 text-2xl sm:text-4xl text-[#3d3a45] max-w-3xl mx-auto text-balance">
           From posting to payment in <span className="text-[#4b3f8f]">four</span> simple steps
         </h3>
-        <p className="text-base text-[#6f6a7d] max-w-xl mx-auto mt-4">
+        <p className="landing-subhead text-base text-[#6f6a7d] max-w-xl mx-auto mt-4">
           Traditional hiring is slow, expensive, and opaque. GeekBid&apos;s algorithmic pricing finds the true market rate automatically.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
 
       {/* Price decay formula callout — collapsed by default to save vertical space */}
       <details className="mt-10 glass-panel p-5 sm:p-6 text-center scanline group">
-        <summary className="flex items-center justify-center gap-2 text-[10px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] cursor-pointer list-none hover:text-[#4b3f8f] transition-colors">
+        <summary className="flex items-center justify-center gap-2 landing-eyebrow text-[#6f6a7d] cursor-pointer list-none hover:text-[#4b3f8f] transition-colors">
           ◈ View the Price Decay Formula ◈
         </summary>
         <div className="mt-5">

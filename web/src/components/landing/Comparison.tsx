@@ -17,10 +17,10 @@ export default function Comparison() {
 
       <div id="compare" className="relative mx-auto max-w-5xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
-          <h2 className="landing-header-glow text-3xl sm:text-5xl font-serif font-normal text-[#3d3a45] leading-tight">
+          <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#3d3a45]">
             Why <span className="text-[#4b3f8f]">GeekBid</span>, not the old way
           </h2>
-          <p className="text-base text-[#6f6a7d] max-w-lg mx-auto mt-5">
+          <p className="landing-subhead text-base text-[#6f6a7d] max-w-lg mx-auto mt-5">
             Everything built into the platform, and how it stacks up against the old way of sourcing engineering talent.
           </p>
         </div>
