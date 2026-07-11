@@ -188,6 +188,84 @@ users/jobs list always does — making every admin table show exactly one
 row per page regardless of viewport. Fixed at the root by treating
 `null`/`undefined`/`""` as "absent" before coercing to a number.
 
+**Landing page typography unification** (also on `v18`): `--font-serif`
+turned out to resolve to the exact same Jakarta Sans as `--font-sans` — no
+serif/display face is loaded anywhere (a leftover token name from the old
+"Royal Dark" theme, which did use a serif face). 21 landing call sites
+still typed `font-serif` out of habit, alongside an unused `.font-heading`
+utility and ad hoc per-file `font-normal` overrides — three heading
+systems giving equivalent elements different weights with no design
+reason, plus the same "big stat number" pattern rendering in the sans face
+in two places (`Stats.tsx`/`Testimonials.tsx`) while the app's own documented
+rule ("numbers use the mono face," `layout.tsx`) was followed everywhere
+else. Also found: `PricingSection`'s H2 was a full scale tier smaller than
+its sibling `Comparison` H2 inside the same merged section, and 9 different
+letter-spacing values were in use for the same uppercase micro-label
+pattern (nav links, badges, footer headers). Fixed by adding 7 `.landing-*`
+typography classes to `globals.css` as the single source of truth
+(`landing-display`, `landing-h2`, `landing-h3`, `landing-card-title`,
+`landing-subhead`, `landing-eyebrow`, `landing-label`, `landing-num`) and
+applying them across every landing component actually rendered by
+`page.tsx` (`Features.tsx`/`Stats.tsx` turned out to be dead code, not
+imported anywhere — left untouched). Verified live in-browser and against
+the deployed production site.
+
+**CRUD re-audit pass** (also on `v18`): a fresh, phase-wise CRUD test plan
+was written from scratch by reading every route handler's actual
+validation/ownership/state-machine logic —
+[`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md), 340+ test cases across 24
+phases — then executed live (mixed real browser sessions for UI flows,
+direct API calls for backend/negative/security cases with no legitimate UI
+path) against a running dev server, fixing bugs as found:
+- `PATCH /api/user` accepted `hourlyRateMin > hourlyRateMax` and negative
+  rates with no validation. Fixed with a range check against whichever
+  side of the range is already on the user when only one field is sent.
+- `POST /api/jobs` and `POST /api/v1/jobs` accepted missing or non-numeric
+  price/hours fields, silently storing `NaN`/`null` — a broken job visible
+  to everyone in the public feed. Both now reject with 400 unless every
+  price field is a valid number and `minimumPrice ≤ startingPrice`.
+- Placing a bid (`counterBid()` in `store.tsx`) only refetched the bids
+  list, never the jobs list — so a job's own demand-signal fields
+  (`bidCount`, `lowestCounterBid`, effective decay) stayed stale
+  client-side until an unrelated page reload. `acceptJob()` already
+  refetched jobs; `counterBid()` now does too — verified live, the Pricing
+  Intelligence panel updates immediately after a bid with no manual reload.
+- **Dispute resolution never actually released or refunded escrow** — the
+  most severe finding. Both `PATCH /api/disputes` and
+  `PATCH /api/admin/disputes` CAS-guarded the linked transaction update on
+  `escrowStatus:"held"`, but raising a dispute
+  (`PATCH /api/transactions {action:"dispute"}`) already flips the
+  transaction to `"disputed"` *before* it's ever resolved — so the guard
+  could never match a transaction that went through the real dispute
+  lifecycle, and the update silently touched zero documents on every
+  resolution. A client or freelancer would see "resolved" and believe
+  money moved when it never did. This is the same class of bug the v17
+  CRUD audit (above) believed it had already fixed — but that pass
+  validated the fix against a dispute manually seeded directly onto an
+  already-`"held"` transaction, bypassing the real raise-dispute step, so
+  the CAS mismatch was never actually exercised. Fixed by matching on
+  `"disputed"` instead of `"held"` in both routes; re-verified end-to-end
+  live (`pay_freelancer` → released via the non-admin route,
+  `refund_client` → refunded via the admin route).
+- The admin Config page's "Open Registration" toggle
+  (`registrationOpen`) was stored on save but never read anywhere —
+  turning it off had zero effect, registration always succeeded. Also
+  found while fixing this: the Google OAuth signup/login path
+  (`googleLoginUser` in `lib/auth.ts`) bypassed both `registrationOpen`
+  *and* Maintenance Mode entirely, since it never went through the
+  email/password route's checks — a gap the v17 audit's own notes flagged
+  ("the Google OAuth login path was not patched... same gap likely exists
+  there") but never actually fixed. Both flags are now enforced on the
+  register action and mirrored into the Google OAuth path.
+
+Everything else checked clean with no findings: invites, featured-boost,
+chat, notifications, reviews, milestones (full escrow-release lifecycle
+verified end to end), teams, referrals, subscriptions, API keys,
+assessments, admin users/jobs/transactions/config, and a full
+cross-role security/RBAC sweep (forged-JWT rejection, NoSQL-injection
+safety, ReDoS-safe search, every `/api/admin/*` route gated, no UI-level
+role leakage).
+
 ---
 
 ## What's in v17
@@ -1214,7 +1292,7 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
+| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile; a landing-page typography unification (`--font-serif` resolved to the same font as `--font-sans` — no serif face was ever loaded — leaving 3 competing heading systems and inconsistent numerals, fixed with 7 new `.landing-*` classes); and a fresh 340-case phase-wise CRUD re-audit ([`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md)) closing 5 more bugs, most notably **dispute resolution still silently never moving escrowed money** — the same bug the v17 audit believed it had fixed, but that pass validated against artificially-seeded data that never exercised the real dispute-raise-then-resolve lifecycle (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
 | `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
