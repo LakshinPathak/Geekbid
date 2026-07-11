@@ -18,6 +18,21 @@ export async function POST(req: NextRequest) {
 
  // ─── REGISTER ────────────────────────────────────────────
  if (action === "register") {
+ // registrationOpen was defined, stored, and exposed as a toggle in the
+ // admin Config UI ("Allow new users to sign up") but never actually
+ // enforced anywhere — confirmed live via CRUD_TEST_FINAL.md Phase 22:
+ // turning it off had zero effect, registration still succeeded.
+ // Defaults to open when the flag is unset, matching the admin route's
+ // own default.
+ const db = await getDb();
+ const config = await db.collection("platform_config").findOne({ key: "platform_config" });
+ if (config?.registrationOpen === false) {
+ return NextResponse.json(
+ { error: "New registrations are currently closed. Please check back later." },
+ { status: 403 }
+ );
+ }
+
  if (!name || !email || !password) {
  return NextResponse.json(
  { error: "Name, email, and password are required" },

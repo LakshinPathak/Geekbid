@@ -267,6 +267,21 @@ export async function googleLoginUser(profile: GoogleProfile) {
  return { error: "This account has been suspended. Contact support for assistance." };
  }
 
+ // Maintenance mode and registration-open were only ever enforced on the
+ // email/password path (in api/auth/route.ts) — the Google OAuth path
+ // called this function directly and bypassed both checks entirely.
+ // New Google signups can never be admin (requestedRole is always
+ // freelancer/client), so maintenance mode always blocks them; existing
+ // users are exempt only if they're already admin, same as the
+ // email/password path.
+ const platformConfig = await db.collection("platform_config").findOne({ key: "platform_config" });
+ if (platformConfig?.maintenanceMode && (!user || user.role !== "admin")) {
+ return { error: "GeekBid is currently undergoing maintenance. Please check back shortly." };
+ }
+ if (!user && platformConfig?.registrationOpen === false) {
+ return { error: "New registrations are currently closed. Please check back later." };
+ }
+
  if (user) {
  // Link Google ID if not already linked
  if (!user.googleId) {
