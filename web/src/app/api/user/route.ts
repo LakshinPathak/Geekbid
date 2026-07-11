@@ -86,6 +86,30 @@ export async function PATCH(req: NextRequest) {
  );
  }
 
+ // Hourly-rate range sanity check — the two fields are independently
+ // optional per-request, so validate against whichever value is already
+ // on the user when only one side of the range is being changed.
+ if ("hourlyRateMin" in safeUpdates || "hourlyRateMax" in safeUpdates) {
+ const existing = await db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { hourlyRateMin: 1, hourlyRateMax: 1 } }
+ );
+ const nextMin = "hourlyRateMin" in safeUpdates ? Number(safeUpdates.hourlyRateMin) : existing?.hourlyRateMin ?? 0;
+ const nextMax = "hourlyRateMax" in safeUpdates ? Number(safeUpdates.hourlyRateMax) : existing?.hourlyRateMax ?? 0;
+ if (!Number.isFinite(nextMin) || !Number.isFinite(nextMax) || nextMin < 0 || nextMax < 0) {
+ return NextResponse.json(
+ { error: "Hourly rates must be non-negative numbers" },
+ { status: 400 }
+ );
+ }
+ if (nextMax > 0 && nextMin > nextMax) {
+ return NextResponse.json(
+ { error: "hourlyRateMin cannot be greater than hourlyRateMax" },
+ { status: 400 }
+ );
+ }
+ }
+
  await db
  .collection("users")
  .updateOne(
