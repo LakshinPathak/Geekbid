@@ -81,7 +81,7 @@ export default function Testimonials() {
       <div className="mx-auto max-w-[1400px] px-5 relative z-10">
         <div className="text-center mb-16">
           <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#3d3a45]">
-            Loved by engineers<br className="hidden sm:block" /> and clients alike
+            Loved by freelancers<br className="hidden sm:block" /> and clients alike
           </h2>
           <p className="landing-subhead text-base text-[#6f6a7d] max-w-md mx-auto mt-4">Real results from real people using GeekBid to hire and get hired.</p>
         </div>

@@ -21,7 +21,7 @@ export default function Comparison() {
             Why <span className="text-[#4b3f8f]">GeekBid</span>, not the old way
           </h2>
           <p className="landing-subhead text-base text-[#6f6a7d] max-w-lg mx-auto mt-5">
-            Everything built into the platform, and how it stacks up against the old way of sourcing engineering talent.
+            Everything built into the platform, and how it stacks up against the old way of sourcing freelance talent.
           </p>
         </div>
 

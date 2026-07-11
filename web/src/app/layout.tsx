@@ -24,15 +24,15 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
- title: "GeekBid — Reverse Auction Marketplace for Tech Talent",
+ title: "GeekBid — Reverse Auction Marketplace for Freelance Talent",
  description:
- "The world's first reverse-auction marketplace for developers. Post a job, watch prices drop, and hire top tech talent at the right price.",
+ "The world's first reverse-auction marketplace for freelancers. Post a job, watch prices drop, and hire top talent at the right price.",
  keywords: [
  "freelancing",
  "reverse auction",
- "developer marketplace",
- "hire developers",
- "tech talent",
+ "freelance marketplace",
+ "hire freelancers",
+ "freelance talent",
  ],
 };
 

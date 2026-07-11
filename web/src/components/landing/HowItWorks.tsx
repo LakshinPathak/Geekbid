@@ -12,7 +12,7 @@ function StepCard({ step, idx, inView }: { step: Step; idx: number; inView: bool
   return (
     <div
       ref={cardRef}
-      className="group glass-card landing-glass-card landing-tilt-card hover:border-[rgba(75,63,143,0.35)] transition-all duration-300 relative overflow-hidden"
+      className="group glass-card landing-glass-card landing-tilt-card hover:border-[rgba(75,63,143,0.35)] transition-all duration-300 relative overflow-hidden h-full"
       style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.6s ease ${200 + idx * 80}ms, transform 0.6s ease ${200 + idx * 80}ms` }}
     >
       <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#4b3f8f] border border-[rgba(75,63,143,0.28)] bg-[rgba(75,63,143,0.06)] px-1.5 py-0.5 rounded-full tracking-wider">{step.num}</span>
@@ -45,12 +45,12 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-start">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_32px_1fr_32px_1fr_32px_1fr] gap-4 lg:gap-0 items-stretch">
         {STEPS.map((s, idx) => (
           <Fragment key={s.num}>
             <StepCard step={s} idx={idx} inView={inView} />
             {idx < STEPS.length - 1 && (
-              <div className="hidden lg:flex items-center justify-center mt-8 relative">
+              <div className="hidden lg:flex items-center justify-center mt-8 relative self-start">
                 <div className="w-full border-t border-dashed border-[rgba(75,63,143,0.28)]" />
                 <div
                   className="landing-connector-dot absolute h-1.5 w-1.5 rounded-full bg-[#4b3f8f]"

@@ -16,13 +16,13 @@ export default function CTA() {
       <div className="mx-auto max-w-5xl px-5 text-center relative z-10">
         <div className="inline-flex items-center gap-2 landing-eyebrow text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] px-3 py-1.5 rounded-full mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse inline-block" />
-          Join 2,400+ engineers on GeekBid
+          Join 2,400+ freelancers on GeekBid
         </div>
         <h2 className="landing-header-glow landing-display text-4xl sm:text-6xl md:text-7xl text-[#3d3a45]">
           Ready to hire<br /><em className="text-[#4b3f8f] not-italic">smarter?</em>
         </h2>
         <p className="landing-subhead text-base sm:text-lg text-[#6f6a7d] mt-6 max-w-lg mx-auto">
-          Join thousands of companies using reverse auctions to find the best engineering talent at the right price.
+          Join thousands of companies using reverse auctions to find the best freelance talent at the right price.
         </p>
       </div>
 

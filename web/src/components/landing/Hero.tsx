@@ -28,7 +28,7 @@ const TRUST_BADGES = [
   { icon: "✨", text: "No Upfront Fees" },
 ];
 
-const HEADLINE_LINE_1 = "Hire engineers";
+const HEADLINE_LINE_1 = "Hire freelancers";
 const HEADLINE_LINE_2 = "at the right price";
 
 export default function Hero() {
@@ -110,7 +110,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-lg sm:text-xl text-[#6f6a7d] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
-            The reverse-auction pricing engine for tech talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
+            The reverse-auction pricing engine for freelance talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
           </p>
 
           {/* CTAs */}

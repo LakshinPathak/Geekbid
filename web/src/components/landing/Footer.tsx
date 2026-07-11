@@ -37,7 +37,7 @@ export default function Footer() {
               <Logo markClassName="h-8 w-8" textClassName="text-base font-bold tracking-[0.03em] font-sans" />
             </div>
             <p className="text-sm text-[#6f6a7d] leading-relaxed">
-              The reverse-auction marketplace for engineering talent.
+              The reverse-auction marketplace for freelance talent.
             </p>
           </div>
 
