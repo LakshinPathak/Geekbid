@@ -77,7 +77,7 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
         <div className="flex items-start justify-between">
           <div>
             <h2 className="font-serif font-normal text-xl text-[#3d3a45]">Invite to Bid</h2>
-            <p className="text-[11px] text-[#6f6a7d] mt-0.5">
+            <p className="text-[11px] text-[#46424e] mt-0.5">
               Invite <span className="text-[#4b3f8f]">{freelancerName}</span> to one of your open jobs
             </p>
           </div>
@@ -85,14 +85,14 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
             onClick={handleClose}
             className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
           >
-            <X className="h-4 w-4 text-[#6f6a7d]" />
+            <X className="h-4 w-4 text-[#46424e]" />
           </button>
         </div>
 
         {myOpenJobs.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-[#6f6a7d]">No open jobs available.</p>
-            <p className="text-xs text-[#6f6a7d] mt-1 opacity-70">Post a job first, then invite freelancers to bid.</p>
+            <p className="text-sm text-[#46424e]">No open jobs available.</p>
+            <p className="text-xs text-[#46424e] mt-1 opacity-70">Post a job first, then invite freelancers to bid.</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
@@ -112,7 +112,7 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
-                           style={{ borderColor: isSelected ? "#4b3f8f" : "#6f6a7d" }}>
+                           style={{ borderColor: isSelected ? "#4b3f8f" : "#46424e" }}>
                         {isSelected && <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#4b3f8f" }} />}
                       </div>
                       <div className="min-w-0">

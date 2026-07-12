@@ -35,15 +35,15 @@ export default function Stats() {
   const slot3 = useSlotDigits(STATS[3].value, 1400, statsSection.inView);
 
   return (
-    <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(75,63,143,0.22)] relative overflow-hidden">
+    <section ref={statsSection.ref} className="py-24 sm:py-32 border-t border-[rgba(91,33,182,0.22)] relative overflow-hidden">
       <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#4b3f8f]/[0.04] rounded-full blur-[100px] pointer-events-none animate-breathe" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#5b21b6]/[0.04] rounded-full blur-[100px] pointer-events-none animate-breathe" />
       <div className="mx-auto max-w-6xl px-5 relative z-10">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12">
           {STATS.map((s, i) => (
             <div key={s.label} className="text-center group">
-              <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-[#4b3f8f] to-transparent mx-auto mb-4 opacity-60" />
-              <p className="text-5xl sm:text-6xl font-serif font-normal text-[#4b3f8f] tabular-nums group-hover:scale-105 transition-transform duration-300">
+              <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-[#5b21b6] to-transparent mx-auto mb-4 opacity-60" />
+              <p className="text-5xl sm:text-6xl font-serif font-normal text-[#5b21b6] tabular-nums group-hover:scale-105 transition-transform duration-300">
                 {s.prefix}
                 {i === 0 && <SlotNumber digits={slot0} />}
                 {i === 1 && <StatFallbackCount value={STATS[1].value} enabled={statsSection.inView} />}
@@ -51,7 +51,7 @@ export default function Stats() {
                 {i === 3 && <SlotNumber digits={slot3} />}
                 {s.suffix}
               </p>
-              <p className="text-sm font-sans text-[#6f6a7d] mt-2 uppercase tracking-[0.08em]">{s.label}</p>
+              <p className="text-sm font-sans text-[#46424e] mt-2 uppercase tracking-[0.08em]">{s.label}</p>
             </div>
           ))}
         </div>

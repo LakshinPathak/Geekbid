@@ -24,19 +24,19 @@ export default function Nav() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-[rgba(75,63,143,0.22)] bg-[#ffffff]">
+    <nav className="sticky top-0 z-50 w-full border-b border-[rgba(91,33,182,0.22)] bg-[#ffffff]">
       <ScrollProgress />
       <div className="flex h-14 items-center justify-between px-8 max-w-[1400px] mx-auto">
         <div className="flex items-center gap-2.5">
           <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans" />
         </div>
-        <div className="hidden md:flex items-center gap-6 landing-label text-[#6f6a7d]">
+        <div className="hidden md:flex items-center gap-6 landing-label text-[#46424e]">
           {NAV_LINKS.map((link) => (
             <a
               key={link.id}
               href={`#${link.id}`}
               onClick={(e) => handleNavClick(e, link.id)}
-              className={`hover:text-[#4b3f8f] transition-colors duration-200 ${activeId === link.id ? "landing-nav-link-active" : ""}`}
+              className={`hover:text-[#5b21b6] transition-colors duration-200 ${activeId === link.id ? "landing-nav-link-active" : ""}`}
             >
               {link.label}
             </a>
@@ -44,7 +44,7 @@ export default function Nav() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <button className="hidden sm:block landing-label text-[#6f6a7d] hover:text-[#4b3f8f] transition-colors">Sign In</button>
+            <button className="hidden sm:block landing-label text-[#46424e] hover:text-[#5b21b6] transition-colors">Sign In</button>
           </Link>
           <Link href="/login?tab=register&role=client">
             <button className="flex items-center gap-2 btn-primary landing-label px-4 py-2 rounded-full">

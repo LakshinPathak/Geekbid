@@ -312,11 +312,11 @@ export default function FreelancerFeed() {
  {firstName && (
  <p className="text-[#4b3f8f] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
  )}
- <p className="text-[#6f6a7d] text-sm">
+ <p className="text-[#46424e] text-sm">
  {kpis.matchedJobs} matches · {kpis.bidsUsed}/{kpis.bidLimit} bids used · {kpis.winRate}% win rate
  </p>
  {lastRefreshed && (
- <p className="text-[#6f6a7d]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <p className="text-[#46424e]/60 text-[10px] flex items-center gap-1.5 mt-1">
  <span className="h-1.5 w-1.5 rounded-full bg-[#4d7245] animate-pulse inline-block" />
  Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>
@@ -370,7 +370,7 @@ export default function FreelancerFeed() {
  <h2 className="text-base font-semibold text-[#3d3a45] uppercase tracking-wider">
  All Open Jobs
  </h2>
- <span className="text-[11px] text-[#6f6a7d] font-medium">{filteredJobs.length} jobs</span>
+ <span className="text-[11px] text-[#46424e] font-medium">{filteredJobs.length} jobs</span>
  </div>
 
  {/* ── Filter Toolbar ────────────────────────────────────── */}
@@ -381,7 +381,7 @@ export default function FreelancerFeed() {
 
  {/* Search */}
  <div className="relative flex-1 min-w-0">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6f6a7d]" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#46424e]" />
  <input
  ref={searchInputRef}
  type="text"
@@ -392,10 +392,10 @@ export default function FreelancerFeed() {
  />
  {search ? (
  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
- <X className="h-3 w-3 text-[#6f6a7d]" />
+ <X className="h-3 w-3 text-[#46424e]" />
  </button>
  ) : (
- <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#6f6a7d]/60 border border-[rgba(75,63,143,0.15)] rounded px-1.5 py-0.5 pointer-events-none">
+ <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#46424e]/60 border border-[rgba(75,63,143,0.15)] rounded px-1.5 py-0.5 pointer-events-none">
  ⌘K
  </kbd>
  )}
@@ -409,14 +409,14 @@ export default function FreelancerFeed() {
  <select
  value={filterCategory}
  onChange={e => setFilterCategory(e.target.value)}
- className="h-9 pl-3 pr-7 text-xs font-medium rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
+ className="h-9 pl-3 pr-7 text-xs font-medium rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#46424e] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="all">All Categories</option>
  {JOB_CATEGORIES.map(c => (
  <option key={c.value} value={c.value}>{c.label}</option>
  ))}
  </select>
- <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#6f6a7d]" />
+ <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#46424e]" />
  </div>
 
  {/* Divider */}
@@ -429,7 +429,7 @@ export default function FreelancerFeed() {
  className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 transition-all ${
  sortBy !== "best_match"
  ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
- : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#46424e] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
  {FREELANCER_SORTS.find(s => s.value === sortBy)?.label ?? "Sort"}
@@ -441,7 +441,7 @@ export default function FreelancerFeed() {
  <button
  key={s.value}
  onClick={() => { setSortBy(s.value); setShowSortMenu(false); }}
- className={`w-full text-left px-4 py-2 text-xs hover:bg-[#f4f2ee] transition-colors ${sortBy === s.value ? "text-[#4b3f8f] font-semibold" : "text-[#6f6a7d]"}`}
+ className={`w-full text-left px-4 py-2 text-xs hover:bg-[#f4f2ee] transition-colors ${sortBy === s.value ? "text-[#4b3f8f] font-semibold" : "text-[#46424e]"}`}
  >
  {s.label}
  </button>
@@ -457,7 +457,7 @@ export default function FreelancerFeed() {
  className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 transition-all ${
  filterSkills.length > 0
  ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
- : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#46424e] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
  Skills {filterSkills.length > 0 && <span className="feed-badge-pop bg-[#4b3f8f] text-[#ffffff] rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">{filterSkills.length}</span>}
@@ -491,7 +491,7 @@ export default function FreelancerFeed() {
  className={`h-9 px-3 text-xs font-semibold rounded-2xl border flex items-center gap-1.5 shrink-0 transition-all ${
  hasAdvancedFilters
  ? "border-[rgba(75,63,143,0.35)] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"
- : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#6f6a7d] hover:border-[rgba(75,63,143,0.35)]/50"
+ : "border-[rgba(75,63,143,0.22)] bg-transparent text-[#46424e] hover:border-[rgba(75,63,143,0.35)]/50"
  }`}
  >
  Filters {hasAdvancedFilters && <span className="feed-badge-pop h-1.5 w-1.5 rounded-full bg-[#4b3f8f]" />}
@@ -502,12 +502,12 @@ export default function FreelancerFeed() {
  {/* Advanced drawer */}
  <div className={`feed-drawer ${showAdvanced ? "open" : ""}`}>
  <div className="border-t border-[rgba(75,63,143,0.22)]/50 px-4 py-3 flex flex-wrap items-center gap-2">
- <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider mr-1">Advanced:</span>
+ <span className="text-[11px] text-[#46424e] font-medium uppercase tracking-wider mr-1">Advanced:</span>
 
  <select
  value={filterBudget}
  onChange={e => setFilterBudget(e.target.value as BudgetFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#46424e] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">All Budgets</option>
  <option value="0-500">Under $500</option>
@@ -519,7 +519,7 @@ export default function FreelancerFeed() {
  <select
  value={filterCompetition}
  onChange={e => setFilterCompetition(e.target.value as CompetitionFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#46424e] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">All Competition</option>
  <option value="low">Low (&lt;3 bids)</option>
@@ -530,7 +530,7 @@ export default function FreelancerFeed() {
  <select
  value={filterHourlyRate}
  onChange={e => setFilterHourlyRate(e.target.value as HourlyFilter)}
- className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#6f6a7d] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
+ className="h-8 pl-3 pr-6 text-xs font-medium rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] text-[#46424e] outline-none appearance-none cursor-pointer hover:border-[rgba(75,63,143,0.35)]/50 transition-colors"
  >
  <option value="">Any $/hr</option>
  <option value="30">$30+/hr</option>

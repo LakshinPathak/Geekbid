@@ -51,7 +51,7 @@ export default function FreelancerJobCard({
  ? "bg-[#4d7245]/12 text-[#4d7245] border-[rgba(75,63,143,0.22)]"
  : matchScore >= 50
  ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border-[rgba(75,63,143,0.22)]"
- : "bg-[#f4f2ee] text-[#6f6a7d] border-[rgba(75,63,143,0.15)]";
+ : "bg-[#f4f2ee] text-[#46424e] border-[rgba(75,63,143,0.15)]";
 
  // Effective hourly
  const elapsedHrs = (now.getTime() - new Date(job.postedAt).getTime()) / 3600000;
@@ -100,12 +100,12 @@ export default function FreelancerJobCard({
  </span>
  )}
  {hasMyBid && (!myBidRank || myBidRank === 0) && (
- <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">
+ <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]">
  Bid Placed
  </span>
  )}
  </div>
- <ChevronRight className="h-4 w-4 text-[#6f6a7d] group-hover:text-[#4b3f8f] transition-colors shrink-0 mt-0.5" />
+ <ChevronRight className="h-4 w-4 text-[#46424e] group-hover:text-[#4b3f8f] transition-colors shrink-0 mt-0.5" />
  </div>
 
  <h3 className="font-heading text-[15px] font-normal text-[#3d3a45] leading-snug group-hover:text-[#4b3f8f] transition-colors line-clamp-2">
@@ -120,7 +120,7 @@ export default function FreelancerJobCard({
  </span>
  ))}
  {missingSkills.slice(0, 2).map(s => (
- <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">
+ <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]">
  ✗ {s}
  </span>
  ))}
@@ -131,13 +131,13 @@ export default function FreelancerJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider">Current Price</span>
+ <span className="text-[11px] text-[#46424e] font-medium uppercase tracking-wider">Current Price</span>
  <p className="font-heading text-2xl font-normal text-[#3d3a45]">{formatMoney(current)}</p>
  </div>
  {hourlyRate && (
  <div className="text-right">
- <span className="text-[11px] text-[#6f6a7d] font-medium uppercase tracking-wider">Effective/hr</span>
- <p className="font-heading text-lg font-normal text-[#6f6a7d]">${hourlyRate}/hr</p>
+ <span className="text-[11px] text-[#46424e] font-medium uppercase tracking-wider">Effective/hr</span>
+ <p className="font-heading text-lg font-normal text-[#46424e]">${hourlyRate}/hr</p>
  </div>
  )}
  </div>
@@ -145,8 +145,8 @@ export default function FreelancerJobCard({
  {/* Price trajectory */}
  <div className="flex items-center gap-1.5 text-xs mb-2">
  <span className={trajectory.color}>{trajectory.icon}</span>
- <span className="text-[#6f6a7d] font-medium">{trajectory.label}</span>
- <span className="text-[#6f6a7d]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
+ <span className="text-[#46424e] font-medium">{trajectory.label}</span>
+ <span className="text-[#46424e]">· {formatMoney(job.decayRatePerHour)}/hr decay</span>
  </div>
 
  {/* Decay bar */}
@@ -157,7 +157,7 @@ export default function FreelancerJobCard({
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6f6a7d] font-medium">
+ <div className="flex justify-between text-[10px] text-[#46424e] font-medium">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  {hoursLeft > 0 && <span className="text-[#4b3f8f] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} to floor</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
@@ -168,12 +168,12 @@ export default function FreelancerJobCard({
  {/* ── Client info ─────────────────────────────────────────────────── */}
  {clientName && (
  <div className="flex items-center gap-2">
- <User className="h-3 w-3 text-[#6f6a7d] shrink-0" />
- <span className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
+ <User className="h-3 w-3 text-[#46424e] shrink-0" />
+ <span className="text-[10px] text-[#46424e] uppercase tracking-wider font-semibold shrink-0">Posted by</span>
  <div className="w-5 h-5 rounded-full bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] flex items-center justify-center text-[9px] font-bold shrink-0">
  {clientName[0]}
  </div>
- <span className="text-xs text-[#6f6a7d] truncate">{clientName}</span>
+ <span className="text-xs text-[#46424e] truncate">{clientName}</span>
  {clientRating && (
  <span className="text-[11px] text-[#4b3f8f] font-semibold shrink-0">⭐ {clientRating.toFixed(1)}{clientReviewCount ? ` (${clientReviewCount})` : ""}</span>
  )}
@@ -183,18 +183,18 @@ export default function FreelancerJobCard({
  {/* ── Footer: stats + CTA ─────────────────────────────────────────── */}
  <div className="mt-auto pt-3 border-t border-[rgba(75,63,143,0.15)]">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-3 text-[11px] text-[#6f6a7d] font-medium">
+ <div className="flex items-center gap-3 text-[11px] text-[#46424e] font-medium">
  {job.estimatedHours && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#6f6a7d]" />{job.estimatedHours}h
+ <Clock className="h-3 w-3 text-[#46424e]" />{job.estimatedHours}h
  </span>
  )}
  <span className="flex items-center gap-1">
- <Users className="h-3 w-3 text-[#6f6a7d]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
+ <Users className="h-3 w-3 text-[#46424e]" />{bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
  {hoursLeft > 0 && (
  <span className="flex items-center gap-1">
- <Clock className="h-3 w-3 text-[#6f6a7d]" />{formatHoursToFloor(hoursLeft)} left
+ <Clock className="h-3 w-3 text-[#46424e]" />{formatHoursToFloor(hoursLeft)} left
  </span>
  )}
  </div>

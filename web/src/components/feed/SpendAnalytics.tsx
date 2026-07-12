@@ -49,7 +49,7 @@ export default function SpendAnalytics({
  raw: avgBidPrice,
  format: formatMoney,
  icon: TrendingDown,
- color: "text-[#6f6a7d]",
+ color: "text-[#46424e]",
  bg: "bg-[#f4f2ee]",
  border: "border-[rgba(75,63,143,0.15)]",
  show: avgBidPrice > 0,
@@ -91,7 +91,7 @@ export default function SpendAnalytics({
  <s.icon className={`h-4 w-4 ${s.color}`} />
  </div>
  <div className="min-w-0 relative">
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider font-semibold whitespace-nowrap">{s.label}</p>
  {s.show ? (
  <p className={`font-heading text-base font-normal ${s.color} leading-tight`}>
  <AnimatedCounter value={s.raw} format={s.format} />
@@ -105,13 +105,13 @@ export default function SpendAnalytics({
  </div>
 
  <div className="glass-panel feed-glass-card rounded-2xl p-4 border border-[rgba(75,63,143,0.22)]">
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold mb-3">Monthly Spend</p>
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider font-semibold mb-3">Monthly Spend</p>
  <div className="flex items-end gap-2 h-28">
  {monthlySpend.map((d) => {
  const pct = maxChart > 0 ? (d.value / maxChart) * 100 : 0;
  return (
  <div key={d.key} className="flex-1 flex flex-col items-center gap-1.5">
- <p className="text-[9px] text-[#6f6a7d] font-medium whitespace-nowrap">
+ <p className="text-[9px] text-[#46424e] font-medium whitespace-nowrap">
  {d.value > 0 ? formatMoney(d.value) : ""}
  </p>
  <div className="w-full flex justify-center" style={{ height: "80px" }}>
@@ -120,7 +120,7 @@ export default function SpendAnalytics({
  style={{ height: d.value > 0 ? `${Math.max(pct, 4)}%` : "6px" }}
  />
  </div>
- <p className="text-[10px] text-[#6f6a7d] font-medium">{d.month}</p>
+ <p className="text-[10px] text-[#46424e] font-medium">{d.month}</p>
  </div>
  );
  })}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
@@ -23,6 +23,16 @@ const jakarta = Plus_Jakarta_Sans({
  weight: ["400", "500", "600", "700"],
 });
 
+// Landing-page-only display face — additive CSS var, never mapped into the
+// global --font-sans/--font-serif tokens, so no non-landing page is affected.
+// Consumed exclusively by the `.landing-*` heading classes in globals.css.
+const poppins = Poppins({
+ subsets: ["latin"],
+ variable: "--font-landing-display",
+ display: "swap",
+ weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
  title: "GeekBid — Reverse Auction Marketplace for Freelance Talent",
  description:
@@ -44,7 +54,7 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`${plexMono.variable} ${jakarta.variable}`}
+ className={`${plexMono.variable} ${jakarta.variable} ${poppins.variable}`}
  style={{ background: '#fbfaf7' }}
  suppressHydrationWarning
  >

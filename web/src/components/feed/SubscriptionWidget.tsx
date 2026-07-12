@@ -11,7 +11,7 @@ function UsageBar({ label, used, limit }: { label: string; used: number; limit: 
   const pct = isUnlimited ? 0 : Math.min(100, limit > 0 ? (used / limit) * 100 : 100);
   return (
     <div className="min-w-[110px]">
-      <div className="flex items-center justify-between text-[10px] text-[#6f6a7d] mb-1">
+      <div className="flex items-center justify-between text-[10px] text-[#46424e] mb-1">
         <span>{label}</span>
         <span>{isUnlimited ? `${used} used` : `${used}/${limit}`}</span>
       </div>
@@ -42,11 +42,11 @@ export default function SubscriptionWidget() {
     <div className="glass-panel-sm rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
       <div className="flex items-center gap-3 shrink-0">
         <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${tier === "free" ? "bg-[#f4f2ee]" : "bg-[#4b3f8f]/12"}`}>
-          <Icon className={`h-4 w-4 ${tier === "free" ? "text-[#6f6a7d]" : "text-[#4b3f8f]"}`} />
+          <Icon className={`h-4 w-4 ${tier === "free" ? "text-[#46424e]" : "text-[#4b3f8f]"}`} />
         </div>
         <div>
           <p className="text-sm font-semibold text-[#3d3a45]">{config.name} plan</p>
-          <p className="text-[11px] text-[#6f6a7d]">
+          <p className="text-[11px] text-[#46424e]">
             ${config.price}{config.price > 0 ? "/mo" : ""} · {config.platformFeePercent}% platform fee
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function SubscriptionWidget() {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <Link href="/pricing" className="text-[11px] text-[#6f6a7d] hover:text-[#3d3a45] transition-colors whitespace-nowrap">
+        <Link href="/pricing" className="text-[11px] text-[#46424e] hover:text-[#3d3a45] transition-colors whitespace-nowrap">
           Manage subscription
         </Link>
         {nextTier && (

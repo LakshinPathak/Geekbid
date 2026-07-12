@@ -63,61 +63,61 @@ export default function PriceDecayDemo() {
 
       <div className="card animate-card-border-glow relative">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(75,63,143,0.22)]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[rgba(91,33,182,0.22)]">
           <div>
-            <p className="landing-label text-[#6f6a7d]">Live Price Decay</p>
-            <p className="text-xs text-[#6f6a7d] mt-0.5 font-sans">AI Chatbot Development</p>
+            <p className="landing-label text-[#46424e]">Live Price Decay</p>
+            <p className="text-xs text-[#46424e] mt-1 font-sans">AI Chatbot Development</p>
           </div>
-          <span className="landing-label px-2 py-1 rounded-full bg-[#4b3f8f] text-[#ffffff] animate-live-breathe">LIVE</span>
+          <span className="landing-label px-2.5 py-1 rounded-full bg-[#5b21b6] text-[#ffffff] animate-live-breathe">LIVE</span>
         </div>
 
         {/* Price */}
-        <div className="px-4 py-4 relative">
+        <div className="px-5 sm:px-6 py-5 sm:py-6 relative">
           {/* Sparkle particles */}
           {sparks.map((s) => (
             <div
               key={s.id}
               className="absolute animate-spark pointer-events-none"
-              style={{ left: `calc(40% + ${s.x}px)`, bottom: "65%", width: 3, height: 3, borderRadius: "50%", background: "#4b3f8f", zIndex: 20 }}
+              style={{ left: `calc(40% + ${s.x}px)`, bottom: "65%", width: 3, height: 3, borderRadius: "50%", background: "#5b21b6", zIndex: 20 }}
             />
           ))}
-          <div className="flex items-baseline gap-2 mb-3">
-            <span key={flashCount} className="text-4xl sm:text-5xl landing-num tabular-nums animate-price-tick" style={{ display: "inline-block" }}>
+          <div className="flex items-baseline gap-2 mb-4">
+            <span key={flashCount} className="text-5xl sm:text-6xl landing-num tabular-nums animate-price-tick" style={{ display: "inline-block" }}>
               ${price.toLocaleString()}
             </span>
-            <span className="text-sm text-[#4b3f8f] font-sans">↘ -${DECAY}/hr</span>
+            <span className="text-sm text-[#5b21b6] font-sans">↘ -${DECAY}/hr</span>
           </div>
 
           {/* Progress bar: flat 2px track per Royal spec */}
-          <div className="h-0.5 bg-[#f0edfa] mb-1.5">
+          <div className="h-0.5 bg-[#f2ecfc] mb-2">
             <div
               className="h-0.5 transition-all duration-150 ease-linear progress-shimmer"
               style={{ width: `${100 - pct}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] font-sans text-[#6f6a7d]">
+          <div className="flex justify-between text-[10px] font-sans text-[#46424e]">
             <span>Floor: ${MIN.toLocaleString()}</span>
             <span>Start: $2,400</span>
           </div>
 
           {/* Mini stat cards */}
-          <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="grid grid-cols-3 gap-2.5 mt-4">
             {[
               { label: "Bids", value: "7" },
               { label: "Watching", value: "23" },
               { label: "Left", value: `${Math.max(64 - elapsed, 0)}h` },
             ].map((s) => (
-              <div key={s.label} className="rounded-xl border border-[rgba(75,63,143,0.22)] py-2 text-center bg-[#ffffff]">
-                <p className="text-sm landing-num text-[#3d3a45]">{s.value}</p>
-                <p className="landing-label text-[#6f6a7d] mt-0.5">{s.label}</p>
+              <div key={s.label} className="rounded-xl border border-[rgba(91,33,182,0.22)] py-3 text-center bg-[#ffffff]">
+                <p className="text-base landing-num text-[#17171f]">{s.value}</p>
+                <p className="landing-label text-[#46424e] mt-1">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Accept button */}
-        <div className="px-4 pb-4 border-t border-[rgba(75,63,143,0.22)] pt-3">
-          <button className="btn-primary w-full justify-center landing-label py-2.5 rounded-full">
+        <div className="px-5 sm:px-6 pb-5 sm:pb-6 border-t border-[rgba(91,33,182,0.22)] pt-4">
+          <button className="btn-primary w-full justify-center landing-label py-3 rounded-full">
             Accept at ${price.toLocaleString()}
           </button>
         </div>

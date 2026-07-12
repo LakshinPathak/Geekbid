@@ -52,7 +52,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  }`}>
  {/* Rank */}
  <span className={`w-6 h-6 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ${
- isTop ? "bg-[#4b3f8f] text-[#fbfaf7]" : "bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]"
+ isTop ? "bg-[#4b3f8f] text-[#fbfaf7]" : "bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.22)]"
  }`}>
  {rank}
  </span>
@@ -78,7 +78,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  )}
  </p>
  <div className="flex items-center gap-2 mt-0.5 truncate">
- <span className="text-[10px] text-[#6f6a7d]">GS {user?.geekScore ?? 0}</span>
+ <span className="text-[10px] text-[#46424e]">GS {user?.geekScore ?? 0}</span>
  {(user?.averageRating ?? 0) > 0 && (
  <span className="flex items-center gap-0.5 text-[10px] text-[#4b3f8f]">
  <Star className="h-2.5 w-2.5" />
@@ -91,7 +91,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  {/* Bid message excerpt */}
  {bid.message && (
  <div className="hidden sm:block max-w-[120px] min-w-0">
- <p className="text-[10px] text-[#6f6a7d] italic line-clamp-1">
+ <p className="text-[10px] text-[#46424e] italic line-clamp-1">
  &ldquo;{bid.message}&rdquo;
  </p>
  </div>
@@ -103,7 +103,7 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
  {formatMoney(bid.bidPrice)}
  </p>
  {bid.createdAt && (
- <p className="text-[9px] text-[#6f6a7d]">
+ <p className="text-[9px] text-[#46424e]">
  {new Date(bid.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
  </p>
  )}
@@ -174,7 +174,7 @@ function MyJobCard({
  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${demand.cls}`}>
  {demand.label}
  </span>
- <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
+ <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.22)]">
  My Job
  </span>
  </div>
@@ -187,10 +187,10 @@ function MyJobCard({
  {/* Skills */}
  <div className="flex flex-wrap gap-1 mt-2">
  {job.skillsRequired.slice(0, 4).map(s => (
- <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">{s}</span>
+ <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.22)]">{s}</span>
  ))}
  {job.skillsRequired.length > 4 && (
- <span className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)]">
+ <span className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.22)]">
  +{job.skillsRequired.length - 4}
  </span>
  )}
@@ -201,12 +201,12 @@ function MyJobCard({
  <div>
  <div className="flex items-baseline justify-between mb-2">
  <div>
- <span className="text-[11px] text-[#6f6a7d] uppercase tracking-wider">Current Price</span>
+ <span className="text-[11px] text-[#46424e] uppercase tracking-wider">Current Price</span>
  <p className="font-heading text-2xl text-[#3d3a45]">{formatMoney(current)}</p>
  </div>
  {savings > 0 && (
  <div className="text-right">
- <span className="text-[11px] text-[#6f6a7d] uppercase tracking-wider">Saved</span>
+ <span className="text-[11px] text-[#46424e] uppercase tracking-wider">Saved</span>
  <p className="font-heading text-lg text-[#4d7245]">-{formatMoney(savings)}</p>
  </div>
  )}
@@ -220,7 +220,7 @@ function MyJobCard({
  style={{ width: `${decayPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6f6a7d]">
+ <div className="flex justify-between text-[10px] text-[#46424e]">
  <span>Floor {formatMoney(job.minimumPrice)}</span>
  {hoursLeft > 0 && <span className="text-[#4b3f8f] font-semibold">⏱ {formatHoursToFloor(hoursLeft)} left</span>}
  <span>Start {formatMoney(job.startingPrice)}</span>
@@ -230,7 +230,7 @@ function MyJobCard({
 
  {/* Footer stats */}
  <div className="flex items-center justify-between pt-3 border-t border-[rgba(75,63,143,0.22)]">
- <div className="flex items-center gap-3 text-[11px] text-[#6f6a7d]">
+ <div className="flex items-center gap-3 text-[11px] text-[#46424e]">
  <span className="flex items-center gap-1">
  <Users className="h-3 w-3" />
  {bidCount} bid{bidCount !== 1 ? "s" : ""}
@@ -258,7 +258,7 @@ function MyJobCard({
  Accept Best
  </button>
  ) : (
- <span className="text-[11px] text-[#6f6a7d]/60 italic">Waiting for bids…</span>
+ <span className="text-[11px] text-[#46424e]/60 italic">Waiting for bids…</span>
  )}
  </div>
  </div>
@@ -270,16 +270,16 @@ function MyJobCard({
  {bidCount > 0 ? (
  <button
  onClick={() => setBidsOpen(o => !o)}
- className="w-full flex items-center justify-between px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] hover:bg-[#f4f2ee] transition-colors text-xs font-semibold text-[#6f6a7d]"
+ className="w-full flex items-center justify-between px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] hover:bg-[#f4f2ee] transition-colors text-xs font-semibold text-[#46424e]"
  >
  <span className="flex items-center gap-1.5">
  <Zap className="h-3.5 w-3.5 text-[#4b3f8f]" />
  {bidsOpen ? "Hide" : "View"} {bidCount} bid{bidCount !== 1 ? "s" : ""}
  </span>
- <ChevronDown className={`h-4 w-4 text-[#6f6a7d] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#46424e] transition-transform ${bidsOpen ? "rotate-180" : ""}`} />
  </button>
  ) : (
- <div className="w-full flex items-center gap-1.5 px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] text-xs font-medium text-[#6f6a7d]/60">
+ <div className="w-full flex items-center gap-1.5 px-5 py-2.5 border-t border-[rgba(75,63,143,0.15)] bg-[#ffffff] text-xs font-medium text-[#46424e]/60">
  <AlertCircle className="h-3.5 w-3.5" />
  No bids yet — consider lowering the price or broadening required skills
  </div>
@@ -288,7 +288,7 @@ function MyJobCard({
  {/* ── Expanded bids feed ─────────────────────────────────── */}
  {bidsOpen && (
  <div className="border-t border-[rgba(75,63,143,0.12)] bg-[#ffffff]/50 px-4 py-4 space-y-2">
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold mb-3">
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider font-semibold mb-3">
  Active Bids — sorted by lowest price
  </p>
  {jobBids.slice(0, 8).map((bid, i) => {
@@ -298,7 +298,7 @@ function MyJobCard({
  );
  })}
  {jobBids.length > 8 && (
- <p className="text-[10px] text-[#6f6a7d] text-center pt-1">
+ <p className="text-[10px] text-[#46424e] text-center pt-1">
  +{jobBids.length - 8} more bids — <Link href={`/jobs/${jobId}`} className="text-[#4b3f8f] hover:underline">view all</Link>
  </p>
  )}
@@ -333,7 +333,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
 
  if (jobs.length === 0) return (
  <div className="space-y-3">
- <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#46424e] flex items-center gap-2">
  <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
  My Posted Jobs
  </h2>
@@ -359,11 +359,11 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  {/* ── Header row ─────────────────────────────────────────── */}
  <div className="flex items-center justify-between">
  <div>
- <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+ <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#46424e] flex items-center gap-2">
  <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
  My Posted Jobs
  </h2>
- <p className="text-[11px] text-[#6f6a7d] mt-0.5 font-sans">
+ <p className="text-[11px] text-[#46424e] mt-0.5 font-sans">
  {jobs.length} active · {totalBids} total bid{totalBids !== 1 ? "s" : ""} received
  </p>
  </div>
@@ -409,7 +409,7 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  className={`relative z-10 px-3 py-1.5 rounded-full text-[11px] font-sans font-semibold transition-colors border ${
  filter === tab.key
  ? "text-[#fbfaf7] border-transparent"
- : "bg-transparent text-[#6f6a7d] border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f]"
+ : "bg-transparent text-[#46424e] border-[rgba(75,63,143,0.22)] hover:border-[#4b3f8f]"
  }`}
  >
  {tab.label}

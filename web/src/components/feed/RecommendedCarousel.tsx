@@ -24,11 +24,11 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#6f6a7d] flex items-center gap-2">
+        <h2 className="text-[11px] font-sans tracking-[0.14em] uppercase text-[#46424e] flex items-center gap-2">
           <span className="w-3 h-px bg-[#4b3f8f] inline-block" />
           Recommended For You
         </h2>
-        <span className="text-[11px] text-[#6f6a7d]">Top {Math.min(jobs.length, 5)} matches</span>
+        <span className="text-[11px] text-[#46424e]">Top {Math.min(jobs.length, 5)} matches</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -76,7 +76,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                       ? "bg-[#4b3f8f] text-[#ffffff]"
                       : isMidMatch
                       ? "bg-[rgba(75,63,143,0.15)] text-[#4b3f8f] border border-[rgba(75,63,143,0.35)]"
-                      : "bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]"
+                      : "bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]"
                   }`}>
                     {matchScore}% Match
                   </span>
@@ -108,8 +108,8 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                 {/* Row 5: trajectory */}
                 <div className="flex items-center gap-1.5 text-[11px] font-sans">
                   <span className={trajectory.color}>{trajectory.icon}</span>
-                  <span className="text-[#6f6a7d]">{trajectory.label}</span>
-                  <span className="text-[#6f6a7d] ml-auto">{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
+                  <span className="text-[#46424e]">{trajectory.label}</span>
+                  <span className="text-[#46424e] ml-auto">{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
                 </div>
 
                 {/* QuickBid */}

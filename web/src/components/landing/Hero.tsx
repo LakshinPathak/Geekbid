@@ -51,7 +51,7 @@ export default function Hero() {
         {PARTICLES.map((p, i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-[#4b3f8f] animate-ember"
+            className="absolute rounded-full bg-[#5b21b6] animate-ember"
             style={{
               left: p.left,
               bottom: "10%",
@@ -67,25 +67,25 @@ export default function Hero() {
       {/* Animated subtle dot-grid background */}
       <div
         className="absolute inset-0 pointer-events-none animate-hero-grid"
-        style={{ backgroundImage: "radial-gradient(circle, rgba(75,63,143,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+        style={{ backgroundImage: "radial-gradient(circle, rgba(91,33,182,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
       />
       {/* Scan-line — subtle CRT sweep */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="hero-scan-line" />
       </div>
       {/* Ambient glows with breathing animation */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#4b3f8f]/[0.06] rounded-full blur-[160px] pointer-events-none animate-breathe" />
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-[#4b3f8f]/[0.04] rounded-full blur-[130px] pointer-events-none animate-breathe" style={{ animationDelay: "2s", animationDuration: "12s" }} />
-      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#9c8fd8]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(75,63,143,0.3)] to-transparent pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#5b21b6]/[0.06] rounded-full blur-[160px] pointer-events-none animate-breathe" />
+      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-[#5b21b6]/[0.04] rounded-full blur-[130px] pointer-events-none animate-breathe" style={{ animationDelay: "2s", animationDuration: "12s" }} />
+      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#7c3aed]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent pointer-events-none" />
 
       <div className="relative w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left: Copy — staggered entrance */}
         <div className="text-center lg:text-left">
           {/* Badge */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0ms" }}>
-            <div className="inline-flex items-center gap-2 landing-eyebrow text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] px-3 py-1.5 rounded-full mb-6 cursor-default">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse inline-block" />
+            <div className="inline-flex items-center gap-2 landing-eyebrow text-[#5b21b6] border border-[rgba(91,33,182,0.22)] px-3 py-1.5 rounded-full mb-6 cursor-default">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#5b21b6] animate-pulse inline-block" />
               Live · Reverse Auction Platform
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#6f6a7d] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
+          <p className="text-lg sm:text-xl text-[#46424e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
             The reverse-auction pricing engine for freelance talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
           </p>
 
@@ -135,7 +135,7 @@ export default function Hero() {
           {/* Trust badges */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-6">
             {TRUST_BADGES.map((b, i) => (
-              <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#6f6a7d] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
+              <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#46424e] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
                 <span>{b.icon}</span>
                 <span>{b.text}</span>
               </div>

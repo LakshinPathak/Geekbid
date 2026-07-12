@@ -32,7 +32,7 @@ function getGeekTier(score: number) {
 }
 function getTierStyle(label: string) {
   switch (label) {
-    case "Newbie":        return { bg: "bg-[#f4f2ee]",    color: "text-[#6f6a7d]", border: "border-[rgba(75,63,143,0.15)]", rawColor: "#6f6a7d" };
+    case "Newbie":        return { bg: "bg-[#f4f2ee]",    color: "text-[#46424e]", border: "border-[rgba(75,63,143,0.15)]", rawColor: "#46424e" };
     case "Script Kiddie": return { bg: "bg-[#4d7245]/12", color: "text-[#4d7245]", border: "border-[#4d7245]/22",           rawColor: "#4d7245" };
     case "Code Monkey":   return { bg: "bg-[#9c8fd8]/12", color: "text-[#9c8fd8]", border: "border-[#9c8fd8]/22",           rawColor: "#9c8fd8" };
     case "Senior Geek":   return { bg: "bg-[#3d3373]/12", color: "text-[#3d3373]", border: "border-[#3d3373]/22",           rawColor: "#3d3373" };
@@ -155,7 +155,7 @@ function FreelancerCard({
           {/* Skill match percentage */}
           {myJobSkills.length > 0 && (freelancer.skills?.length ?? 0) > 0 && (
             <div className="mb-3 space-y-1">
-              <div className="flex justify-between text-[10px] text-[#6f6a7d] font-medium">
+              <div className="flex justify-between text-[10px] text-[#46424e] font-medium">
                 <span>Skill Match</span>
                 <span className="text-[#4d7245] font-semibold">
                   {Math.round((matchedSkills.length / (freelancer.skills?.length ?? 1)) * 100)}%
@@ -179,10 +179,10 @@ function FreelancerCard({
               <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#4d7245]/12 text-[#4d7245] border border-[#4d7245]/22">✓ {s}</span>
             ))}
             {otherSkills.map(s => (
-              <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">{s}</span>
+              <span key={s} className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]">{s}</span>
             ))}
             {extraCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.15)]">+{extraCount} more</span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]">+{extraCount} more</span>
             )}
           </div>
         </div>
@@ -197,13 +197,13 @@ function FreelancerCard({
               </div>
             </div>
             <div>
-              <span className="text-[10px] text-[#6f6a7d] font-medium uppercase tracking-wider block">GeekScore</span>
+              <span className="text-[10px] text-[#46424e] font-medium uppercase tracking-wider block">GeekScore</span>
               <span className="text-[11px] font-semibold" style={{ color: tierStyle.rawColor }}>{tier.label}</span>
             </div>
           </div>
           {avgBid && (
             <div className="text-right">
-              <span className="text-[10px] text-[#6f6a7d] font-medium uppercase tracking-wider">Avg Bid</span>
+              <span className="text-[10px] text-[#46424e] font-medium uppercase tracking-wider">Avg Bid</span>
               <p className="font-heading text-lg font-normal text-[#3d3a45]">{formatMoney(avgBid)}</p>
             </div>
           )}
@@ -213,30 +213,30 @@ function FreelancerCard({
         {(freelancer.hourlyRateMin || freelancer.hourlyRateMax) && (
           <div className="flex items-center gap-1.5 text-xs">
             <Zap className="h-3 w-3 text-[#4b3f8f]" />
-            <span className="text-[#6f6a7d] font-medium">
+            <span className="text-[#46424e] font-medium">
               ${freelancer.hourlyRateMin}–${freelancer.hourlyRateMax}/hr
             </span>
             {myBids.length > 0 && (
-              <span className="text-[#6f6a7d]">· {myBids.length} bid{myBids.length !== 1 ? "s" : ""} placed</span>
+              <span className="text-[#46424e]">· {myBids.length} bid{myBids.length !== 1 ? "s" : ""} placed</span>
             )}
           </div>
         )}
 
         {/* ── Footer ───────────────────────────────────────────────── */}
         <div className="mt-auto pt-3 border-t border-[rgba(75,63,143,0.15)]">
-          <div className="flex items-center gap-3 text-[11px] text-[#6f6a7d] font-medium mb-3">
+          <div className="flex items-center gap-3 text-[11px] text-[#46424e] font-medium mb-3">
             {(freelancer.averageRating ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[#6f6a7d]">
+              <span className="flex items-center gap-1 text-[#46424e]">
                 <Star className="h-3 w-3 text-[#4b3f8f] fill-[#4b3f8f]/20" />
                 {freelancer.averageRating!.toFixed(1)}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <Award className="h-3 w-3 text-[#6f6a7d]" />
+              <Award className="h-3 w-3 text-[#46424e]" />
               {freelancer.totalReviews ?? 0} review{(freelancer.totalReviews ?? 0) !== 1 ? "s" : ""}
             </span>
             <span className="flex items-center gap-1">
-              <Briefcase className="h-3 w-3 text-[#6f6a7d]" />
+              <Briefcase className="h-3 w-3 text-[#46424e]" />
               {myBids.length} bid{myBids.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -359,22 +359,22 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
       {/* ── Header ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xs font-semibold text-[#6f6a7d] uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-[#46424e] uppercase tracking-wider flex items-center gap-2">
             <Users className="h-4 w-4 text-[#4b3f8f]" />
             Talent Pool
           </h2>
-          <p className="text-[11px] text-[#6f6a7d] mt-0.5">
+          <p className="text-[11px] text-[#46424e] mt-0.5">
             {displayFreelancers.length} freelancer{displayFreelancers.length !== 1 ? "s" : ""} available
             {activeSkill !== "all" ? ` · ${activeSkill}` : " · all skills"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="px-3 py-1.5 rounded-full bg-[#f4f2ee] border border-[rgba(75,63,143,0.15)] text-right">
-            <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Freelancers</p>
+            <p className="text-[10px] text-[#46424e] uppercase tracking-wider">Freelancers</p>
             <p className="font-heading text-sm font-normal text-[#3d3a45]">{freelancers.length}</p>
           </div>
           <div className="px-3 py-1.5 rounded-full bg-[#4b3f8f]/12 border border-[rgba(75,63,143,0.22)] text-right">
-            <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Avg GeekScore</p>
+            <p className="text-[10px] text-[#46424e] uppercase tracking-wider">Avg GeekScore</p>
             <p className="font-heading text-sm font-normal text-[#4b3f8f]">{avgGeekScore}</p>
           </div>
         </div>
@@ -387,7 +387,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
           className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border cursor-pointer active:scale-90 feed-chip-bounce ${
             activeSkill === "all"
               ? "bg-[#4b3f8f] text-[#ffffff] border-transparent"
-              : "bg-[#f4f2ee] text-[#6f6a7d] border-[rgba(75,63,143,0.15)] hover:border-[#4b3f8f]"
+              : "bg-[#f4f2ee] text-[#46424e] border-[rgba(75,63,143,0.15)] hover:border-[#4b3f8f]"
           }`}
         >
           All ({freelancers.length})
@@ -404,7 +404,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
                   ? "bg-[#4b3f8f] text-[#ffffff] border-transparent"
                   : isMySkill
                   ? "bg-[#4d7245]/12 text-[#4d7245] border-[#4d7245]/22 hover:border-[#4d7245]"
-                  : "bg-[#f4f2ee] text-[#6f6a7d] border-[rgba(75,63,143,0.15)] hover:border-[#4b3f8f]"
+                  : "bg-[#f4f2ee] text-[#46424e] border-[rgba(75,63,143,0.15)] hover:border-[#4b3f8f]"
               }`}
             >
               {isMySkill ? "✓ " : ""}{skill} ({count})

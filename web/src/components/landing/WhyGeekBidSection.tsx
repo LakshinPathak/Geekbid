@@ -8,7 +8,7 @@ import PricingSection from "./PricingSection";
  *  "here's the offer" case twice. */
 export default function WhyGeekBidSection() {
   return (
-    <section className="relative py-16 sm:py-20 border-t border-[rgba(75,63,143,0.22)] overflow-hidden">
+    <section className="relative py-16 sm:py-20 border-t border-[rgba(91,33,182,0.22)] overflow-hidden">
       <Comparison />
       <div className="mt-14 sm:mt-16">
         <PricingSection />

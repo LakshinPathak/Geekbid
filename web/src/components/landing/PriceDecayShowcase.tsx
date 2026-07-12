@@ -76,53 +76,53 @@ function MarketTerminal() {
   const pct = Math.min(100, Math.max(0, ((START_PRICE - price) / (START_PRICE - FLOOR_PRICE)) * 100));
 
   return (
-    <div className="relative rounded-2xl border border-[rgba(75,63,143,0.28)] bg-[#ffffff]/80 backdrop-blur-sm overflow-hidden">
+    <div className="relative rounded-2xl border border-[rgba(91,33,182,0.28)] bg-[#ffffff]/80 backdrop-blur-sm overflow-hidden">
       {/* Header strip */}
-      <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-[rgba(75,63,143,0.22)]">
+      <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[rgba(91,33,182,0.22)]">
         <div className="flex items-center gap-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#4b3f8f] animate-live-breathe inline-block" />
-          <span className="landing-label text-[#4b3f8f]">Live Market</span>
+          <span className="h-2 w-2 rounded-full bg-[#5b21b6] animate-live-breathe inline-block" />
+          <span className="landing-label text-[#5b21b6] text-[11px]">Live Market</span>
         </div>
-        <span className="text-[11px] text-[#6f6a7d] font-mono-il">GB-AUCTION//01</span>
+        <span className="landing-label text-[#46424e] text-[11px] font-mono-il tracking-normal normal-case">GB-AUCTION//01</span>
       </div>
 
-      <div className="px-5 sm:px-8 py-8 sm:py-10">
-        <p className="text-[11px] uppercase tracking-[0.1em] text-[#6f6a7d] mb-2 font-mono-il">Kubernetes Migration</p>
+      <div className="px-6 sm:px-9 py-9 sm:py-12">
+        <p className="landing-label text-[#46424e] mb-3 font-mono-il">Kubernetes Migration</p>
         <div className="flex items-baseline gap-3 flex-wrap">
           <span
             key={tick}
-            className="font-mono-il text-6xl sm:text-7xl md:text-[5.5rem] leading-none tabular-nums text-[#3d3a45] animate-price-tick"
+            className="font-mono-il text-6xl sm:text-7xl md:text-[5.5rem] leading-none tabular-nums text-[#16a34a] landing-price-tick"
             style={{ letterSpacing: "-0.02em" }}
           >
             ${price.toLocaleString()}
           </span>
-          <span className="text-base sm:text-lg text-[#4b3f8f] font-mono-il">↘ −${DECAY_PER_TICK}/tick</span>
+          <span className="text-base sm:text-lg text-[#5b21b6] font-mono-il">↘ −${DECAY_PER_TICK}/tick</span>
         </div>
 
         {/* Decay bar */}
-        <div className="h-1 bg-[#f0edfa] mt-6 rounded-full overflow-hidden">
-          <div className="h-1 progress-shimmer rounded-full transition-all duration-300 ease-linear" style={{ width: `${100 - pct}%` }} />
+        <div className="h-1.5 bg-[#f2ecfc] mt-8 rounded-full overflow-hidden">
+          <div className="h-1.5 landing-decay-bar-fill rounded-full transition-all duration-300 ease-linear" style={{ width: `${100 - pct}%` }} />
         </div>
-        <div className="flex justify-between text-[11px] font-mono-il text-[#6f6a7d] mt-2">
+        <div className="flex justify-between landing-label text-[#46424e] mt-3 font-mono-il tracking-normal normal-case">
           <span>Floor ${FLOOR_PRICE.toLocaleString()}</span>
           <span>Start ${START_PRICE.toLocaleString()}</span>
         </div>
       </div>
 
       {/* Activity log — terminal order-book feel */}
-      <div className="border-t border-[rgba(75,63,143,0.22)] bg-[#ffffff] px-5 sm:px-8 py-4 min-h-[168px]">
-        <p className="text-[10px] uppercase tracking-[0.12em] text-[#6f6a7d]/70 mb-3 font-mono-il">Activity</p>
-        <div className="flex flex-col gap-2.5">
+      <div className="border-t border-[rgba(91,33,182,0.22)] bg-[#ffffff] px-6 sm:px-9 py-5 sm:py-6 min-h-[180px]">
+        <p className="landing-label text-[#46424e]/70 mb-4 font-mono-il">Activity</p>
+        <div className="flex flex-col gap-3">
           {log.length === 0 && (
-            <p className="text-sm text-[#6f6a7d]/50 font-mono-il">Waiting for the next tick…</p>
+            <p className="text-sm text-[#46424e]/50 font-mono-il">Waiting for the next tick…</p>
           )}
           {log.map((entry, i) => (
             <p
               key={entry.id}
-              className="text-[13px] sm:text-sm text-[#6f6a7d] font-mono-il truncate landing-log-line"
+              className="text-[13px] sm:text-sm text-[#46424e] font-mono-il truncate landing-log-line leading-relaxed"
               style={{ opacity: 1 - i * 0.22 }}
             >
-              <span className="text-[#4b3f8f] mr-2">›</span>{entry.text}
+              <span className="text-[#5b21b6] mr-2">›</span>{entry.text}
             </p>
           ))}
         </div>
@@ -140,10 +140,10 @@ export default function PriceDecayShowcase() {
       ref={section.ref}
       className="relative py-24 sm:py-32 overflow-hidden"
       style={{
-        background: "radial-gradient(ellipse 70% 60% at 25% 15%, rgba(75,63,143,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 85%, rgba(75,63,143,0.09) 0%, transparent 55%), #fbfaf7",
+        background: "radial-gradient(ellipse 70% 60% at 25% 15%, rgba(91,33,182,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 85%, rgba(91,33,182,0.09) 0%, transparent 55%), #fbfaf7",
       }}
     >
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(75,63,143,0.35)] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.35)] to-transparent" />
 
       <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8 grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center">
         {/* Copy */}
@@ -154,10 +154,10 @@ export default function PriceDecayShowcase() {
             transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >
-          <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#3d3a45] text-balance">
+          <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#17171f] text-balance">
             The price is never fixed. It&apos;s falling right now.
           </h2>
-          <p className="landing-subhead text-base sm:text-lg text-[#6f6a7d] mt-5 max-w-md">
+          <p className="landing-subhead text-base sm:text-lg text-[#46424e] mt-5 max-w-md">
             Every job on GeekBid starts high and decays automatically — hour by hour — until a freelancer accepts or the client awards the lowest bid. No haggling. No back-and-forth emails. Just the market finding its real number, live.
           </p>
           <Link href="#how-it-works" className="inline-flex mt-8">

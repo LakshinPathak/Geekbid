@@ -56,7 +56,7 @@ export default function FreelancerStats({
  raw: winRate,
  format: (n: number) => `${Math.round(n)}%`,
  icon: Trophy,
- color: winRate >= 15 ? "text-[#4b3f8f]" : "text-[#6f6a7d]",
+ color: winRate >= 15 ? "text-[#4b3f8f]" : "text-[#46424e]",
  bg: winRate >= 15 ? "bg-[rgba(75,63,143,0.12)]" : "bg-[#f4f2ee]",
  border: "border-[rgba(75,63,143,0.30)]",
  sub: "accepted rate",
@@ -82,7 +82,7 @@ export default function FreelancerStats({
  <div className={`w-8 h-8 rounded-xl ${s.bg} border ${s.border} flex items-center justify-center shrink-0`}>
  <s.icon className={`h-4 w-4 ${s.color}`} />
  </div>
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider font-semibold">{s.label}</p>
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider font-semibold">{s.label}</p>
  </div>
  <p className={`font-heading text-xl font-bold ${s.color} leading-tight relative`}>
  {s.raw !== undefined ? <AnimatedCounter value={s.raw} format={s.format} /> : s.value}
@@ -95,7 +95,7 @@ export default function FreelancerStats({
  />
  </div>
  )}
- <p className="text-[10px] text-[#6f6a7d] relative">{s.sub}</p>
+ <p className="text-[10px] text-[#46424e] relative">{s.sub}</p>
  </div>
  ))}
  </div>

@@ -62,14 +62,14 @@ const TIERS = [
 export default function PricingSection() {
   return (
     <div id="pricing" className="relative px-6 lg:px-8 overflow-hidden scroll-mt-20">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#4b3f8f]/[0.05] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#5b21b6]/[0.05] rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center mb-12">
-          <h2 className="landing-h2 text-3xl sm:text-5xl text-[#3d3a45]">
-            Start free. <span className="text-[#4b3f8f]">Scale when you win.</span>
+          <h2 className="landing-h2 text-3xl sm:text-5xl text-[#17171f]">
+            Start free. <span className="text-[#5b21b6]">Scale when you win.</span>
           </h2>
-          <p className="landing-subhead text-[#6f6a7d] text-base sm:text-lg mt-3 max-w-xl mx-auto">
+          <p className="landing-subhead text-[#46424e] text-base sm:text-lg mt-3 max-w-xl mx-auto">
             Every plan includes the full reverse-auction engine, escrow protection, and AI tools.
             Paid tiers raise your limits and cut your platform fee — from 10% down to 5%.
           </p>
@@ -79,30 +79,30 @@ export default function PricingSection() {
           {TIERS.map((tier) => (
             <div
               key={tier.config.name}
-              className={`relative rounded-2xl p-7 flex flex-col border transition-transform duration-300 hover:-translate-y-1 ${
+              className={`relative rounded-2xl p-8 sm:p-9 flex flex-col border transition-transform duration-300 hover:-translate-y-1 ${
                 tier.highlight
-                  ? "bg-[#ffffff] border-[#4b3f8f]/45 shadow-[0_0_60px_rgba(75,63,143,0.12)]"
-                  : "bg-[#ffffff] border-[rgba(75,63,143,0.16)]"
+                  ? "bg-[#ffffff] border-[#5b21b6]/45 shadow-[0_0_60px_rgba(91,33,182,0.12)]"
+                  : "bg-[#ffffff] border-[rgba(91,33,182,0.16)]"
               }`}
             >
               {tier.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#4b3f8f] text-[#ffffff] landing-label px-3 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#5b21b6] text-[#ffffff] landing-label px-3 py-1 rounded-full">
                   MOST POPULAR
                 </span>
               )}
-              <div className="flex items-center gap-2 mb-3">
-                <tier.icon className={`h-4 w-4 ${tier.highlight ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`} />
-                <h3 className="landing-card-title text-lg text-[#3d3a45]">{tier.config.name}</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <tier.icon className={`h-4 w-4 ${tier.highlight ? "text-[#5b21b6]" : "text-[#46424e]"}`} />
+                <h3 className="landing-card-title text-lg text-[#17171f]">{tier.config.name}</h3>
               </div>
-              <div className="mb-2">
-                <span className="landing-num text-4xl text-[#3d3a45]">${tier.config.price}</span>
-                <span className="text-[#6f6a7d] text-sm ml-1.5">{tier.period}</span>
+              <div className="mb-3">
+                <span className="landing-num text-[2.75rem] text-[#17171f]">${tier.config.price}</span>
+                <span className="text-[#46424e] text-sm ml-1.5">{tier.period}</span>
               </div>
-              <p className="text-[#6f6a7d] text-xs mb-6">{tier.tagline}</p>
-              <ul className="space-y-2.5 mb-8 flex-1">
+              <p className="text-[#46424e] text-xs mb-7">{tier.tagline}</p>
+              <ul className="space-y-3 mb-9 flex-1">
                 {tier.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[13px] text-[#6f6a7d]">
-                    <Check className="h-3.5 w-3.5 text-[#4b3f8f] shrink-0 mt-0.5" />
+                  <li key={f} className="flex items-start gap-2 text-[13px] text-[#46424e]">
+                    <Check className="h-3.5 w-3.5 text-[#5b21b6] shrink-0 mt-0.5" />
                     {f}
                   </li>
                 ))}
@@ -111,8 +111,8 @@ export default function PricingSection() {
                 href={tier.config.price === 0 ? "/login" : "/pricing"}
                 className={`w-full py-3 rounded-full font-semibold text-sm text-center transition-all flex items-center justify-center gap-2 ${
                   tier.highlight
-                    ? "bg-[#4b3f8f] text-[#ffffff] hover:bg-[#3d3373]"
-                    : "border border-[rgba(75,63,143,0.3)] text-[#3d3a45] hover:border-[#4b3f8f] hover:bg-[#4b3f8f]/5"
+                    ? "bg-[#5b21b6] text-[#ffffff] hover:bg-[#7c3aed]"
+                    : "border border-[rgba(91,33,182,0.3)] text-[#17171f] hover:border-[#5b21b6] hover:bg-[#5b21b6]/5"
                 }`}
               >
                 {tier.cta} <ArrowRight className="h-3.5 w-3.5" />
@@ -121,7 +121,7 @@ export default function PricingSection() {
           ))}
         </div>
 
-        <p className="text-center text-[#6f6a7d]/70 text-xs mt-8">
+        <p className="text-center text-[#46424e]/70 text-xs mt-8">
           No featured boosts on Free? Feature any job for a one-off $10. Upgrade, downgrade, or cancel anytime — your data is never deleted.
         </p>
       </div>

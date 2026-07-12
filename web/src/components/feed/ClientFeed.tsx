@@ -199,12 +199,12 @@ export default function ClientFeed() {
  {firstName && (
  <p className="text-[#4b3f8f] text-xs font-medium mb-0.5 animate-fade-in">{greeting}, {firstName}</p>
  )}
- <p className="text-[#6f6a7d] text-sm">
+ <p className="text-[#46424e] text-sm">
  {kpis.openJobs} active job{kpis.openJobs !== 1 ? "s" : ""}
  {kpis.totalSavings > 0 && ` · $${Math.round(kpis.totalSavings).toLocaleString()} saved from decay`}
  </p>
  {lastRefreshed && (
- <p className="text-[#6f6a7d]/60 text-[10px] flex items-center gap-1.5 mt-1">
+ <p className="text-[#46424e]/60 text-[10px] flex items-center gap-1.5 mt-1">
  <span className="h-1.5 w-1.5 rounded-full bg-[#4d7245] animate-pulse inline-block" />
  Last refreshed {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
  </p>

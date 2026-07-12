@@ -17,13 +17,13 @@ const CONSTELLATION_DOTS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[rgba(75,63,143,0.22)] py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
+    <footer className="border-t border-[rgba(91,33,182,0.22)] py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
       {/* Constellation background */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {CONSTELLATION_DOTS.map((d, i) => (
           <span
             key={i}
-            className="landing-constellation-dot absolute h-1 w-1 rounded-full bg-[#4b3f8f]"
+            className="landing-constellation-dot absolute h-1 w-1 rounded-full bg-[#5b21b6]"
             style={{ top: d.top, left: d.left, animationDelay: d.delay }}
           />
         ))}
@@ -36,45 +36,45 @@ export default function Footer() {
             <div className="flex items-center gap-2.5 mb-4">
               <Logo markClassName="h-8 w-8" textClassName="text-base font-bold tracking-[0.03em] font-sans" />
             </div>
-            <p className="text-sm text-[#6f6a7d] leading-relaxed">
+            <p className="text-sm text-[#46424e] leading-relaxed">
               The reverse-auction marketplace for freelance talent.
             </p>
           </div>
 
           {/* Platform */}
           <div>
-            <p className="landing-label text-[#4b3f8f] mb-4">Platform</p>
+            <p className="landing-label text-[#5b21b6] mb-4">Platform</p>
             <div className="flex flex-col gap-2.5">
-              <Link href="/feed" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Browse Jobs</Link>
-              <Link href="/post-job" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Post a Job</Link>
-              <Link href="/login?role=freelancer" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Find Work</Link>
-              <Link href="/pricing" className="text-sm text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">Pricing</Link>
+              <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Browse Jobs</Link>
+              <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Post a Job</Link>
+              <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Find Work</Link>
+              <Link href="/pricing" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Pricing</Link>
             </div>
           </div>
           {/* Company */}
           <div>
-            <p className="landing-label text-[#4b3f8f] mb-4">Company</p>
+            <p className="landing-label text-[#5b21b6] mb-4">Company</p>
             <div className="flex flex-col gap-2.5">
-              <span className="text-sm text-[#6f6a7d]">About Us</span>
-              <span className="text-sm text-[#6f6a7d]">Careers</span>
-              <span className="text-sm text-[#6f6a7d]">Blog</span>
-              <span className="text-sm text-[#6f6a7d]">Contact</span>
+              <span className="text-sm text-[#46424e]">About Us</span>
+              <span className="text-sm text-[#46424e]">Careers</span>
+              <span className="text-sm text-[#46424e]">Blog</span>
+              <span className="text-sm text-[#46424e]">Contact</span>
             </div>
           </div>
           {/* Legal */}
           <div>
-            <p className="landing-label text-[#4b3f8f] mb-4">Legal</p>
+            <p className="landing-label text-[#5b21b6] mb-4">Legal</p>
             <div className="flex flex-col gap-2.5">
-              <span className="text-sm text-[#6f6a7d]">Terms of Service</span>
-              <span className="text-sm text-[#6f6a7d]">Privacy Policy</span>
-              <span className="text-sm text-[#6f6a7d]">Cookie Policy</span>
+              <span className="text-sm text-[#46424e]">Terms of Service</span>
+              <span className="text-sm text-[#46424e]">Privacy Policy</span>
+              <span className="text-sm text-[#46424e]">Cookie Policy</span>
             </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[rgba(75,63,143,0.22)]">
-          <p className="text-xs text-[#6f6a7d]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[rgba(91,33,182,0.22)]">
+          <p className="text-xs text-[#46424e]">&copy; 2026 GeekBid Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

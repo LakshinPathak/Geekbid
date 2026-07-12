@@ -56,7 +56,7 @@ export function getJobHealth(job: Job, now: Date) {
 export function getPriceTrajectory(effectiveRate: number) {
  if (effectiveRate > 20) return { label: "Dropping fast", icon: "⚡", color: "text-[#96543f]" };
  if (effectiveRate > 10) return { label: "Steady decline", icon: "📉", color: "text-[#9c8fd8]" };
- return { label: "Holding steady", icon: "🐢", color: "text-[#6f6a7d]" };
+ return { label: "Holding steady", icon: "🐢", color: "text-[#46424e]" };
 }
 
 // ── Sort Logic ────────────────────────────────────────────────

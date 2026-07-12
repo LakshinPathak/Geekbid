@@ -112,18 +112,18 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <BarChart2 className="h-4 w-4 text-[#4b3f8f]" />
  Market Pricing Intelligence
  </h2>
- <p className="text-[11px] text-[#6f6a7d] mt-0.5">
+ <p className="text-[11px] text-[#46424e] mt-0.5">
  Bid smarter — {mktJobs.length} live jobs across {categoryStats.length} categories
  </p>
  </div>
  {/* Summary pills */}
  <div className="flex items-center gap-2">
  <div className="px-3 py-1.5 rounded-full bg-[#f4f2ee] border border-[rgba(75,63,143,0.22)] text-right">
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Market Avg</p>
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider">Market Avg</p>
  <p className="font-heading text-sm font-normal text-[#3d3a45]">{formatMoney(overallAvg)}</p>
  </div>
  <div className="px-3 py-1.5 rounded-full bg-[rgba(193,77,58,0.1)] border border-[rgba(75,63,143,0.22)] text-right">
- <p className="text-[10px] text-[#6f6a7d] uppercase tracking-wider">Avg Decay</p>
+ <p className="text-[10px] text-[#46424e] uppercase tracking-wider">Avg Decay</p>
  <p className="font-heading text-sm font-normal text-[#96543f]">-{formatMoney(overallDecay)}/hr</p>
  </div>
  </div>
@@ -133,7 +133,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── LEFT: Category breakdown ────────────────── */}
  <div className="space-y-2">
- <p className="text-[11px] text-[#6f6a7d] font-semibold uppercase tracking-wider px-1">
+ <p className="text-[11px] text-[#46424e] font-semibold uppercase tracking-wider px-1">
  By Category
  </p>
 
@@ -155,7 +155,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <div className="flex-1 min-w-0">
  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1.5">
  <span className="text-sm font-semibold text-[#3d3a45]">{cat.label}</span>
- <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#f4f2ee] text-[#6f6a7d] border border-[rgba(75,63,143,0.22)] whitespace-nowrap">
+ <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.22)] whitespace-nowrap">
  {cat.jobCount} job{cat.jobCount !== 1 ? "s" : ""}
  </span>
  <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${comp.bg} ${comp.text2} border border-[rgba(75,63,143,0.22)]`}>
@@ -174,7 +174,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  style={{ width: `${barPct}%` }}
  />
  </div>
- <div className="flex justify-between text-[10px] text-[#6f6a7d] mt-1">
+ <div className="flex justify-between text-[10px] text-[#46424e] mt-1">
  <span>Min {formatMoney(cat.minPrice)}</span>
  <span>Max {formatMoney(cat.maxPrice)}</span>
  </div>
@@ -189,7 +189,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  </p>
  </div>
 
- <ChevronDown className={`h-4 w-4 text-[#6f6a7d] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+ <ChevronDown className={`h-4 w-4 text-[#46424e] transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
  </button>
 
  {/* Expanded: job-level breakdown */}
@@ -198,7 +198,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  {/* Column headers */}
  <div className="grid grid-cols-[1fr_90px_80px_72px] gap-2 pb-1.5 border-b border-[rgba(75,63,143,0.15)] mb-2 min-w-[320px]">
  {["Job", "Price", "Decay/hr", "Bids"].map(h => (
- <span key={h} className="text-[10px] text-[#6f6a7d] font-semibold uppercase last:text-right">
+ <span key={h} className="text-[10px] text-[#46424e] font-semibold uppercase last:text-right">
  {h}
  </span>
  ))}
@@ -215,7 +215,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <span className="text-[11px] text-[#96543f]">
  -{formatMoney(j.decayRatePerHour)}
  </span>
- <span className="text-[11px] text-[#6f6a7d] text-right">
+ <span className="text-[11px] text-[#46424e] text-right">
  {j.bidCount ?? 0}
  </span>
  </div>
@@ -229,7 +229,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
 
  {/* ── RIGHT: Skill demand ─────────────────────── */}
  <div className="space-y-3">
- <p className="text-[11px] text-[#6f6a7d] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
+ <p className="text-[11px] text-[#46424e] font-semibold uppercase tracking-wider px-1 flex items-center gap-1.5">
  <Flame className="h-3.5 w-3.5 text-[#4b3f8f]" />
  Hot Skills by Demand
  </p>
@@ -243,7 +243,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  className="glass-panel feed-glass-card rounded-2xl border border-[rgba(75,63,143,0.22)] px-3 py-2.5"
  >
  <div className="flex items-center gap-2 mb-1.5">
- <span className="text-[10px] font-bold text-[#6f6a7d] w-5 shrink-0">
+ <span className="text-[10px] font-bold text-[#46424e] w-5 shrink-0">
  #{i + 1}
  </span>
  <span className={`flex-1 text-xs font-semibold truncate ${
@@ -251,7 +251,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  }`}>
  {skill.skill}{skill.isMine ? " ✓" : ""}
  </span>
- <span className="text-[10px] text-[#6f6a7d] shrink-0">
+ <span className="text-[10px] text-[#46424e] shrink-0">
  {skill.count} job{skill.count !== 1 ? "s" : ""}
  </span>
  <span className="text-[10px] font-bold text-[#4b3f8f] shrink-0">
@@ -275,7 +275,7 @@ export default function CompetitorAnalysis({ jobs, now, mySkills = [] }: Props) 
  <p className="text-[11px] font-bold text-[#4b3f8f] mb-1.5 flex items-center gap-1.5">
  💡 Pricing Insight
  </p>
- <p className="text-[11px] text-[#6f6a7d] leading-relaxed">
+ <p className="text-[11px] text-[#46424e] leading-relaxed">
  Market avg decay is <strong>{formatMoney(overallDecay)}/hr</strong>. 
  Most competitive category: <strong>{categoryStats[0]?.label ?? "—"}</strong> with{" "}
  <strong>{categoryStats[0]?.avgBids.toFixed(1) ?? "—"} avg bids</strong> per job.

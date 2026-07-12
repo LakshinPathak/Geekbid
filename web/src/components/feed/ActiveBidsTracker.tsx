@@ -23,10 +23,10 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  return (
  <div>
  <div className="flex items-center justify-between mb-5">
- <h2 className="text-xs font-semibold text-[#6f6a7d] uppercase tracking-wider">
+ <h2 className="text-xs font-semibold text-[#46424e] uppercase tracking-wider">
  My Active Bids
  </h2>
- <span className="text-[11px] text-[#6f6a7d] font-medium">{bids.length} pending</span>
+ <span className="text-[11px] text-[#46424e] font-medium">{bids.length} pending</span>
  </div>
 
  <div className="glass-panel feed-glass-card rounded-2xl overflow-hidden divide-y divide-[rgba(75,63,143,0.15)]">
@@ -77,15 +77,15 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  </p>
  <div className="flex items-center gap-2 mt-0.5">
  <span className={`text-[10px] font-semibold ${statusConfig.color}`}>{statusConfig.label}</span>
- <span className="text-[10px] text-[#6f6a7d]">·</span>
+ <span className="text-[10px] text-[#46424e]">·</span>
  <span className={`text-[10px] font-semibold ${
- bid.rank === 1 ? "text-[#4b3f8f]" : bid.rank === 2 ? "text-[#f4f2ee]" : bid.rank === 3 ? "text-[#a08a3c]" : "text-[#6f6a7d] font-medium"
+ bid.rank === 1 ? "text-[#4b3f8f]" : bid.rank === 2 ? "text-[#f4f2ee]" : bid.rank === 3 ? "text-[#a08a3c]" : "text-[#46424e] font-medium"
  }`}>
  {bid.rank === 1 ? "🥇 " : bid.rank === 2 ? "🥈 " : bid.rank === 3 ? "🥉 " : ""}Rank #{bid.rank}
  </span>
  {cooldownMins > 0 && (
  <>
- <span className="text-[10px] text-[#6f6a7d]">·</span>
+ <span className="text-[10px] text-[#46424e]">·</span>
  <span className="flex items-center gap-0.5 text-[10px] text-[#4b3f8f] font-semibold">
  <Clock className="h-2.5 w-2.5" />
  {Math.ceil(cooldownMins)}m cooldown
@@ -99,7 +99,7 @@ export default function ActiveBidsTracker({ bids }: ActiveBidsTrackerProps) {
  <div className="text-right shrink-0">
  <p className="font-heading text-sm font-normal text-[#3d3a45]">{formatMoney(bid.myPrice)}</p>
  {bid.currentPrice !== bid.myPrice && (
- <p className="text-[10px] text-[#6f6a7d] font-medium">mkt {formatMoney(bid.currentPrice)}</p>
+ <p className="text-[10px] text-[#46424e] font-medium">mkt {formatMoney(bid.currentPrice)}</p>
  )}
  </div>
  </Link>
