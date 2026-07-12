@@ -18,7 +18,7 @@ export default function CTA() {
           <span className="w-1.5 h-1.5 rounded-full bg-[#5b21b6] animate-pulse inline-block" />
           Join 2,400+ freelancers on GeekBid
         </div>
-        <h2 className="landing-header-glow landing-display text-4xl sm:text-6xl md:text-7xl text-[#17171f]">
+        <h2 className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl 2xl:text-7xl text-[#17171f]">
           Ready to hire<br /><em className="text-[#5b21b6] not-italic">smarter?</em>
         </h2>
         <p className="landing-subhead text-base sm:text-lg text-[#46424e] mt-6 max-w-lg mx-auto">

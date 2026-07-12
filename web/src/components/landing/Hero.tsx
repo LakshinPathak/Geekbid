@@ -90,7 +90,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <h1 className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-5">
+          <h1 className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl 2xl:text-7xl mb-5">
             <span className="block">
               {HEADLINE_LINE_1.split(" ").map((word, i) => (
                 <span

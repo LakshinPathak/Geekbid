@@ -91,7 +91,7 @@ function MarketTerminal() {
         <div className="flex items-baseline gap-3 flex-wrap">
           <span
             key={tick}
-            className="font-mono-il text-6xl sm:text-7xl md:text-[5.5rem] leading-none tabular-nums text-[#16a34a] landing-price-tick"
+            className="font-mono-il text-5xl sm:text-6xl md:text-7xl 2xl:text-[5.5rem] leading-none tabular-nums text-[#16a34a] landing-price-tick"
             style={{ letterSpacing: "-0.02em" }}
           >
             ${price.toLocaleString()}
