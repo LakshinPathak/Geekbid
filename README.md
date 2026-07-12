@@ -5,7 +5,15 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v18** — A full sitewide visual retheme: "Royal Dark"
+**Current version: v19** — Landing-page-only visual refresh (new display
+font, restyled Live Market widget, dark code-block price-decay formula, a
+violet/near-black color scheme sourced from a provided reference mockup)
+plus contrast and responsive fixes (13" laptop text sizing, mobile footer
+alignment) on the landing and `/feed` pages. Zero shared-class or non-
+landing changes — verified via `/login`/`/admin` before/after screenshots.
+See [What's in v19](#whats-in-v19).
+
+**v18** — A full sitewide visual retheme: "Royal Dark"
 (navy/gold) → "Pastel Indigo" (cream/indigo), color and shape only, zero
 backend/CRUD changes. See [What's in v18](#whats-in-v18).
 
@@ -21,25 +29,26 @@ See [What's in v17](#whats-in-v17).
 ## Table of Contents
 
 1. [How It Works](#how-it-works)
-2. [What's in v18](#whats-in-v18)
-3. [What's in v17](#whats-in-v17)
-4. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
-5. [Project Structure](#project-structure)
-6. [Tech Stack](#tech-stack)
-7. [Core Domain Model](#core-domain-model)
-8. [Features](#features)
-9. [Frontend Page Map](#frontend-page-map)
-10. [API Reference (full)](#api-reference-full)
-11. [Quick Start](#quick-start)
-12. [Docker](#docker)
-13. [Microservice Backend (experimental)](#microservice-backend-experimental)
-14. [Deployment (Vercel)](#deployment-vercel)
-15. [CI/CD Pipeline](#cicd-pipeline)
-16. [Environment Variables](#environment-variables)
-17. [Security](#security)
-18. [Troubleshooting](#troubleshooting)
-19. [Version History](#version-history)
-20. [License](#license)
+2. [What's in v19](#whats-in-v19)
+3. [What's in v18](#whats-in-v18)
+4. [What's in v17](#whats-in-v17)
+5. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
+6. [Project Structure](#project-structure)
+7. [Tech Stack](#tech-stack)
+8. [Core Domain Model](#core-domain-model)
+9. [Features](#features)
+10. [Frontend Page Map](#frontend-page-map)
+11. [API Reference (full)](#api-reference-full)
+12. [Quick Start](#quick-start)
+13. [Docker](#docker)
+14. [Microservice Backend (experimental)](#microservice-backend-experimental)
+15. [Deployment (Vercel)](#deployment-vercel)
+16. [CI/CD Pipeline](#cicd-pipeline)
+17. [Environment Variables](#environment-variables)
+18. [Security](#security)
+19. [Troubleshooting](#troubleshooting)
+20. [Version History](#version-history)
+21. [License](#license)
 
 ---
 
@@ -65,6 +74,56 @@ $400 ─────────────────────────
 ```
 
 ---
+
+## What's in v19
+
+A landing-page-focused visual refresh plus two responsive/polish fixes,
+driven by a user-provided reference mockup and live feedback on the running
+site. Scope was deliberately kept to `web/src/components/landing/*`,
+`web/src/components/feed/*`, and the pre-existing landing-only block in
+`globals.css` (plus one additive font import in `layout.tsx`) — no shared
+component class (`.btn-primary`, `.card`, `.glass-panel`, `.badge-*`,
+`.grid-bg`, `.font-mono-il`, etc.) was redefined. Verified after every
+CSS-touching change with before/after Playwright screenshots of `/login`
+and `/admin`, which render byte-for-byte the same throughout.
+
+**Typography & Live Market widget**: added a landing-only display font
+(Poppins) via its own `--font-landing-display` CSS variable — `--font-sans`/
+`--font-mono` are untouched, so every non-landing page keeps its original
+font. Applied only to the 4 existing `.landing-*` heading classes. Restyled
+the `MarketTerminal` price-decay widget inside `PriceDecayShowcase.tsx`
+(the "Live Market" card): green ticking price, a two-tone purple→green
+gradient decay bar with a shimmer sweep, and clearer header/label
+hierarchy. Replaced the plain-text price-decay formula in `HowItWorks.tsx`
+with a dark syntax-highlighted code block. Bolder, more saturated per-step
+icon colors (previously washed out at 10% opacity) and wider card padding
+on the How It Works steps. More generous pricing-card padding and type
+scale. Fixed the testimonial carousel's hard edge-clipping with wider fade
+masks.
+
+**Color scheme**: swapped the indigo/gold palette for a violet/near-black
+scheme (`#5b21b6` accent, `#7c3aed` hover/highlight, `#17171f` text,
+`#16a34a` success, `#b4791e` warn) sourced from a reference mockup the user
+provided, matching its content/motifs but not its (self-acknowledged)
+rougher spacing. Executed as a scoped hex find-and-replace across every
+file in `web/src/components/landing/` plus the landing-only block in
+`globals.css` — confirmed via grep that zero shared selectors outside that
+block were touched.
+
+**Contrast fix**: the secondary/muted text color read too light on small
+text after the above changes — darkened it twice (`#6f6a7d` → then
+`#46424e`) on both the landing page and the `/feed` dashboard.
+
+**Responsive fixes**:
+- The hero headline, CTA headline, and Live Market ticking price jumped to
+  their largest font-size as soon as the `lg` breakpoint (1024px) hit, with
+  no intermediate step. On a 13" laptop viewport (1280–1440px logical), this
+  wrapped the hero headline onto 4 lines and made the whole page read as
+  oversized/zoomed even at 100% browser zoom. Pushed the largest sizes to
+  the `2xl` breakpoint (1536px+) with a smaller plateau through `lg`/`xl`.
+- The footer's columns were left-aligned on mobile while the copyright bar
+  centered itself — an inconsistent, unintentional-looking layout. Centered
+  the whole footer on mobile, left-aligned again at the `sm:` breakpoint.
 
 ## What's in v18
 
@@ -1308,7 +1367,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v18` | **Latest** — full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile; a landing-page typography unification (`--font-serif` resolved to the same font as `--font-sans` — no serif face was ever loaded — leaving 3 competing heading systems and inconsistent numerals, fixed with 7 new `.landing-*` classes); and a fresh 340-case phase-wise CRUD re-audit ([`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md)) closing 5 more bugs, most notably **dispute resolution still silently never moving escrowed money** — the same bug the v17 audit believed it had fixed, but that pass validated against artificially-seeded data that never exercised the real dispute-raise-then-resolve lifecycle (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
+| `v19` | **Latest — also `main`/`master`** — landing-page-only visual refresh (new display font, restyled Live Market widget, dark code-block price-decay formula, wider How It Works/pricing cards, fixed testimonial-carousel clipping) plus a violet/near-black color scheme swap sourced from a user-provided reference mockup, a secondary-text contrast darkening on both landing and `/feed`, and two responsive fixes (hero/CTA/Live-Market text sizing that wrapped/oversized on 13" laptop widths, footer alignment inconsistency on mobile). Scoped entirely to `web/src/components/landing/*`, `web/src/components/feed/*`, and the pre-existing landing-only block in `globals.css` — zero shared-class changes, verified via `/login`/`/admin` before/after screenshots (see [What's in v19](#whats-in-v19)) |
+| `v18` | full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile; a landing-page typography unification (`--font-serif` resolved to the same font as `--font-sans` — no serif face was ever loaded — leaving 3 competing heading systems and inconsistent numerals, fixed with 7 new `.landing-*` classes); and a fresh 340-case phase-wise CRUD re-audit ([`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md)) closing 5 more bugs, most notably **dispute resolution still silently never moving escrowed money** — the same bug the v17 audit believed it had fixed, but that pass validated against artificially-seeded data that never exercised the real dispute-raise-then-resolve lifecycle (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
 | `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
