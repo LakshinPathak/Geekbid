@@ -30,9 +30,9 @@ export default function Footer() {
       </div>
 
       <div className="relative mx-auto max-w-[1400px] px-5">
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-12 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-12 mb-12 text-center sm:text-left">
           {/* Brand */}
-          <div className="sm:col-span-1">
+          <div className="sm:col-span-1 flex flex-col items-center sm:items-start">
             <div className="flex items-center gap-2.5 mb-4">
               <Logo markClassName="h-8 w-8" textClassName="text-base font-bold tracking-[0.03em] font-sans" />
             </div>
@@ -42,9 +42,9 @@ export default function Footer() {
           </div>
 
           {/* Platform */}
-          <div>
+          <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Platform</p>
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col items-center sm:items-start gap-2.5">
               <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Browse Jobs</Link>
               <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Post a Job</Link>
               <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Find Work</Link>
@@ -52,9 +52,9 @@ export default function Footer() {
             </div>
           </div>
           {/* Company */}
-          <div>
+          <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Company</p>
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col items-center sm:items-start gap-2.5">
               <span className="text-sm text-[#46424e]">About Us</span>
               <span className="text-sm text-[#46424e]">Careers</span>
               <span className="text-sm text-[#46424e]">Blog</span>
@@ -62,9 +62,9 @@ export default function Footer() {
             </div>
           </div>
           {/* Legal */}
-          <div>
+          <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Legal</p>
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col items-center sm:items-start gap-2.5">
               <span className="text-sm text-[#46424e]">Terms of Service</span>
               <span className="text-sm text-[#46424e]">Privacy Policy</span>
               <span className="text-sm text-[#46424e]">Cookie Policy</span>
