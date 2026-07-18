@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { type Job, GEEK_TIERS } from "@/lib/utils";
 import { formatMoney } from "@/lib/utils";
 import { useApp } from "@/lib/store";
-import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSquare, Send, Crown } from "lucide-react";
+import { Users, Star, Zap, Award, Briefcase, CheckCircle2, ArrowRight, MessageSquare, Send, Crown, Sparkles } from "lucide-react";
 import DirectHireModal from "./DirectHireModal";
 import InviteToBidModal from "./InviteToBidModal";
 import MessageFreelancerModal from "./MessageFreelancerModal";
+import SmartMatchModal from "./SmartMatchModal";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 import EmptyState from "./EmptyState";
 import { usePointerFine, useTilt3D } from "@/components/landing/hooks";
@@ -309,7 +310,28 @@ function FreelancerCard({
 
 // ── Main TalentPool ────────────────────────────────────────────────
 export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
+  const { currentUser } = useApp();
   const [activeSkill, setActiveSkill] = useState<string>("all");
+  const [smartMatchJob, setSmartMatchJob] = useState<{ id: string; title: string } | null>(null);
+  const [smartMatchPickId, setSmartMatchPickId] = useState<string>("");
+
+  const isClient = currentUser?.role === "client";
+  const myOpenJobs = useMemo(
+    () =>
+      jobs.filter(
+        (j) =>
+          j.clientId === ownClientId &&
+          j.status === "open" &&
+          j.type !== "direct_offer"
+      ),
+    [jobs, ownClientId]
+  );
+
+  useEffect(() => {
+    if (myOpenJobs.length > 0 && !smartMatchPickId) {
+      setSmartMatchPickId(myOpenJobs[0].id ?? myOpenJobs[0]._id ?? "");
+    }
+  }, [myOpenJobs, smartMatchPickId]);
 
   const freelancers = useMemo(() => users.filter(u => u.role === "freelancer"), [users]);
 
@@ -355,6 +377,13 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
 
   return (
     <div className="space-y-4">
+      {smartMatchJob && (
+        <SmartMatchModal
+          jobId={smartMatchJob.id}
+          jobTitle={smartMatchJob.title}
+          onClose={() => setSmartMatchJob(null)}
+        />
+      )}
 
       {/* ── Header ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
@@ -369,6 +398,42 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isClient && myOpenJobs.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {myOpenJobs.length > 1 && (
+                <select
+                  value={smartMatchPickId}
+                  onChange={(e) => setSmartMatchPickId(e.target.value)}
+                  className="text-[10px] rounded-full border border-[rgba(75,63,143,0.22)] bg-[#f4f2ee] px-2 py-1.5 text-[#46424e] max-w-[120px] truncate"
+                >
+                  {myOpenJobs.map((j) => {
+                    const jid = j.id ?? j._id ?? "";
+                    return (
+                      <option key={jid} value={jid}>
+                        {j.title}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const job = myOpenJobs.find(
+                    (j) => (j.id ?? j._id) === smartMatchPickId
+                  ) ?? myOpenJobs[0];
+                  setSmartMatchJob({
+                    id: job.id ?? job._id ?? "",
+                    title: job.title,
+                  });
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold bg-[#4b3f8f] text-[#ffffff] hover:bg-[#3d3373] transition-colors"
+              >
+                <Sparkles className="h-3 w-3" />
+                Smart Match
+              </button>
+            </div>
+          )}
           <div className="px-3 py-1.5 rounded-full bg-[#f4f2ee] border border-[rgba(75,63,143,0.15)] text-right">
             <p className="text-[10px] text-[#46424e] uppercase tracking-wider">Freelancers</p>
             <p className="font-heading text-sm font-normal text-[#3d3a45]">{freelancers.length}</p>

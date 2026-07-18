@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
-import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { createJobInvite } from "@/lib/create-job-invite";
 
 /**
  * GET /api/invites — fetch invites for the current user (protected)
@@ -67,103 +67,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { freelancerId, jobId } = await req.json();
-    if (!freelancerId || !jobId) {
-      return NextResponse.json({ error: "freelancerId and jobId required" }, { status: 400 });
-    }
-
     const clientId = auth.payload.userId;
     const db = await getDb();
 
-    // Fast-fail check (the unique index below is the real race guard)
-    const existing = await db.collection("invites").findOne({ clientId, freelancerId, jobId });
-    if (existing) {
-      return NextResponse.json({ error: "Invite already sent for this job" }, { status: 409 });
+    const result = await createJobInvite(db, clientId, freelancerId, jobId);
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
-
-    // Get job and confirm it's still open — inviting a freelancer to bid on a
-    // cancelled/completed/removed job (matches the same check bids/route.ts
-    // already enforces on the regular bid path).
-    let rawJobDoc;
-    try {
-      rawJobDoc = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
-    } catch {
-      rawJobDoc = await db.collection("jobs").findOne({ _id: jobId });
-    }
-    const jobDoc = rawJobDoc as { title?: string; status?: string; clientId?: string } | null;
-    if (!jobDoc) {
-      return NextResponse.json({ error: "Job not found" }, { status: 404 });
-    }
-    if (jobDoc.status !== "open") {
-      return NextResponse.json({ error: "This job is no longer open for invites" }, { status: 400 });
-    }
-    if (jobDoc.clientId !== clientId) {
-      return NextResponse.json({ error: "Only the job's owner can invite freelancers to it" }, { status: 403 });
-    }
-    const jobTitle = jobDoc.title ?? "a job";
-
-    // Plan limit enforcement — applies to every tier (Premium's limit is
-    // effectively unlimited via Infinity, so the $lt check always passes there).
-    const client = await db.collection("users").findOne({ _id: new ObjectId(clientId) });
-    const config = getPlanConfig(client?.plan);
-    if (client) {
-      const limits = client.planLimits ?? { invitesSentThisMonth: 0, monthResetAt: new Date(0).toISOString() };
-      if (new Date(limits.monthResetAt) < new Date()) {
-        await db.collection("users").updateOne({ _id: client._id }, {
-          $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.invitesSentThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
-        });
-      }
-      const capped = await db.collection("users").findOneAndUpdate(
-        {
-          _id: client._id,
-          $or: [
-            { "planLimits.invitesSentThisMonth": { $lt: config.limits.invitesPerMonth } },
-            { "planLimits.invitesSentThisMonth": { $exists: false } },
-          ],
-        },
-        { $inc: { "planLimits.invitesSentThisMonth": 1 } }
-      );
-      if (!capped) {
-        return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.invitesPerMonth} invites/month. Upgrade for more.` }, { status: 403 });
-      }
-    }
-
-    const now = new Date().toISOString();
-    const invite = {
-      clientId,
-      freelancerId,
-      jobId,
-      status: "pending",
-      createdAt: now,
-      respondedAt: null,
-    };
-
-    let result;
-    try {
-      result = await db.collection("invites").insertOne(invite);
-    } catch (err: unknown) {
-      if ((err as { code?: number }).code === 11000) {
-        return NextResponse.json({ error: "Invite already sent for this job" }, { status: 409 });
-      }
-      throw err;
-    }
-
-    // Create notification for the freelancer
-    await db.collection("notifications").insertOne({
-      userId: freelancerId,
-      type: "job_invite",
-      title: `You've been invited to bid on "${jobTitle}"`,
-      body: "A client wants you specifically for this project. Check it out!",
-      jobId,
-      isRead: false,
-      createdAt: now,
-    });
 
     return withPlanHeader(
-      NextResponse.json(
-        { ...invite, _id: result.insertedId.toString(), id: result.insertedId.toString() },
-        { status: 201 }
-      ),
-      client?.plan ?? "free"
+      NextResponse.json(result.invite, { status: 201 }),
+      result.clientPlan
     );
   } catch (err) {
     console.error("[Invites POST Error]", err);
