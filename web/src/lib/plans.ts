@@ -7,6 +7,8 @@ export const FEATURED_BOOST_PRICE_USD = 10;
 export interface PlanConfig {
   name: string;
   price: number;
+  /** Max freelancers selectable in one Smart Match auto-invite run (0 = preview only). */
+  smartMatchTopN: number;
   limits: {
     jobsPerMonth: number;
     bidsPerMonth: number;
@@ -26,6 +28,7 @@ export interface PlanConfig {
 export const PLANS: Record<PlanTier, PlanConfig> = {
   free: {
     name: 'Free', price: 0,
+    smartMatchTopN: 0,
     limits: {
       jobsPerMonth: 3, bidsPerMonth: 10,
       aiGeneralPerMonth: 5, aiBidStrategyPerMonth: 2,
@@ -38,6 +41,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   },
   plus: {
     name: 'Plus', price: 19,
+    smartMatchTopN: 5,
     limits: {
       jobsPerMonth: 50, bidsPerMonth: 100,
       aiGeneralPerMonth: 50, aiBidStrategyPerMonth: 15,
@@ -50,6 +54,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   },
   premium: {
     name: 'Premium', price: 79,
+    smartMatchTopN: 10,
     limits: {
       jobsPerMonth: 500, bidsPerMonth: 500,
       aiGeneralPerMonth: 200, aiBidStrategyPerMonth: 60,
