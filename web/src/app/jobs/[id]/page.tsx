@@ -8,11 +8,12 @@ import { toast } from "sonner";
 import AuctionVictoryModal from "@/components/modals/AuctionVictoryModal";
 import {
  Clock, TrendingDown, DollarSign, Zap, ArrowLeft, Eye, Shield, Send,
- MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, User, Activity,
+ MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, User, Activity, Sparkles,
 } from "lucide-react";
 import AIBidStrategist from "@/components/ai/AIBidStrategist";
 import AIBidEvaluator from "@/components/ai/AIBidEvaluator";
 import PlanLimitBanner from "@/components/PlanLimitBanner";
+import SmartMatchModal from "@/components/feed/SmartMatchModal";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id: jobId } = use(params);
@@ -41,6 +42,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  // ── P2: New-bid flash notification ───────────────────────────────────────
  const prevBidCountRef = useRef<number>(-1);
  const [newBidFlash, setNewBidFlash] = useState(false);
+ const [showSmartMatch, setShowSmartMatch] = useState(false);
 
  const job = useMemo(() => jobs.find(j => (j.id === jobId) || (j._id === jobId)), [jobs, jobId]);
  const jobMilestones = useMemo(() => milestones.filter(m => m.jobId === jobId).sort((a, b) => a.order - b.order), [milestones, jobId]);
@@ -157,6 +159,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const isFreelancer = currentUser?.role === "freelancer";
  const isClient = currentUser?.role === "client" && (currentUser.id === job.clientId || currentUser._id === job.clientId);
  const isOpen = job.status === "open";
+ const isSmartMatchEligible = isOpen && job.type !== "direct_offer";
  const pricePercent = ((current - job.minimumPrice) / (job.startingPrice - job.minimumPrice)) * 100;
  const deadlineDate = new Date(job.deadlineAt);
  const deadlineMs = deadlineDate.getTime() - now.getTime();
@@ -313,6 +316,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <div className="min-h-screen bg-[#ffffff] grid-bg">
  {victoryData && (
  <AuctionVictoryModal data={victoryData} onClose={() => setVictoryData(null)} />
+ )}
+ {showSmartMatch && isClient && isSmartMatchEligible && (
+ <SmartMatchModal
+ jobId={job.id ?? job._id ?? jobId}
+ jobTitle={job.title}
+ onClose={() => setShowSmartMatch(false)}
+ />
  )}
  <div className="bg-[#fbfaf7] max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
  <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
@@ -999,6 +1009,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {isClient && isOpen && (
  <div className="space-y-3">
+ {isSmartMatchEligible && (
+ <button
+ type="button"
+ onClick={() => setShowSmartMatch(true)}
+ className="btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm"
+ >
+ <Sparkles className="h-4 w-4" /> Smart Match
+ </button>
+ )}
  <Link href={`/post-job`}>
  <button className="btn-ghost w-full py-3 text-sm">
  Edit Job

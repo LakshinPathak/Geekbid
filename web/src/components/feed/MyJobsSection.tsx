@@ -8,10 +8,11 @@ import {
 import { getJobHealth, getCompetitionBadge } from "./feed-helpers";
 import {
  Users, Clock, TrendingDown, ChevronDown,
- Star, CheckCircle, Plus, AlertCircle, Zap, Crown,
+ Star, CheckCircle, Plus, AlertCircle, Zap, Crown, Sparkles,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 import EmptyState from "./EmptyState";
+import SmartMatchModal from "./SmartMatchModal";
 import { usePointerFine, useTilt3D } from "@/components/landing/hooks";
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -114,15 +115,19 @@ function BidRow({ bid, user, rank }: { bid: Bid; user?: User; rank: number }) {
 
 // ── Job card with inline bid expansion ────────────────────────────
 function MyJobCard({
- job, bids, users, now, onAcceptBest,
+ job, bids, users, now, onAcceptBest, onSmartMatch,
 }: {
- job: Job; bids: Bid[]; users: User[]; now: Date; onAcceptBest: (id: string) => void;
+ job: Job; bids: Bid[]; users: User[]; now: Date;
+ onAcceptBest: (id: string) => void;
+ onSmartMatch: (jobId: string, jobTitle: string) => void;
 }) {
  const [bidsOpen, setBidsOpen] = useState(false);
  const cardRef = useRef<HTMLDivElement>(null);
  const isPointerFine = usePointerFine();
  useTilt3D(cardRef, isPointerFine);
  const jobId = job.id ?? job._id ?? "";
+ const isSmartMatchEligible =
+   job.status === "open" && job.type !== "direct_offer";
  const current = getCurrentPrice(job, now);
  const savings = Math.max(0, job.startingPrice - current);
  const hoursLeft = getHoursToFloor(job, now);
@@ -264,6 +269,19 @@ function MyJobCard({
  </div>
  </Link>
 
+ {isSmartMatchEligible && (
+ <div className="px-5 pb-3 border-t border-[rgba(75,63,143,0.12)] bg-[#ffffff]">
+ <button
+ type="button"
+ onClick={() => onSmartMatch(jobId, job.title)}
+ className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold bg-[rgba(75,63,143,0.08)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] hover:bg-[rgba(75,63,143,0.14)] transition-colors"
+ >
+ <Sparkles className="h-3.5 w-3.5" />
+ Smart Match
+ </button>
+ </div>
+ )}
+
  {/* ── Bids toggle button (or an equal-height placeholder when there are
  no bids yet, so cards in the same row don't end up with mismatched
  empty space beneath them) ─────────────────────────────────── */}
@@ -311,6 +329,7 @@ function MyJobCard({
 // ── Main: My Posted Jobs section ───────────────────────────────────
 export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: Props) {
  const [filter, setFilter] = useState<"all" | "hot" | "nobids">("all");
+ const [smartMatchJob, setSmartMatchJob] = useState<{ id: string; title: string } | null>(null);
  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
  const [indicator, setIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
@@ -355,6 +374,13 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
 
  return (
  <div className="space-y-4">
+ {smartMatchJob && (
+ <SmartMatchModal
+ jobId={smartMatchJob.id}
+ jobTitle={smartMatchJob.title}
+ onClose={() => setSmartMatchJob(null)}
+ />
+ )}
 
  {/* ── Header row ─────────────────────────────────────────── */}
  <div className="flex items-center justify-between">
@@ -433,7 +459,15 @@ export default function MyJobsSection({ jobs, bids, users, now, onAcceptBest }: 
  {filteredJobs.length > 0 ? (
  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
  {filteredJobs.map(job => (
- <MyJobCard key={job.id ?? job._id} job={job} bids={bids} users={users} now={now} onAcceptBest={onAcceptBest} />
+ <MyJobCard
+ key={job.id ?? job._id}
+ job={job}
+ bids={bids}
+ users={users}
+ now={now}
+ onAcceptBest={onAcceptBest}
+ onSmartMatch={(id, title) => setSmartMatchJob({ id, title })}
+ />
  ))}
  </div>
  ) : (
