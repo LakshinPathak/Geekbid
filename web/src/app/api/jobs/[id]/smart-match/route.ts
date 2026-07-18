@@ -4,12 +4,14 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
-import { createJobInvite } from "@/lib/create-job-invite";
 import {
   rankFreelancersForJob,
   type FreelancerBidRecord,
   type JobRecord,
 } from "@/lib/smart-match";
+
+/** Max freelancers scored per run after skill/eligibility filter (plan Part B scale note). */
+const SMART_MATCH_CANDIDATE_CAP = 100;
 
 async function findJob(db: Awaited<ReturnType<typeof getDb>>, jobId: string) {
   try {
@@ -73,34 +75,69 @@ export async function GET(
 
     const jobSkills: string[] = job!.skillsRequired ?? [];
 
-    const [freelancers, invites, jobBids, clientUser] = await Promise.all([
-      db.collection("users").find({ role: "freelancer" }).toArray(),
-      db.collection("invites").find({ jobId }).toArray(),
-      db.collection("bids").find({ jobId }).toArray(),
-      db.collection("users").findOne({ _id: new ObjectId(clientId) }),
+    const freelancerFilter: Record<string, unknown> = { role: "freelancer" };
+    // Prefer skill-overlap candidates when the job lists skills (avoids full-table score).
+    if (jobSkills.length > 0) {
+      freelancerFilter.skills = { $in: jobSkills };
+    }
+
+    const [freelancerDocs, invites, jobBids, clientUser] = await Promise.all([
+      db
+        .collection("users")
+        .find(freelancerFilter, {
+          projection: { fullName: 1, name: 1, geekScore: 1, skills: 1 },
+        })
+        .sort({ geekScore: -1 })
+        // Fetch a small buffer above the score cap so invited/bidders can be filtered out.
+        .limit(SMART_MATCH_CANDIDATE_CAP + 50)
+        .toArray(),
+      db.collection("invites").find({ jobId }, { projection: { freelancerId: 1 } }).toArray(),
+      db.collection("bids").find({ jobId }, { projection: { freelancerId: 1 } }).toArray(),
+      db.collection("users").findOne({ _id: new ObjectId(clientId) }, { projection: { plan: 1 } }),
     ]);
 
     const invitedIds = new Set(invites.map((i) => String(i.freelancerId)));
     const biddingIds = new Set(jobBids.map((b) => String(b.freelancerId)));
 
-    const freelancerIds = freelancers.map((f) => f._id.toString());
+    // Drop ineligible early, then cap by GeekScore before loading bid history.
+    const candidates = freelancerDocs
+      .map((f) => ({
+        id: f._id.toString(),
+        fullName: (f.fullName ?? f.name ?? "Freelancer") as string,
+        geekScore: (f.geekScore ?? 0) as number,
+        skills: ((f.skills as string[]) ?? []),
+      }))
+      .filter((f) => !invitedIds.has(f.id) && !biddingIds.has(f.id))
+      .sort((a, b) => b.geekScore - a.geekScore || a.fullName.localeCompare(b.fullName))
+      .slice(0, SMART_MATCH_CANDIDATE_CAP);
+
+    const freelancerIds = candidates.map((f) => f.id);
     const allBids = freelancerIds.length
-      ? await db.collection("bids").find({ freelancerId: { $in: freelancerIds } }).toArray()
+      ? await db
+          .collection("bids")
+          .find(
+            { freelancerId: { $in: freelancerIds } },
+            { projection: { freelancerId: 1, jobId: 1 } }
+          )
+          .toArray()
       : [];
 
     const relatedJobIds = [...new Set(allBids.map((b) => String(b.jobId)))];
     const relatedJobs = relatedJobIds.length
       ? await db
           .collection("jobs")
-          .find({
-            $or: relatedJobIds.flatMap((jid) => {
-              try {
-                return [{ _id: new ObjectId(jid) }];
-              } catch {
-                return [{ _id: jid }];
-              }
-            }),
-          })
+          .find(
+            {
+              $or: relatedJobIds.flatMap((jid) => {
+                try {
+                  return [{ _id: new ObjectId(jid) }];
+                } catch {
+                  return [{ _id: jid }];
+                }
+              }),
+            },
+            { projection: { skillsRequired: 1, acceptedBy: 1, status: 1 } }
+          )
           .toArray()
       : [];
 
@@ -121,13 +158,6 @@ export async function GET(
       list.push({ jobId: String(b.jobId) });
       bidsByFreelancer.set(fid, list);
     }
-
-    const candidates = freelancers.map((f) => ({
-      id: f._id.toString(),
-      fullName: f.fullName ?? f.name ?? "Freelancer",
-      geekScore: f.geekScore ?? 0,
-      skills: (f.skills as string[]) ?? [],
-    }));
 
     const matches = rankFreelancersForJob(
       jobSkills,
