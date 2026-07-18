@@ -1,5 +1,6 @@
-import { ObjectId, type Db } from "mongodb";
+import { type Db } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
+import { idFilter } from "@/lib/mongo-id";
 
 export type CreateInviteErrorCode =
   | "missing_fields"
@@ -35,11 +36,7 @@ export interface CreateInviteFailure {
 export type CreateInviteResult = CreateInviteSuccess | CreateInviteFailure;
 
 async function findJob(db: Db, jobId: string) {
-  try {
-    return await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
-  } catch {
-    return await db.collection("jobs").findOne({ _id: jobId });
-  }
+  return await db.collection("jobs").findOne(idFilter(jobId));
 }
 
 /**
@@ -99,12 +96,7 @@ export async function createJobInvite(
 
   const jobTitle = jobDoc.title ?? "a job";
 
-  let client;
-  try {
-    client = await db.collection("users").findOne({ _id: new ObjectId(clientId) });
-  } catch {
-    client = await db.collection("users").findOne({ _id: clientId });
-  }
+  const client = await db.collection("users").findOne(idFilter(clientId));
 
   const config = getPlanConfig(client?.plan);
   if (client) {

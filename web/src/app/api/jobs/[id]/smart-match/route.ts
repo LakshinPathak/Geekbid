@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
-import { ObjectId } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { idFilter, idsOrFilter } from "@/lib/mongo-id";
 import {
   rankFreelancersForJob,
   type FreelancerBidRecord,
@@ -13,16 +13,19 @@ import {
 /** Max freelancers scored per run after skill/eligibility filter (plan Part B scale note). */
 const SMART_MATCH_CANDIDATE_CAP = 100;
 
+type JobAccessDoc = {
+  status?: string;
+  clientId?: string;
+  type?: string;
+  skillsRequired?: string[];
+};
+
 async function findJob(db: Awaited<ReturnType<typeof getDb>>, jobId: string) {
-  try {
-    return await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
-  } catch {
-    return await db.collection("jobs").findOne({ _id: jobId });
-  }
+  return (await db.collection("jobs").findOne(idFilter(jobId))) as JobAccessDoc | null;
 }
 
 function assertJobAccess(
-  job: { status?: string; clientId?: string; type?: string } | null,
+  job: JobAccessDoc | null,
   clientId: string
 ): NextResponse | null {
   if (!job) {
@@ -93,7 +96,7 @@ export async function GET(
         .toArray(),
       db.collection("invites").find({ jobId }, { projection: { freelancerId: 1 } }).toArray(),
       db.collection("bids").find({ jobId }, { projection: { freelancerId: 1 } }).toArray(),
-      db.collection("users").findOne({ _id: new ObjectId(clientId) }, { projection: { plan: 1 } }),
+      db.collection("users").findOne(idFilter(clientId), { projection: { plan: 1 } }),
     ]);
 
     const invitedIds = new Set(invites.map((i) => String(i.freelancerId)));
@@ -105,7 +108,7 @@ export async function GET(
         id: f._id.toString(),
         fullName: (f.fullName ?? f.name ?? "Freelancer") as string,
         geekScore: (f.geekScore ?? 0) as number,
-        skills: ((f.skills as string[]) ?? []),
+        skills: (f.skills as string[]) ?? [],
       }))
       .filter((f) => !invitedIds.has(f.id) && !biddingIds.has(f.id))
       .sort((a, b) => b.geekScore - a.geekScore || a.fullName.localeCompare(b.fullName))
@@ -126,18 +129,9 @@ export async function GET(
     const relatedJobs = relatedJobIds.length
       ? await db
           .collection("jobs")
-          .find(
-            {
-              $or: relatedJobIds.flatMap((jid) => {
-                try {
-                  return [{ _id: new ObjectId(jid) }];
-                } catch {
-                  return [{ _id: jid }];
-                }
-              }),
-            },
-            { projection: { skillsRequired: 1, acceptedBy: 1, status: 1 } }
-          )
+          .find(idsOrFilter(relatedJobIds), {
+            projection: { skillsRequired: 1, acceptedBy: 1, status: 1 },
+          })
           .toArray()
       : [];
 

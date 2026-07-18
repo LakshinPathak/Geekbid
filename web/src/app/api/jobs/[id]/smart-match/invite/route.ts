@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
-import { ObjectId } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
 import { createJobInvite } from "@/lib/create-job-invite";
+import { idFilter } from "@/lib/mongo-id";
+
+type JobAccessDoc = {
+  status?: string;
+  clientId?: string;
+  type?: string;
+};
 
 async function findJob(db: Awaited<ReturnType<typeof getDb>>, jobId: string) {
-  try {
-    return await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
-  } catch {
-    return await db.collection("jobs").findOne({ _id: jobId });
-  }
+  return (await db.collection("jobs").findOne(idFilter(jobId))) as JobAccessDoc | null;
 }
 
 /**
@@ -57,12 +59,7 @@ export async function POST(
       return NextResponse.json({ error: "Smart Match is not available for direct offers" }, { status: 400 });
     }
 
-    let clientUser;
-    try {
-      clientUser = await db.collection("users").findOne({ _id: new ObjectId(clientId) });
-    } catch {
-      clientUser = await db.collection("users").findOne({ _id: clientId });
-    }
+    const clientUser = await db.collection("users").findOne(idFilter(clientId));
 
     const planConfig = getPlanConfig(clientUser?.plan);
     if (planConfig.smartMatchTopN === 0) {
