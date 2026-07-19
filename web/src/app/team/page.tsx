@@ -20,14 +20,19 @@ type TeamData = {
  frozenReason?: string;
 };
 
+type PendingInvite = { teamId: string; teamName: string };
+
 export default function TeamPage() {
  const { currentUser, mounted, getValidToken } = useApp();
  const router = useRouter();
  const [team, setTeam] = useState<TeamData | null>(null);
+ const [pendingInvite, setPendingInvite] = useState<PendingInvite | null>(null);
  const [loading, setLoading] = useState(true);
  const [teamName, setTeamName] = useState("");
  const [inviteEmail, setInviteEmail] = useState("");
  const [creating, setCreating] = useState(false);
+ const [accepting, setAccepting] = useState(false);
+ const [removingId, setRemovingId] = useState<string | null>(null);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -39,10 +44,50 @@ export default function TeamPage() {
  const res = await fetch("/api/teams", { headers: { Authorization: `Bearer ${token}` } });
  if (res.ok) {
  const data = await res.json();
+ if (data && data.id) {
  setTeam(data);
+ setPendingInvite(null);
+ } else if (data && data.pendingInvite) {
+ setTeam(null);
+ setPendingInvite(data.pendingInvite);
+ } else {
+ setTeam(null);
+ setPendingInvite(null);
+ }
  }
  } catch (err) { console.error("[loadTeam]", err); } finally { setLoading(false); }
  }, [getValidToken]);
+
+ const acceptInvite = async () => {
+ if (!pendingInvite) return;
+ setAccepting(true);
+ const token = await getValidToken();
+ const res = await fetch("/api/teams", {
+ method: "PATCH",
+ headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+ body: JSON.stringify({ action: "accept", teamId: pendingInvite.teamId }),
+ });
+ const data = await res.json();
+ setAccepting(false);
+ if (data.error) { toast.error(data.error); return; }
+ toast.success("Joined team!");
+ await loadTeam();
+ };
+
+ const removeMember = async (memberId: string) => {
+ setRemovingId(memberId);
+ const token = await getValidToken();
+ const res = await fetch("/api/teams", {
+ method: "PATCH",
+ headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+ body: JSON.stringify({ action: "remove_member", memberId }),
+ });
+ const data = await res.json();
+ setRemovingId(null);
+ if (data.error) { toast.error(data.error); return; }
+ toast.success("Member removed");
+ await loadTeam();
+ };
 
  useEffect(() => { if (mounted && currentUser) loadTeam(); }, [mounted, currentUser, loadTeam]);
 
@@ -83,7 +128,8 @@ export default function TeamPage() {
  </div>
  );
 
- // No team yet — create one
+ // No team yet — either a pending invite waiting for a response, or a
+ // blank slate to create one.
  if (!team) {
  return (
  <div className="min-h-screen bg-[#fbfaf7] grid-bg">
@@ -91,6 +137,19 @@ export default function TeamPage() {
  <Link href="/profile" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
  <ArrowLeft className="h-4 w-4" /> Back to Profile
  </Link>
+ {pendingInvite ? (
+ <div className="glass-panel p-8 text-center animate-fade-in-up">
+ <Mail className="h-12 w-12 text-[#6f6a7d] mx-auto mb-4" />
+ <h1 className="font-heading text-2xl font-bold text-[#3d3a45] mb-2">Team invite</h1>
+ <p className="text-[#6f6a7d] text-sm mb-6">
+ You&apos;ve been invited to join <span className="text-[#3d3a45] font-medium">{pendingInvite.teamName}</span>.
+ </p>
+ <button onClick={acceptInvite} disabled={accepting}
+ className="btn-primary w-full py-3 rounded-2xl text-sm disabled:opacity-40">
+ {accepting ? "Joining..." : "Accept invite"}
+ </button>
+ </div>
+ ) : (
  <div className="glass-panel p-8 text-center animate-fade-in-up">
  <Users className="h-12 w-12 text-[#6f6a7d] mx-auto mb-4" />
  <h1 className="font-heading text-2xl font-bold text-[#3d3a45] mb-2">Create a Team</h1>
@@ -105,6 +164,7 @@ export default function TeamPage() {
  {creating ? "Creating..." : "Create Team"}
  </button>
  </div>
+ )}
  </div>
  </div>
  );
@@ -180,6 +240,15 @@ export default function TeamPage() {
  <span className={`text-xs px-2 py-0.5 rounded-full ${m.id === team.ownerId ? "badge-active" : "text-[#6f6a7d]"}`}>
  {m.id === team.ownerId ? "Owner" : "Member"}
  </span>
+ {isOwner && m.id !== team.ownerId && (
+ <button
+ onClick={() => removeMember(m.id)}
+ disabled={removingId === m.id}
+ className="text-xs text-[#96543f] hover:underline disabled:opacity-40"
+ >
+ {removingId === m.id ? "Removing..." : "Remove"}
+ </button>
+ )}
  </div>
  ))}
  </div>

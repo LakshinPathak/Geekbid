@@ -22,7 +22,25 @@ export async function GET(req: NextRequest) {
  ],
  });
 
- if (!team) return NextResponse.json(null);
+ if (!team) {
+ // Not yet an owner/member — but they may have a pending invite waiting.
+ // Without this, an invitee has no way to ever see or accept it: the UI
+ // only rendered a "Create a Team" screen for anyone GET returned null for.
+ const pendingInviteTeam = await db.collection("teams").findOne({
+ "invites.email": auth.payload.email,
+ "invites.status": "pending",
+ });
+ if (pendingInviteTeam) {
+ return NextResponse.json({
+ team: null,
+ pendingInvite: {
+ teamId: pendingInviteTeam._id.toString(),
+ teamName: pendingInviteTeam.name ?? "A Team",
+ },
+ });
+ }
+ return NextResponse.json(null);
+ }
 
  // Get team analytics
  const memberUsers = await db.collection("users")
@@ -179,13 +197,33 @@ export async function PATCH(req: NextRequest) {
  );
  if (!invite) return NextResponse.json({ error: "No pending invite found" }, { status: 404 });
 
- await db.collection("teams").updateOne(
- { _id: team._id, "invites.email": auth.payload.email },
+ // Re-check the seat cap against the owner's *current* plan (it may have
+ // been downgraded since the invite was sent) and enforce it atomically —
+ // $expr's $size is evaluated against the document findOneAndUpdate is
+ // about to write to, so two concurrent accepts (or an accept racing a
+ // downgrade) can't both slip past a cap that only had room for one more.
+ const owner = await db.collection("users").findOne({ _id: new ObjectId(team.ownerId) });
+ const config = getPlanConfig(owner?.plan);
+ const allowedMembers = Math.max(0, config.limits.teamSeats - 1);
+
+ const claimedTeam = await db.collection("teams").findOneAndUpdate(
+ {
+ _id: team._id,
+ "invites.email": auth.payload.email,
+ "invites.status": "pending",
+ $expr: { $lt: [{ $size: { $ifNull: ["$memberIds", []] } }, allowedMembers] },
+ },
  {
  $set: { "invites.$.status": "accepted" },
  $push: { memberIds: auth.payload.userId } as never,
  }
  );
+ if (!claimedTeam) {
+ return NextResponse.json(
+ { error: "This team is full for the owner's current plan, or your invite is no longer pending" },
+ { status: 409 }
+ );
+ }
 
  await db.collection("users").updateOne(
  { _id: new ObjectId(auth.payload.userId) },
@@ -193,6 +231,43 @@ export async function PATCH(req: NextRequest) {
  );
 
  return NextResponse.json({ ok: true, message: "Joined team" });
+ }
+
+ if (action === "remove_member") {
+ const { memberId } = body;
+ if (!memberId) return NextResponse.json({ error: "memberId required" }, { status: 400 });
+
+ const team = await db.collection("teams").findOne({ ownerId: auth.payload.userId });
+ if (!team) return NextResponse.json({ error: "You don't own a team" }, { status: 403 });
+ if (!(team.memberIds ?? []).includes(memberId)) {
+ return NextResponse.json({ error: "That user is not a member of your team" }, { status: 404 });
+ }
+
+ await db.collection("teams").updateOne(
+ { _id: team._id },
+ { $pull: { memberIds: memberId } as never }
+ );
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(memberId) },
+ { $unset: { teamId: "", teamRole: "" } }
+ );
+
+ // If removing this member brought the team back within the owner's plan
+ // seat count, clear the over_limit flag/deadline instead of leaving it
+ // stuck until the next cron sweep.
+ if (team.status === "over_limit") {
+ const owner = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const config = getPlanConfig(owner?.plan);
+ const remainingMembers = (team.memberIds ?? []).filter((id: string) => id !== memberId).length;
+ if (1 + remainingMembers <= config.limits.teamSeats) {
+ await db.collection("teams").updateOne(
+ { _id: team._id },
+ { $set: { status: "active" }, $unset: { seatDeadline: "" } }
+ );
+ }
+ }
+
+ return NextResponse.json({ ok: true, message: "Member removed" });
  }
 
  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
