@@ -254,8 +254,30 @@ export async function PATCH(req: NextRequest) {
  mock: isMock,
  };
 
+ // The findOne check above is idempotency-in-spirit but not atomic — two
+ // concurrent verify calls for the same payment can both pass it before
+ // either insert lands. A unique index on razorpayPaymentId (see
+ // scripts/create-fix-indexes.mjs) turns the loser's insert into a
+ // duplicate-key error instead of a second escrow row; treat that the same
+ // as the idempotent-return path above.
+ let txId: string;
+ try {
  const result = await db.collection("transactions").insertOne(tx);
- const txId = result.insertedId.toString();
+ txId = result.insertedId.toString();
+ } catch (err) {
+ if ((err as { code?: number }).code === 11000) {
+ const raceWinnerTx = await db.collection("transactions").findOne({ razorpayPaymentId: razorpay_payment_id });
+ if (raceWinnerTx) {
+ const existingId = raceWinnerTx._id.toString();
+ return NextResponse.json({
+ verified: true,
+ transactionId: existingId,
+ transaction: { ...raceWinnerTx, _id: existingId, id: existingId },
+ });
+ }
+ }
+ throw err;
+ }
 
  // Fire-and-forget: send payment receipt to client. The transaction is
  // already durably recorded above — a bad client-supplied jobId (or any

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
 
 export async function GET(req: NextRequest) {
  try {
@@ -19,7 +20,15 @@ export async function GET(req: NextRequest) {
  .find({ jobId: { $in: jobIds } })
  .sort({ createdAt: -1 }).limit(20).toArray();
 
- const users = await db.collection("users").find({}).toArray();
+ // Only the bidders that actually appear in this page of results — pulling
+ // every user in the DB (including password hashes) just to read fullName
+ // for ~20 rows doesn't scale and needlessly loads sensitive fields.
+ const bidderIds = [...new Set(recentBids.map(b => b.freelancerId))]
+ .map((bid: string) => { try { return new ObjectId(bid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const users = await db.collection("users")
+ .find({ _id: { $in: bidderIds } }, { projection: { fullName: 1 } })
+ .toArray();
  const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u]));
  const jobMap = Object.fromEntries(myJobs.map(j => [j._id.toString(), j]));
 

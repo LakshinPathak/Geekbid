@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { processWebhookEvent } from "@/lib/webhook-processing";
+import { constantTimeEqual } from "@/lib/sanitize";
 
 // GET /api/cron/retry-webhooks — runs daily (see vercel.json). Vercel's
 // Hobby plan only allows daily cron schedules (Pro+ allows any frequency);
@@ -10,8 +11,12 @@ import { processWebhookEvent } from "@/lib/webhook-processing";
 // Razorpay gave up on, or failures during a deploy window) and re-runs
 // processing.
 export async function GET(req: NextRequest) {
+  // A missing CRON_SECRET must never fail open — without this check,
+  // `Bearer ${undefined}` becomes the literal string "Bearer undefined",
+  // which anyone could send as the header and pass the comparison below.
+  const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!cronSecret || !authHeader || !constantTimeEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

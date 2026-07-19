@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { razorpayRequest, isRazorpayConfigured } from "@/lib/razorpay";
 import { handleDowngrade, enforceExpiredTeamSeatDeadlines } from "@/lib/plan-downgrade";
+import { constantTimeEqual } from "@/lib/sanitize";
 
 function mapRazorpayStatus(rzpStatus: string): string | null {
   switch (rzpStatus) {
@@ -20,8 +21,12 @@ function mapRazorpayStatus(rzpStatus: string): string | null {
 // state (e.g. a webhook delivery was lost), and sweeps expired grace
 // periods + team seat deadlines that a webhook alone wouldn't catch.
 export async function GET(req: NextRequest) {
+  // A missing CRON_SECRET must never fail open — without this check,
+  // `Bearer ${undefined}` becomes the literal string "Bearer undefined",
+  // which anyone could send as the header and pass the comparison below.
+  const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!cronSecret || !authHeader || !constantTimeEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -25,9 +25,18 @@ export async function GET(
  return NextResponse.json({ error: "User not found" }, { status: 404 });
  }
 
- // Strip sensitive fields
- const { password: _pw, refreshToken: _rt, email: _em, ...publicProfile } = user;
- void _pw; void _rt; void _em;
+ // Strip sensitive fields — beyond the obvious password/email, a public
+ // profile must not leak how someone signed up (googleId), referral
+ // relationships (referredBy/referralCredits), or billing/plan internals
+ // (planLimits/subscriptionId/planExpiresAt) to any stranger who knows
+ // their user id.
+ const {
+ password: _pw, refreshToken: _rt, email: _em, googleId: _gid,
+ referredBy: _rb, referralCredits: _rc, planLimits: _pl,
+ subscriptionId: _sid, planExpiresAt: _pea,
+ ...publicProfile
+ } = user;
+ void _pw; void _rt; void _em; void _gid; void _rb; void _rc; void _pl; void _sid; void _pea;
 
  return NextResponse.json({
  ...publicProfile,

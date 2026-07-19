@@ -3,7 +3,7 @@
 > Tracks completion status of every issue in [`issues.md`](./issues.md) (61 issues), implemented per [`planning.md`](./planning.md).
 > **Update this file immediately after each issue is fixed** — status, date, files touched, and any deviation from the planned fix. This is the persistence layer if a session runs out of context/tokens; the next session should read this file first to know what's already done.
 
-**Last updated:** 2026-07-20 (batch 4: ISSUE-8, 9, 10, 11, 12, 13 fixed — all 17 High-severity issues now done)
+**Last updated:** 2026-07-20 (batch 5: ISSUE-14, 15, 16, 17, 43, 44, 45 fixed)
 
 ## How to update
 1. When you finish an issue, flip its Status to `Done`, fill in Date + Commit/Files + Notes.
@@ -50,10 +50,10 @@
 
 | Issue | Title | Status | Date | Commit/Files | Notes |
 |---|---|---|---|---|---|
-| ISSUE-14 | Milestones GET has no job authorization | Not Started | | | |
-| ISSUE-15 | Invite-only/direct-offer jobs readable by ID without auth | Not Started | | | |
-| ISSUE-16 | Payment verification race can mint duplicate txs | Not Started | | | |
-| ISSUE-17 | Cron auth fails open if `CRON_SECRET` unset | Not Started | | | |
+| ISSUE-14 | Milestones GET has no job authorization | Done | 2026-07-20 | `web/src/app/api/milestones/route.ts` | GET now loads the job and requires caller be `job.clientId`, `job.acceptedBy`, or admin before listing milestones. |
+| ISSUE-15 | Invite-only/direct-offer jobs readable by ID without auth | Done | 2026-07-20 | `web/src/app/api/jobs/[id]/route.ts` | GET now checks `visibility === "invite_only"` (direct offers set this too) and requires client/offeredTo/invited-freelancer(via `invites` collection)/admin; 401 if unauthenticated, 403 if authenticated but not a party. |
+| ISSUE-16 | Payment verification race can mint duplicate txs | Done | 2026-07-20 | `web/src/app/api/payments/route.ts`, `web/scripts/create-fix-indexes.mjs` | Added unique partial index on `transactions.razorpayPaymentId`; insert now catches duplicate-key (E11000) and returns the race-winner's transaction instead of erroring. **Needs `node scripts/create-fix-indexes.mjs` run against the target DB.** |
+| ISSUE-17 | Cron auth fails open if `CRON_SECRET` unset | Done | 2026-07-20 | `web/src/app/api/cron/{retry-webhooks,reconcile-subscriptions}/route.ts` | Both routes now reject if `!process.env.CRON_SECRET`, and compare the header with `constantTimeEqual` instead of `!==`. |
 | ISSUE-18 | Direct-offer price not validated | Not Started | | | |
 | ISSUE-19 | Concurrent subscription create can double-subscribe | Not Started | | | |
 | ISSUE-20 | Dispute resolve accepts any `status` string | Not Started | | | |
@@ -66,9 +66,9 @@
 | ISSUE-27 | Feed role routing: non-clients get Freelancer UI | Not Started | | | |
 | ISSUE-28 | Job Accept/Counter lack in-flight guards | Not Started | | | |
 | ISSUE-29 | `$` formatting vs INR payments | Not Started | | | |
-| ISSUE-43 | Teams GET leaks member emails | Not Started | | | |
-| ISSUE-44 | Public profile leaks `googleId` | Not Started | | | |
-| ISSUE-45 | Client dashboards load entire `users` collection | Not Started | | | |
+| ISSUE-43 | Teams GET leaks member emails | Done | 2026-07-20 | `web/src/app/api/teams/route.ts`, `web/src/app/team/page.tsx` | Switched to an allowlist projection (`fullName, avatarInitial, avatarUrl, geekScore, role`) instead of `{password: 0}`; FE no longer displays/expects member email (shows GeekScore instead). |
+| ISSUE-44 | Public profile leaks `googleId` | Done | 2026-07-20 | `web/src/app/api/users/[id]/route.ts` | Denylist extended to also strip `googleId`, `referredBy`, `referralCredits`, `planLimits`, `subscriptionId`, `planExpiresAt`. |
+| ISSUE-45 | Client dashboards load entire `users` collection | Done | 2026-07-20 | `web/src/app/api/client/{activity-feed,job-health}/route.ts` | Both now scope the `users` query to just the bidder ids that appear in the page's own results, with an explicit field projection, instead of `find({})` over the whole collection. |
 | ISSUE-46 | Team accept ignores seat cap/races | Done | 2026-07-20 | `web/src/app/api/teams/route.ts` | Accept now re-checks the owner's *current* plan seat count and claims atomically via `findOneAndUpdate` with `$expr: {$lt: [{$size: "$memberIds"}, allowedMembers]}` — two concurrent accepts (or an accept racing a downgrade) can't both push past the cap; loser gets 409. |
 | ISSUE-47 | Chat messages: no size/rate limits | Not Started | | | |
 | ISSUE-48 | Freelancer dashboard metrics wrong | Not Started | | | |
@@ -104,11 +104,11 @@
 |---|---|---|---|
 | Critical | 4 | 4 | 0 |
 | High | 17 | 17 | 0 |
-| Medium | 31 | 1 | 30 |
+| Medium | 35 | 8 | 27 |
 | Low | 5 | 0 | 5 |
-| **Total** | **61** | **22** | **39** |
+| **Total** | **61** | **29** | **32** |
 
-*(Critical done: ISSUE-1, 2, 3, 4 — all 4. High done: ISSUE-5, 6, 7, 8, 9, 10, 11, 12, 13, 35, 36, 37, 38, 39, 40, 41, 42 — all 17 (ISSUE-6 is partial, see its row). Medium done: ISSUE-46. 22 issues done total. Remaining: 30 Medium + 5 Low.)*
+*(Critical done: all 4. High done: all 17 (ISSUE-6 is partial, see its row). Medium done: ISSUE-14, 15, 16, 17, 43, 44, 45, 46. Note: issues.md's own "Summary counts" table says Medium=31, but that undercounts by excluding the 4 product-gap issues (58-61, labeled "Medium (product gap)" in the doc body) — there are still only 61 numbered issues total (1-61), just 35 of them are Medium once 58-61 are counted correctly, not 31.)*
 
 ## Suggested fix order (from `issues.md`)
 1. ISSUE-1 · 2. ISSUE-2+42 · 3. ISSUE-3 · 4. ISSUE-35 · 5. ISSUE-37 · 6. ISSUE-4 · 7. ISSUE-5 · 8. ISSUE-7+39-40+46 · 9. ISSUE-6 · 10. ISSUE-36,38,41 · 11. Remaining High → Medium → Low / product gaps (58–61)
@@ -119,3 +119,4 @@
 - **2026-07-20** — Fixed batch 2 (7 issues): ISSUE-37, ISSUE-4, ISSUE-5, ISSUE-7, ISSUE-39, ISSUE-40, ISSUE-46. Added `web/scripts/create-fix-indexes.mjs` (new script, parallel to `create-phase4-indexes.mjs`) with the `assessment_cooldowns` unique index needed by ISSUE-37 — **must be run against the target DB** (`node scripts/create-fix-indexes.mjs`) for that fix to be fully enforced; until then the app-level atomic-claim logic still works but without the DB-level backstop. Verified with `tsc --noEmit`, `eslint` (all findings pre-existing/unrelated), full `npm run build`. Committing/pushing this batch next (continuing the "push every 5ish issues" cadence). Next up: ISSUE-6 (escrow ledger unification, bigger change — own batch), then ISSUE-36/38/41, then remaining High/Medium/Low per suggested order. User said "continue all other issues" — proceeding through the full list autonomously, batching commits.
 - **2026-07-20** — Fixed batch 3 (4 issues): ISSUE-6 (partial/scoped — see its row for exactly what was and wasn't changed), ISSUE-36, ISSUE-38, ISSUE-41. Verified with `tsc --noEmit`, `eslint` (all findings pre-existing), full `npm run build`. **Correction to earlier summary-count math:** ISSUE-2 is Critical, not High (issues.md's own section headers say so) — the batch-1 and batch-2 log entries above miscounted it; the Summary Counts table above this log is now correct (Critical 4/4 done, High 11/17 done). Pushing this batch, then continuing to remaining High issues (8, 9, 10, 11, 12, 13) per task list, then Medium, then Low.
 - **2026-07-20** — Fixed batch 4 (6 issues, all remaining High severity): ISSUE-8, 9, 10, 11, 12, 13. **All 17 High + all 4 Critical issues are now done.** Notable: ISSUE-8's fix found and fixed 2 extra occurrences of the same unguarded-reset bug that issues.md's file list didn't mention (`v1/jobs/route.ts`, `create-job-invite.ts`). ISSUE-10 asked the user which fix approach to use (AskUserQuestion) — they chose the `accept_bid` API over relabeling. Verified with `tsc --noEmit`, `eslint` (all findings pre-existing or matching this file's own established `any` convention), full `npm run build`. Pushing this batch, then moving to Medium severity issues (14-29, 43-61 subset) per task list.
+- **2026-07-20** — Fixed batch 5 (7 issues, AuthZ/PII cluster): ISSUE-14, 15, 16, 17, 43, 44, 45. Also corrected the summary-count table's Medium/Total figures (see note above the table) — issues.md's own tally excludes the 4 product-gap issues from its Medium count, this tracker doesn't. Verified with `tsc --noEmit`, `eslint` (pre-existing findings only), full `npm run build`. Pushing this batch, then continuing with the money/dispute/frontend Medium cluster (18-29 subset).
