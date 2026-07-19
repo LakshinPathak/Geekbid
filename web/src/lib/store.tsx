@@ -65,6 +65,7 @@ type AppState = {
  googleAuth: (token: string, expiresIn: number, user: User) => void;
  switchRole: (role: Role) => Promise<ActionResult>;
  acceptJob: (jobId: string) => Promise<ActionResult>;
+ acceptBid: (jobId: string, bidId: string) => Promise<ActionResult>;
  counterBid: (
  jobId: string,
  price: number,
@@ -578,13 +579,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
  });
  const d = await res.json();
  if (d.error) return { ok: false, message: d.error };
- await fetchJobs();
+ // Direct offers count against the same monthly jobs quota as postJob
+ // (server-side) — refresh so planUsage reflects it immediately.
+ await Promise.all([fetchJobs(), silentRefresh()]);
  return { ok: true, message: "Direct offer sent!" };
  } catch {
  return { ok: false, message: "Failed to create offer" };
  }
  },
- [getValidToken, fetchJobs]
+ [getValidToken, fetchJobs, silentRefresh]
  );
 
  const respondToOffer = useCallback(
@@ -648,13 +651,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
  });
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error, code: data.code, boostPrice: data.boostPrice };
- await fetchJobs();
+ // Featuring can consume the monthly boost quota server-side; refresh so
+ // planUsage (and any PlanLimitBanner reading it) doesn't keep showing the
+ // pre-consumption count until the next login/refresh.
+ await Promise.all([fetchJobs(), silentRefresh()]);
  return { ok: true, message: featured ? "Job featured!" : "Unfeatured" };
  } catch {
  return { ok: false, message: "Failed to toggle featured" };
  }
  },
- [getValidToken, fetchJobs]
+ [getValidToken, fetchJobs, silentRefresh]
  );
 
  // ── Load all data after auth ──────────────────────────────
@@ -959,7 +965,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
 
- await Promise.all([fetchJobs(), fetchBids(), fetchTransactions(), fetchChatRooms()]);
+ // A freelancer accepting consumes the same monthly bid quota as placing a
+ // bid (server-side) — refresh so planUsage reflects it immediately.
+ await Promise.all([fetchJobs(), fetchBids(), fetchTransactions(), fetchChatRooms(), silentRefresh()]);
  return {
  ok: true,
  message: isClient
@@ -976,7 +984,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
  return { ok: false, message: "Failed to accept job" };
  }
  },
- [jobs, now, currentUser, getValidToken, fetchJobs, fetchBids, fetchTransactions, fetchChatRooms]
+ [jobs, now, currentUser, getValidToken, fetchJobs, fetchBids, fetchTransactions, fetchChatRooms, silentRefresh]
+ );
+
+ // ── Accept a specific bid (client awards *that* freelancer, not
+ // necessarily the lowest one) — every per-row "Accept" in the bid
+ // comparison table calls this instead of acceptJob's accept_best, so
+ // clicking next to a given freelancer actually awards them.
+ const acceptBid = useCallback(
+ async (jobId: string, bidId: string): Promise<ActionResult> => {
+ const token = await getValidToken();
+ if (!token) return { ok: false, message: "Not authenticated" };
+
+ try {
+ const res = await apiRequest(`/api/jobs/${jobId}`, {
+ method: "PATCH",
+ body: JSON.stringify({ action: "accept_bid", bidId }),
+ accessToken: token,
+ });
+
+ const data = await res.json();
+ if (data.error) return { ok: false, message: data.error };
+
+ await Promise.all([fetchJobs(), fetchBids(), fetchTransactions(), fetchChatRooms()]);
+ return {
+ ok: true,
+ message: `Job awarded at $${(data.finalPrice ?? 0).toFixed(2)}`,
+ freelancerId: data.freelancerId,
+ finalPrice: data.finalPrice,
+ };
+ } catch {
+ return { ok: false, message: "Failed to accept bid" };
+ }
+ },
+ [getValidToken, fetchJobs, fetchBids, fetchTransactions, fetchChatRooms]
  );
 
  // ── Counter Bid (with DB call) ────────────────────────────
@@ -1015,14 +1056,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
  // Also refresh jobs — the server updates the job's own demand-signal
  // fields (bidCount, uniqueBidderCount, lowestCounterBid, priceHistory)
  // on every bid, and the Pricing Intelligence panel reads those fields
- // straight off the job, not derived from the bids list.
- await Promise.all([fetchBids(), fetchJobs()]);
+ // straight off the job, not derived from the bids list. Also refresh the
+ // user — bidding consumes the monthly bid quota server-side, and
+ // planUsage must reflect that immediately, not just after next login.
+ await Promise.all([fetchBids(), fetchJobs(), silentRefresh()]);
  return { ok: true, message: "Counter-bid submitted" };
  } catch {
  return { ok: false, message: "Failed to place bid" };
  }
  },
- [jobs, now, currentUser, getValidToken, fetchBids, fetchJobs]
+ [jobs, now, currentUser, getValidToken, fetchBids, fetchJobs, silentRefresh]
  );
 
  // ── Post Job (with DB call) ───────────────────────────────
@@ -1044,13 +1087,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const data = await res.json();
  if (data.error) return { ok: false, message: data.error };
 
- await fetchJobs();
+ // Posting consumes the monthly jobs quota server-side — refresh so
+ // planUsage doesn't keep showing the pre-post count (PlanLimitBanner,
+ // "jobs remaining" elsewhere) until the next login/refresh.
+ await Promise.all([fetchJobs(), silentRefresh()]);
  return { ok: true, message: "Job posted!" };
  } catch {
  return { ok: false, message: "Failed to post job" };
  }
  },
- [currentUser, getValidToken, fetchJobs]
+ [currentUser, getValidToken, fetchJobs, silentRefresh]
  );
 
  // ── Cancel Job (client only) ──────────────────────────────
@@ -1396,6 +1442,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  toggleFeatured,
  fetchRecommendedJobs,
  acceptJob,
+ acceptBid,
  counterBid,
  postJob,
  cancelJob,
@@ -1461,6 +1508,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  toggleFeatured,
  fetchRecommendedJobs,
  acceptJob,
+ acceptBid,
  counterBid,
  postJob,
  cancelJob,

@@ -28,9 +28,9 @@ export async function POST(req: NextRequest) {
 
   const db = await getDb();
 
-  // Atomic idempotency check — a redelivered event upserts nothing new and
-  // the pre-existing status tells us whether to skip processing.
-  const eventDoc = await db.collection("webhook_events").findOneAndUpdate(
+  // Ensure the event doc exists (first delivery ever) — a redelivery just
+  // matches the existing doc and $setOnInsert is a no-op.
+  await db.collection("webhook_events").findOneAndUpdate(
     { eventId },
     {
       $setOnInsert: {
@@ -47,7 +47,20 @@ export async function POST(req: NextRequest) {
     { upsert: true, returnDocument: "after" }
   );
 
-  if (eventDoc?.status === "processed") {
+  // Atomically claim the event before processing it — the previous version
+  // only skipped when status was already "processed", so two concurrent
+  // deliveries of the same event (Razorpay retries aggressively) could both
+  // observe "received" and both run processWebhookEvent (quota resets,
+  // downgrades, emails — none of that is safe to double-fire). Claiming by
+  // flipping received/failed -> processing means only the request that
+  // actually wins this single-document update proceeds; the loser sees a
+  // non-match (claimed by the other request, or already processed) and
+  // exits without touching side effects.
+  const claimed = await db.collection("webhook_events").findOneAndUpdate(
+    { eventId, status: { $in: ["received", "failed"] } },
+    { $set: { status: "processing" } }
+  );
+  if (!claimed) {
     return NextResponse.json({ status: "already_processed" });
   }
 

@@ -1,6 +1,7 @@
 import { type Db } from "mongodb";
 import { getPlanConfig } from "@/lib/plans";
 import { idFilter } from "@/lib/mongo-id";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
 
 export type CreateInviteErrorCode =
   | "missing_fields"
@@ -104,19 +105,7 @@ export async function createJobInvite(
       invitesSentThisMonth: 0,
       monthResetAt: new Date(0).toISOString(),
     };
-    if (new Date(limits.monthResetAt) < new Date()) {
-      await db.collection("users").updateOne(
-        { _id: client._id },
-        {
-          $set: {
-            "planLimits.jobsPostedThisMonth": 0,
-            "planLimits.bidsPlacedThisMonth": 0,
-            "planLimits.invitesSentThisMonth": 0,
-            "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString(),
-          },
-        }
-      );
-    }
+    await resetPlanLimitsIfStale(db, client._id, limits.monthResetAt);
     const capped = await db.collection("users").findOneAndUpdate(
       {
         _id: client._id,

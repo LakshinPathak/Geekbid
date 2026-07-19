@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import { sendJobPostedEmail } from "@/lib/email";
 import { getPlanConfigWithOverrides } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
 
 // GET /api/jobs — list all jobs (public), supports ?category= filter
 export async function GET(req: NextRequest) {
@@ -134,11 +135,7 @@ export async function POST(req: NextRequest) {
  const config = await getPlanConfigWithOverrides(plan, db);
  if (user) {
  const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
- if (new Date(limits.monthResetAt) < new Date()) {
- await db.collection("users").updateOne({ _id: user._id }, {
- $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
- });
- }
+ await resetPlanLimitsIfStale(db, user._id, limits.monthResetAt);
  // Atomic check-and-increment so two concurrent requests can't both
  // read "under the cap" before either write lands.
  const capped = await db.collection("users").findOneAndUpdate(

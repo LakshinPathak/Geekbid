@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import crypto from "crypto";
 import { checkRateLimit } from "@/lib/sanitize";
 import { getPlanConfig, getPlanConfigWithOverrides } from "@/lib/plans";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
 
 async function authenticateApiKey(req: NextRequest) {
  const apiKey = req.headers.get("x-api-key");
@@ -183,11 +184,7 @@ export async function POST(req: NextRequest) {
  let jobQuotaReserved = false;
  if (user) {
  const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
- if (new Date(limits.monthResetAt) < new Date()) {
- await db.collection("users").updateOne({ _id: user._id }, {
- $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
- });
- }
+ await resetPlanLimitsIfStale(db, user._id, limits.monthResetAt);
  // Atomic check-and-increment (matches the internal /api/jobs POST route) —
  // a plain findOne-then-updateOne here let two concurrent API-key requests
  // both read "under the cap" before either write landed.

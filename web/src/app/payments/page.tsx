@@ -63,7 +63,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function PaymentsPage() {
- const { auth, currentUser, mounted, transactions, fetchTransactions, releaseEscrow, raiseDispute } = useApp();
+ const { auth, currentUser, mounted, transactions, fetchTransactions, releaseEscrow, raiseDispute, getValidToken } = useApp();
  const router = useRouter();
 
  const [config, setConfig] = useState<PaymentConfig | null>(null);
@@ -115,11 +115,18 @@ export default function PaymentsPage() {
  setPaymentResult(null);
 
  try {
+ const token = await getValidToken();
+ if (!token) {
+ setPaymentResult({ success: false, message: "Please log in again" });
+ setIsProcessing(false);
+ return;
+ }
+
  const orderRes = await fetch("/api/payments", {
  method: "POST",
  headers: {
  "Content-Type": "application/json",
- Authorization: `Bearer ${auth.accessToken}`,
+ Authorization: `Bearer ${token}`,
  },
  body: JSON.stringify({
  amount: parsedAmount,
@@ -142,7 +149,7 @@ export default function PaymentsPage() {
  method: "PATCH",
  headers: {
  "Content-Type": "application/json",
- Authorization: `Bearer ${auth.accessToken}`,
+ Authorization: `Bearer ${token}`,
  },
  body: JSON.stringify({
  razorpay_order_id: order.id,
@@ -185,11 +192,21 @@ export default function PaymentsPage() {
  },
  theme: { color: "#4b3f8f" },
  handler: async (response: Record<string, string>) => {
+ // The Razorpay checkout modal can stay open for minutes while the
+ // user enters payment details — re-fetch a valid token here rather
+ // than reusing the one captured when the modal opened, which may
+ // have expired by the time this callback fires.
+ const freshToken = await getValidToken();
+ if (!freshToken) {
+ setPaymentResult({ success: false, message: "Please log in again" });
+ setIsProcessing(false);
+ return;
+ }
  const verifyRes = await fetch("/api/payments", {
  method: "PATCH",
  headers: {
  "Content-Type": "application/json",
- Authorization: `Bearer ${auth.accessToken}`,
+ Authorization: `Bearer ${freshToken}`,
  },
  body: JSON.stringify({
  razorpay_order_id: response.razorpay_order_id,
@@ -238,7 +255,7 @@ export default function PaymentsPage() {
  });
  setIsProcessing(false);
  }
- }, [amount, description, auth, config, scriptLoaded, currentUser, fetchTransactions]);
+ }, [amount, description, getValidToken, config, scriptLoaded, currentUser, fetchTransactions]);
 
  const handleRelease = async (txId: string) => {
  const r = await releaseEscrow(txId);

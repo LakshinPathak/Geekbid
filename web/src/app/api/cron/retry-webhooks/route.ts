@@ -28,6 +28,17 @@ export async function GET(req: NextRequest) {
   let stillFailing = 0;
 
   for (const event of failedEvents) {
+    // Atomically claim before processing — the POST webhook handler's own
+    // Razorpay-redelivery retry can race this daily sweep for the same
+    // event; without this, both could observe status:"failed" and both
+    // call processWebhookEvent concurrently. Skip if some other request
+    // already claimed it since the find() above ran.
+    const claimed = await db.collection("webhook_events").findOneAndUpdate(
+      { _id: event._id, status: "failed" },
+      { $set: { status: "processing" } }
+    );
+    if (!claimed) continue;
+
     try {
       await processWebhookEvent(event.payload, db);
       await db.collection("webhook_events").updateOne(
@@ -39,7 +50,7 @@ export async function GET(req: NextRequest) {
       const message = err instanceof Error ? err.message : String(err);
       await db.collection("webhook_events").updateOne(
         { _id: event._id },
-        { $set: { errorMessage: message }, $inc: { retryCount: 1 } }
+        { $set: { status: "failed", errorMessage: message }, $inc: { retryCount: 1 } }
       );
       stillFailing++;
     }

@@ -27,7 +27,43 @@ export function getCurrentPrice(job: Job, now: Date): number {
 export function getHoursToFloor(job: Job, now: Date): number {
  const current = getCurrentPrice(job, now);
  if (current <= job.minimumPrice) return 0;
+
+ if (job.pricingMode === 'fixed') {
  return (current - job.minimumPrice) / job.decayRatePerHour;
+ }
+
+ // Adaptive pricing has no closed-form floor time — the demand multiplier,
+ // bid boost, and counter-bid pull (pricing.ts) are all non-linear in
+ // elapsed time, so dividing by the flat base decayRatePerHour (as the
+ // fixed-mode branch does) ignored the adaptive rate entirely: a hot job's
+ // real decay is much slower than the base rate (multiplier < 1) so this
+ // showed a much shorter "time to floor" than reality, and a stale
+ // zero-bid job accelerates after 24h (multiplier up to 2x) so it showed a
+ // longer one. Search forward numerically instead.
+ return getAdaptiveHoursToFloor(job, now);
+}
+
+// Exponential search for an upper bound where price has reached the floor,
+// then binary search down to ~1 minute of precision. getAdaptivePrice is
+// treated as monotonically non-increasing over time for a fixed snapshot of
+// bid signals (bidCount/lastBidAt/lowestCounterBid held constant, only `now`
+// varies) — true in practice: the bid-boost term only ever fades toward
+// zero as elapsed-since-last-bid grows, it never re-triggers on its own.
+function getAdaptiveHoursToFloor(job: Job, now: Date): number {
+ const MAX_HOURS = 24 * 60; // ~60 days — treat as "not reaching floor" beyond this
+ const priceAt = (h: number) => getAdaptivePrice(job, new Date(now.getTime() + h * 3600000));
+
+ if (priceAt(MAX_HOURS) > job.minimumPrice) return MAX_HOURS;
+
+ let lo = 0;
+ let hi = 1;
+ while (priceAt(hi) > job.minimumPrice) hi *= 2;
+ while (hi - lo > 1 / 60) {
+ const mid = (lo + hi) / 2;
+ if (priceAt(mid) <= job.minimumPrice) hi = mid;
+ else lo = mid;
+ }
+ return hi;
 }
 
 export function formatHoursToFloor(hours: number): string {

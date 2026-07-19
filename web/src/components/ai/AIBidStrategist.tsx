@@ -33,7 +33,7 @@ const CONFIDENCE_COLOR = {
 };
 
 export default function AIBidStrategist({ job, currentPrice, competitorBids, onApplyBid }: Props) {
-  const { currentUser, auth } = useApp();
+  const { currentUser, auth, refreshCurrentUser } = useApp();
   const [result, setResult] = useState<StrategyResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +72,10 @@ export default function AIBidStrategist({ job, currentPrice, competitorBids, onA
       } else {
         setResult(data);
         setOpen(true);
+        // Consumes the monthly aiBidStrategyPerMonth quota server-side —
+        // refresh so isPlanLimited (read straight off currentUser.planLimits)
+        // reflects it immediately instead of only after next login.
+        refreshCurrentUser();
       }
     } catch {
       setError("Network error — please try again");

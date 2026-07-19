@@ -17,7 +17,7 @@ import SmartMatchModal from "@/components/feed/SmartMatchModal";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id: jobId } = use(params);
- const { jobs, bids, users, now, currentUser, acceptJob, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
+ const { jobs, bids, users, now, currentUser, acceptJob, acceptBid, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
  const [respondingToOffer, setRespondingToOffer] = useState(false);
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
@@ -307,6 +307,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  }
  };
 
+ const handleAcceptBid = async (bidId: string, freelancerName?: string) => {
+ const r = await acceptBid(job.id ?? job._id ?? "", bidId);
+ if (r.ok) {
+ const freelancer = r.freelancerId ? users.find(u => u.id === r.freelancerId) : undefined;
+ const client = users.find(u => u.id === job.clientId);
+ setVictoryData({
+ jobId: job.id ?? job._id ?? "",
+ jobTitle: job.title,
+ finalPrice: r.finalPrice ?? current,
+ startingPrice: job.startingPrice,
+ freelancerName: freelancer?.fullName ?? freelancerName ?? "Freelancer",
+ freelancerScore: freelancer?.geekScore,
+ clientName: client?.fullName ?? "Client",
+ });
+ } else {
+ toast.error("Cannot accept", { description: r.message });
+ }
+ };
+
  const handleOfferResponse = async (response: "accepted" | "declined") => {
  setRespondingToOffer(true);
  const r = await respondToOffer(job.id ?? job._id ?? "", response);
@@ -448,10 +467,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  jobId={job.id ?? job._id ?? ""}
  bids={jobBids}
  freelancers={users}
- onAcceptBid={async (_bid) => {
- const r = await acceptJob(job.id ?? job._id ?? "");
- if (!r.ok) toast.error(r.message ?? "Failed to accept");
- else toast.success("Bid accepted!");
+ onAcceptBid={async (bid) => {
+ const bidder = users.find(u => u.id === bid.freelancerId);
+ await handleAcceptBid(bid.id ?? bid._id ?? "", bidder?.fullName);
  }}
  />
  </div>
@@ -505,7 +523,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <td className="py-3 px-2 text-right text-[#6f6a7d]">{timeAgo(bid.createdAt)}</td>
  <td className="py-3 px-2 text-right">
  {isOpen && (
- <button onClick={handleAccept}
+ <button onClick={() => handleAcceptBid(bid.id, bidder?.fullName)}
  className="btn-primary text-[11px] py-1.5 px-2.5 whitespace-nowrap">
  Accept
  </button>

@@ -7,6 +7,138 @@ import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEma
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
 import { splitEscrow, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/money";
 import { getPlanConfig } from "@/lib/plans";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
+import type { Db } from "mongodb";
+
+// Shared by accept_best and accept_bid — the two client-award actions differ
+// only in *which* freelancer/price they award (globally lowest bid vs a
+// specific chosen bid); everything after that (atomic claim, escrow, emails,
+// chat room, notifications) is identical, so it's factored out here instead
+// of duplicated per action.
+async function awardJobToFreelancer(
+ db: Db,
+ awardJob: any,
+ freelancerId: string,
+ finalPrice: number,
+ id: string
+): Promise<{ status: number; body: Record<string, unknown> }> {
+ const acceptedAt = new Date().toISOString();
+ const awardFilter = awardJob._id ? { _id: awardJob._id, status: "open" } : { id, status: "open" };
+ const awardedJob = await db.collection("jobs").findOneAndUpdate(awardFilter, {
+ $set: { status: "accepted", acceptedBy: freelancerId, finalPrice, acceptedAt },
+ $push: { priceHistory: { price: finalPrice, at: acceptedAt, event: "accepted" } } as any,
+ });
+ if (!awardedJob) {
+ return { status: 409, body: { error: "Job was already accepted by another request" } };
+ }
+ // Use the fee locked onto the job at creation time (blueprint §17), not a
+ // flat default — a Plus/Premium client's 7%/5% rate must not silently
+ // become 10% just because escrow release re-derives the split here.
+ const escrow = splitEscrow(finalPrice, awardJob.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
+ const escrowTxResult = await db.collection("transactions").insertOne({
+ jobId: id, clientId: awardJob.clientId, freelancerId,
+ grossAmount: escrow.gross, platformFee: escrow.platformFee,
+ netAmount: escrow.netAmount,
+ escrowStatus: "held", createdAt: acceptedAt,
+ purpose: "job_escrow",
+ });
+ // Link so complete/dispute always target this exact row instead of an
+ // ambiguous {jobId, escrowStatus:"held"} filter — a job can also carry an
+ // unrelated "held" transaction from a featured-boost payment.
+ await db.collection("jobs").updateOne(
+ { _id: awardJob._id },
+ { $set: { escrowTransactionId: escrowTxResult.insertedId.toString() } }
+ );
+ const [awardClient, awardFreelancer] = await Promise.all([
+ db.collection("users").findOne({ _id: new ObjectId(awardJob.clientId) }, { projection: { email: 1, name: 1, fullName: 1 } }),
+ db.collection("users").findOne({ _id: new ObjectId(freelancerId) }, { projection: { email: 1, name: 1, fullName: 1 } }).catch(() => null),
+ ]);
+ if (awardClient?.email) {
+ sendJobAcceptedEmail(
+ awardClient.email, awardClient.fullName ?? awardClient.name ?? "Client",
+ awardFreelancer?.fullName ?? awardFreelancer?.name ?? "Freelancer",
+ awardJob.title ?? "Untitled Job", finalPrice, id
+ ).catch((err) => console.error("[Email Failed] jobAccepted:", err));
+ }
+ if (awardFreelancer?.email) {
+ sendBookingConfirmationEmail(
+ awardFreelancer.email, awardFreelancer.fullName ?? awardFreelancer.name ?? "Freelancer",
+ awardClient?.fullName ?? awardClient?.name ?? "Client",
+ awardJob.title ?? "Untitled Job", finalPrice, finalPrice, id
+ ).catch((err) => console.error("[Email Failed] bookingConfirmation:", err));
+ }
+
+ // ── POST-ACCEPTANCE: Auto-create chat room + system message ──
+ let roomId: string | undefined;
+ try {
+ const roomParticipants = [awardJob.clientId, freelancerId].sort();
+ const existingRoom = await db.collection("chat_rooms").findOne({
+ jobId: id, participantIds: { $all: roomParticipants },
+ });
+ if (existingRoom) {
+ roomId = existingRoom._id.toString();
+ } else {
+ const roomResult = await db.collection("chat_rooms").insertOne({
+ jobId: id, participantIds: roomParticipants,
+ createdAt: acceptedAt, updatedAt: acceptedAt,
+ });
+ roomId = roomResult.insertedId.toString();
+ await db.collection("chat_messages").insertOne({
+ roomId, senderId: "system",
+ text: `🎉 Job "${awardJob.title}" accepted at $${finalPrice.toLocaleString()}. You can now discuss project details here.`,
+ createdAt: acceptedAt,
+ });
+ }
+ } catch (chatErr) {
+ console.error("[Post-Accept] Chat room creation failed:", chatErr);
+ }
+
+ // ── POST-ACCEPTANCE: In-app notifications ──
+ try {
+ const jobTitle = awardJob.title ?? "Untitled Job";
+ const clientName = awardClient?.fullName ?? awardClient?.name ?? "Client";
+ const freelancerName = awardFreelancer?.fullName ?? awardFreelancer?.name ?? "Freelancer";
+ await db.collection("notifications").insertMany([
+ {
+ userId: awardJob.clientId, type: "job_accepted", isRead: false,
+ title: `${freelancerName} has been awarded "${jobTitle}"`,
+ body: `Final price: $${finalPrice.toLocaleString()}. You can now message them.`,
+ jobId: id, createdAt: acceptedAt,
+ },
+ {
+ userId: freelancerId, type: "job_accepted", isRead: false,
+ title: `You've been awarded "${jobTitle}"`,
+ body: `Final price: $${finalPrice.toLocaleString()}. Start the conversation with ${clientName}.`,
+ jobId: id, createdAt: acceptedAt,
+ },
+ ]);
+ } catch (notifErr) {
+ console.error("[Post-Accept] Notification creation failed:", notifErr);
+ }
+
+ // ── POST-ACCEPTANCE: Let losing bidders know the job was awarded to someone else ──
+ try {
+ const jobTitle = awardJob.title ?? "Untitled Job";
+ const otherBidderIds = await db.collection("bids").distinct("freelancerId", {
+ jobId: id,
+ freelancerId: { $ne: freelancerId },
+ });
+ if (otherBidderIds.length > 0) {
+ await db.collection("notifications").insertMany(
+ otherBidderIds.map((otherId: string) => ({
+ userId: otherId, type: "job_awarded_other", isRead: false,
+ title: `"${jobTitle}" was awarded to another freelancer`,
+ body: "Your bid wasn't selected this time. Keep an eye on the feed for new jobs.",
+ jobId: id, createdAt: acceptedAt,
+ }))
+ );
+ }
+ } catch (otherBidderErr) {
+ console.error("[Post-Accept] Losing-bidder notification failed:", otherBidderErr);
+ }
+
+ return { status: 200, body: { ok: true, finalPrice, freelancerId, roomId } };
+}
 
 // GET /api/jobs/[id] — public
 export async function GET(
@@ -147,123 +279,39 @@ export async function PATCH(
  const lowestBid = await db.collection("bids").findOne({ jobId: id }, { sort: { bidPrice: 1 } });
  if (!lowestBid) return NextResponse.json({ error: "No bids on this job yet" }, { status: 400 });
  const finalPrice = Number(Number(lowestBid.bidPrice).toFixed(2));
- const acceptedAt = new Date().toISOString();
- const freelancerId = lowestBid.freelancerId;
- const awardFilter = awardJob._id ? { _id: awardJob._id, status: "open" } : { id, status: "open" };
- const awardedJob = await db.collection("jobs").findOneAndUpdate(awardFilter, {
- $set: { status: "accepted", acceptedBy: freelancerId, finalPrice, acceptedAt },
- $push: { priceHistory: { price: finalPrice, at: acceptedAt, event: "accepted" } } as any,
- });
- if (!awardedJob) {
- return NextResponse.json({ error: "Job was already accepted by another request" }, { status: 409 });
- }
- // Use the fee locked onto the job at creation time (blueprint §17), not a
- // flat default — a Plus/Premium client's 7%/5% rate must not silently
- // become 10% just because escrow release re-derives the split here.
- const escrow = splitEscrow(finalPrice, awardJob.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
- const escrowTxResult = await db.collection("transactions").insertOne({
- jobId: id, clientId: awardJob.clientId, freelancerId,
- grossAmount: escrow.gross, platformFee: escrow.platformFee,
- netAmount: escrow.netAmount,
- escrowStatus: "held", createdAt: acceptedAt,
- purpose: "job_escrow",
- });
- // Link so complete/dispute always target this exact row instead of an
- // ambiguous {jobId, escrowStatus:"held"} filter — a job can also carry an
- // unrelated "held" transaction from a featured-boost payment.
- await db.collection("jobs").updateOne(
- { _id: awardJob._id },
- { $set: { escrowTransactionId: escrowTxResult.insertedId.toString() } }
- );
- const [awardClient, awardFreelancer] = await Promise.all([
- db.collection("users").findOne({ _id: new ObjectId(awardJob.clientId) }, { projection: { email: 1, name: 1, fullName: 1 } }),
- db.collection("users").findOne({ _id: new ObjectId(freelancerId) }, { projection: { email: 1, name: 1, fullName: 1 } }).catch(() => null),
- ]);
- if (awardClient?.email) {
- sendJobAcceptedEmail(
- awardClient.email, awardClient.fullName ?? awardClient.name ?? "Client",
- awardFreelancer?.fullName ?? awardFreelancer?.name ?? "Freelancer",
- awardJob.title ?? "Untitled Job", finalPrice, id
- ).catch((err) => console.error("[Email Failed] jobAccepted:", err));
- }
- if (awardFreelancer?.email) {
- sendBookingConfirmationEmail(
- awardFreelancer.email, awardFreelancer.fullName ?? awardFreelancer.name ?? "Freelancer",
- awardClient?.fullName ?? awardClient?.name ?? "Client",
- awardJob.title ?? "Untitled Job", finalPrice, finalPrice, id
- ).catch((err) => console.error("[Email Failed] bookingConfirmation:", err));
+ const result = await awardJobToFreelancer(db, awardJob, lowestBid.freelancerId, finalPrice, id);
+ return NextResponse.json(result.body, { status: result.status });
  }
 
- // ── POST-ACCEPTANCE: Auto-create chat room + system message ──
- let roomId: string | undefined;
- try {
- const roomParticipants = [awardJob.clientId, freelancerId].sort();
- const existingRoom = await db.collection("chat_rooms").findOne({
- jobId: id, participantIds: { $all: roomParticipants },
- });
- if (existingRoom) {
- roomId = existingRoom._id.toString();
- } else {
- const roomResult = await db.collection("chat_rooms").insertOne({
- jobId: id, participantIds: roomParticipants,
- createdAt: acceptedAt, updatedAt: acceptedAt,
- });
- roomId = roomResult.insertedId.toString();
- await db.collection("chat_messages").insertOne({
- roomId, senderId: "system",
- text: `🎉 Job "${awardJob.title}" accepted at $${finalPrice.toLocaleString()}. You can now discuss project details here.`,
- createdAt: acceptedAt,
- });
+ // ── ACCEPT_BID (client awards a specific bid, not necessarily the lowest) ──
+ // Every per-row "Accept" in the bid comparison table visually implies
+ // awarding *that* freelancer — but until this action existed, every one of
+ // those buttons called accept_best under the hood, so clicking next to a
+ // higher bidder could silently award the job to someone else entirely.
+ if (action === "accept_bid") {
+ if (auth.payload.role !== "client") {
+ return NextResponse.json({ error: "Only clients can award jobs" }, { status: 403 });
  }
- } catch (chatErr) {
- console.error("[Post-Accept] Chat room creation failed:", chatErr);
+ const { bidId } = body;
+ if (!bidId) return NextResponse.json({ error: "bidId required" }, { status: 400 });
+ const db = await getDb();
+ let awardJob: any;
+ try { awardJob = await db.collection("jobs").findOne({ _id: new ObjectId(id) }); }
+ catch { awardJob = await db.collection("jobs").findOne({ id }); }
+ if (!awardJob) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+ if (awardJob.clientId !== auth.payload.userId) {
+ return NextResponse.json({ error: "You can only award your own jobs" }, { status: 403 });
  }
-
- // ── POST-ACCEPTANCE: In-app notifications ──
- try {
- const jobTitle = awardJob.title ?? "Untitled Job";
- const clientName = awardClient?.fullName ?? awardClient?.name ?? "Client";
- const freelancerName = awardFreelancer?.fullName ?? awardFreelancer?.name ?? "Freelancer";
- await db.collection("notifications").insertMany([
- {
- userId: awardJob.clientId, type: "job_accepted", isRead: false,
- title: `${freelancerName} has been awarded "${jobTitle}"`,
- body: `Final price: $${finalPrice.toLocaleString()}. You can now message them.`,
- jobId: id, createdAt: acceptedAt,
- },
- {
- userId: freelancerId, type: "job_accepted", isRead: false,
- title: `You've been awarded "${jobTitle}"`,
- body: `Final price: $${finalPrice.toLocaleString()}. Start the conversation with ${clientName}.`,
- jobId: id, createdAt: acceptedAt,
- },
- ]);
- } catch (notifErr) {
- console.error("[Post-Accept] Notification creation failed:", notifErr);
+ if (awardJob.status !== "open") return NextResponse.json({ error: "Job is not open" }, { status: 400 });
+ let chosenBid: any;
+ try { chosenBid = await db.collection("bids").findOne({ _id: new ObjectId(bidId) }); }
+ catch { return NextResponse.json({ error: "Invalid bidId" }, { status: 400 }); }
+ if (!chosenBid || chosenBid.jobId !== id) {
+ return NextResponse.json({ error: "Bid not found for this job" }, { status: 404 });
  }
-
- // ── POST-ACCEPTANCE: Let losing bidders know the job was awarded to someone else ──
- try {
- const jobTitle = awardJob.title ?? "Untitled Job";
- const otherBidderIds = await db.collection("bids").distinct("freelancerId", {
- jobId: id,
- freelancerId: { $ne: freelancerId },
- });
- if (otherBidderIds.length > 0) {
- await db.collection("notifications").insertMany(
- otherBidderIds.map((otherId: string) => ({
- userId: otherId, type: "job_awarded_other", isRead: false,
- title: `"${jobTitle}" was awarded to another freelancer`,
- body: "Your bid wasn't selected this time. Keep an eye on the feed for new jobs.",
- jobId: id, createdAt: acceptedAt,
- }))
- );
- }
- } catch (otherBidderErr) {
- console.error("[Post-Accept] Losing-bidder notification failed:", otherBidderErr);
- }
-
- return NextResponse.json({ ok: true, finalPrice, freelancerId, roomId });
+ const finalPrice = Number(Number(chosenBid.bidPrice).toFixed(2));
+ const result = await awardJobToFreelancer(db, awardJob, chosenBid.freelancerId, finalPrice, id);
+ return NextResponse.json(result.body, { status: result.status });
  }
 
  // ── ACCEPT (default — freelancer accepts at current decay price) ──────────
@@ -355,11 +403,7 @@ export async function PATCH(
  let bidQuotaReserved = false;
  if (acceptingUser) {
  const limits = acceptingUser.planLimits ?? { bidsPlacedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
- if (new Date(limits.monthResetAt) < new Date()) {
- await db.collection("users").updateOne({ _id: acceptingUser._id }, {
- $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
- });
- }
+ await resetPlanLimitsIfStale(db, acceptingUser._id, limits.monthResetAt);
  const bidCapped = await db.collection("users").findOneAndUpdate(
  {
  _id: acceptingUser._id,

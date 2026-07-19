@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function InviteToBidModal({ freelancerId, freelancerName, onClose }: Props) {
-  const { jobs, currentUser, auth, bids, now } = useApp();
+  const { jobs, currentUser, auth, bids, now, refreshCurrentUser } = useApp();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -54,6 +54,9 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       toast.success("Invite sent!", { description: `${freelancerName} has been notified.` });
+      // Invites consume the monthly invites quota server-side — refresh so
+      // planUsage reflects it immediately instead of only after next login.
+      refreshCurrentUser();
       handleClose();
     } catch (e: unknown) {
       toast.error("Failed to send invite", { description: e instanceof Error ? e.message : "Try again" });

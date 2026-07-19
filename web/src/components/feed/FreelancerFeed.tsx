@@ -45,7 +45,7 @@ interface ActiveBid {
 export default function FreelancerFeed() {
  const {
  jobs, bids, users, now, currentUser,
- auth, mounted, recommendedJobs, counterBid,
+ mounted, recommendedJobs, counterBid, getValidToken,
  } = useApp();
  const router = useRouter();
 
@@ -109,11 +109,12 @@ export default function FreelancerFeed() {
 
  // ── Fetch API data ────────────────────────────────────────────
  const fetchData = useCallback(async () => {
- if (!auth.accessToken) return;
+ const token = await getValidToken();
+ if (!token) return;
  try {
  const [dashRes, trackerRes] = await Promise.all([
- fetch("/api/freelancer/dashboard", { headers: { Authorization: `Bearer ${auth.accessToken}` } }),
- fetch("/api/freelancer/bid-tracker", { headers: { Authorization: `Bearer ${auth.accessToken}` } }),
+ fetch("/api/freelancer/dashboard", { headers: { Authorization: `Bearer ${token}` } }),
+ fetch("/api/freelancer/bid-tracker", { headers: { Authorization: `Bearer ${token}` } }),
  ]);
  if (dashRes.ok) setDashboard(await dashRes.json());
  if (trackerRes.ok) {
@@ -139,7 +140,7 @@ export default function FreelancerFeed() {
  setLoadingApi(false);
  setLastRefreshed(new Date());
  }
- }, [auth.accessToken]);
+ }, [getValidToken]);
 
  useEffect(() => { fetchData(); }, [fetchData]);
 
