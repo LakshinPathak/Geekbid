@@ -80,8 +80,23 @@ export async function PATCH(req: NextRequest) {
   const { disputeId, status, resolution, resolutionType } = await req.json();
   if (!disputeId || !status) return NextResponse.json({ error: "disputeId and status required" }, { status: 400 });
   if (!ObjectId.isValid(disputeId)) return NextResponse.json({ error: "Invalid disputeId" }, { status: 400 });
+  // Allowlist, not just "truthy" — sending "RESOLVED" or "closed" previously
+  // set the dispute's status field to whatever was sent while the escrow-move
+  // check below (exact match on "resolved") silently no-oped, leaving the
+  // linked transaction stuck "disputed" forever.
+  const ALLOWED_STATUSES = ["open", "resolved"];
+  if (!ALLOWED_STATUSES.includes(status)) {
+    return NextResponse.json({ error: `status must be one of: ${ALLOWED_STATUSES.join(", ")}` }, { status: 400 });
+  }
   if (status === "resolved" && !resolution?.trim()) {
     return NextResponse.json({ error: "Resolution notes required" }, { status: 400 });
+  }
+  const ALLOWED_RESOLUTION_TYPES = ["refund_client", "pay_freelancer", "split_50_50", "dismiss"];
+  if (status === "resolved" && !ALLOWED_RESOLUTION_TYPES.includes(resolutionType)) {
+    return NextResponse.json(
+      { error: `resolutionType is required when resolving and must be one of: ${ALLOWED_RESOLUTION_TYPES.join(", ")}` },
+      { status: 400 }
+    );
   }
 
   const db = await getDb();

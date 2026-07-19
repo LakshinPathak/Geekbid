@@ -24,6 +24,13 @@ export async function POST(req: NextRequest) {
  if (!title || !freelancerId || !price) {
  return NextResponse.json({ error: "title, freelancerId, and price required" }, { status: 400 });
  }
+ // Same finite/positive check as POST /api/jobs — without it, a NaN/≤0
+ // price flows straight into startingPrice/minimumPrice below and breaks
+ // escrow math and the accept-offer emails downstream.
+ const numPrice = Number(price);
+ if (!Number.isFinite(numPrice) || numPrice <= 0) {
+ return NextResponse.json({ error: "price must be a valid number greater than 0" }, { status: 400 });
+ }
 
  const db = await getDb();
 
@@ -64,8 +71,8 @@ export async function POST(req: NextRequest) {
  title,
  description: description ?? "",
  skillsRequired: skillsRequired ?? [],
- startingPrice: Number(price),
- minimumPrice: Number(price),
+ startingPrice: numPrice,
+ minimumPrice: numPrice,
  decayRatePerHour: 0,
  estimatedHours: Number(estimatedHours) || 0,
  postedAt: new Date().toISOString(),

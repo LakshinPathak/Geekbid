@@ -410,7 +410,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
  );
  if (res.ok) {
  const data = await res.json();
- if (Array.isArray(data)) setChatMessages(data);
+ // Merge by roomId instead of replacing the whole list — this was
+ // overwriting every other room's already-loaded messages with just
+ // this one room's, so a sidebar last-message preview for any other
+ // room went blank until that room was opened again.
+ if (Array.isArray(data)) {
+ setChatMessages((prev) => [...prev.filter((m) => m.roomId !== roomId), ...data]);
+ }
  }
  } catch (err) {
  console.error("[fetchChatMessages]", err);

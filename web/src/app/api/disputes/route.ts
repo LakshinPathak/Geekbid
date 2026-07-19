@@ -90,8 +90,20 @@ export async function PATCH(req: NextRequest) {
  if (!disputeId) {
  return NextResponse.json({ error: "Invalid or missing disputeId" }, { status: 400 });
  }
- if (!newStatus) {
- return NextResponse.json({ error: "status is required" }, { status: 400 });
+ // Allowlist, not just "truthy" — an admin sending "RESOLVED" or "closed"
+ // previously set the dispute's own status field to whatever they sent
+ // while the escrow-move check below (exact match on "resolved") silently
+ // no-oped, leaving the linked transaction stuck "disputed" forever.
+ const ALLOWED_STATUSES = ["open", "resolved"];
+ if (!ALLOWED_STATUSES.includes(newStatus)) {
+ return NextResponse.json({ error: `status must be one of: ${ALLOWED_STATUSES.join(", ")}` }, { status: 400 });
+ }
+ const ALLOWED_RESOLUTION_TYPES = ["refund_client", "pay_freelancer", "split_50_50", "dismiss"];
+ if (newStatus === "resolved" && !ALLOWED_RESOLUTION_TYPES.includes(resolutionType)) {
+ return NextResponse.json(
+ { error: `resolutionType is required when resolving and must be one of: ${ALLOWED_RESOLUTION_TYPES.join(", ")}` },
+ { status: 400 }
+ );
  }
 
  const db = await getDb();
@@ -105,9 +117,7 @@ export async function PATCH(req: NextRequest) {
  $set: {
  status: newStatus,
  resolution,
- resolutionType: resolutionType || "dismiss",
- resolvedAt: new Date().toISOString(),
- resolvedBy: auth.payload.userId,
+ ...(newStatus === "resolved" ? { resolutionType, resolvedAt: new Date().toISOString(), resolvedBy: auth.payload.userId } : {}),
  },
  }
  );

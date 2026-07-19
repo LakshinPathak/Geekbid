@@ -6,7 +6,26 @@ export function cn(...inputs: ClassValue[]) {
  return twMerge(clsx(inputs))
 }
 
-export function formatMoney(amount: number): string {
+// Job/bid prices (startingPrice, minimumPrice, bidPrice, decayRatePerHour)
+// have no stored currency field and are treated as USD-denominated
+// throughout the app — that part is unchanged here. This optional param
+// exists so callers displaying a real `transactions` row (which DOES carry
+// a `currency`, usually "INR" since Razorpay on this account only settles
+// in INR) can render it correctly instead of always labeling it `$`.
+export function formatMoney(amount: number, currency: string = "USD"): string {
+ if (currency !== "USD") {
+ try {
+ return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+ style: "currency",
+ currency,
+ minimumFractionDigits: 2,
+ maximumFractionDigits: 2,
+ }).format(amount);
+ } catch {
+ // Unknown/invalid currency code — fall through to the USD format below
+ // rather than throwing on a bad value from the DB.
+ }
+ }
  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -153,6 +172,7 @@ export type Transaction = {
  id: string; _id?: string; jobId: string; clientId: string; freelancerId: string;
  grossAmount: number; platformFee: number; netAmount: number;
  escrowStatus: string; createdAt: string; releasedAt?: string;
+ currency?: string;
 };
 
 export type SubscriptionStatus = 'created' | 'active' | 'past_due' | 'halted' | 'cancelled' | 'completed';

@@ -7,8 +7,6 @@ import {
  DollarSign, TrendingUp, Clock, CheckCircle2, AlertCircle, Wallet, ArrowUpRight,
 } from "lucide-react";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-
 export default function EarningsPage() {
  const { transactions, jobs, currentUser, mounted } = useApp();
  const router = useRouter();
@@ -36,14 +34,32 @@ export default function EarningsPage() {
  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
  ), [myTxns]);
 
- // Generate mock chart data based on actual totals
+ // Real monthly aggregation from released transactions (by releasedAt, or
+ // createdAt if that's missing) — this used to be Math.random() scaled by
+ // the all-time total, which invented numbers that changed on every reload
+ // and had nothing to do with actual monthly income.
  const chartData = useMemo(() => {
- const base = totalEarned / 6;
- return MONTHS.map((m, i) => ({
- month: m,
- value: Math.max(0, base * (0.4 + Math.random() * 1.2) * (i < 3 ? 0.6 : 1)),
- }));
- }, [totalEarned]);
+ const now = new Date();
+ const buckets = Array.from({ length: 6 }, (_, i) => {
+ const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+ return { label: d.toLocaleString("en-US", { month: "short" }), year: d.getFullYear(), month: d.getMonth() };
+ });
+ return buckets.map(({ label, year, month }) => {
+ const value = myTxns
+ .filter(t => t.escrowStatus === "released")
+ .filter(t => {
+ const d = new Date(t.releasedAt ?? t.createdAt);
+ return d.getFullYear() === year && d.getMonth() === month;
+ })
+ .reduce((s, t) => s + t.netAmount, 0);
+ return { month: label, value };
+ });
+ }, [myTxns]);
+
+ const thisMonthLabel = useMemo(() => {
+ const now = new Date();
+ return now.toLocaleString("en-US", { month: "short", year: "numeric" });
+ }, []);
 
  const maxChart = Math.max(...chartData.map(d => d.value), 1);
 
@@ -86,7 +102,7 @@ export default function EarningsPage() {
  <p className="font-heading text-2xl font-normal text-[#3d3a45]">
  {formatMoney(chartData[chartData.length - 1]?.value ?? 0)}
  </p>
- <p className="text-[#6f6a7d] text-xs mt-1">Jun 2026</p>
+ <p className="text-[#6f6a7d] text-xs mt-1">{thisMonthLabel}</p>
  </div>
 
  {/* Pending */}
@@ -173,15 +189,15 @@ export default function EarningsPage() {
  <div className="hidden sm:flex gap-3">
  <div className="text-right">
  <p className="text-[11px] text-[#6f6a7d]">Gross</p>
- <p className="text-xs font-bold text-[#3d3a45]">{formatMoney(t.grossAmount)}</p>
+ <p className="text-xs font-bold text-[#3d3a45]">{formatMoney(t.grossAmount, t.currency)}</p>
  </div>
  <div className="text-right">
  <p className="text-[11px] text-[#6f6a7d]">Fee (10%)</p>
- <p className="text-xs font-bold text-[#96543f]">-{formatMoney(t.platformFee)}</p>
+ <p className="text-xs font-bold text-[#96543f]">-{formatMoney(t.platformFee, t.currency)}</p>
  </div>
  <div className="text-right">
  <p className="text-[11px] text-[#6f6a7d]">Net</p>
- <p className="text-xs font-bold text-[#4b3f8f]">{formatMoney(t.netAmount)}</p>
+ <p className="text-xs font-bold text-[#4b3f8f]">{formatMoney(t.netAmount, t.currency)}</p>
  </div>
  </div>
  <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
@@ -195,9 +211,9 @@ export default function EarningsPage() {
  </div>
  {/* Mobile amounts */}
  <div className="flex gap-4 mt-2 sm:hidden text-xs text-[#6f6a7d]">
- <span>Gross: {formatMoney(t.grossAmount)}</span>
- <span className="text-[#96543f]">Fee: -{formatMoney(t.platformFee)}</span>
- <span className="text-[#4b3f8f]">Net: {formatMoney(t.netAmount)}</span>
+ <span>Gross: {formatMoney(t.grossAmount, t.currency)}</span>
+ <span className="text-[#96543f]">Fee: -{formatMoney(t.platformFee, t.currency)}</span>
+ <span className="text-[#4b3f8f]">Net: {formatMoney(t.netAmount, t.currency)}</span>
  </div>
  </div>
  );

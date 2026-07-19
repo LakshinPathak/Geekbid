@@ -27,15 +27,23 @@ export default function MyJobsPage() {
 
  const isClient = currentUser?.role === "client";
 
+ // Freelancers: the header copy says "accepted or bid on", but this only
+ // ever matched acceptedBy — a freelancer with an open counter-bid on a job
+ // they haven't won yet saw it vanish from this list entirely.
+ const myBidJobIds = useMemo(() => {
+ const uid = currentUser?.id ?? currentUser?._id;
+ return new Set(bids.filter(b => b.freelancerId === uid).map(b => b.jobId));
+ }, [bids, currentUser]);
+
  const myJobs = useMemo(() => {
  const uid = currentUser?.id ?? currentUser?._id;
  const all = jobs.filter(j =>
- j.clientId === uid || j.acceptedBy === uid
+ j.clientId === uid || j.acceptedBy === uid || myBidJobIds.has(j.id ?? j._id ?? "")
  );
  if (filter === "open") return all.filter(j => j.status === "open");
  if (filter === "accepted") return all.filter(j => j.status === "accepted");
  return all;
- }, [jobs, currentUser, filter]);
+ }, [jobs, currentUser, filter, myBidJobIds]);
 
  const jobBidCounts = useMemo(() => {
  const counts: Record<string, number> = {};
@@ -48,13 +56,17 @@ export default function MyJobsPage() {
 
  const openCount = useMemo(() => {
  const uid = currentUser?.id ?? currentUser?._id;
- return jobs.filter(j => (j.clientId === uid || j.acceptedBy === uid) && j.status === "open").length;
- }, [jobs, currentUser]);
+ return jobs.filter(j =>
+ (j.clientId === uid || j.acceptedBy === uid || myBidJobIds.has(j.id ?? j._id ?? "")) && j.status === "open"
+ ).length;
+ }, [jobs, currentUser, myBidJobIds]);
 
  const acceptedCount = useMemo(() => {
  const uid = currentUser?.id ?? currentUser?._id;
- return jobs.filter(j => (j.clientId === uid || j.acceptedBy === uid) && j.status === "accepted").length;
- }, [jobs, currentUser]);
+ return jobs.filter(j =>
+ (j.clientId === uid || j.acceptedBy === uid || myBidJobIds.has(j.id ?? j._id ?? "")) && j.status === "accepted"
+ ).length;
+ }, [jobs, currentUser, myBidJobIds]);
 
  const tabs = [
  { key: "all", label: `All (${myJobs.length})` },
@@ -167,7 +179,15 @@ export default function MyJobsPage() {
  ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border-[rgba(75,63,143,0.22)]"
  : "bg-[#ffffff] text-[#6f6a7d] border-[rgba(75,63,143,0.22)]"
  }`}>
- {isOpen ? "Live" : "Completed"}
+ {/* Was a plain isOpen ? "Live" : "Completed" — accepted/cancelled/
+ expired jobs all showed "Completed", which is wrong for a job that's
+ merely accepted (not yet done) or was cancelled/expired unfinished. */}
+ {job.status === "open" ? "Live"
+ : job.status === "accepted" ? "Accepted"
+ : job.status === "completed" ? "Completed"
+ : job.status === "cancelled" ? "Cancelled"
+ : job.status === "expired" ? "Expired"
+ : "Removed"}
  </span>
  <Link href={`/jobs/${jid}`}>
  <button className="border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-[#f4f2ee] hover:text-[#3d3a45] transition-all">

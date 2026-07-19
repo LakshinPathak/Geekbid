@@ -102,7 +102,23 @@ export async function POST(req: NextRequest) {
         updatedAt: now,
         lastWebhookEventId: null as string | null,
       };
-      const result = await db.collection("subscriptions").insertOne(subDoc);
+      // The findOne check above is a fast-path, not atomic — two concurrent
+      // POSTs can both pass it before either insert lands. A partial unique
+      // index on {userId} scoped to active-ish statuses (see
+      // scripts/create-fix-indexes.mjs) turns the loser's insert into a
+      // duplicate-key error instead of a second live subscription row.
+      let result;
+      try {
+        result = await db.collection("subscriptions").insertOne(subDoc);
+      } catch (err) {
+        if ((err as { code?: number }).code === 11000) {
+          return NextResponse.json(
+            { error: "You already have an active subscription. Use the change-plan action instead." },
+            { status: 409 }
+          );
+        }
+        throw err;
+      }
       await db.collection("users").updateOne(
         { _id: new ObjectId(auth.payload.userId) },
         { $set: { plan, subscriptionId: result.insertedId.toString(), planExpiresAt: periodEnd } }
@@ -150,7 +166,24 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
       lastWebhookEventId: null as string | null,
     };
-    const result = await db.collection("subscriptions").insertOne(subDoc);
+    // Same duplicate-key backstop as the mock branch above — see
+    // scripts/create-fix-indexes.mjs for the partial unique index this
+    // relies on. If this fires here, the Razorpay subscription created just
+    // above is orphaned (no local record) — rare enough in practice (the
+    // findOne fast-path already caught the common case) not to warrant a
+    // Razorpay-side cancel call for this narrow a race window.
+    let result;
+    try {
+      result = await db.collection("subscriptions").insertOne(subDoc);
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        return NextResponse.json(
+          { error: "You already have an active subscription. Use the change-plan action instead." },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json(
       {
