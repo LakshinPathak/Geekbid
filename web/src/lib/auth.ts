@@ -247,11 +247,17 @@ type GoogleProfile = {
  avatarUrl?: string;
  googleId: string;
  role: string;
+ // "register" = the signup tab explicitly asked for this role (apply it,
+ // adding/switching as needed, same as before). "login" = the login tab —
+ // an existing user must be logged into their account as-is; the role
+ // param here is just Google's default and must never add or switch roles
+ // on a plain login.
+ intent?: "login" | "register";
 };
 
 export async function googleLoginUser(profile: GoogleProfile) {
  const db = await getDb();
- const { email, name, avatarUrl, googleId, role } = profile;
+ const { email, name, avatarUrl, googleId, role, intent = "login" } = profile;
  const requestedRole = ["freelancer", "client"].includes(role) ? role : "freelancer";
 
  // Check if user exists by email or googleId
@@ -292,6 +298,12 @@ export async function googleLoginUser(profile: GoogleProfile) {
  user = { ...user, googleId, avatarUrl: avatarUrl || user.avatarUrl };
  }
 
+ // "Continue with Google" on the plain login tab always sent role= (default
+ // freelancer), so an existing client logging in could silently gain a
+ // freelancer role or have their active role switched. Only the signup tab
+ // (intent: "register") is allowed to add/switch roles for an existing
+ // account — a bare login must leave the account exactly as it was.
+ if (intent === "register") {
  const existingRoles: string[] = user.roles ?? [user.role];
  if (!existingRoles.includes(requestedRole)) {
  // Dual-role: signing in with Google already proves ownership of this
@@ -309,6 +321,7 @@ export async function googleLoginUser(profile: GoogleProfile) {
  // Already has this role from an earlier signup — switch which role is active.
  await db.collection("users").updateOne({ _id: user._id }, { $set: { role: requestedRole } });
  user = { ...user, role: requestedRole };
+ }
  }
  } else {
  // Create new user from Google profile

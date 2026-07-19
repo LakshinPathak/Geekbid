@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
  const { searchParams } = new URL(req.url);
  const code = searchParams.get("code");
  const state = searchParams.get("state") || "";
- const [nonce, role = "freelancer"] = state.split(".");
+ const [nonce, role = "freelancer", intent = "login"] = state.split(".");
  const errorParam = searchParams.get("error");
 
  if (errorParam) {
@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
  avatarUrl: profile.picture,
  googleId: profile.id,
  role,
+ intent: intent === "register" ? "register" : "login",
  });
 
  if ("error" in result) {

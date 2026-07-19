@@ -696,8 +696,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
  ]);
 
  // ── Hydration: restore session on mount ───────────────────
+ // `mounted` doubles as "we know the real auth state now" for every page's
+ // `if (mounted && !currentUser) router.replace("/login")` guard. Setting it
+ // synchronously up front — before an expired-token silentRefresh() had a
+ // chance to resolve — meant a returning user with a valid refresh cookie
+ // briefly had mounted=true and currentUser=null, and got bounced to /login
+ // before the refresh could finish and restore them. Only flip it once we
+ // actually know the outcome: immediately for "no session" / "session still
+ // valid", but only after silentRefresh() settles for "session expired".
  useEffect(() => {
- setMounted(true);
  setNow(new Date());
 
  const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
@@ -720,6 +727,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch {
  /* corrupted storage */
  }
+ setMounted(true);
  } else {
  silentRefresh().then((newToken) => {
  if (newToken) {
@@ -728,8 +736,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
  );
  scheduleRefresh(exp);
  }
+ setMounted(true);
  });
  }
+ } else {
+ setMounted(true);
  }
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, []);

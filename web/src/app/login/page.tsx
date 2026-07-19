@@ -467,7 +467,7 @@ function LoginPageContent() {
 
  {/* Google OAuth */}
  <button
- onClick={() => window.location.href = `/api/auth/google?role=${role}`}
+ onClick={() => window.location.href = `/api/auth/google?role=${role}&intent=${mode === "register" ? "register" : "login"}`}
  type="button"
  className="w-full h-12 rounded-full text-sm font-medium flex items-center justify-center gap-3 transition-all"
  style={{
