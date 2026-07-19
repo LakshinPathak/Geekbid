@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { sendDisputeResolvedEmail } from "@/lib/email";
 import { sanitizeObjectId, sanitizeString } from "@/lib/sanitize";
+import { toCents, toDollars } from "@/lib/money";
 
 /**
  * GET /api/disputes — list disputes (protected)
@@ -128,8 +129,7 @@ export async function PATCH(req: NextRequest) {
  // Resolving a dispute must actually move the held escrow, not just relabel
  // the dispute record — same fix as api/admin/disputes/route.ts, kept in
  // sync here since this endpoint independently duplicates that one's
- // resolve behavior. split_50_50 intentionally left unhandled — no
- // partial-payout mechanism exists (a transaction has one recipient).
+ // resolve behavior.
  //
  // CAS filter must match "disputed", not "held": by the time a dispute
  // reaches resolution, PATCH /api/transactions {action:"dispute"} has
@@ -145,6 +145,23 @@ export async function PATCH(req: NextRequest) {
  txUpdate = { escrowStatus: "refunded", refundedAt: new Date().toISOString(), refundReason: `Dispute resolution: ${resolution}` };
  } else if (resolutionType === "pay_freelancer") {
  txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
+ } else if (resolutionType === "split_50_50") {
+ // ISSUE-61: freelancer gets half of netAmount, client is refunded
+ // grossAmount minus that half — the platform fee (gross - net) is
+ // preserved in full either way, only the net split between the two
+ // parties changes. Exact-cent math to avoid float drift on the halving.
+ const tx = await db.collection("transactions").findOne({ _id: new ObjectId(disputeBefore.transactionId) });
+ if (tx) {
+ const freelancerCents = Math.round(toCents(tx.netAmount ?? 0) / 2);
+ const clientRefundCents = toCents(tx.grossAmount ?? 0) - freelancerCents;
+ txUpdate = {
+ escrowStatus: "split",
+ splitAt: new Date().toISOString(),
+ splitBy: auth.payload.userId,
+ splitFreelancerAmount: toDollars(freelancerCents),
+ splitClientRefundAmount: toDollars(clientRefundCents),
+ };
+ }
  }
  if (txUpdate) {
  try {

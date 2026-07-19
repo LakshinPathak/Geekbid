@@ -49,8 +49,9 @@ function GeekScoreRing({ score }: { score: number }) {
 }
 
 export default function ProfilePage() {
- const { currentUser, jobs, bids, mounted, updateProfile, reviews, users, verifyGithub, referralStats } = useApp();
+ const { currentUser, jobs, bids, mounted, updateProfile, reviews, users, verifyGithub, referralStats, getValidToken, logout } = useApp();
  const router = useRouter();
+ const [deleting, setDeleting] = useState(false);
 
  const [fullName, setFullName] = useState("");
  const [bio, setBio] = useState("");
@@ -119,6 +120,29 @@ export default function ProfilePage() {
  }, [fullName, bio, company, skills, hourlyRateMin, hourlyRateMax, availability, githubUsername, updateProfile]);
 
  const toggleSkill = (s: string) => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+
+ const handleDeleteAccount = useCallback(async () => {
+ setDeleting(true);
+ try {
+ const token = await getValidToken();
+ const res = await fetch("/api/user", {
+ method: "DELETE",
+ headers: token ? { Authorization: `Bearer ${token}` } : {},
+ });
+ const data = await res.json();
+ if (!res.ok || data.error) {
+ toast.error("Delete failed", { description: data.error ?? "Try again" });
+ setDeleting(false);
+ return;
+ }
+ toast.success("Account deleted");
+ logout();
+ router.replace("/login");
+ } catch {
+ toast.error("Delete failed", { description: "Network error — try again" });
+ setDeleting(false);
+ }
+ }, [getValidToken, logout, router]);
 
  if (!mounted || !currentUser) return (
  <div className="flex items-center justify-center min-h-[60vh] bg-[#fbfaf7]">
@@ -525,11 +549,15 @@ export default function ProfilePage() {
  </button>
  ) : (
  <div className="flex items-center gap-2 mt-3">
- <button className="bg-red-500 text-[#3d3a45] px-4 py-2 rounded-full text-xs font-semibold hover:bg-red-600 transition-colors">
- Confirm Delete
+ <button
+ onClick={handleDeleteAccount}
+ disabled={deleting}
+ className="bg-red-500 text-[#3d3a45] px-4 py-2 rounded-full text-xs font-semibold hover:bg-red-600 transition-colors disabled:opacity-50"
+ >
+ {deleting ? "Deleting..." : "Confirm Delete"}
  </button>
- <button onClick={() => setShowDeleteConfirm(false)}
- className="text-[#6f6a7d] text-xs hover:text-[#3d3a45] transition-colors">
+ <button onClick={() => setShowDeleteConfirm(false)} disabled={deleting}
+ className="text-[#6f6a7d] text-xs hover:text-[#3d3a45] transition-colors disabled:opacity-50">
  Cancel
  </button>
  </div>

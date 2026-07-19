@@ -409,7 +409,7 @@ function LoginPageContent() {
  <label className="text-xs font-semibold uppercase tracking-wider"
  style={{ color: "#6f6a7d" }}>Password</label>
  {mode === "login" && (
- <button type="button" className="text-xs transition-colors hover:opacity-80"
+ <button type="button" onClick={() => router.push("/forgot-password")} className="text-xs transition-colors hover:opacity-80"
  style={{ color: "#4b3f8f" }}>Forgot password?</button>
  )}
  </div>
