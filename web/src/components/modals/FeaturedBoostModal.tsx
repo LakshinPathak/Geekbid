@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import { Sparkles, Loader2, Lock, X } from "lucide-react";
-import { FEATURED_BOOST_PRICE_USD } from "@/lib/plans";
+import { FEATURED_BOOST_PRICE_INR, FEATURED_BOOST_CURRENCY } from "@/lib/plans";
 
 declare global {
   interface Window {
@@ -28,7 +28,6 @@ type Props = {
 // claim it for exactly this job.
 export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeatured }: Props) {
   const { currentUser, toggleFeatured, getValidToken } = useApp();
-  const [config, setConfig] = useState<{ key: string; currency: string; mock: boolean } | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -44,13 +43,6 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
     } else if (typeof window !== "undefined" && window.Razorpay) {
       setScriptLoaded(true);
     }
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/payments")
-      .then((res) => res.json())
-      .then(setConfig)
-      .catch(console.error);
   }, []);
 
   const finishBoost = useCallback(async (transactionId: string) => {
@@ -78,8 +70,8 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          amount: FEATURED_BOOST_PRICE_USD,
-          currency: config?.currency || "INR",
+          amount: FEATURED_BOOST_PRICE_INR,
+          currency: FEATURED_BOOST_CURRENCY,
           jobId,
           description: `featured_boost:${jobId}`,
         }),
@@ -101,8 +93,8 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
             razorpay_order_id: order.id,
             razorpay_payment_id: `pay_mock_${Date.now()}`,
             razorpay_signature: "mock_signature",
-            amount: FEATURED_BOOST_PRICE_USD,
-            currency: config?.currency || "INR",
+            amount: FEATURED_BOOST_PRICE_INR,
+            currency: FEATURED_BOOST_CURRENCY,
             jobId,
             description: `featured_boost:${jobId}`,
           }),
@@ -133,8 +125,8 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              amount: FEATURED_BOOST_PRICE_USD,
-              currency: config?.currency || "INR",
+              amount: FEATURED_BOOST_PRICE_INR,
+              currency: FEATURED_BOOST_CURRENCY,
               jobId,
               description: `featured_boost:${jobId}`,
             }),
@@ -156,7 +148,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
       toast.error("An unexpected error occurred");
       setProcessing(false);
     }
-  }, [getValidToken, config, scriptLoaded, currentUser, jobId, jobTitle, finishBoost]);
+  }, [getValidToken, scriptLoaded, currentUser, jobId, jobTitle, finishBoost]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={onClose}>
@@ -173,7 +165,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
           Your plan&apos;s included featured boosts are used up this month.
         </p>
         <p className="text-lg font-heading font-bold text-[#4b3f8f] mt-3 mb-6">
-          ${FEATURED_BOOST_PRICE_USD} one-off boost
+          ₹{FEATURED_BOOST_PRICE_INR} one-off boost
         </p>
         <div className="flex gap-3">
           <button onClick={onClose} className="btn-ghost flex-1 h-11 rounded-2xl text-sm">

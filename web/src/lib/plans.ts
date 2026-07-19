@@ -2,7 +2,13 @@ export type PlanTier = 'free' | 'plus' | 'premium';
 
 // One-off pay-per-boost price (blueprint §5: "$5-15/boost") — reuses the
 // existing one-off Razorpay payment flow rather than new payment infra.
-export const FEATURED_BOOST_PRICE_USD = 10;
+// Razorpay on this account only settles in INR (see GET /api/payments), so
+// this INR amount is the single source of truth for both what the client
+// displays and what the server enforces when claiming the payment — do not
+// reintroduce a separate USD display figure paired with an INR charge
+// amount, or the label and the actual charge will disagree again.
+export const FEATURED_BOOST_PRICE_INR = 830;
+export const FEATURED_BOOST_CURRENCY = "INR";
 
 export interface PlanConfig {
   name: string;

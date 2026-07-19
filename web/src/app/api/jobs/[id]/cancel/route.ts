@@ -42,11 +42,20 @@ export async function PATCH(
  return NextResponse.json({ error: "Only open jobs can be cancelled" }, { status: 400 });
  }
 
+ // Atomic claim: the earlier `job.status !== "open"` check above is just a
+ // fast-path rejection — a concurrent accept could flip the job to
+ // "accepted" between that read and this write. Requiring status: "open"
+ // in the filter itself (matching the accept/complete pattern in
+ // jobs/[id]/route.ts) makes the actual cancel a no-op unless it wins the
+ // race, instead of unconditionally overwriting whatever accept just did.
  const jobId = job._id.toString();
- await db.collection("jobs").updateOne(
- { _id: job._id },
+ const cancelledJob = await db.collection("jobs").findOneAndUpdate(
+ { _id: job._id, status: "open" },
  { $set: { status: "cancelled", cancelledAt: new Date().toISOString() } }
  );
+ if (!cancelledJob) {
+ return NextResponse.json({ error: "Job was already accepted or cancelled" }, { status: 409 });
+ }
 
  // Notify all bidders
  const bids = await db.collection("bids").find({ jobId }).toArray();

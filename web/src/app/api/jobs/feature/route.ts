@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
-import { getPlanConfig, FEATURED_BOOST_PRICE_USD } from "@/lib/plans";
+import { getPlanConfig, FEATURED_BOOST_PRICE_INR, FEATURED_BOOST_CURRENCY } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
 
 // PATCH /api/jobs/feature — toggle featured status
@@ -70,9 +70,10 @@ export async function PATCH(req: NextRequest) {
  error: `${config.limits.featuredBoostsPerMonth > 0
  ? `${config.name} plan limit: ${config.limits.featuredBoostsPerMonth} featured boosts/month used.`
  : `${config.name} plan does not include featured boosts.`
- } Pay $${FEATURED_BOOST_PRICE_USD} for a one-off boost.`,
+ } Pay ₹${FEATURED_BOOST_PRICE_INR} for a one-off boost.`,
  code: "BOOST_QUOTA_EXCEEDED",
- boostPrice: FEATURED_BOOST_PRICE_USD,
+ boostPrice: FEATURED_BOOST_PRICE_INR,
+ boostCurrency: FEATURED_BOOST_CURRENCY,
  },
  { status: 403 }
  );
@@ -87,7 +88,10 @@ export async function PATCH(req: NextRequest) {
 
  // Atomically claim the payment so the same transaction can't fund two
  // different boosts — tag ties it to this exact job so a boost paid for
- // one job can't be replayed onto another.
+ // one job can't be replayed onto another. Also enforce the amount/currency
+ // actually verified on the transaction, not just that *a* payment with the
+ // right description exists (ISSUE-2) — otherwise a ₹1 verified payment
+ // tagged with this job's description would be enough to claim the boost.
  const claimedTx = await db.collection("transactions").findOneAndUpdate(
  {
  _id: txObjectId,
@@ -95,6 +99,8 @@ export async function PATCH(req: NextRequest) {
  description: `featured_boost:${jobId}`,
  verified: true,
  consumedAt: { $exists: false },
+ grossAmount: { $gte: FEATURED_BOOST_PRICE_INR },
+ currency: FEATURED_BOOST_CURRENCY,
  },
  { $set: { consumedAt: new Date().toISOString() } }
  );

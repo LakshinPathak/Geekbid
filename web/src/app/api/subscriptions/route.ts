@@ -73,6 +73,18 @@ export async function POST(req: NextRequest) {
     // plan badges, pricing page state — is testable before real Razorpay
     // Plans exist. Matches the existing api/payments/route.ts convention.
     if (!isRazorpayConfigured || !planId) {
+      // Mock mode grants a paid plan without any real charge, so — like mock
+      // payments — it must never be reachable in production unless an
+      // operator has explicitly opted in (e.g. a staging env living under
+      // NODE_ENV=production). Otherwise a misconfigured prod deploy (missing
+      // plan IDs/keys) would silently activate free Plus/Premium for anyone.
+      if (process.env.NODE_ENV === "production" && process.env.ALLOW_MOCK_BILLING !== "true") {
+        return NextResponse.json(
+          { error: "Billing is not configured for this plan" },
+          { status: 503 }
+        );
+      }
+
       const razorpaySubscriptionId = `sub_mock_${Date.now()}`;
       const periodEnd = new Date(Date.now() + 30 * 24 * 3600000).toISOString();
       const subDoc = {
