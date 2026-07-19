@@ -18,22 +18,29 @@ type Stats = {
 };
 
 export default function AdminDashboard() {
-  const { auth, seedDatabase } = useApp();
+  const { getValidToken, seedDatabase } = useApp();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
-  };
+  // Fetches a fresh header set (with a valid, non-expired token) on every
+  // call instead of a plain object frozen with whatever auth.accessToken
+  // was at render time — an admin session left open past token expiry
+  // silently sent every request as effectively unauthenticated before.
+  const getHeaders = useCallback(async () => {
+    const token = await getValidToken();
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [getValidToken]);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/stats", { headers });
+    const res = await fetch("/api/admin/stats", { headers: await getHeaders() });
     if (res.ok) setStats(await res.json());
     setLoading(false);
-  }, [auth.accessToken]);
+  }, [getHeaders]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 

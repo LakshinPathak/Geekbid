@@ -45,19 +45,23 @@ const API_KEYS = [
 ];
 
 export default function AdminConfigPage() {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [config, setConfig] = useState<Config>(defaults);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [envStatus, setEnvStatus] = useState<Record<string, boolean>>({});
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
-  };
+  const getHeaders = useCallback(async () => {
+    const token = await getValidToken();
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [getValidToken]);
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
+    const headers = await getHeaders();
     const res = await fetch("/api/admin/config", { headers });
     if (res.ok) {
       const data = await res.json();
@@ -68,7 +72,7 @@ export default function AdminConfigPage() {
     if (envRes.ok) setEnvStatus(await envRes.json());
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.accessToken]);
+  }, [getHeaders]);
 
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
@@ -77,7 +81,7 @@ export default function AdminConfigPage() {
     const { planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled } = config;
     const res = await fetch("/api/admin/config", {
       method: "PATCH",
-      headers,
+      headers: await getHeaders(),
       body: JSON.stringify({ planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled }),
     });
     if (res.ok) toast.success("Configuration saved");

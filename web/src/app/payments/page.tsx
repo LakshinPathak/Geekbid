@@ -83,17 +83,33 @@ export default function PaymentsPage() {
  const [disputeSubmitting, setDisputeSubmitting] = useState(false);
 
  useEffect(() => {
- if (typeof window !== "undefined" && !document.getElementById("razorpay-script")) {
+ if (typeof window === "undefined") return;
+ if (window.Razorpay) { setScriptLoaded(true); return; }
+
+ if (!document.getElementById("razorpay-script")) {
  const script = document.createElement("script");
  script.id = "razorpay-script";
  script.src = "https://checkout.razorpay.com/v1/checkout.js";
  script.async = true;
- script.onload = () => setScriptLoaded(true);
  script.onerror = () => console.warn("Razorpay script failed to load (mock mode will work)");
  document.body.appendChild(script);
- } else if (typeof window !== "undefined" && window.Razorpay) {
- setScriptLoaded(true);
  }
+
+ // Poll for window.Razorpay instead of relying on this tag's own `onload`
+ // — only one handler can attach to a given <script>, so this page can't
+ // listen to it if FeaturedBoostModal (or a previous mount) was the one
+ // that actually added the tag. The old `else if (window.Razorpay)`
+ // branch only ran once, synchronously, so an already-existing-but-still-
+ // loading tag left scriptLoaded stuck false forever and silently routed
+ // real payments through the mock-verify path.
+ const interval = setInterval(() => {
+ if (window.Razorpay) {
+ setScriptLoaded(true);
+ clearInterval(interval);
+ }
+ }, 100);
+ const timeout = setTimeout(() => clearInterval(interval), 10000);
+ return () => { clearInterval(interval); clearTimeout(timeout); };
  }, []);
 
  useEffect(() => {

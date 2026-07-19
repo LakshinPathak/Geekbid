@@ -1,5 +1,7 @@
 "use client";
+import { useCallback } from "react";
 import { CldUploadWidget } from "next-cloudinary";
+import { useApp } from "@/lib/store";
 import CloudinaryAvatar from "./CloudinaryAvatar";
 import { Camera, Trash2 } from "lucide-react";
 
@@ -16,16 +18,59 @@ export default function AvatarUploader({
   onUploadSuccess,
   onRemove,
 }: AvatarUploaderProps) {
+  const { getValidToken } = useApp();
+
+  // Custom uploadSignature callback (Cloudinary widget's own contract:
+  // `(callback, paramsToSign) => void`) instead of the unsigned
+  // `uploadPreset` this used before — an unsigned preset lets anyone who
+  // extracts the (public, client-bundled) cloud name + preset name upload
+  // directly to the Cloudinary account with no GeekBid auth at all.
+  // next-cloudinary's built-in `signatureEndpoint` shorthand can't attach
+  // an Authorization header, so this calls /api/upload/sign directly with
+  // a valid access token instead of relying on that shorthand.
+  const uploadSignature = useCallback(
+    (callback: (signature: string | null, error?: unknown) => void, paramsToSign: Record<string, unknown>) => {
+      (async () => {
+        try {
+          const token = await getValidToken();
+          if (!token) {
+            callback(null, new Error("Not authenticated"));
+            return;
+          }
+          const res = await fetch("/api/upload/sign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ paramsToSign }),
+          });
+          const data = await res.json();
+          if (data.error) {
+            callback(null, new Error(data.error));
+            return;
+          }
+          callback(data.signature);
+        } catch (err) {
+          callback(null, err);
+        }
+      })();
+    },
+    [getValidToken]
+  );
+
+  const widgetOptions = {
+    apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    uploadSignature,
+    folder: "geekbid/avatars",
+    cropping: true,
+    croppingAspectRatio: 1,
+    maxFileSize: 5000000,
+    sources: ["local", "camera", "url"] as ("local" | "camera" | "url")[],
+  };
+
   return (
     <div className="flex items-center gap-4">
       <CldUploadWidget
-        uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "geekbid_unsigned"}
         options={{
-          folder: "geekbid/avatars",
-          cropping: true,
-          croppingAspectRatio: 1,
-          maxFileSize: 5000000,
-          sources: ["local", "camera", "url"],
+          ...widgetOptions,
           theme: "minimal",
           styles: {
             palette: {
@@ -68,14 +113,7 @@ export default function AvatarUploader({
 
       <div className="flex flex-col gap-2">
         <CldUploadWidget
-          uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "geekbid_unsigned"}
-          options={{
-            folder: "geekbid/avatars",
-            cropping: true,
-            croppingAspectRatio: 1,
-            maxFileSize: 5000000,
-            sources: ["local", "camera", "url"],
-          }}
+          options={widgetOptions}
           onSuccess={(result) => {
             if (result.event === "success" && result.info && typeof result.info === "object" && "secure_url" in result.info) {
               const info = result.info as { secure_url: string; public_id: string };

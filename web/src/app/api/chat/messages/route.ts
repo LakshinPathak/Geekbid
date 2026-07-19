@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { checkRateLimit } from "@/lib/sanitize";
+
+const MAX_MESSAGE_LENGTH = 5000;
 
 /**
  * GET /api/chat/messages?roomId=xxx — fetch messages for a room (protected)
@@ -38,6 +41,15 @@ export async function GET(req: NextRequest) {
  { status: 404 }
  );
  }
+
+ // Viewing a room's messages marks it read for this user (ISSUE-57: the
+ // mobile inbox badge used the general notifications unread count because
+ // there was no chat-specific read state to derive one from). Best-effort
+ // — a failure here shouldn't block loading the messages themselves.
+ db.collection("chat_rooms").updateOne(
+ { _id: room._id },
+ { $set: { [`lastReadBy.${auth.payload.userId}`]: new Date().toISOString() } }
+ ).catch((err) => console.error("[Chat Messages] Failed to stamp lastReadBy:", err));
 
  const messages = await db
  .collection("chat_messages")
@@ -79,6 +91,21 @@ export async function POST(req: NextRequest) {
  { status: 400 }
  );
  }
+ if (text.trim().length > MAX_MESSAGE_LENGTH) {
+ return NextResponse.json(
+ { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer` },
+ { status: 400 }
+ );
+ }
+ // 30 messages/minute per user, across all their rooms — chat had auth +
+ // membership checks but nothing to stop a single user from flooding a
+ // room as fast as the client can fire requests.
+ if (!(await checkRateLimit(`chat:${auth.payload.userId}`, 30, 60 * 1000))) {
+ return NextResponse.json(
+ { error: "You're sending messages too quickly. Please slow down." },
+ { status: 429 }
+ );
+ }
 
  const db = await getDb();
 
@@ -108,16 +135,20 @@ export async function POST(req: NextRequest) {
 
  const result = await db.collection("chat_messages").insertOne(message);
 
- // Update room's updatedAt
+ // Update room's updatedAt, and stamp the sender as caught-up as of this
+ // message (they can't be unread on their own send) — see the read-state
+ // comment on GET above.
+ const nowIso = new Date().toISOString();
+ const readUpdate = { updatedAt: nowIso, [`lastReadBy.${auth.payload.userId}`]: nowIso };
  try {
  await db.collection("chat_rooms").updateOne(
  { _id: new ObjectId(roomId) },
- { $set: { updatedAt: new Date().toISOString() } }
+ { $set: readUpdate }
  );
  } catch {
  await db.collection("chat_rooms").updateOne(
  { id: roomId },
- { $set: { updatedAt: new Date().toISOString() } }
+ { $set: readUpdate }
  );
  }
 

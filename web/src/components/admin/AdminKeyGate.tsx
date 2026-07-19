@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function AdminKeyGate({ onVerified }: Props) {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [key, setKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +20,12 @@ export default function AdminKeyGate({ onVerified }: Props) {
     setLoading(true);
     setError(null);
     try {
+      const token = await getValidToken();
       const res = await fetch("/api/admin/verify-key", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ key }),
       });

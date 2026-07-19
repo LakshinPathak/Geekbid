@@ -15,7 +15,7 @@ type Transaction = {
 };
 
 export default function AdminTransactionsPage() {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -26,15 +26,18 @@ export default function AdminTransactionsPage() {
   const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
   const [refundReason, setRefundReason] = useState("");
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
-  };
+  const getHeaders = useCallback(async () => {
+    const token = await getValidToken();
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [getValidToken]);
 
   const fetchTxs = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), status: filter });
-    const res = await fetch(`/api/admin/transactions?${params}`, { headers });
+    const res = await fetch(`/api/admin/transactions?${params}`, { headers: await getHeaders() });
     if (res.ok) {
       const data = await res.json();
       setTxs(data.transactions);
@@ -42,7 +45,7 @@ export default function AdminTransactionsPage() {
       setPages(data.pages);
     }
     setLoading(false);
-  }, [page, filter, auth.accessToken]);
+  }, [page, filter, getHeaders]);
 
   useEffect(() => { fetchTxs(); }, [fetchTxs]);
 
@@ -50,7 +53,7 @@ export default function AdminTransactionsPage() {
     setActionLoading(txId);
     const res = await fetch("/api/admin/transactions", {
       method: "PATCH",
-      headers,
+      headers: await getHeaders(),
       body: JSON.stringify({ txId, action, reason }),
     });
     if (res.ok) {

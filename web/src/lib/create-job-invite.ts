@@ -8,6 +8,7 @@ export type CreateInviteErrorCode =
   | "duplicate"
   | "job_not_found"
   | "job_not_open"
+  | "direct_offer_not_invitable"
   | "forbidden"
   | "quota_exceeded"
   | "insert_failed";
@@ -73,6 +74,7 @@ export async function createJobInvite(
     title?: string;
     status?: string;
     clientId?: string;
+    type?: string;
   } | null;
 
   if (!jobDoc) {
@@ -83,6 +85,19 @@ export async function createJobInvite(
       ok: false,
       code: "job_not_open",
       error: "This job is no longer open for invites",
+      status: 400,
+    };
+  }
+  // Direct-offer jobs are exclusive to the one freelancer they were sent to
+  // (offeredTo) and go through /api/jobs/offer-response — inviting someone
+  // else to bid on one would let a second freelancer accept/bid on a job
+  // meant only for the offered recipient. The FE already filters these out,
+  // but this is the actual authorization boundary, not just a UI nicety.
+  if (jobDoc.type === "direct_offer") {
+    return {
+      ok: false,
+      code: "direct_offer_not_invitable",
+      error: "This job is a direct offer and cannot be opened up via invite",
       status: 400,
     };
   }

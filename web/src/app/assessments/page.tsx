@@ -26,6 +26,13 @@ export default function AssessmentsPage() {
  const [submitting, setSubmitting] = useState(false);
  const [quizResult, setQuizResult] = useState<{ score: number; passed: boolean } | null>(null);
  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+ // Latches once the auto-submit-on-timeout has fired for the current quiz
+ // attempt, independent of quizResult/submitting — those reset on a failed
+ // submit (network error), and `submitQuiz` is recreated (new identity)
+ // whenever `answers` changes, which re-ran the auto-submit effect below
+ // and fired a second submit if the user touched an answer after a failed
+ // auto-submit at timeLeft === 0.
+ const autoSubmittedRef = useRef(false);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -55,6 +62,7 @@ export default function AssessmentsPage() {
  setTimeLeft(data.timeLimit);
  setStartedAt(new Date().toISOString());
  setQuizResult(null);
+ autoSubmittedRef.current = false;
 
  if (timerRef.current) clearInterval(timerRef.current);
  timerRef.current = setInterval(() => {
@@ -94,7 +102,10 @@ export default function AssessmentsPage() {
  // are the only values that actually determine whether an auto-submit is
  // due.
  useEffect(() => {
- if (timeLeft === 0 && quiz && !quizResult && !submitting) submitQuiz();
+ if (timeLeft === 0 && quiz && !quizResult && !submitting && !autoSubmittedRef.current) {
+ autoSubmittedRef.current = true;
+ submitQuiz();
+ }
  }, [timeLeft, quiz, submitQuiz]);
 
  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);

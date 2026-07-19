@@ -196,7 +196,7 @@ export type Dispute = {
 };
 
 export type ChatMessage = { id: string; roomId: string; senderId: string; text: string; createdAt: string; };
-export type ChatRoom = { id: string; jobId: string; participantIds: string[]; updatedAt: string; };
+export type ChatRoom = { id: string; jobId: string; participantIds: string[]; updatedAt: string; lastReadBy?: Record<string, string>; };
 
 export type Review = {
  id: string; _id?: string; jobId: string; reviewerId: string; revieweeId: string;

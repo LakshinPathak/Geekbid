@@ -24,7 +24,7 @@ const POST_ITEM: NavItem = { href: "/post-job", label: "Post", icon: PlusCircle 
 const HIDDEN_ROUTES = ["/", "/login"];
 
 export default function MobileBottomNav() {
- const { currentUser, unreadCount, mounted } = useApp();
+ const { currentUser, chatUnreadCount, mounted } = useApp();
  const pathname = usePathname();
 
  if (!mounted || !currentUser) return null;
@@ -52,9 +52,9 @@ export default function MobileBottomNav() {
  >
  <item.icon className="h-5 w-5" />
  <span className="text-[10px] font-medium leading-none">{item.label}</span>
- {item.hasBadge && unreadCount > 0 && (
+ {item.hasBadge && chatUnreadCount > 0 && (
  <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#4b3f8f] text-[9px] font-bold text-[#ffffff] px-1">
- {unreadCount > 9 ? "9+" : unreadCount}
+ {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
  </span>
  )}
  </Link>

@@ -9,7 +9,7 @@ type AuditLog = {
 };
 
 export default function AdminLogsPage() {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -18,11 +18,12 @@ export default function AdminLogsPage() {
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
+    const token = await getValidToken();
     const params = new URLSearchParams({ page: String(page), limit: "30" });
     const res = await fetch(`/api/admin/logs?${params}`, {
       headers: {
         "Content-Type": "application/json",
-        ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
     if (res.ok) {
@@ -32,7 +33,7 @@ export default function AdminLogsPage() {
       setPages(data.pages);
     }
     setLoading(false);
-  }, [page, auth.accessToken]);
+  }, [page, getValidToken]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 

@@ -53,6 +53,7 @@ type AppState = {
  now: Date;
  mounted: boolean;
  unreadCount: number;
+ chatUnreadCount: number;
  loading: boolean;
  login: (email: string, password: string) => Promise<ActionResult>;
  register: (
@@ -310,11 +311,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
  // ── Data Fetching (all from MongoDB) ──────────────────────
  const fetchJobs = useCallback(async () => {
  try {
- // Stays public for logged-out browsing, but passes the token when we have
- // one so the server can show a client their own invite-only jobs (and a
- // freelancer any job they were specifically invited to).
+ // Stays public for logged-out browsing, but passes a valid token when
+ // we have one so the server can show a client their own invite-only
+ // jobs (and a freelancer any job they were specifically invited to) —
+ // getValidToken() (not raw auth.accessToken) so this doesn't silently
+ // fall back to the public/unauthenticated view whenever the access
+ // token happens to be near/past expiry.
+ const token = await getValidToken();
  const res = await apiRequest("/api/jobs", {
- accessToken: auth.accessToken,
+ accessToken: token,
  });
  if (res.ok) {
  const data = await res.json();
@@ -323,7 +328,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch (err) {
  console.error("[fetchJobs]", err);
  }
- }, [auth.accessToken]);
+ }, [getValidToken]);
 
  const fetchBids = useCallback(async () => {
  try {
@@ -818,6 +823,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
  : 0,
  [notifications, currentUser]
  );
+
+ // Chat-specific unread (ISSUE-57) — a room is unread if it's been updated
+ // (new message from either party) more recently than this user last
+ // viewed/sent in it (api/chat/messages stamps lastReadBy on both GET and
+ // POST). Distinct from `unreadCount` above, which is general
+ // notifications and was previously (incorrectly) reused for the mobile
+ // inbox badge too.
+ const chatUnreadCount = useMemo(() => {
+ const uid = currentUser?.id ?? currentUser?._id;
+ if (!uid) return 0;
+ return chatRooms.filter((r) => {
+ const lastRead = r.lastReadBy?.[uid];
+ return !lastRead || new Date(r.updatedAt) > new Date(lastRead);
+ }).length;
+ }, [chatRooms, currentUser]);
 
  // ── Login ─────────────────────────────────────────────────
  const login = useCallback(
@@ -1428,6 +1448,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  now,
  mounted,
  unreadCount,
+ chatUnreadCount,
  loading,
  login,
  register,
@@ -1494,6 +1515,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  now,
  mounted,
  unreadCount,
+ chatUnreadCount,
  loading,
  login,
  register,

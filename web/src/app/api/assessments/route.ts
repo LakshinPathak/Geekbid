@@ -85,6 +85,21 @@ export async function POST(req: NextRequest) {
  const assessment = await db.collection("assessments").findOne({ _id: new ObjectId(assessmentId) });
  if (!assessment) return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
 
+ // Server-side time-limit enforcement — the client enforces its own
+ // countdown (assessments/page.tsx), but nothing here ever compared elapsed
+ // time to assessment.timeLimit, so a request sent after the clock ran out
+ // (paused tab, replayed request, or a client simply not bothering to
+ // enforce it) was scored exactly the same as an on-time submission.
+ // timeLimit is in seconds; a modest grace period absorbs real network/
+ // render latency without meaningfully extending the actual time allowed.
+ const TIME_LIMIT_GRACE_SECONDS = 15;
+ if (startedAt) {
+ const elapsedSeconds = (Date.now() - new Date(startedAt).getTime()) / 1000;
+ if (elapsedSeconds > assessment.timeLimit + TIME_LIMIT_GRACE_SECONDS) {
+ return NextResponse.json({ error: "Time limit exceeded for this assessment" }, { status: 400 });
+ }
+ }
+
  // Atomically claim the 30-day cooldown window before scoring — the previous
  // check-then-insert let two concurrent submits both read "no recent
  // attempt" and both insert a result, double-crediting geekScore. This
