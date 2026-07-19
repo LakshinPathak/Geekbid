@@ -149,6 +149,27 @@ export async function authenticateRequest(
  const payload = await verifyAccessToken(token);
  if (!payload) return { error: "Access token expired or invalid", status: 401 };
 
+ // Suspend/delete was previously only enforced at login/refresh/switch-role
+ // — a suspended or deleted user's still-valid access token kept working
+ // for up to its full ~15-minute lifetime on every other route. This is a
+ // projection-only point lookup on an indexed _id (cheap relative to the
+ // several other DB round trips most authenticated routes already make),
+ // not a full user fetch.
+ try {
+ const db = await getDb();
+ const user = await db.collection("users").findOne(
+ { _id: new ObjectId(payload.userId) },
+ { projection: { suspended: 1, deleted: 1 } }
+ );
+ if (user?.deleted) return { error: "Account no longer exists", status: 401 };
+ if (user?.suspended) return { error: "Account suspended", status: 403 };
+ } catch (err) {
+ // Fail open on an unexpected DB error here — a transient lookup failure
+ // must not lock every authenticated user out of the app; the JWT itself
+ // has already been cryptographically verified above.
+ console.error("[authenticateRequest] suspend/delete check failed:", err);
+ }
+
  return { payload };
 }
 

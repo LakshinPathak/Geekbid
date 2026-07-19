@@ -92,7 +92,12 @@ export async function PATCH(req: NextRequest) {
  const claimedTx = await db.collection("transactions").findOneAndUpdate(
  {
  _id: txObjectId,
- clientId: auth.payload.userId,
+ // The boost is a resource attributed to the job's owner (job.clientId),
+ // not the caller — matches the quota-consumption comment above. Without
+ // this, an admin featuring on a client's behalf looked for a payment
+ // transaction under the *admin's* own userId, which could never match
+ // the client's actual payment.
+ clientId: job.clientId,
  description: `featured_boost:${jobId}`,
  verified: true,
  consumedAt: { $exists: false },
