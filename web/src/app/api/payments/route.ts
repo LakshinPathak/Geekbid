@@ -226,6 +226,14 @@ export async function PATCH(req: NextRequest) {
  const platformFee = escrow.platformFee;
  const netAmount = escrow.netAmount;
 
+ // Tagged distinctly from the "job_escrow" transactions that accept/award
+ // create directly (api/jobs/[id], jobs/offer-response) — this route's
+ // jobId is only ever a loose reference (boost purchase, or a free-form
+ // manual payment), never the job's actual funding row, so it must never
+ // collide with the { jobId, purpose: "job_escrow" } filter complete/dispute
+ // use to release the real escrow (see ISSUE-6).
+ const purpose = (description || "").startsWith("featured_boost:") ? "featured_boost" : "manual_payment";
+
  const tx = {
  jobId: jobId || "",
  clientId: auth.payload.userId,
@@ -240,6 +248,7 @@ export async function PATCH(req: NextRequest) {
  razorpaySignature: razorpay_signature || "mock",
  currency,
  description: description || "",
+ purpose,
  createdAt: new Date().toISOString(),
  verified: true,
  mock: isMock,

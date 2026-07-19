@@ -56,10 +56,24 @@ export async function PATCH(
  // Release escrow — this is the route the frontend actually calls
  // (store.tsx completeJob), so this must happen here, not only in the
  // PATCH-action version of this endpoint.
+ //
+ // Target the exact row created at accept time (job.escrowTransactionId),
+ // not any {jobId, escrowStatus:"held"} row — a job can also carry an
+ // unrelated "held" transaction from a featured-boost payment (api/payments
+ // PATCH tags jobId on those too), which a bare filter could release
+ // instead of the real job escrow. Falls back to the tagged-purpose filter
+ // for any pre-migration rows that predate escrowTransactionId.
+ if (job.escrowTransactionId) {
  await db.collection("transactions").updateOne(
- { jobId: job._id.toString(), escrowStatus: "held" },
+ { _id: new ObjectId(job.escrowTransactionId), escrowStatus: "held" },
  { $set: { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: payload.userId } }
  );
+ } else {
+ await db.collection("transactions").updateOne(
+ { jobId: job._id.toString(), purpose: "job_escrow", escrowStatus: "held" },
+ { $set: { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: payload.userId } }
+ );
+ }
 
  if (job.acceptedBy) {
  creditReferralOnFirstJobCompletion(job.acceptedBy).catch((err) =>

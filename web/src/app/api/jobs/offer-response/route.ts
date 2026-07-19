@@ -56,7 +56,7 @@ export async function PATCH(req: NextRequest) {
  if (response === "accepted") {
  // Use the fee locked onto the job at creation time (blueprint §17).
  const escrow = splitEscrow(job.startingPrice, job.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
- await db.collection("transactions").insertOne({
+ const escrowTxResult = await db.collection("transactions").insertOne({
  jobId,
  clientId: job.clientId,
  freelancerId: auth.payload.userId,
@@ -65,7 +65,15 @@ export async function PATCH(req: NextRequest) {
  netAmount: escrow.netAmount,
  escrowStatus: "held",
  createdAt: new Date().toISOString(),
+ purpose: "job_escrow",
  });
+ // Link so complete/dispute always target this exact row instead of an
+ // ambiguous {jobId, escrowStatus:"held"} filter — a job can also carry an
+ // unrelated "held" transaction from a featured-boost payment.
+ await db.collection("jobs").updateOne(
+ { _id: new ObjectId(jobId) },
+ { $set: { escrowTransactionId: escrowTxResult.insertedId.toString() } }
+ );
  }
 
  // Fire-and-forget: notify client about offer response

@@ -63,8 +63,16 @@ export async function POST(req: NextRequest) {
  // (sanitizeString returns "" for anything that isn't already a string) so
  // a crafted body like { "referralCode": { "$ne": null } } can never reach
  // findOne() as a query operator and match an arbitrary referrer.
+ //
+ // Also skip entirely on a dual-role "add role" registration
+ // (result.roleAdded) or if this user already has a referredBy — the
+ // account is already credited from its original signup, and re-running
+ // this block on every additional role would insert a second "signed_up"
+ // referrals row and let the same referrer be credited again the next
+ // time this user completes a job.
  const referralCodeStr = sanitizeString(referralCode);
- if (referralCodeStr && result.user) {
+ const alreadyReferred = Boolean((result.user as Record<string, unknown> | undefined)?.referredBy);
+ if (referralCodeStr && result.user && !("roleAdded" in result && result.roleAdded) && !alreadyReferred) {
  const db = await getDb();
  const referrer = await db.collection("users").findOne({ referralCode: referralCodeStr });
  if (referrer) {

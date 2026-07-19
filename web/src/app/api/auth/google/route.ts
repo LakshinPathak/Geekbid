@@ -10,6 +10,9 @@ import { generateOAuthNonce, setOAuthStateCookie } from "@/lib/oauth-state";
 export async function GET(req: Request) {
  const { searchParams } = new URL(req.url);
  const role = searchParams.get("role") || "freelancer";
+ // Defaults to "login" (not "register") so a request that omits intent
+ // never risks adding/switching a role on an existing account.
+ const intent = searchParams.get("intent") === "register" ? "register" : "login";
 
  const clientId = process.env.GOOGLE_CLIENT_ID;
  if (!clientId) {
@@ -35,7 +38,7 @@ export async function GET(req: Request) {
  scope: "openid email profile",
  access_type: "offline",
  prompt: "consent",
- state: `${nonce}.${role}`,
+ state: `${nonce}.${role}.${intent}`,
  });
 
  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;

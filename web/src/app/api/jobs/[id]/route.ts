@@ -94,11 +94,24 @@ export async function PATCH(
  const filter = job._id ? { _id: job._id, status: "accepted" } : { id, status: "accepted" };
  const claimedJob = await db.collection("jobs").findOneAndUpdate(filter, { $set: { status: "completed", completedAt: new Date().toISOString() } });
  if (!claimedJob) return NextResponse.json({ error: "Job must be accepted before completing" }, { status: 400 });
- // Release escrow
+ // Release escrow — target the exact row created at accept time
+ // (job.escrowTransactionId), not any {jobId, escrowStatus:"held"} row.
+ // A job can also have an unrelated "held" transaction from a featured-boost
+ // payment (api/payments PATCH tags jobId on those too); a bare filter like
+ // the old one could release/refund that instead of the real job escrow.
+ // Falls back to the tagged-purpose filter for any pre-migration rows that
+ // predate escrowTransactionId.
+ if (job.escrowTransactionId) {
  await db.collection("transactions").updateOne(
- { jobId: id, escrowStatus: "held" },
+ { _id: new ObjectId(job.escrowTransactionId), escrowStatus: "held" },
  { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
  );
+ } else {
+ await db.collection("transactions").updateOne(
+ { jobId: id, purpose: "job_escrow", escrowStatus: "held" },
+ { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
+ );
+ }
  // Send summary emails
  const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) }, { projection: { email: 1, fullName: 1, name: 1 } });
  const freelancer = job.acceptedBy ? await db.collection("users").findOne({ _id: new ObjectId(job.acceptedBy) }, { projection: { email: 1, fullName: 1, name: 1 } }) : null;
@@ -148,12 +161,20 @@ export async function PATCH(
  // flat default — a Plus/Premium client's 7%/5% rate must not silently
  // become 10% just because escrow release re-derives the split here.
  const escrow = splitEscrow(finalPrice, awardJob.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
- await db.collection("transactions").insertOne({
+ const escrowTxResult = await db.collection("transactions").insertOne({
  jobId: id, clientId: awardJob.clientId, freelancerId,
  grossAmount: escrow.gross, platformFee: escrow.platformFee,
  netAmount: escrow.netAmount,
  escrowStatus: "held", createdAt: acceptedAt,
+ purpose: "job_escrow",
  });
+ // Link so complete/dispute always target this exact row instead of an
+ // ambiguous {jobId, escrowStatus:"held"} filter — a job can also carry an
+ // unrelated "held" transaction from a featured-boost payment.
+ await db.collection("jobs").updateOne(
+ { _id: awardJob._id },
+ { $set: { escrowTransactionId: escrowTxResult.insertedId.toString() } }
+ );
  const [awardClient, awardFreelancer] = await Promise.all([
  db.collection("users").findOne({ _id: new ObjectId(awardJob.clientId) }, { projection: { email: 1, name: 1, fullName: 1 } }),
  db.collection("users").findOne({ _id: new ObjectId(freelancerId) }, { projection: { email: 1, name: 1, fullName: 1 } }).catch(() => null),
@@ -404,7 +425,7 @@ export async function PATCH(
 
  // Create escrow transaction — use the job's locked fee (§17), not the flat default.
  const escrow = splitEscrow(finalPrice, job.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
- await db.collection("transactions").insertOne({
+ const escrowTxResult = await db.collection("transactions").insertOne({
  jobId: id,
  clientId: job.clientId,
  freelancerId: auth.payload.userId,
@@ -413,7 +434,15 @@ export async function PATCH(
  netAmount: escrow.netAmount,
  escrowStatus: "held",
  createdAt: acceptedAt,
+ purpose: "job_escrow",
  });
+ // Link so complete/dispute always target this exact row instead of an
+ // ambiguous {jobId, escrowStatus:"held"} filter — a job can also carry an
+ // unrelated "held" transaction from a featured-boost payment.
+ await db.collection("jobs").updateOne(
+ acceptedJob._id ? { _id: acceptedJob._id } : { id },
+ { $set: { escrowTransactionId: escrowTxResult.insertedId.toString() } }
+ );
 
  // Fire-and-forget: notify the client their job was accepted
  const client = job.clientId
