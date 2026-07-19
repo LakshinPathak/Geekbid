@@ -1272,27 +1272,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
  const markAllRead = useCallback(() => {
  if (!currentUser) return;
+ const uid = currentUser.id;
+ const uid2 = currentUser._id;
 
- // Optimistic update
+ // Optimistic update — only flip the ones that were actually unread, so
+ // reverting on failure restores exactly this user's prior read state
+ // instead of guessing.
+ const flippedIds = new Set(
+ notifications
+ .filter((n) => (n.userId === uid || n.userId === uid2) && !n.isRead)
+ .map((n) => n.id)
+ );
+ if (flippedIds.size === 0) return;
  setNotifications((prev) =>
- prev.map((n) =>
- n.userId === currentUser.id || n.userId === currentUser._id
- ? { ...n, isRead: true }
- : n
- )
+ prev.map((n) => (flippedIds.has(n.id) ? { ...n, isRead: true } : n))
  );
 
- // DB call
+ // DB call — on failure (or no valid token), revert instead of silently
+ // swallowing the error like this previously did; left unreverted, the UI
+ // showed "all read" while a reload would bring the unread count back
+ // with no indication anything had gone wrong.
+ const revert = () => {
+ setNotifications((prev) =>
+ prev.map((n) => (flippedIds.has(n.id) ? { ...n, isRead: false } : n))
+ );
+ toast.error("Failed to mark notifications as read");
+ };
  getValidToken().then((token) => {
- if (token) {
+ if (!token) { revert(); return; }
  apiRequest("/api/notifications", {
  method: "PATCH",
  body: JSON.stringify({ markAll: true }),
  accessToken: token,
- }).catch(() => {});
- }
+ }).then((res) => {
+ if (!res.ok) revert();
+ }).catch(revert);
  });
- }, [currentUser, getValidToken]);
+ }, [currentUser, getValidToken, notifications]);
 
  // ── Send Message (with DB call) ───────────────────────────
  const sendMessage = useCallback(

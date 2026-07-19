@@ -17,6 +17,7 @@ function InboxContent() {
  const searchParams = useSearchParams();
  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
  const [text, setText] = useState("");
+ const [sending, setSending] = useState(false);
  const [searchQuery, setSearchQuery] = useState("");
  const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -58,9 +59,11 @@ function InboxContent() {
  const roomMessages = chatMessages.filter(m => m.roomId === selectedRoom);
 
  const handleSend = async () => {
- if (!text.trim() || !selectedRoom) return;
+ if (!text.trim() || !selectedRoom || sending) return;
  const sentText = text;
+ setSending(true);
  const result = await sendMessage(selectedRoom, sentText);
+ setSending(false);
  if (result.ok) {
  setText("");
  } else {
@@ -252,7 +255,7 @@ function InboxContent() {
  />
  <button
  type="submit"
- disabled={!text.trim()}
+ disabled={!text.trim() || sending}
  className="btn-primary w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 p-0"
  >
  <Send className="h-[18px] w-[18px]" />

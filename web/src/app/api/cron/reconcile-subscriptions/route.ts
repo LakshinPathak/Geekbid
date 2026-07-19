@@ -7,7 +7,11 @@ import { constantTimeEqual } from "@/lib/sanitize";
 function mapRazorpayStatus(rzpStatus: string): string | null {
   switch (rzpStatus) {
     case "active": return "active";
-    case "halted": return "halted";
+    // Matches lib/webhook-processing.ts's handleHalted — "halted" isn't a
+    // status this app's subscription state machine otherwise ever writes
+    // (only "created" | "active" | "past_due" | "cancelled" | "completed"),
+    // so a reconciliation run could set a value nothing else recognizes.
+    case "halted":
     case "cancelled":
     case "expired": return "cancelled";
     case "completed": return "completed";
@@ -55,7 +59,7 @@ export async function GET(req: NextRequest) {
             { _id: localSub._id },
             { $set: { status: mappedStatus, updatedAt: new Date().toISOString() } }
           );
-          if (mappedStatus === "cancelled" || mappedStatus === "halted") {
+          if (mappedStatus === "cancelled") {
             await handleDowngrade(localSub.userId, localSub.plan, "free", "reconciliation_drift", "cron", db);
           }
           corrected++;

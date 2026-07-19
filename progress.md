@@ -3,7 +3,7 @@
 > Tracks completion status of every issue in [`issues.md`](./issues.md) (61 issues), implemented per [`planning.md`](./planning.md).
 > **Update this file immediately after each issue is fixed** — status, date, files touched, and any deviation from the planned fix. This is the persistence layer if a session runs out of context/tokens; the next session should read this file first to know what's already done.
 
-**Last updated:** 2026-07-20 (batch 9: product gaps ISSUE-58, 59, 60, 61 — 3 fixed + 1 already resolved)
+**Last updated:** 2026-07-20 (batch 10: ISSUE-30-34 (Low severity) fixed — **all 61 issues now resolved**)
 
 ## How to update
 1. When you finish an issue, flip its Status to `Done`, fill in Date + Commit/Files + Notes.
@@ -90,11 +90,11 @@
 
 | Issue | Title | Status | Date | Commit/Files | Notes |
 |---|---|---|---|---|---|
-| ISSUE-30 | Suspended users keep access until access JWT expires | Not Started | | | |
-| ISSUE-31 | Feature pay-path uses caller as `clientId` (admin edge case) | Not Started | | | |
-| ISSUE-32 | Reconciliation writes local status `"halted"` | Not Started | | | |
-| ISSUE-33 | Inbox send can double-fire | Not Started | | | |
-| ISSUE-34 | `markAllRead` ignores API failure | Not Started | | | |
+| ISSUE-30 | Suspended users keep access until access JWT expires | Done | 2026-07-20 | `web/src/lib/auth.ts` | `authenticateRequest` now does a projection-only `{suspended, deleted}` lookup on every call (indexed `_id`, fails open on a DB error since the JWT itself is already verified) — closes the residual-access window from up to ~15min down to the next request. |
+| ISSUE-31 | Feature pay-path uses caller as `clientId` (admin edge case) | Done | 2026-07-20 | `web/src/app/api/jobs/feature/route.ts` | Boost-payment claim filter now matches `job.clientId` (the resource owner) instead of `auth.payload.userId` (the caller) — an admin featuring on a client's behalf now correctly finds the client's own payment. |
+| ISSUE-32 | Reconciliation writes local status `"halted"` | Done | 2026-07-20 | `web/src/app/api/cron/reconcile-subscriptions/route.ts` | `mapRazorpayStatus` now maps `halted` → `"cancelled"`, matching `lib/webhook-processing.ts`'s `handleHalted` — `"halted"` was never a status any other code path wrote or recognized. |
+| ISSUE-33 | Inbox send can double-fire | Done | 2026-07-20 | `web/src/app/inbox/page.tsx` | Added a `sending` guard (state + early-return in `handleSend`); submit button now also disables on it. |
+| ISSUE-34 | `markAllRead` ignores API failure | Done | 2026-07-20 | `web/src/lib/store.tsx` | Reverts the optimistic all-read flip (only the specific notifications it actually flipped, not a blanket re-fetch) and toasts an error on a failed/non-ok response or missing token — previously the failure was silently swallowed with no revert at all. |
 
 ---
 
@@ -105,10 +105,18 @@
 | Critical | 4 | 4 | 0 |
 | High | 17 | 17 | 0 |
 | Medium | 35 | 35 | 0 |
-| Low | 5 | 0 | 5 |
-| **Total** | **61** | **56** | **5** |
+| Low | 5 | 5 | 0 |
+| **Total** | **61** | **61** | **0** |
 
-*(Critical done: all 4. High done: all 17 (ISSUE-6 is partial, see its row). Medium done: all 35 — ISSUE-14-29, 43-61 (ISSUE-60 was already resolved pre-existing, not fixed by this session, see its row). Only Low severity (ISSUE-30-34, 5 issues) remains.)*
+**🎉 All 61 issues resolved.** (ISSUE-6 and ISSUE-29 are intentionally partial/scoped — see their rows for exactly what was and wasn't changed, and why. ISSUE-60 was found already resolved in pre-existing code, not fixed by this session.)
+
+## Follow-ups for a human to do before/after deploying
+These aren't bugs in the fix — they're steps outside what code alone can do:
+1. **Run `node scripts/create-fix-indexes.mjs`** against the target DB — several fixes (ISSUE-16, 19, 37, 58) rely on new unique/TTL indexes that don't exist until this runs. Clean up any pre-existing duplicate rows it warns about first (see comments in the script).
+2. **Set `NEXT_PUBLIC_CLOUDINARY_API_KEY`** in real environments (Vercel/hosting env vars) — new var added for ISSUE-50's signed uploads; already synced into `.env.example`/Dockerfile/CI placeholders, but real deploys need the actual key.
+3. **Disable/delete the `geekbid_unsigned` Cloudinary upload preset** on the Cloudinary dashboard (ISSUE-50) — the code no longer uses it, but it still exists and is directly callable until removed there.
+4. **ISSUE-50 was not manually browser-tested** (no live Cloudinary credentials in this session) — verify an actual avatar upload works end-to-end before relying on it.
+5. **Decide on `ALLOW_MOCK_BILLING`** (ISSUE-1) for any staging/demo environment that needs mock subscriptions while running under `NODE_ENV=production`.
 
 ## Suggested fix order (from `issues.md`)
 1. ISSUE-1 · 2. ISSUE-2+42 · 3. ISSUE-3 · 4. ISSUE-35 · 5. ISSUE-37 · 6. ISSUE-4 · 7. ISSUE-5 · 8. ISSUE-7+39-40+46 · 9. ISSUE-6 · 10. ISSUE-36,38,41 · 11. Remaining High → Medium → Low / product gaps (58–61)
@@ -123,3 +131,4 @@
 - **2026-07-20** — Fixed batch 7 (12 issues): ISSUE-18 through 29 — the entire remaining first-pass Medium cluster (money validation, dispute allowlist, wrong price field, and a run of frontend bugs: double-submit, inbox message replace, fake earnings chart, wrong badges, missing bid-on-jobs filter, feed role routing, missing in-flight guards, currency display). ISSUE-29 is partial by design (see its row) — fixed the concretely-reachable bug (real transactions mislabeled `$`) without redefining whether job/bid prices are USD or INR, which is a separate product decision. Verified with `tsc --noEmit`, `eslint` (all pre-existing, confirmed via `git diff` line-range check on the one borderline file), full `npm run build`. Pushing this batch, then continuing with the second-pass Medium cluster (47-57) and product gaps (58-61).
 - **2026-07-20** — Fixed batch 8 (11 issues): ISSUE-47 through 57 — **all second-pass Medium issues are now done.** Notable: ISSUE-50 (unsigned Cloudinary uploads) required rewriting `/api/upload/sign` to match next-cloudinary's actual `paramsToSign` signing contract (the old endpoint signed its own invented params, incompatible with the widget) and a new env var (`NEXT_PUBLIC_CLOUDINARY_API_KEY`) synced across `.env.example`/Dockerfile/CI — not manually browser-tested (no live Cloudinary creds in this session). ISSUE-57 (mobile inbox badge) required building genuine chat read-tracking (`chat_rooms.lastReadBy`) since no read/unread state existed for chat at all before — this is a small new feature, not just a display swap. Verified with `tsc --noEmit`, `eslint` (empirically confirmed 2 of the "new" findings were pre-existing by testing the original file content directly against eslint — all findings pre-existing), full `npm run build`. Pushing this batch, then finishing with product gaps (58-61) and Low severity (30-34) — 9 issues remain.
 - **2026-07-20** — Fixed batch 9: all 4 product gaps (58-61). Used a research fork to check `lib/email.ts`/`lib/oauth-state.ts`/`lib/auth.ts` conventions before writing ISSUE-58's forgot-password flow (new collection + 2 new API routes + 2 new pages + new email template), rather than guessing at the patterns. **Found ISSUE-60 was already resolved** in existing code before I touched anything (`payments/page.tsx` already has a working dispute-raise button → `PATCH /api/transactions {action:"dispute"}`) — issues.md's description of it doesn't match current code; noted this rather than building a redundant duplicate system. **All 61 issues now have a resolution status** (56 done + 1 pre-existing-resolved = all Critical/High/Medium closed). Verified with `tsc --noEmit`, `eslint` (pre-existing findings only), full `npm run build` (confirmed `/forgot-password` and `/reset-password` routes compiled). Only Low severity (ISSUE-30-34, 5 issues) remains — pushing this batch, then finishing those.
+- **2026-07-20** — Fixed batch 10 (final batch, 5 issues): ISSUE-30 through 34 — **all Low-severity issues done. All 61 issues in issues.md now have a resolution.** ISSUE-30 was the one with a real architectural tradeoff (adding a DB lookup to `authenticateRequest`, called on ~150+ routes per the codebase's own call-graph) — chose a plain projection-only indexed lookup over an in-memory denylist cache, since this app's other rate-limiting code (`lib/rate-limit.ts`) already had to move OFF in-memory state specifically because it doesn't persist reliably across Vercel's serverless instances; a per-request DB read is the more correct tradeoff here despite sounding more expensive on paper. Verified with `tsc --noEmit`, `eslint` (pre-existing findings only), full `npm run build`. Added a "Follow-ups for a human" section above this log — index script, new env var, Cloudinary preset cleanup, and one product decision (ALLOW_MOCK_BILLING) still need a human's attention outside what code alone can do. Pushing this final batch to both `epic_0.0.1` and `v19`.
