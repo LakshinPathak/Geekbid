@@ -96,6 +96,22 @@ async function main() {
       { expireAfterSeconds: 0 }
     );
     console.log("password_reset_tokens indexes created");
+
+    // invites: a client can only ever have one invite per (freelancer, job).
+    // lib/create-job-invite.ts already catches an E11000 here and returns the
+    // "duplicate" error, but without this index there was nothing to throw —
+    // the only guard was a non-atomic findOne pre-check, so two concurrent
+    // identical invite requests (double-click, retried POST, or the
+    // smart-match batch racing a manual invite) could both pass it, both
+    // consume a quota slot, and both insert, leaving the freelancer with a
+    // duplicate pending invite and duplicate notification.
+    // Clean up any existing duplicate (clientId, freelancerId, jobId) rows
+    // before running this, or index creation will fail.
+    await db.collection("invites").createIndex(
+      { clientId: 1, freelancerId: 1, jobId: 1 },
+      { unique: true }
+    );
+    console.log("invites index created");
   } finally {
     await client.close();
   }
