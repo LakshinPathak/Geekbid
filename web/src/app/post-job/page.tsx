@@ -373,7 +373,12 @@ export default function PostJobPage() {
  const [pricingHint, setPricingHint] = useState<{ available: boolean; avgFinalPrice?: number; minPrice?: number; maxPrice?: number; avgDecayRate?: number; sampleSize?: number } | null>(null);
 
  useEffect(() => {
- if (mounted && !currentUser) router.replace("/login");
+ if (!mounted) return;
+ if (!currentUser) { router.replace("/login"); return; }
+ // The API already rejects a freelancer's POST /api/jobs, but nothing
+ // stopped one from opening and filling out the whole wizard first —
+ // redirect before they invest any time in a form that can never submit.
+ if (currentUser.role !== "client") router.replace("/feed");
  }, [mounted, currentUser, router]);
 
  const toggleSkill = (s: string) => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -438,7 +443,7 @@ export default function PostJobPage() {
  }
  };
 
- if (!mounted) return (
+ if (!mounted || !currentUser || currentUser.role !== "client") return (
  <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
  <div className="h-8 w-8 border-2 border-[rgba(75,63,143,0.40)] border-t-[#4b3f8f] rounded-full animate-spin" />
  </div>

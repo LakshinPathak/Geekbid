@@ -21,7 +21,7 @@ const RESOLUTION_TYPES = [
 ];
 
 export default function AdminDisputesPage() {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -33,15 +33,18 @@ export default function AdminDisputesPage() {
   const [resolution, setResolution] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
-  };
+  const getHeaders = useCallback(async () => {
+    const token = await getValidToken();
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [getValidToken]);
 
   const fetchDisputes = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), status: filter });
-    const res = await fetch(`/api/admin/disputes?${params}`, { headers });
+    const res = await fetch(`/api/admin/disputes?${params}`, { headers: await getHeaders() });
     if (res.ok) {
       const data = await res.json();
       setDisputes(data.disputes);
@@ -50,7 +53,7 @@ export default function AdminDisputesPage() {
     }
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filter, auth.accessToken]);
+  }, [page, filter, getHeaders]);
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
 
@@ -59,7 +62,7 @@ export default function AdminDisputesPage() {
     setSubmitting(true);
     const res = await fetch("/api/admin/disputes", {
       method: "PATCH",
-      headers,
+      headers: await getHeaders(),
       body: JSON.stringify({ disputeId: resolveTarget.id, status: "resolved", resolutionType, resolution }),
     });
     if (res.ok) {

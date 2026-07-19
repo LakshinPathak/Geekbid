@@ -16,6 +16,7 @@ export type SubscriptionInfo = {
   plan: 'plus' | 'premium';
   status: string;
   cancelAtPeriodEnd: boolean;
+  razorpaySubscriptionId?: string;
 } | null;
 
 // Shared subscription-checkout logic for /pricing and the feed-page
@@ -29,17 +30,34 @@ export function useSubscriptionCheckout() {
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !document.getElementById("razorpay-script")) {
+    if (typeof window === "undefined") return;
+    if (window.Razorpay) { setScriptLoaded(true); return; }
+
+    if (!document.getElementById("razorpay-script")) {
       const script = document.createElement("script");
       script.id = "razorpay-script";
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
-      script.onload = () => setScriptLoaded(true);
       script.onerror = () => console.warn("Razorpay script failed to load (mock mode will work)");
       document.body.appendChild(script);
-    } else if (typeof window !== "undefined" && window.Razorpay) {
-      setScriptLoaded(true);
     }
+
+    // Poll for window.Razorpay instead of relying on this tag's own
+    // `onload` — only one handler can attach to a given <script>, so this
+    // hook can't listen to it if FeaturedBoostModal/payments/page.tsx (or a
+    // previous mount) was the one that actually added the tag. The old
+    // `else if (window.Razorpay)` branch only ran once, synchronously, so
+    // an already-existing-but-still-loading tag left scriptLoaded stuck
+    // false and startCheckout hard-failed with "Payment provider failed to
+    // load" for what was actually just a slow (not failed) script load.
+    const interval = setInterval(() => {
+      if (window.Razorpay) {
+        setScriptLoaded(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
   const loadSubscription = useCallback(async () => {
@@ -84,8 +102,13 @@ export function useSubscriptionCheckout() {
       const token = await getValidToken();
       if (!token) { toast.error("Please log in again"); setProcessingPlan(null); return; }
 
-      // Already on a different paid plan — this is a plan change, not a new subscription.
-      if (subscription) {
+      // status "created" means the subscription record exists but the
+      // Razorpay checkout was never actually completed (e.g. the user
+      // dismissed the modal) — there is no live paid subscription yet, so
+      // this must resume that checkout, not call change_plan (which
+      // schedules a plan swap on a subscription that isn't paying for
+      // anything). Only "active"/"past_due" are a genuine existing plan.
+      if (subscription && subscription.status !== "created") {
         const res = await fetch("/api/subscriptions", {
           method: "PATCH",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -96,6 +119,37 @@ export function useSubscriptionCheckout() {
         toast.success(data.message ?? "Plan change requested");
         await Promise.all([loadSubscription(), refreshCurrentUser()]);
         setProcessingPlan(null);
+        return;
+      }
+
+      if (subscription && subscription.status === "created" && subscription.razorpaySubscriptionId) {
+        if (!scriptLoaded || !window.Razorpay) {
+          toast.error("Payment provider failed to load. Please refresh and try again.");
+          setProcessingPlan(null);
+          return;
+        }
+        const keyRes = await fetch("/api/payments");
+        const keyData = await keyRes.json();
+        const options = {
+          key: keyData.key,
+          subscription_id: subscription.razorpaySubscriptionId,
+          name: "GeekBid",
+          description: `${targetPlan === "plus" ? "Plus" : "Premium"} subscription`,
+          prefill: { name: currentUser?.fullName || "", email: currentUser?.email || "" },
+          theme: { color: "#4b3f8f" },
+          handler: async (response: Record<string, string>) => {
+            const verifyData = await verifyCheckout(token, response);
+            if (verifyData.verified) {
+              toast.success("Subscription created! Activating your plan...");
+              await Promise.all([loadSubscription(), refreshCurrentUser()]);
+            } else {
+              toast.error("Payment verification failed", { description: verifyData.error });
+            }
+            setProcessingPlan(null);
+          },
+          modal: { ondismiss: () => setProcessingPlan(null) },
+        };
+        new window.Razorpay(options).open();
         return;
       }
 

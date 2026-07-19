@@ -16,7 +16,7 @@ type Job = {
 };
 
 export default function AdminJobsPage() {
-  const { auth, bids } = useApp();
+  const { getValidToken, bids } = useApp();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -30,15 +30,21 @@ export default function AdminJobsPage() {
   const [editForm, setEditForm] = useState({ title: "", status: "", startingPrice: 0, minimumPrice: 0, decayRatePerHour: 0, featured: false });
   const [actionLoading, setActionLoading] = useState(false);
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
-  };
+  // Fetches a fresh header set (with a valid, non-expired token) on every
+  // call instead of a plain object frozen with whatever auth.accessToken
+  // was at render time.
+  const getHeaders = useCallback(async () => {
+    const token = await getValidToken();
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [getValidToken]);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), status: statusFilter, search });
-    const res = await fetch(`/api/admin/jobs?${params}`, { headers });
+    const res = await fetch(`/api/admin/jobs?${params}`, { headers: await getHeaders() });
     if (res.ok) {
       const data = await res.json();
       setJobs(data.jobs);
@@ -46,7 +52,7 @@ export default function AdminJobsPage() {
       setPages(data.pages);
     }
     setLoading(false);
-  }, [page, statusFilter, search, auth.accessToken]);
+  }, [page, statusFilter, search, getHeaders]);
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
@@ -65,14 +71,14 @@ export default function AdminJobsPage() {
   async function saveJob() {
     if (!editJob) return;
     setActionLoading(true);
-    const res = await fetch(`/api/admin/jobs/${editJob.id}`, { method: "PATCH", headers, body: JSON.stringify(editForm) });
+    const res = await fetch(`/api/admin/jobs/${editJob.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(editForm) });
     if (res.ok) { toast.success("Job updated"); fetchJobs(); setEditJob(null); }
     else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
     setActionLoading(false);
   }
 
   async function toggleFeatured(job: Job) {
-    const res = await fetch(`/api/admin/jobs/${job.id}`, { method: "PATCH", headers, body: JSON.stringify({ featured: !job.featured }) });
+    const res = await fetch(`/api/admin/jobs/${job.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify({ featured: !job.featured }) });
     if (res.ok) { toast.success(job.featured ? "Unfeatured" : "Featured!"); fetchJobs(); }
     else toast.error("Failed");
   }
@@ -80,7 +86,7 @@ export default function AdminJobsPage() {
   async function deleteJob() {
     if (!deleteTarget) return;
     setActionLoading(true);
-    const res = await fetch(`/api/admin/jobs/${deleteTarget.id}`, { method: "DELETE", headers, body: JSON.stringify({ reason: deleteReason }) });
+    const res = await fetch(`/api/admin/jobs/${deleteTarget.id}`, { method: "DELETE", headers: await getHeaders(), body: JSON.stringify({ reason: deleteReason }) });
     if (res.ok) { toast.success("Job removed"); fetchJobs(); setDeleteTarget(null); setDeleteReason(""); }
     else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
     setActionLoading(false);

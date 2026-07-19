@@ -32,17 +32,35 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !document.getElementById("razorpay-script")) {
+    if (typeof window === "undefined") return;
+    if (window.Razorpay) { setScriptLoaded(true); return; }
+
+    if (!document.getElementById("razorpay-script")) {
       const script = document.createElement("script");
       script.id = "razorpay-script";
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
-      script.onload = () => setScriptLoaded(true);
       script.onerror = () => console.warn("Razorpay script failed to load (mock mode will work)");
       document.body.appendChild(script);
-    } else if (typeof window !== "undefined" && window.Razorpay) {
-      setScriptLoaded(true);
     }
+
+    // Poll for window.Razorpay instead of relying on this tag's own `onload`
+    // (only one handler can ever attach to a given <script>, so this modal
+    // can't listen to it if payments/page.tsx — or a second instance of
+    // this modal — was the one that actually added the tag) — the old
+    // code's `else if (window.Razorpay)` branch only ran once,
+    // synchronously, so a tag that already existed but hadn't finished
+    // loading yet left scriptLoaded stuck false forever, and handlePay
+    // silently fell back to mock-verifying what should have been a real
+    // order.
+    const interval = setInterval(() => {
+      if (window.Razorpay) {
+        setScriptLoaded(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
   const finishBoost = useCallback(async (transactionId: string) => {

@@ -85,6 +85,7 @@ jobs:
           CLOUDINARY_API_KEY: "000000000000000"
           CLOUDINARY_API_SECRET: placeholder
           NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: placeholder
+          NEXT_PUBLIC_CLOUDINARY_API_KEY: "000000000000000"
           NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: geekbid_unsigned
           GEMINI_API_KEY: placeholder
           AI_MODEL: gemini-2.0-flash
@@ -151,6 +152,7 @@ jobs:
             --build-arg CLOUDINARY_API_KEY=000000000000000 \
             --build-arg CLOUDINARY_API_SECRET=placeholder \
             --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=placeholder \
+            --build-arg NEXT_PUBLIC_CLOUDINARY_API_KEY=000000000000000 \
             --build-arg NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=geekbid_unsigned \
             --build-arg GEMINI_API_KEY=placeholder \
             --build-arg AI_MODEL=gemini-2.0-flash \

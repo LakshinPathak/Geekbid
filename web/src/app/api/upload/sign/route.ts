@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 
+const ALLOWED_FOLDERS = ["geekbid/avatars", "geekbid/portfolio", "geekbid/jobs"];
+
+// POST /api/upload/sign — signs whatever params the Cloudinary upload widget
+// itself decides to send (via its `uploadSignature` callback contract:
+// `fetch(endpoint, { body: JSON.stringify({ paramsToSign }) })`, expects
+// back `{ signature }`). The widget — not this endpoint — owns timestamp
+// and any other upload params, so the signature here must cover exactly
+// what it sends, or Cloudinary will reject the upload as tampered.
 export async function POST(req: NextRequest) {
   try {
     const auth = await authenticateRequest(req);
@@ -10,31 +18,18 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const folder = body.folder ?? "geekbid/avatars";
-    const ALLOWED_FOLDERS = ["geekbid/avatars", "geekbid/portfolio", "geekbid/jobs"];
-    if (folder && !ALLOWED_FOLDERS.includes(folder)) {
+    const paramsToSign = (body.paramsToSign ?? {}) as Record<string, unknown>;
+
+    if (paramsToSign.folder && !ALLOWED_FOLDERS.includes(String(paramsToSign.folder))) {
       return NextResponse.json({ error: "Invalid upload folder" }, { status: 400 });
     }
-    const timestamp = Math.round(Date.now() / 1000);
-
-    // Restrict to safe image formats — baked into the signature so the client
-    // can't request a different format without invalidating it. Cloudinary's
-    // upload API doesn't take a per-request max-file-size signed param; that
-    // has to be enforced via account/upload-preset settings on Cloudinary's side.
-    const allowedFormats = "jpg,jpeg,png,webp,gif";
 
     const signature = cloudinary.utils.api_sign_request(
-      { folder, timestamp, allowed_formats: allowedFormats },
+      paramsToSign,
       process.env.CLOUDINARY_API_SECRET!
     );
 
-    return NextResponse.json({
-      signature,
-      timestamp,
-      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      folder,
-      allowedFormats,
-    });
+    return NextResponse.json({ signature });
   } catch (err) {
     console.error("[Upload Sign Error]", err);
     return NextResponse.json({ error: "Failed to generate signature" }, { status: 500 });

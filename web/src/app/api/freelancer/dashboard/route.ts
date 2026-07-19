@@ -25,12 +25,23 @@ export async function GET(req: NextRequest) {
  j.skillsRequired?.some((s: string) => mySkills.includes(s))
  );
 
- // Win rate
+ // Win rate — must be computed against the actual jobs bid on (any status),
+ // not `allOpenJobs`. A won bid's job has status "accepted"/"completed" by
+ // definition, so it can never appear in the `status: "open"` list above;
+ // joining against that list meant `job` was always undefined for a truly
+ // accepted bid, and winRate was always 0% regardless of real performance.
+ const myBidJobIds = [...new Set(myBids.map(b => b.jobId))];
+ const myBidJobObjectIds = myBidJobIds
+ .map((jid) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const myBidJobs = myBidJobObjectIds.length > 0
+ ? await db.collection("jobs").find({ _id: { $in: myBidJobObjectIds } }).toArray()
+ : [];
  const acceptedBids = myBids.filter(b => {
- const job = allOpenJobs.find(j => j._id.toString() === b.jobId);
+ const job = myBidJobs.find(j => j._id.toString() === b.jobId);
  return job?.acceptedBy === uid;
  });
- const uniqueJobsBid = new Set(myBids.map(b => b.jobId)).size;
+ const uniqueJobsBid = myBidJobIds.length;
  const winRate = uniqueJobsBid > 0 ? Math.round(acceptedBids.length / uniqueJobsBid * 100) : 0;
 
  // Earning potential (sum of current prices for matched open jobs)
@@ -44,7 +55,11 @@ export async function GET(req: NextRequest) {
  const totalEarned = txns.reduce((s, t) => s + (t.netAmount || 0), 0);
 
  const bidLimit = getPlanConfig(user?.plan).limits.bidsPerMonth;
- const bidsUsed = user?.planLimits?.bidsPlacedThisMonth ?? myBids.length;
+ // A missing planLimits.bidsPlacedThisMonth means "not tracked yet this
+ // period" (0), never the freelancer's all-time bid count — falling back
+ // to myBids.length showed a wildly inflated "used" figure against a
+ // monthly cap for anyone who'd been on the platform a while.
+ const bidsUsed = user?.planLimits?.bidsPlacedThisMonth ?? 0;
 
  return NextResponse.json({
  matchedJobs: matchedJobs.length,

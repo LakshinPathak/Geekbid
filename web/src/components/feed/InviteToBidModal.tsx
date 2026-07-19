@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function InviteToBidModal({ freelancerId, freelancerName, onClose }: Props) {
-  const { jobs, currentUser, auth, bids, now, refreshCurrentUser } = useApp();
+  const { jobs, currentUser, bids, now, refreshCurrentUser, getValidToken } = useApp();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -23,10 +23,15 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
   };
 
   const uid = currentUser?.id ?? currentUser?._id ?? "";
+  // Direct-offer jobs are exclusive to whichever freelancer they were sent
+  // to (via offeredTo) and go through /api/jobs/offer-response, not the
+  // general invite/bid flow — this used to check pricingMode !== "direct",
+  // a value that doesn't exist on Job (the field is type: "direct_offer"),
+  // so the filter never actually excluded anything.
   const myOpenJobs = jobs.filter(j =>
     (j.clientId === uid) &&
     j.status === "open" &&
-    j.pricingMode !== "direct" as never
+    j.type !== "direct_offer"
   );
 
   const freelancerBidJobIds = new Set(
@@ -36,7 +41,9 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
   const handleInvite = async () => {
     if (!selectedJobId) { toast.error("Select a job first"); return; }
     const job = myOpenJobs.find(j => (j.id ?? j._id) === selectedJobId);
-    if (!job || !auth.accessToken) return;
+    if (!job) return;
+    const token = await getValidToken();
+    if (!token) { toast.error("Please log in again"); return; }
 
     setSubmitting(true);
     try {
@@ -44,7 +51,7 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           freelancerId,
