@@ -81,6 +81,21 @@ async function main() {
       { unique: true, partialFilterExpression: { status: { $in: ["created", "active", "past_due"] } } }
     );
     console.log("subscriptions live-status index created");
+
+    // ISSUE-58 — password_reset_tokens: one-time forgot-password tokens.
+    // Unique on tokenHash (each generated token must be distinct — a
+    // collision would let one user's reset link work for another's
+    // account), TTL on expiresAt so stale/used tokens are swept
+    // automatically instead of accumulating forever.
+    await db.collection("password_reset_tokens").createIndex(
+      { tokenHash: 1 },
+      { unique: true }
+    );
+    await db.collection("password_reset_tokens").createIndex(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0 }
+    );
+    console.log("password_reset_tokens indexes created");
   } finally {
     await client.close();
   }

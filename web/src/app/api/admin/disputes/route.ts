@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { toCents, toDollars } from "@/lib/money";
 
 async function requireAdmin(req: NextRequest) {
   const auth = await authenticateRequest(req);
@@ -111,10 +112,7 @@ export async function PATCH(req: NextRequest) {
 
   // Resolving a dispute must actually move the held escrow, not just relabel
   // the dispute record — refund_client/pay_freelancer map onto the same
-  // escrow actions the Transactions page already exposes. split_50_50 has
-  // no partial-payout mechanism anywhere in the app yet (a transaction has
-  // one recipient), so it's intentionally left as a status-only resolution
-  // until that's built; the admin should follow up via a manual payout.
+  // escrow actions the Transactions page already exposes.
   //
   // CAS filter must match "disputed", not "held": PATCH /api/transactions
   // {action:"dispute"} already flips the linked transaction held->disputed
@@ -130,6 +128,27 @@ export async function PATCH(req: NextRequest) {
       txUpdate = { escrowStatus: "refunded", refundedAt: new Date().toISOString(), refundReason: `Dispute resolution: ${resolution}` };
     } else if (resolutionType === "pay_freelancer") {
       txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
+    } else if (resolutionType === "split_50_50") {
+      // ISSUE-61: split had no payout mechanism at all before — a
+      // transaction has one recipient, so "splitting" here means: the
+      // freelancer gets half of what they'd have earned (netAmount/2),
+      // and the client is refunded whatever's left of what they paid
+      // (grossAmount - that half) — the platform's fee is preserved in
+      // full either way (fee = gross - net, always), only the net split
+      // between the two parties changes. Exact-cent math via toCents/
+      // toDollars to avoid float drift on the halving.
+      const tx = await db.collection("transactions").findOne({ _id: ObjectId.createFromHexString(dispute.transactionId) });
+      if (tx) {
+        const freelancerCents = Math.round(toCents(tx.netAmount ?? 0) / 2);
+        const clientRefundCents = toCents(tx.grossAmount ?? 0) - freelancerCents;
+        txUpdate = {
+          escrowStatus: "split",
+          splitAt: new Date().toISOString(),
+          splitBy: auth.payload.userId,
+          splitFreelancerAmount: toDollars(freelancerCents),
+          splitClientRefundAmount: toDollars(clientRefundCents),
+        };
+      }
     }
     if (txUpdate) {
       try {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { authenticateRequest } from "@/lib/auth";
+import { authenticateRequest, revokeRefreshToken, clearRefreshCookie } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 
 // GET /api/user — get authenticated user's profile
@@ -122,6 +122,40 @@ export async function PATCH(req: NextRequest) {
  console.error("[User PATCH Error]", err);
  return NextResponse.json(
  { error: "Failed to update user" },
+ { status: 500 }
+ );
+ }
+}
+
+// DELETE /api/user — self-serve account deletion (ISSUE-59). Soft-deletes
+// (matches the existing `deleted` flag already enforced at every login path
+// in lib/auth.ts) rather than actually erasing the row — job/bid/transaction
+// history references this user's _id throughout the app and hard-deleting
+// would orphan all of it.
+export async function DELETE(req: NextRequest) {
+ try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
+ const db = await getDb();
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { $set: { deleted: true, deletedAt: new Date().toISOString() } }
+ );
+
+ // Revoke the refresh token so the still-valid short-lived access token is
+ // the only thing that keeps working, and only until it naturally expires
+ // (same residual-access window as suspend — see ISSUE-30).
+ await revokeRefreshToken(auth.payload.userId);
+
+ const response = NextResponse.json({ ok: true, message: "Account deleted" });
+ return clearRefreshCookie(response);
+ } catch (err) {
+ console.error("[User DELETE Error]", err);
+ return NextResponse.json(
+ { error: "Failed to delete account" },
  { status: 500 }
  );
  }

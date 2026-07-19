@@ -20,7 +20,8 @@ export type EmailType =
  // Billing (Phase 4) — see lib/billing-emails.ts
  | "subscription_welcome" | "payment_receipt" | "payment_failed_warning"
  | "grace_period_warning" | "grace_period_final" | "plan_downgraded"
- | "plan_upgraded" | "plan_cancelled" | "win_back";
+ | "plan_upgraded" | "plan_cancelled" | "win_back"
+ | "password_reset";
 
 interface EmailMeta {
  jobId?: string;
@@ -688,6 +689,27 @@ export async function sendJobCompletedSummaryEmail(
  ])}
  ${subtext("Your GeekScore™ has been updated. Keep up the great work!")}
  ${ctaButton("View My Profile →", `${APP_URL}/profile`)}
+ `),
+ });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PASSWORD RESET — forgot-password flow (ISSUE-58)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Keyed on the (hashed) token itself, not userId — welcome-style dedup on
+// userId alone would silently swallow a second forgot-password request for
+// the same user (e.g. the first reset link expired and they asked again).
+export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string, tokenHash: string, userId?: string) {
+ await trackedSend({
+ to, recipientId: userId, emailType: "password_reset",
+ subject: "Reset your GeekBid password",
+ idempotencyKey: `password_reset:${tokenHash}`,
+ metadata: {},
+ html: wrapHtml("Reset your password", `
+ ${heading(`Reset your password, ${name}`)}
+ ${subtext("We received a request to reset your GeekBid password. This link expires in 1 hour.")}
+ ${ctaButton("Reset Password →", resetUrl)}
+ ${subtext("If you didn't request this, you can safely ignore this email — your password won't be changed.")}
  `),
  });
 }
