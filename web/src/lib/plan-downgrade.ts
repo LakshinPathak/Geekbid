@@ -90,7 +90,16 @@ export async function enforceExpiredTeamSeatDeadlines(db: Db) {
   }).toArray();
 
   for (const team of overLimitTeams) {
-    const owner = await db.collection("users").findOne({ _id: team.ownerId }).catch(() => null);
+    // team.ownerId is stored as a string, not an ObjectId — querying _id
+    // directly against that string never matches, so `owner` was always
+    // null here, `getPlanConfig(undefined)` fell back to Free (teamSeats: 0),
+    // and every member got removed regardless of the owner's real plan.
+    let owner = null;
+    try {
+      owner = await db.collection("users").findOne({ _id: new ObjectId(team.ownerId) });
+    } catch {
+      owner = null;
+    }
     const config = getPlanConfig(owner?.plan);
     const allowedMembers = Math.max(0, config.limits.teamSeats - 1);
     const memberIds: string[] = team.memberIds ?? [];

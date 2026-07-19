@@ -108,6 +108,26 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: `Must be ≤ $${currentPrice.toFixed(2)}` }, { status: 400 });
  }
 
+ // 30-minute per-user bid cooldown (anti-spam / anti-freeze) — checked
+ // before the quota reservation below so a cooldown rejection never
+ // consumes a monthly bid slot the freelancer didn't actually get to use.
+ const lastBidByUser = await db.collection("bids").findOne(
+ { jobId, freelancerId: auth.payload.userId },
+ { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
+ );
+ if (lastBidByUser) {
+ const minutesSinceLast =
+ (Date.now() - new Date(lastBidByUser.createdAt).getTime()) / 60000;
+ if (minutesSinceLast < 30) {
+ return NextResponse.json(
+ {
+ error: `Wait ${Math.ceil(30 - minutesSinceLast)} min before bidding again on this job`,
+ },
+ { status: 429 }
+ );
+ }
+ }
+
  // Plan limit enforcement for freelancers — applies to every tier, not just free.
  const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
  let bidQuotaReserved = false;
@@ -136,24 +156,6 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.bidsPerMonth} bids/month. Upgrade for more.` }, { status: 403 });
  }
  bidQuotaReserved = true;
- }
-
- // 30-minute per-user bid cooldown (anti-spam / anti-freeze)
- const lastBidByUser = await db.collection("bids").findOne(
- { jobId, freelancerId: auth.payload.userId },
- { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
- );
- if (lastBidByUser) {
- const minutesSinceLast =
- (Date.now() - new Date(lastBidByUser.createdAt).getTime()) / 60000;
- if (minutesSinceLast < 30) {
- return NextResponse.json(
- {
- error: `Wait ${Math.ceil(30 - minutesSinceLast)} min before bidding again on this job`,
- },
- { status: 429 }
- );
- }
  }
 
  // Re-check the job is still open right before inserting — the quota and

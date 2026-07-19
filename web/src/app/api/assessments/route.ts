@@ -85,14 +85,30 @@ export async function POST(req: NextRequest) {
  const assessment = await db.collection("assessments").findOne({ _id: new ObjectId(assessmentId) });
  if (!assessment) return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
 
- // Check cooldown (30 days)
- const lastAttempt = await db.collection("assessment_results").findOne({
+ // Atomically claim the 30-day cooldown window before scoring — the previous
+ // check-then-insert let two concurrent submits both read "no recent
+ // attempt" and both insert a result, double-crediting geekScore. This
+ // relies on a unique index on { userId, assessmentId } (see
+ // scripts/create-fix-indexes.mjs): if the existing lock's cooldown hasn't
+ // elapsed, or a concurrent request just won the race, the upsert collides
+ // with it and throws a duplicate-key error — both cases mean "reject".
+ const nowIso = new Date().toISOString();
+ const cooldownUntilIso = new Date(Date.now() + 30 * 24 * 3600000).toISOString();
+ try {
+ await db.collection("assessment_cooldowns").findOneAndUpdate(
+ {
  userId: auth.payload.userId,
  assessmentId,
- completedAt: { $gt: new Date(Date.now() - 30 * 24 * 3600000).toISOString() },
- });
- if (lastAttempt) {
+ cooldownUntil: { $lte: nowIso },
+ },
+ { $set: { cooldownUntil: cooldownUntilIso, lastAttemptAt: nowIso } },
+ { upsert: true }
+ );
+ } catch (err) {
+ if ((err as { code?: number }).code === 11000) {
  return NextResponse.json({ error: "You can retake this assessment after 30 days" }, { status: 429 });
+ }
+ throw err;
  }
 
  // Score

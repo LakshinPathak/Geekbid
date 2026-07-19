@@ -17,7 +17,8 @@ import SmartMatchModal from "@/components/feed/SmartMatchModal";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id: jobId } = use(params);
- const { jobs, bids, users, now, currentUser, acceptJob, counterBid, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
+ const { jobs, bids, users, now, currentUser, acceptJob, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
+ const [respondingToOffer, setRespondingToOffer] = useState(false);
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
  const [victoryData, setVictoryData] = useState<null | {
@@ -160,6 +161,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const isClient = currentUser?.role === "client" && (currentUser.id === job.clientId || currentUser._id === job.clientId);
  const isOpen = job.status === "open";
  const isSmartMatchEligible = isOpen && job.type !== "direct_offer";
+ // A direct-offer job has no bidding — the offered freelancer can only
+ // accept or decline the fixed price. Gates the freelancer action panel
+ // below so it renders Accept/Decline (wired to respondToOffer) instead of
+ // the auction Accept/Counter-bid form, which offer-response would reject.
+ const isDirectOfferForMe = isFreelancer && job.type === "direct_offer" && job.offeredTo === uid;
  const pricePercent = ((current - job.minimumPrice) / (job.startingPrice - job.minimumPrice)) * 100;
  const deadlineDate = new Date(job.deadlineAt);
  const deadlineMs = deadlineDate.getTime() - now.getTime();
@@ -298,6 +304,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  });
  } else {
  toast.error("Cannot accept", { description: r.message });
+ }
+ };
+
+ const handleOfferResponse = async (response: "accepted" | "declined") => {
+ setRespondingToOffer(true);
+ const r = await respondToOffer(job.id ?? job._id ?? "", response);
+ setRespondingToOffer(false);
+ if (r.ok) {
+ if (response === "accepted") {
+ toast.success("Offer accepted!", { description: r.message });
+ } else {
+ toast.success("Offer declined", { description: r.message });
+ }
+ } else {
+ toast.error("Couldn't respond to offer", { description: r.message });
  }
  };
 
@@ -846,7 +867,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
  {/* ─── P0: Freelancer Actions / Cooldown ─── */}
  {isFreelancer && isOpen && (
- isOnCooldown ? (
+ isDirectOfferForMe ? (
+ /* Direct offer — fixed price, no bidding: accept or decline only. */
+ <div className="glass-panel p-6 space-y-3">
+ <p className="text-[#3d3a45] text-sm font-semibold flex items-center gap-1.5">
+ <Zap className="h-4 w-4 text-[#4b3f8f]" /> Direct offer at {formatMoney(job.startingPrice)}
+ </p>
+ <p className="text-[#6f6a7d] text-xs">
+ {client?.fullName ?? "This client"} sent you this job directly at a fixed price — no bidding needed.
+ </p>
+ <button
+ onClick={() => handleOfferResponse("accepted")}
+ disabled={respondingToOffer}
+ className="btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready disabled:opacity-50"
+ >
+ <Zap className="h-4 w-4" /> Accept at {formatMoney(job.startingPrice)}
+ </button>
+ <button
+ onClick={() => handleOfferResponse("declined")}
+ disabled={respondingToOffer}
+ className="btn-ghost w-full py-3 rounded-2xl text-sm disabled:opacity-50"
+ >
+ Decline offer
+ </button>
+ </div>
+ ) : isOnCooldown ? (
  /* P0: Cooldown ring */
  <div className="glass-panel p-6 flex flex-col items-center gap-3">
  <svg width={72} height={72} viewBox="0 0 72 72">
@@ -997,8 +1042,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  )
  )}
 
- {/* AI Bid Strategist — freelancers only */}
- {isFreelancer && isOpen && (
+ {/* AI Bid Strategist — freelancers only; not applicable to a fixed-price direct offer */}
+ {isFreelancer && isOpen && !isDirectOfferForMe && (
  <AIBidStrategist
  job={job}
  currentPrice={current}
