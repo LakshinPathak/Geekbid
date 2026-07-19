@@ -140,9 +140,11 @@ async function awardJobToFreelancer(
  return { status: 200, body: { ok: true, finalPrice, freelancerId, roomId } };
 }
 
-// GET /api/jobs/[id] — public
+// GET /api/jobs/[id] — public for open/public jobs; invite-only and direct
+// offers require the caller to be the client, the offered/invited
+// freelancer, or an admin
 export async function GET(
- _req: NextRequest,
+ req: NextRequest,
  { params }: { params: Promise<{ id: string }> }
 ) {
  try {
@@ -158,6 +160,28 @@ export async function GET(
 
  if (!job) {
  return NextResponse.json({ error: "Job not found" }, { status: 404 });
+ }
+
+ // The feed's GET /api/jobs already hides invite_only jobs from the public
+ // list, but this by-id lookup (used by e.g. notification links) had no
+ // such check — anyone with the URL could read a private job's price,
+ // description, and offeredTo. Direct offers are also visibility:
+ // "invite_only" (set at creation), so this one check covers both.
+ if (job.visibility === "invite_only") {
+ const auth = await authenticateRequest(req);
+ const callerId = "error" in auth ? null : auth.payload.userId;
+ const isAdmin = "error" in auth ? false : auth.payload.role === "admin";
+ let authorized = isAdmin || callerId === job.clientId || (!!callerId && callerId === job.offeredTo);
+ if (!authorized && callerId) {
+ const invite = await db.collection("invites").findOne({ jobId: id, freelancerId: callerId });
+ authorized = !!invite;
+ }
+ if (!authorized) {
+ return NextResponse.json(
+ { error: "Not authorized to view this job" },
+ { status: callerId ? 403 : 401 }
+ );
+ }
  }
 
  return NextResponse.json({

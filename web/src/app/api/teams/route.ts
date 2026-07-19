@@ -42,10 +42,12 @@ export async function GET(req: NextRequest) {
  return NextResponse.json(null);
  }
 
- // Get team analytics
+ // Get team analytics — allowlist projection, not a `password: 0` denylist:
+ // teammates should see who's on the team, not each other's email,
+ // googleId, or billing internals, none of which the UI needs here.
  const memberUsers = await db.collection("users")
  .find({ _id: { $in: [team.ownerId, ...team.memberIds].map((id: string) => new ObjectId(id)) } })
- .project({ password: 0 })
+ .project({ fullName: 1, avatarInitial: 1, avatarUrl: 1, geekScore: 1, role: 1 })
  .toArray();
 
  const teamJobs = await db.collection("jobs")

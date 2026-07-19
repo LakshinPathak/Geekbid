@@ -54,6 +54,20 @@ async function main() {
       { unique: true }
     );
     console.log("assessment_cooldowns indexes created");
+
+    // ISSUE-16 — transactions: a given Razorpay payment can only ever fund
+    // one transaction row. Without this, a race between two concurrent
+    // PATCH /api/payments verify calls for the same payment could both pass
+    // the findOne-based idempotency check and both insert. Partial (only
+    // applies where the field is a non-empty string) so mock/legacy rows
+    // without a razorpayPaymentId aren't affected.
+    // Clean up any existing duplicate razorpayPaymentId rows before running
+    // this, or index creation will fail.
+    await db.collection("transactions").createIndex(
+      { razorpayPaymentId: 1 },
+      { unique: true, partialFilterExpression: { razorpayPaymentId: { $type: "string", $gt: "" } } }
+    );
+    console.log("transactions indexes created");
   } finally {
     await client.close();
   }

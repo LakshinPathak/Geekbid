@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
 
 export async function GET(req: NextRequest) {
  try {
@@ -15,7 +16,14 @@ export async function GET(req: NextRequest) {
  const myJobs = await db.collection("jobs").find({ clientId: uid }).toArray();
  const jobIds = myJobs.map(j => j._id.toString());
  const allBids = await db.collection("bids").find({ jobId: { $in: jobIds } }).toArray();
- const users = await db.collection("users").find({}).toArray();
+ // Only the bidders on these jobs — pulling every user in the DB (incl.
+ // password hashes) just to read fullName/geekScore doesn't scale.
+ const bidderIds = [...new Set(allBids.map(b => b.freelancerId))]
+ .map((bid: string) => { try { return new ObjectId(bid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const users = await db.collection("users")
+ .find({ _id: { $in: bidderIds } }, { projection: { fullName: 1, geekScore: 1 } })
+ .toArray();
  const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u]));
 
  const jobHealth = myJobs.filter(j => j.status === "open").map(job => {

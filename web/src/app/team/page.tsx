@@ -12,7 +12,7 @@ import CloudinaryAvatar from "@/components/CloudinaryAvatar";
 
 type TeamData = {
  id: string; name: string; ownerId: string;
- members: { id: string; fullName: string; avatarInitial: string; avatarUrl?: string; email: string; role: string }[];
+ members: { id: string; fullName: string; avatarInitial: string; avatarUrl?: string; geekScore?: number; role: string }[];
  invites: { email: string; status: string; invitedAt: string }[];
  analytics: { totalJobs: number; activeJobs: number; totalSpend: number };
  status?: "active" | "over_limit" | "frozen";
@@ -235,7 +235,9 @@ export default function TeamPage() {
  />
  <div className="flex-1">
  <p className="text-[#3d3a45] text-sm font-medium">{m.fullName}</p>
- <p className="text-[#6f6a7d] text-xs">{m.email}</p>
+ {typeof m.geekScore === "number" && (
+ <p className="text-[#6f6a7d] text-xs">GeekScore {m.geekScore}</p>
+ )}
  </div>
  <span className={`text-xs px-2 py-0.5 rounded-full ${m.id === team.ownerId ? "badge-active" : "text-[#6f6a7d]"}`}>
  {m.id === team.ownerId ? "Owner" : "Member"}

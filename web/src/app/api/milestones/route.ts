@@ -20,6 +20,19 @@ export async function GET(req: NextRequest) {
  }
 
  const db = await getDb();
+
+ // Milestones carry amounts, titles, and status — only the job's client,
+ // the freelancer it was awarded to, or an admin should be able to list
+ // them, not any authenticated user who knows the jobId.
+ let job;
+ try { job = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) }); }
+ catch { job = await db.collection("jobs").findOne({ id: jobId }); }
+ if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+ const isParty = job.clientId === auth.payload.userId || job.acceptedBy === auth.payload.userId;
+ if (!isParty && auth.payload.role !== "admin") {
+ return NextResponse.json({ error: "Not authorized to view these milestones" }, { status: 403 });
+ }
+
  const milestones = await db
  .collection("milestones")
  .find({ jobId })
