@@ -68,6 +68,19 @@ async function main() {
       { unique: true, partialFilterExpression: { razorpayPaymentId: { $type: "string", $gt: "" } } }
     );
     console.log("transactions indexes created");
+
+    // ISSUE-19 — subscriptions: at most one "live" subscription per user.
+    // The POST handler's findOne pre-check is a fast path, not atomic — two
+    // concurrent creates can both pass it before either insert lands. Scoped
+    // to active-ish statuses (not a plain unique on userId) so cancelled/
+    // completed history rows for the same user can still coexist.
+    // Clean up any existing duplicate active/live rows per user before
+    // running this, or index creation will fail.
+    await db.collection("subscriptions").createIndex(
+      { userId: 1 },
+      { unique: true, partialFilterExpression: { status: { $in: ["created", "active", "past_due"] } } }
+    );
+    console.log("subscriptions live-status index created");
   } finally {
     await client.close();
   }

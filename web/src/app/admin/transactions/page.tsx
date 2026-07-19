@@ -11,7 +11,7 @@ import {
 type Transaction = {
   _id: string; id: string; jobTitle: string; clientName: string; freelancerName: string;
   grossAmount: number; platformFee: number; netAmount: number;
-  escrowStatus: string; createdAt: string; jobId: string;
+  escrowStatus: string; createdAt: string; jobId: string; currency?: string;
 };
 
 export default function AdminTransactionsPage() {
@@ -151,13 +151,13 @@ export default function AdminTransactionsPage() {
                     <p className="text-xs text-[#6f6a7d] max-w-[100px] truncate">{t.clientName}</p>
                   </td>
                   <td className="px-4 py-3.5 text-right">
-                    <span className="text-sm text-[#3d3a45] terminal-amount">{formatMoney(t.grossAmount)}</span>
+                    <span className="text-sm text-[#3d3a45] terminal-amount">{formatMoney(t.grossAmount, t.currency)}</span>
                   </td>
                   <td className="px-4 py-3.5 text-right">
-                    <span className="text-xs text-[#6f6a7d] terminal-amount">{formatMoney(t.platformFee)}</span>
+                    <span className="text-xs text-[#6f6a7d] terminal-amount">{formatMoney(t.platformFee, t.currency)}</span>
                   </td>
                   <td className="px-4 py-3.5 text-right">
-                    <span className="text-sm font-medium text-[#4b3f8f] terminal-amount">{formatMoney(t.netAmount)}</span>
+                    <span className="text-sm font-medium text-[#4b3f8f] terminal-amount">{formatMoney(t.netAmount, t.currency)}</span>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${

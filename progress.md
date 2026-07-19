@@ -3,7 +3,7 @@
 > Tracks completion status of every issue in [`issues.md`](./issues.md) (61 issues), implemented per [`planning.md`](./planning.md).
 > **Update this file immediately after each issue is fixed** — status, date, files touched, and any deviation from the planned fix. This is the persistence layer if a session runs out of context/tokens; the next session should read this file first to know what's already done.
 
-**Last updated:** 2026-07-20 (batch 5: ISSUE-14, 15, 16, 17, 43, 44, 45 fixed)
+**Last updated:** 2026-07-20 (batch 6: ISSUE-18 through 29 fixed — 12 issues)
 
 ## How to update
 1. When you finish an issue, flip its Status to `Done`, fill in Date + Commit/Files + Notes.
@@ -54,18 +54,18 @@
 | ISSUE-15 | Invite-only/direct-offer jobs readable by ID without auth | Done | 2026-07-20 | `web/src/app/api/jobs/[id]/route.ts` | GET now checks `visibility === "invite_only"` (direct offers set this too) and requires client/offeredTo/invited-freelancer(via `invites` collection)/admin; 401 if unauthenticated, 403 if authenticated but not a party. |
 | ISSUE-16 | Payment verification race can mint duplicate txs | Done | 2026-07-20 | `web/src/app/api/payments/route.ts`, `web/scripts/create-fix-indexes.mjs` | Added unique partial index on `transactions.razorpayPaymentId`; insert now catches duplicate-key (E11000) and returns the race-winner's transaction instead of erroring. **Needs `node scripts/create-fix-indexes.mjs` run against the target DB.** |
 | ISSUE-17 | Cron auth fails open if `CRON_SECRET` unset | Done | 2026-07-20 | `web/src/app/api/cron/{retry-webhooks,reconcile-subscriptions}/route.ts` | Both routes now reject if `!process.env.CRON_SECRET`, and compare the header with `constantTimeEqual` instead of `!==`. |
-| ISSUE-18 | Direct-offer price not validated | Not Started | | | |
-| ISSUE-19 | Concurrent subscription create can double-subscribe | Not Started | | | |
-| ISSUE-20 | Dispute resolve accepts any `status` string | Not Started | | | |
-| ISSUE-21 | Complete email uses wrong price field | Not Started | | | |
-| ISSUE-22 | Post Job double-submit (wrong `loading` flag) | Not Started | | | |
-| ISSUE-23 | Inbox replaces all messages when opening a room | Not Started | | | |
-| ISSUE-24 | Earnings "This Month"/chart are random fake numbers | Not Started | | | |
-| ISSUE-25 | My Jobs marks non-open jobs as "Completed" | Not Started | | | |
-| ISSUE-26 | Freelancer My Jobs omits jobs they only bid on | Not Started | | | |
-| ISSUE-27 | Feed role routing: non-clients get Freelancer UI | Not Started | | | |
-| ISSUE-28 | Job Accept/Counter lack in-flight guards | Not Started | | | |
-| ISSUE-29 | `$` formatting vs INR payments | Not Started | | | |
+| ISSUE-18 | Direct-offer price not validated | Done | 2026-07-20 | `web/src/app/api/jobs/direct-offer/route.ts` | Added the same finite/`>0` check as `POST /api/jobs`. |
+| ISSUE-19 | Concurrent subscription create can double-subscribe | Done | 2026-07-20 | `web/src/app/api/subscriptions/route.ts`, `web/scripts/create-fix-indexes.mjs` | Added partial unique index on `subscriptions.userId` scoped to active-ish statuses; both insert paths (mock + real) now catch duplicate-key and return the existing 409. **Needs `node scripts/create-fix-indexes.mjs` run against the target DB.** |
+| ISSUE-20 | Dispute resolve accepts any `status` string | Done | 2026-07-20 | `web/src/app/api/disputes/route.ts`, `web/src/app/api/admin/disputes/route.ts` | Both PATCH handlers now allowlist `status` to `open`/`resolved` and require `resolutionType` (from its own allowed set) when resolving — fixed in both duplicate implementations. |
+| ISSUE-21 | Complete email uses wrong price field | Done | 2026-07-20 | `web/src/app/api/jobs/[id]/complete/route.ts` | `job.acceptedPrice` → `job.finalPrice` (accept writes `finalPrice`; `acceptedPrice` was never actually set). |
+| ISSUE-22 | Post Job double-submit (wrong `loading` flag) | Done | 2026-07-20 | `web/src/app/post-job/page.tsx` | Added local `submitting` state; button now disables on it instead of the store's `loading` (which `postJob` never touched). |
+| ISSUE-23 | Inbox replaces all messages when opening a room | Done | 2026-07-20 | `web/src/lib/store.tsx` | `fetchChatMessages` now merges by `roomId` instead of replacing the whole `chatMessages` array. |
+| ISSUE-24 | Earnings "This Month"/chart are random fake numbers | Done | 2026-07-20 | `web/src/app/earnings/page.tsx` | Chart now aggregates real released-transaction `netAmount` by month (`releasedAt`/`createdAt`) instead of `Math.random()`; also fixed the hardcoded "Jun 2026" label to be dynamic. |
+| ISSUE-25 | My Jobs marks non-open jobs as "Completed" | Done | 2026-07-20 | `web/src/app/my-jobs/page.tsx` | Badge now maps from `job.status` (Live/Accepted/Completed/Cancelled/Expired) instead of a plain `isOpen ? "Live" : "Completed"`. |
+| ISSUE-26 | Freelancer My Jobs omits jobs they only bid on | Done | 2026-07-20 | `web/src/app/my-jobs/page.tsx` | Filter (and the Open/Accepted tab counts) now also include jobs where the freelancer has a bid, not just `clientId`/`acceptedBy`. |
+| ISSUE-27 | Feed role routing: non-clients get Freelancer UI | Done | 2026-07-20 | `web/src/app/feed/page.tsx` | Explicit branches for client/freelancer/admin (admin → `/admin`); anything else redirects to `/login` instead of defaulting to `FreelancerFeed`. |
+| ISSUE-28 | Job Accept/Counter lack in-flight guards | Done | 2026-07-20 | `web/src/app/jobs/[id]/page.tsx` | Added `accepting`/`bidding` state; both buttons disable while their request is in flight. |
+| ISSUE-29 | `$` formatting vs INR payments | Done (partial — see notes) | 2026-07-20 | `web/src/lib/utils.ts`, `web/src/app/earnings/page.tsx`, `web/src/app/admin/transactions/page.tsx` | `formatMoney(amount, currency)` now accepts an optional currency (default USD, unchanged for job/bid prices); the two views that display *real* `transactions` rows (which carry a genuine `currency` field, usually INR) now pass `t.currency` instead of hardcoding `$`. **Deliberately not changed:** job/bid price displays everywhere else stay `$` — there's no stored per-job currency, and job-escrow transactions (from accept/award) don't get a `currency` field either, so unifying the whole app to one currency model is a distinct product decision, not a display bug fix. |
 | ISSUE-43 | Teams GET leaks member emails | Done | 2026-07-20 | `web/src/app/api/teams/route.ts`, `web/src/app/team/page.tsx` | Switched to an allowlist projection (`fullName, avatarInitial, avatarUrl, geekScore, role`) instead of `{password: 0}`; FE no longer displays/expects member email (shows GeekScore instead). |
 | ISSUE-44 | Public profile leaks `googleId` | Done | 2026-07-20 | `web/src/app/api/users/[id]/route.ts` | Denylist extended to also strip `googleId`, `referredBy`, `referralCredits`, `planLimits`, `subscriptionId`, `planExpiresAt`. |
 | ISSUE-45 | Client dashboards load entire `users` collection | Done | 2026-07-20 | `web/src/app/api/client/{activity-feed,job-health}/route.ts` | Both now scope the `users` query to just the bidder ids that appear in the page's own results, with an explicit field projection, instead of `find({})` over the whole collection. |
@@ -104,11 +104,11 @@
 |---|---|---|---|
 | Critical | 4 | 4 | 0 |
 | High | 17 | 17 | 0 |
-| Medium | 35 | 8 | 27 |
+| Medium | 35 | 20 | 15 |
 | Low | 5 | 0 | 5 |
-| **Total** | **61** | **29** | **32** |
+| **Total** | **61** | **41** | **20** |
 
-*(Critical done: all 4. High done: all 17 (ISSUE-6 is partial, see its row). Medium done: ISSUE-14, 15, 16, 17, 43, 44, 45, 46. Note: issues.md's own "Summary counts" table says Medium=31, but that undercounts by excluding the 4 product-gap issues (58-61, labeled "Medium (product gap)" in the doc body) — there are still only 61 numbered issues total (1-61), just 35 of them are Medium once 58-61 are counted correctly, not 31.)*
+*(Critical done: all 4. High done: all 17 (ISSUE-6 is partial, see its row). Medium done: ISSUE-14 through 29 (16 of the first-pass 16), ISSUE-43, 44, 45, 46 (4 of the second-pass 15). Remaining Medium: 47-61 (15 issues). Note: issues.md's own "Summary counts" table says Medium=31, but that undercounts by excluding the 4 product-gap issues (58-61, labeled "Medium (product gap)" in the doc body) — there are still only 61 numbered issues total (1-61), just 35 of them are Medium once 58-61 are counted correctly, not 31.)*
 
 ## Suggested fix order (from `issues.md`)
 1. ISSUE-1 · 2. ISSUE-2+42 · 3. ISSUE-3 · 4. ISSUE-35 · 5. ISSUE-37 · 6. ISSUE-4 · 7. ISSUE-5 · 8. ISSUE-7+39-40+46 · 9. ISSUE-6 · 10. ISSUE-36,38,41 · 11. Remaining High → Medium → Low / product gaps (58–61)
@@ -120,3 +120,4 @@
 - **2026-07-20** — Fixed batch 3 (4 issues): ISSUE-6 (partial/scoped — see its row for exactly what was and wasn't changed), ISSUE-36, ISSUE-38, ISSUE-41. Verified with `tsc --noEmit`, `eslint` (all findings pre-existing), full `npm run build`. **Correction to earlier summary-count math:** ISSUE-2 is Critical, not High (issues.md's own section headers say so) — the batch-1 and batch-2 log entries above miscounted it; the Summary Counts table above this log is now correct (Critical 4/4 done, High 11/17 done). Pushing this batch, then continuing to remaining High issues (8, 9, 10, 11, 12, 13) per task list, then Medium, then Low.
 - **2026-07-20** — Fixed batch 4 (6 issues, all remaining High severity): ISSUE-8, 9, 10, 11, 12, 13. **All 17 High + all 4 Critical issues are now done.** Notable: ISSUE-8's fix found and fixed 2 extra occurrences of the same unguarded-reset bug that issues.md's file list didn't mention (`v1/jobs/route.ts`, `create-job-invite.ts`). ISSUE-10 asked the user which fix approach to use (AskUserQuestion) — they chose the `accept_bid` API over relabeling. Verified with `tsc --noEmit`, `eslint` (all findings pre-existing or matching this file's own established `any` convention), full `npm run build`. Pushing this batch, then moving to Medium severity issues (14-29, 43-61 subset) per task list.
 - **2026-07-20** — Fixed batch 5 (7 issues, AuthZ/PII cluster): ISSUE-14, 15, 16, 17, 43, 44, 45. Also corrected the summary-count table's Medium/Total figures (see note above the table) — issues.md's own tally excludes the 4 product-gap issues from its Medium count, this tracker doesn't. Verified with `tsc --noEmit`, `eslint` (pre-existing findings only), full `npm run build`. Pushing this batch, then continuing with the money/dispute/frontend Medium cluster (18-29 subset).
+- **2026-07-20** — Fixed batch 7 (12 issues): ISSUE-18 through 29 — the entire remaining first-pass Medium cluster (money validation, dispute allowlist, wrong price field, and a run of frontend bugs: double-submit, inbox message replace, fake earnings chart, wrong badges, missing bid-on-jobs filter, feed role routing, missing in-flight guards, currency display). ISSUE-29 is partial by design (see its row) — fixed the concretely-reachable bug (real transactions mislabeled `$`) without redefining whether job/bid prices are USD or INR, which is a separate product decision. Verified with `tsc --noEmit`, `eslint` (all pre-existing, confirmed via `git diff` line-range check on the one borderline file), full `npm run build`. Pushing this batch, then continuing with the second-pass Medium cluster (47-57) and product gaps (58-61).

@@ -89,7 +89,7 @@ export async function PATCH(
  await sendJobCompletedSummaryEmail(
  client.email, client.fullName ?? "Client",
  freelancer.email, freelancer.fullName ?? "Freelancer",
- job.title, job.acceptedPrice ?? job.minimumPrice
+ job.title, job.finalPrice ?? job.minimumPrice
  ).catch(console.error);
  }
  }

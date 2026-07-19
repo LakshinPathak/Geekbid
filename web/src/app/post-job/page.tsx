@@ -353,9 +353,10 @@ function DecayCurvePreview({
 }
 
 export default function PostJobPage() {
- const { postJob, currentUser, mounted, loading, getUserPlanConfig, planUsage } = useApp();
+ const { postJob, currentUser, mounted, getUserPlanConfig, planUsage } = useApp();
  const router = useRouter();
  const [step, setStep] = useState<Step>(1);
+ const [submitting, setSubmitting] = useState(false);
  const [title, setTitle] = useState("");
  const [description, setDescription] = useState("");
  const [skills, setSkills] = useState<string[]>([]);
@@ -418,7 +419,9 @@ export default function PostJobPage() {
  };
 
  const onSubmit = async () => {
+ if (submitting) return;
  if (!validate(3)) return;
+ setSubmitting(true);
  const r = await postJob({
  title, description, skillsRequired: skills,
  startingPrice, minimumPrice, decayRatePerHour: decayRate,
@@ -431,6 +434,7 @@ export default function PostJobPage() {
  router.push("/feed");
  } else {
  toast.error("Error", { description: r.message });
+ setSubmitting(false);
  }
  };
 
@@ -865,10 +869,10 @@ export default function PostJobPage() {
  </button>
  <button
  onClick={onSubmit}
- disabled={loading || !title.trim()}
+ disabled={submitting || !title.trim()}
  className="btn-primary payment-ready flex-1 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
  >
- {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Zap className="h-4 w-4" /> Post Job</>}
+ {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Zap className="h-4 w-4" /> Post Job</>}
  </button>
  </div>
  </div>

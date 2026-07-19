@@ -19,6 +19,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const { id: jobId } = use(params);
  const { jobs, bids, users, now, currentUser, acceptJob, acceptBid, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
  const [respondingToOffer, setRespondingToOffer] = useState(false);
+ const [accepting, setAccepting] = useState(false);
+ const [bidding, setBidding] = useState(false);
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
  const [victoryData, setVictoryData] = useState<null | {
@@ -285,7 +287,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  : null;
 
  const handleAccept = async () => {
+ if (accepting) return;
+ setAccepting(true);
  const r = await acceptJob(job.id ?? job._id ?? "");
+ setAccepting(false);
  if (r.ok) {
  // Use the server's authoritative winner, not a client-side re-derivation —
  // re-sorting local bids can disagree with the backend's actual pick on a
@@ -342,12 +347,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  };
 
  const handleCounter = async () => {
+ if (bidding) return;
  setCounterError("");
  const price = Number(counterPrice);
  if (!price || price <= 0) { setCounterError("Enter a valid price"); return; }
  if (price > current) { setCounterError(`Price must be at most ${formatMoney(current)}`); return; }
  if (price < job.minimumPrice) { setCounterError(`Price must be at least ${formatMoney(job.minimumPrice)}`); return; }
+ setBidding(true);
  const r = await counterBid(job.id ?? job._id ?? "", price);
+ setBidding(false);
  if (r.ok) { toast.success("Counter-bid sent!", { description: r.message }); setCounterPrice(""); }
  else toast.error("Counter-bid failed", { description: r.message });
  };
@@ -947,8 +955,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  label="bids"
  planName={getUserPlanConfig().name}
  />
- <button onClick={handleAccept}
- className={`btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready ${justUnlocked ? "animate-glow-ring" : ""}`}>
+ <button onClick={handleAccept} disabled={accepting}
+ className={`btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready disabled:opacity-50 ${justUnlocked ? "animate-glow-ring" : ""}`}>
  <Zap className="h-4 w-4" /> Accept at {formatMoney(current)}
  </button>
 
@@ -1051,8 +1059,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  </div>
 
  {counterError && <p className="text-[#c14d3a] text-xs">{counterError}</p>}
- <button onClick={handleCounter}
- className="btn-glass w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm">
+ <button onClick={handleCounter} disabled={bidding}
+ className="btn-glass w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-50">
  <Send className="h-4 w-4" /> Submit Counter-Bid
  </button>
  </div>
