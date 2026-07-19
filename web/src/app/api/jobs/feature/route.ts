@@ -4,6 +4,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { getPlanConfig, FEATURED_BOOST_PRICE_INR, FEATURED_BOOST_CURRENCY } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
 
 // PATCH /api/jobs/feature — toggle featured status
 export async function PATCH(req: NextRequest) {
@@ -43,11 +44,7 @@ export async function PATCH(req: NextRequest) {
  let quotaConsumed = false;
  if (client && config.limits.featuredBoostsPerMonth > 0) {
  const limits = client.planLimits ?? { featuredBoostsUsedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
- if (new Date(limits.monthResetAt) < new Date()) {
- await db.collection("users").updateOne({ _id: client._id }, {
- $set: { "planLimits.jobsPostedThisMonth": 0, "planLimits.bidsPlacedThisMonth": 0, "planLimits.featuredBoostsUsedThisMonth": 0, "planLimits.monthResetAt": new Date(Date.now() + 30 * 24 * 3600000).toISOString() }
- });
- }
+ await resetPlanLimitsIfStale(db, client._id, limits.monthResetAt);
  const capped = await db.collection("users").findOneAndUpdate(
  {
  _id: client._id,

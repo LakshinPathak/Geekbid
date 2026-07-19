@@ -40,7 +40,7 @@ interface MarketIntelData {
 export default function ClientFeed() {
  const {
  jobs, bids, users, now, currentUser, acceptJob,
- auth, mounted,
+ mounted, getValidToken,
  } = useApp();
  const router = useRouter();
 
@@ -59,11 +59,12 @@ export default function ClientFeed() {
 
  // ── Fetch dashboard data from API ─────────────────────────────
  const fetchDashboard = useCallback(async () => {
- if (!auth.accessToken) return;
+ const token = await getValidToken();
+ if (!token) return;
  try {
  const [dashRes, mktRes] = await Promise.all([
- fetch("/api/client/dashboard", { headers: { Authorization: `Bearer ${auth.accessToken}` } }),
- fetch("/api/client/market-intel", { headers: { Authorization: `Bearer ${auth.accessToken}` } }),
+ fetch("/api/client/dashboard", { headers: { Authorization: `Bearer ${token}` } }),
+ fetch("/api/client/market-intel", { headers: { Authorization: `Bearer ${token}` } }),
  ]);
  if (dashRes.ok) setDashboard(await dashRes.json());
  if (mktRes.ok) setMarketIntel(await mktRes.json());
@@ -73,7 +74,7 @@ export default function ClientFeed() {
  setLoading(false);
  setLastRefreshed(new Date());
  }
- }, [auth.accessToken]);
+ }, [getValidToken]);
 
  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
