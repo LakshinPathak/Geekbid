@@ -59,23 +59,27 @@ export async function POST(req: NextRequest) {
  // Fire-and-forget welcome email
  sendWelcomeEmail(email, name, role ?? "freelancer", userId).catch(() => {});
 
- // Track referral if code provided
- if (referralCode && result.user) {
+ // Track referral if code provided — coerce to a primitive string first
+ // (sanitizeString returns "" for anything that isn't already a string) so
+ // a crafted body like { "referralCode": { "$ne": null } } can never reach
+ // findOne() as a query operator and match an arbitrary referrer.
+ const referralCodeStr = sanitizeString(referralCode);
+ if (referralCodeStr && result.user) {
  const db = await getDb();
- const referrer = await db.collection("users").findOne({ referralCode });
+ const referrer = await db.collection("users").findOne({ referralCode: referralCodeStr });
  if (referrer) {
  const userId = (result.user as Record<string, unknown>).id as string;
  await db.collection("referrals").insertOne({
  referrerUserId: referrer._id.toString(),
  referredUserId: userId,
- referralCode,
+ referralCode: referralCodeStr,
  status: "signed_up",
  creditAmount: 0,
  createdAt: new Date().toISOString(),
  });
  await db.collection("users").updateOne(
  { _id: (await import("mongodb")).ObjectId.createFromHexString(userId) },
- { $set: { referredBy: referralCode } }
+ { $set: { referredBy: referralCodeStr } }
  );
  // Fire-and-forget referral notification to referrer
  if (referrer.email) {
