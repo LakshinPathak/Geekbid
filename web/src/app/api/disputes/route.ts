@@ -112,8 +112,15 @@ export async function PATCH(req: NextRequest) {
  if (!disputeBefore) {
  return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
  }
+ // CAS on the dispute's own status: without this, a dispute already
+ // resolved once (transaction moved out of "disputed") could be
+ // PATCHed again with a different resolutionType — this write would
+ // still succeed (overwriting resolution/resolvedAt/resolvedBy) while
+ // the transaction CAS below silently no-ops, leaving the dispute
+ // record and the resolution email out of sync with what actually
+ // happened to the money.
  const result = await db.collection("disputes").updateOne(
- { _id: new ObjectId(disputeId) },
+ { _id: new ObjectId(disputeId), status: "open" },
  {
  $set: {
  status: newStatus,
@@ -123,7 +130,7 @@ export async function PATCH(req: NextRequest) {
  }
  );
  if (result.matchedCount === 0) {
- return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+ return NextResponse.json({ error: "Dispute already resolved" }, { status: 409 });
  }
 
  // Resolving a dispute must actually move the held escrow, not just relabel
@@ -146,14 +153,15 @@ export async function PATCH(req: NextRequest) {
  } else if (resolutionType === "pay_freelancer") {
  txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
  } else if (resolutionType === "split_50_50") {
- // ISSUE-61: freelancer gets half of netAmount, client is refunded
- // grossAmount minus that half — the platform fee (gross - net) is
- // preserved in full either way, only the net split between the two
- // parties changes. Exact-cent math to avoid float drift on the halving.
+ // ISSUE-61/63: freelancer gets half of netAmount, client gets the
+ // other half of netAmount — this preserves the platform fee
+ // (gross - net) in full, since the two payouts sum to netAmount,
+ // not grossAmount. Exact-cent math to avoid float drift on the halving.
  const tx = await db.collection("transactions").findOne({ _id: new ObjectId(disputeBefore.transactionId) });
  if (tx) {
- const freelancerCents = Math.round(toCents(tx.netAmount ?? 0) / 2);
- const clientRefundCents = toCents(tx.grossAmount ?? 0) - freelancerCents;
+ const netCents = toCents(tx.netAmount ?? 0);
+ const freelancerCents = Math.round(netCents / 2);
+ const clientRefundCents = netCents - freelancerCents;
  txUpdate = {
  escrowStatus: "split",
  splitAt: new Date().toISOString(),

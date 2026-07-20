@@ -33,10 +33,10 @@ export async function GET(
  const {
  password: _pw, refreshToken: _rt, email: _em, googleId: _gid,
  referredBy: _rb, referralCredits: _rc, planLimits: _pl,
- subscriptionId: _sid, planExpiresAt: _pea,
+ subscriptionId: _sid, planExpiresAt: _pea, avatarPublicId: _apid,
  ...publicProfile
  } = user;
- void _pw; void _rt; void _em; void _gid; void _rb; void _rc; void _pl; void _sid; void _pea;
+ void _pw; void _rt; void _em; void _gid; void _rb; void _rc; void _pl; void _sid; void _pea; void _apid;
 
  return NextResponse.json({
  ...publicProfile,

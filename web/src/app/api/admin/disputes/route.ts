@@ -104,11 +104,17 @@ export async function PATCH(req: NextRequest) {
   const dispute = await db.collection("disputes").findOne({ _id: ObjectId.createFromHexString(disputeId) });
   if (!dispute) return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
 
+  // CAS on the dispute's own status: without this, a dispute already
+  // resolved once (transaction moved out of "disputed") could be PATCHed
+  // again with a different resolutionType — this write would still
+  // succeed while the transaction CAS below silently no-ops, leaving the
+  // dispute record and the resolution email out of sync with what
+  // actually happened to the money.
   const result = await db.collection("disputes").updateOne(
-    { _id: ObjectId.createFromHexString(disputeId) },
+    { _id: ObjectId.createFromHexString(disputeId), status: "open" },
     { $set: { status, resolution: resolution ?? "", resolutionType: resolutionType ?? "dismiss", resolvedAt: new Date().toISOString(), resolvedBy: auth.payload.userId } }
   );
-  if (result.matchedCount === 0) return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+  if (result.matchedCount === 0) return NextResponse.json({ error: "Dispute already resolved" }, { status: 409 });
 
   // Resolving a dispute must actually move the held escrow, not just relabel
   // the dispute record — refund_client/pay_freelancer map onto the same
@@ -129,18 +135,18 @@ export async function PATCH(req: NextRequest) {
     } else if (resolutionType === "pay_freelancer") {
       txUpdate = { escrowStatus: "released", releasedAt: new Date().toISOString(), releasedBy: auth.payload.userId };
     } else if (resolutionType === "split_50_50") {
-      // ISSUE-61: split had no payout mechanism at all before — a
+      // ISSUE-61/63: split had no payout mechanism at all before — a
       // transaction has one recipient, so "splitting" here means: the
-      // freelancer gets half of what they'd have earned (netAmount/2),
-      // and the client is refunded whatever's left of what they paid
-      // (grossAmount - that half) — the platform's fee is preserved in
-      // full either way (fee = gross - net, always), only the net split
-      // between the two parties changes. Exact-cent math via toCents/
-      // toDollars to avoid float drift on the halving.
+      // freelancer gets half of netAmount, and the client gets the other
+      // half of netAmount. This preserves the platform's fee (fee = gross
+      // - net) in full, since the two payouts sum to netAmount, not
+      // grossAmount. Exact-cent math via toCents/toDollars to avoid float
+      // drift on the halving.
       const tx = await db.collection("transactions").findOne({ _id: ObjectId.createFromHexString(dispute.transactionId) });
       if (tx) {
-        const freelancerCents = Math.round(toCents(tx.netAmount ?? 0) / 2);
-        const clientRefundCents = toCents(tx.grossAmount ?? 0) - freelancerCents;
+        const netCents = toCents(tx.netAmount ?? 0);
+        const freelancerCents = Math.round(netCents / 2);
+        const clientRefundCents = netCents - freelancerCents;
         txUpdate = {
           escrowStatus: "split",
           splitAt: new Date().toISOString(),

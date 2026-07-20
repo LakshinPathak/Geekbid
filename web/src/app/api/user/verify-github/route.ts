@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import crypto from "crypto";
+import { checkRateLimit } from "@/lib/sanitize";
 
 // POST /api/user/verify-github — two-step proof-of-ownership verification.
 //
@@ -20,6 +21,15 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: auth.error }, { status: auth.status });
  }
 
+ // GitHub's unauthenticated REST API quota (60 req/hr) is shared across the
+ // whole app's outbound traffic, not per-user — without a limit here, one
+ // user looping "confirm" retries can exhaust it for everyone (see the
+ // rate-limit-response handling below, which also stops treating an
+ // exhausted-quota response from GitHub as a false "user not found").
+ if (!(await checkRateLimit(`github-verify:${auth.payload.userId}`, 10, 60 * 1000))) {
+ return NextResponse.json({ error: "Too many verification attempts. Please slow down." }, { status: 429 });
+ }
+
  const body = await req.json();
  const { githubUsername, step } = body;
 
@@ -35,6 +45,15 @@ export async function POST(req: NextRequest) {
  headers: { "Accept": "application/vnd.github.v3+json", "User-Agent": "GeekBid-App" },
  });
  if (!ghRes.ok) {
+ // A 403 with an exhausted rate-limit header means GitHub's shared
+ // unauthenticated quota ran out — that is not "user not found" and
+ // saying so would actively mislead every user until the quota resets.
+ if (ghRes.status === 403 && ghRes.headers.get("x-ratelimit-remaining") === "0") {
+ return NextResponse.json(
+ { error: "GitHub verification is temporarily rate-limited platform-wide. Please try again in a few minutes." },
+ { status: 503 }
+ );
+ }
  return NextResponse.json({ error: "GitHub user not found" }, { status: 404 });
  }
  const ghData = await ghRes.json();

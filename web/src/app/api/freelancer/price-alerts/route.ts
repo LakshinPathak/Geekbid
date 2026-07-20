@@ -16,7 +16,19 @@ export async function GET(req: NextRequest) {
  const user = await db.collection("users").findOne({ _id: new ObjectId(uid) });
  const mySkills: string[] = user?.skills ?? [];
 
- const openJobs = await db.collection("jobs").find({ status: "open" }).toArray();
+ // Invite-only/direct-offer jobs must not surface here unless this
+ // freelancer was actually invited (same visibility rule as /api/jobs).
+ const invitedJobIds = await db.collection("invites").distinct("jobId", { freelancerId: uid });
+ const invitedObjectIds = invitedJobIds
+ .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const openJobs = await db.collection("jobs").find({
+ status: "open",
+ $or: [
+ { visibility: { $ne: "invite_only" } },
+ ...(invitedObjectIds.length > 0 ? [{ visibility: "invite_only", _id: { $in: invitedObjectIds } }] : []),
+ ],
+ }).toArray();
 
  // Find jobs where price is approaching floor (within 20% of floor)
  const alerts = openJobs.map(job => {

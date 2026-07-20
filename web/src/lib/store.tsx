@@ -461,7 +461,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
  const fetchReviews = useCallback(async (userId?: string) => {
  try {
  const url = userId ? `/api/reviews?userId=${userId}` : "/api/reviews";
- const res = await apiRequest(url);
+ // Unscoped calls now require auth server-side (falls back to the
+ // caller's own given+received reviews instead of a public dump).
+ const token = userId ? null : await getValidToken();
+ const res = await apiRequest(url, { accessToken: token });
  if (res.ok) {
  const data = await res.json();
  if (Array.isArray(data)) setReviews(data);
@@ -469,7 +472,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
  } catch (err) {
  console.error("[fetchReviews]", err);
  }
- }, []);
+ }, [getValidToken]);
 
  const submitReview = useCallback(
  async (jobId: string, revieweeId: string, rating: number, comment: string): Promise<ActionResult> => {

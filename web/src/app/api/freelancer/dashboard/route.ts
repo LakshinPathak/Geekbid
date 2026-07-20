@@ -13,12 +13,25 @@ export async function GET(req: NextRequest) {
  const db = await getDb();
  const uid = auth.payload.userId;
 
- const [user, myBids, allOpenJobs, txns] = await Promise.all([
+ const [user, myBids, invitedJobIds, txns] = await Promise.all([
  db.collection("users").findOne({ _id: new ObjectId(uid) }),
  db.collection("bids").find({ freelancerId: uid }).toArray(),
- db.collection("jobs").find({ status: "open" }).toArray(),
+ db.collection("invites").distinct("jobId", { freelancerId: uid }),
  db.collection("transactions").find({ freelancerId: uid }).toArray(),
  ]);
+
+ // Invite-only/direct-offer jobs must not surface here unless this
+ // freelancer was actually invited (same visibility rule as /api/jobs).
+ const invitedObjectIds = invitedJobIds
+ .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const allOpenJobs = await db.collection("jobs").find({
+ status: "open",
+ $or: [
+ { visibility: { $ne: "invite_only" } },
+ ...(invitedObjectIds.length > 0 ? [{ visibility: "invite_only", _id: { $in: invitedObjectIds } }] : []),
+ ],
+ }).toArray();
 
  const mySkills: string[] = user?.skills ?? [];
  const matchedJobs = allOpenJobs.filter(j =>

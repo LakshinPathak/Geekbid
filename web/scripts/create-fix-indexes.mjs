@@ -42,7 +42,12 @@ async function main() {
 
   const client = new MongoClient(uri);
   await client.connect();
-  const db = client.db();
+  // Must match lib/mongodb.ts's explicit db("geekbid") — MONGODB_URI has no
+  // path segment, so a bare client.db() silently resolves to whatever the
+  // driver/URI defaults to (observed: the unrelated "test" database), not
+  // the app's real database. Every index block below was previously landing
+  // in the wrong database as a result.
+  const db = client.db("geekbid");
 
   try {
     // ISSUE-37 — assessment_cooldowns: atomic 30-day-retake claim so two
@@ -76,6 +81,14 @@ async function main() {
     // completed history rows for the same user can still coexist.
     // Clean up any existing duplicate active/live rows per user before
     // running this, or index creation will fail.
+    // A plain non-unique userId_1 index pre-dates this fix and collides on
+    // name with the partial-unique one below — drop it first.
+    try {
+      await db.collection("subscriptions").dropIndex("userId_1");
+      console.log("subscriptions old plain userId_1 index dropped");
+    } catch (err) {
+      if (err?.codeName !== "IndexNotFound") throw err;
+    }
     await db.collection("subscriptions").createIndex(
       { userId: 1 },
       { unique: true, partialFilterExpression: { status: { $in: ["created", "active", "past_due"] } } }
@@ -112,6 +125,27 @@ async function main() {
       { unique: true }
     );
     console.log("invites index created");
+
+    // ISSUE-83 — refresh_tokens: moved from one token slot per user to one
+    // per (userId, sessionId) so concurrent legitimate sessions (multiple
+    // devices/tabs) don't collide and get each other silently logged out as
+    // "theft". The old deploy left a unique index on userId alone, which
+    // throws E11000 the moment a second device tries to store its own
+    // session row — drop it and replace with the compound unique index the
+    // new storeRefreshToken()/validateStoredRefreshToken() code actually
+    // queries on.
+    try {
+      await db.collection("refresh_tokens").dropIndex("userId_1");
+      console.log("refresh_tokens old userId_1 unique index dropped");
+    } catch (err) {
+      if (err?.codeName !== "IndexNotFound") throw err;
+      console.log("refresh_tokens old userId_1 index already absent, skipping drop");
+    }
+    await db.collection("refresh_tokens").createIndex(
+      { userId: 1, sessionId: 1 },
+      { unique: true }
+    );
+    console.log("refresh_tokens {userId,sessionId} index created");
   } finally {
     await client.close();
   }

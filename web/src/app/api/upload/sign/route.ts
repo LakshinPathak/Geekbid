@@ -24,6 +24,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid upload folder" }, { status: 400 });
     }
 
+    // Avatars must be server-derived and scoped to the caller's own userId —
+    // otherwise any authenticated user could get a valid signature to
+    // overwrite another user's avatar asset by guessing/reading its public_id.
+    if (paramsToSign.folder === "geekbid/avatars") {
+      paramsToSign.public_id = `geekbid/avatars/${auth.payload.userId}`;
+    }
+
     const signature = cloudinary.utils.api_sign_request(
       paramsToSign,
       process.env.CLOUDINARY_API_SECRET!

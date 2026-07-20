@@ -42,7 +42,7 @@ const VERDICT_CONFIG = {
 };
 
 export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }: Props) {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [result, setResult] = useState<EvalResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +54,12 @@ export default function AIBidEvaluator({ jobId, bids, freelancers, onAcceptBid }
     setLoading(true);
     setError(null);
     try {
+      const token = await getValidToken();
       const res = await fetch("/api/ai/evaluate-bids", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
         body: JSON.stringify({ jobId }),

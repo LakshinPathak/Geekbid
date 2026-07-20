@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
  }
 
  const userId = user._id.toString();
- const { accessToken, refreshToken } = await createTokenPair(userId, roleStr, user.email);
- await storeRefreshToken(userId, refreshToken);
+ const { accessToken, refreshToken, sessionId } = await createTokenPair(userId, roleStr, user.email);
+ await storeRefreshToken(userId, refreshToken, sessionId);
 
  const safeUser = { ...user, role: roleStr, roles, _id: userId, id: userId, password: undefined };
  const response = NextResponse.json({ accessToken, user: safeUser, expiresIn: 900 });

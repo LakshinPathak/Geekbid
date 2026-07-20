@@ -26,9 +26,21 @@ export async function GET(req: NextRequest) {
 
  const freelancerSkills: string[] = user.skills;
 
+ // Invite-only/direct-offer jobs must not be recommended to freelancers
+ // who weren't invited — same visibility rule GET /api/jobs and
+ // GET /api/jobs/[id] already enforce.
+ const invitedJobIds = await db.collection("invites").distinct("jobId", { freelancerId: auth.payload.userId });
+ const invitedObjectIds = invitedJobIds
+ .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const visibilityOr: Record<string, unknown>[] = [{ visibility: { $ne: "invite_only" } }];
+ if (invitedObjectIds.length > 0) {
+ visibilityOr.push({ visibility: "invite_only", _id: { $in: invitedObjectIds } });
+ }
+
  const openJobs = await db
  .collection("jobs")
- .find({ status: "open" })
+ .find({ status: "open", $or: visibilityOr })
  .sort({ postedAt: -1 })
  .limit(100)
  .toArray();

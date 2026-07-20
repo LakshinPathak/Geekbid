@@ -4,6 +4,8 @@ import { generateJSON, isAIAvailable } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
 
+const MAX_QUERY_LENGTH = 500;
+
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
@@ -30,8 +32,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { query } = body;
 
-    if (!query) {
+    if (!query || typeof query !== "string") {
       return NextResponse.json({ error: "query is required" }, { status: 400 });
+    }
+    if (query.length > MAX_QUERY_LENGTH) {
+      return NextResponse.json({ error: `query must be ${MAX_QUERY_LENGTH} characters or fewer` }, { status: 400 });
     }
 
     const systemInstruction = `You are a search assistant for GeekBid, a reverse-auction freelance platform for tech projects.

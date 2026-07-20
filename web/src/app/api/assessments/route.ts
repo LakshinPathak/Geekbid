@@ -80,6 +80,9 @@ export async function POST(req: NextRequest) {
  if (!ObjectId.isValid(assessmentId)) {
  return NextResponse.json({ error: "Invalid assessment id" }, { status: 400 });
  }
+ if (!startedAt) {
+ return NextResponse.json({ error: "startedAt required" }, { status: 400 });
+ }
 
  const db = await getDb();
  const assessment = await db.collection("assessments").findOne({ _id: new ObjectId(assessmentId) });
@@ -93,11 +96,9 @@ export async function POST(req: NextRequest) {
  // timeLimit is in seconds; a modest grace period absorbs real network/
  // render latency without meaningfully extending the actual time allowed.
  const TIME_LIMIT_GRACE_SECONDS = 15;
- if (startedAt) {
  const elapsedSeconds = (Date.now() - new Date(startedAt).getTime()) / 1000;
  if (elapsedSeconds > assessment.timeLimit + TIME_LIMIT_GRACE_SECONDS) {
  return NextResponse.json({ error: "Time limit exceeded for this assessment" }, { status: 400 });
- }
  }
 
  // Atomically claim the 30-day cooldown window before scoring — the previous

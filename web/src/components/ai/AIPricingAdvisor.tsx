@@ -31,7 +31,7 @@ const STRATEGY_COLOR: Record<string, string> = {
 };
 
 export default function AIPricingAdvisor({ title, skills, category, estimatedHours, recentJobs, onApply }: Props) {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [result, setResult] = useState<PricingResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,11 +43,12 @@ export default function AIPricingAdvisor({ title, skills, category, estimatedHou
     setLoading(true);
     setError(null);
     try {
+      const token = await getValidToken();
       const res = await fetch("/api/ai/pricing-advisor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
         body: JSON.stringify({ title, skills, category, estimatedHours, recentJobs }),
