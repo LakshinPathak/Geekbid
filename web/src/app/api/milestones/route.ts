@@ -69,12 +69,28 @@ export async function POST(req: NextRequest) {
  if (job.clientId !== auth.payload.userId) {
  return NextResponse.json({ error: "Only the job client can add milestones" }, { status: 403 });
  }
+ // Milestones only make sense against an awarded job's escrow — creating
+ // them on a still-open (not yet funded) or cancelled/completed job leaves
+ // a breakdown that can never actually be paid out against.
+ if (job.status !== "accepted") {
+ return NextResponse.json({ error: "Job must be accepted before milestones can be added" }, { status: 400 });
+ }
+
+ // `Number(m.amount) || 0` alone let negative amounts through (`-500` is
+ // truthy) — reject any non-positive milestone amount up front instead of
+ // silently coercing it.
+ for (const m of milestones as { title: string; description?: string; amount: number }[]) {
+ const amt = Number(m.amount);
+ if (!Number.isFinite(amt) || amt <= 0) {
+ return NextResponse.json({ error: "Each milestone amount must be a positive number" }, { status: 400 });
+ }
+ }
 
  const docs = milestones.map((m: { title: string; description?: string; amount: number }, i: number) => ({
  jobId,
  title: (m.title ?? "").slice(0, 200),
  description: (m.description ?? "").slice(0, 1000),
- amount: Number(m.amount) || 0,
+ amount: Number(m.amount),
  order: i + 1,
  status: "pending",
  createdAt: new Date().toISOString(),

@@ -4,6 +4,10 @@ import { generateJSON, isAIAvailable } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
 
+const MAX_TITLE_LENGTH = 300;
+const MAX_DESCRIPTION_LENGTH = 5000;
+const MAX_SKILLS = 30;
+
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
@@ -30,8 +34,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, description, skills, startingPrice, minimumPrice, estimatedHours } = body;
 
-    if (!title) {
+    if (!title || typeof title !== "string") {
       return NextResponse.json({ error: "title is required" }, { status: 400 });
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json({ error: `title must be ${MAX_TITLE_LENGTH} characters or fewer` }, { status: 400 });
+    }
+    if (description && (typeof description !== "string" || description.length > MAX_DESCRIPTION_LENGTH)) {
+      return NextResponse.json({ error: `description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer` }, { status: 400 });
+    }
+    if (skills && (!Array.isArray(skills) || skills.length > MAX_SKILLS)) {
+      return NextResponse.json({ error: `skills must be an array of ${MAX_SKILLS} or fewer` }, { status: 400 });
     }
 
     const systemInstruction = `You are a job quality reviewer for GeekBid, a reverse-auction freelance platform.

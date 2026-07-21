@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function AIDescriptionButton({ title, skills, category, estimatedHours, budget, onApply }: Props) {
-  const { auth } = useApp();
+  const { getValidToken } = useApp();
   const [result, setResult] = useState<DescriptionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +34,12 @@ export default function AIDescriptionButton({ title, skills, category, estimated
     setLoading(true);
     setError(null);
     try {
+      const token = await getValidToken();
       const res = await fetch("/api/ai/generate-description", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(auth.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
         body: JSON.stringify({ title, skills, category, estimatedHours, budget }),

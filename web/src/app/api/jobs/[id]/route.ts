@@ -3,7 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { getAdaptivePrice } from "@/lib/pricing";
-import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCancelledEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
+import { sendJobAcceptedEmail, sendBookingConfirmationEmail, sendJobCompletedSummaryEmail } from "@/lib/email";
 import { creditReferralOnFirstJobCompletion } from "@/lib/referrals";
 import { splitEscrow, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/money";
 import { getPlanConfig } from "@/lib/plans";
@@ -195,7 +195,11 @@ export async function GET(
  }
 }
 
-// PATCH /api/jobs/[id] — accept | cancel | complete job (protected)
+// PATCH /api/jobs/[id] — accept | complete job (protected)
+// Cancellation is handled exclusively by /api/jobs/[id]/cancel/route.ts, which
+// does the atomic findOneAndUpdate({status:"open"}) claim this file's old
+// duplicate "cancel" branch was missing (ISSUE-62) — do not re-add a cancel
+// action here without that same atomic guard.
 export async function PATCH(
  req: NextRequest,
  { params }: { params: Promise<{ id: string }> }
@@ -209,29 +213,6 @@ export async function PATCH(
 
  const body = await req.json();
  const action = body.action ?? "accept";
-
- // ── CANCEL ──────────────────────────────────────────────────────────────
- if (action === "cancel") {
- if (auth.payload.role !== "client") {
- return NextResponse.json({ error: "Only clients can cancel jobs" }, { status: 403 });
- }
- const db = await getDb();
- let job: any;
- try { job = await db.collection("jobs").findOne({ _id: new ObjectId(id) }); }
- catch { job = await db.collection("jobs").findOne({ id }); }
- if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
-  if (job.clientId !== auth.payload.userId) return NextResponse.json({ error: "You can only cancel your own jobs" }, { status: 403 });
- if (job.status !== "open") return NextResponse.json({ error: "Only open jobs can be cancelled" }, { status: 400 });
- const filter = job._id ? { _id: job._id } : { id };
- await db.collection("jobs").updateOne(filter, { $set: { status: "cancelled", cancelledAt: new Date().toISOString() } });
- // Notify all bidders
- const bidders = await db.collection("bids").distinct("freelancerId", { jobId: id });
- for (const fid of bidders) {
- const f = await db.collection("users").findOne({ _id: new ObjectId(fid) }, { projection: { email: 1, fullName: 1, name: 1 } });
- if (f?.email) sendJobCancelledEmail(f.email, f.fullName ?? f.name ?? "Freelancer", job.title ?? "Untitled Job").catch((err) => console.error("[Email Failed]", err));
- }
- return NextResponse.json({ ok: true, message: "Job cancelled" });
- }
 
  // ── COMPLETE ─────────────────────────────────────────────────────────────
  if (action === "complete") {

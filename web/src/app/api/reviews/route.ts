@@ -12,8 +12,23 @@ export async function GET(req: NextRequest) {
  const userId = searchParams.get("userId");
  const jobId = searchParams.get("jobId");
 
- const filter: Record<string, string> = {};
- if (userId) filter.revieweeId = userId;
+ // Without userId/jobId this used to be an unauthenticated, unscoped dump
+ // of the 50 most recent reviews platform-wide (including a guessable
+ // jobId for otherwise access-controlled invite-only jobs). Public-profile
+ // reviews (?userId=) stay public since ratings are shown on public
+ // profiles; an unscoped request now instead requires auth and returns
+ // only the caller's own reviews (given + received) for the "my reviews"
+ // views in profile/my-jobs, never a platform-wide dump.
+ let filter: Record<string, unknown> = {};
+ if (userId) {
+ filter = { revieweeId: userId };
+ } else if (!jobId) {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+ filter = { $or: [{ reviewerId: auth.payload.userId }, { revieweeId: auth.payload.userId }] };
+ }
  if (jobId) filter.jobId = jobId;
 
  const reviews = await db

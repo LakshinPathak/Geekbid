@@ -34,7 +34,7 @@ export default function SettingsPage() {
  useEffect(() => { if (mounted && currentUser && hasApiAccess) loadKeys(); }, [mounted, currentUser, hasApiAccess, loadKeys]);
 
  const createKey = async () => {
- if (!newKeyName.trim()) return;
+ if (creating || !newKeyName.trim()) return;
  setCreating(true);
  const token = await getValidToken();
  const res = await fetch("/api/keys", {

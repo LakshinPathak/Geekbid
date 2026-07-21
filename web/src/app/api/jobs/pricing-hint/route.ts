@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { authenticateRequest } from "@/lib/auth";
 
 // GET /api/jobs/pricing-hint?skills=React,Node.js
 export async function GET(req: NextRequest) {
  try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
  const { searchParams } = new URL(req.url);
  const skillsParam = searchParams.get("skills");
 

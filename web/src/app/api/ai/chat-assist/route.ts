@@ -4,6 +4,9 @@ import { generateText, isAIAvailable } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
 
+const MAX_MESSAGE_LENGTH = 4000;
+const MAX_CONTEXT_LENGTH = 4000;
+
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
@@ -30,8 +33,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { message, context } = body;
 
-    if (!message) {
+    if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "message is required" }, { status: 400 });
+    }
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json({ error: `message must be ${MAX_MESSAGE_LENGTH} characters or fewer` }, { status: 400 });
+    }
+    if (context && (typeof context !== "string" || context.length > MAX_CONTEXT_LENGTH)) {
+      return NextResponse.json({ error: `context must be ${MAX_CONTEXT_LENGTH} characters or fewer` }, { status: 400 });
     }
 
     const systemInstruction = [

@@ -75,12 +75,19 @@ export function sanitizeSearchRegex(input: unknown): string {
 // their import path, only add `await` since the check is now async.
 export { checkRateLimit } from "./rate-limit";
 
-/** Extract client IP from Next.js request for rate-limit keys. */
+/**
+ * Extract client IP from Next.js request for rate-limit keys.
+ *
+ * `x-forwarded-for` is a chain that proxies *append* to (RFC 7239 style) —
+ * on Vercel, the edge network appends the real connecting IP as the last
+ * entry rather than replacing a client-supplied header, so the first entry
+ * is attacker-controlled (send any `X-Forwarded-For: <random>` to get a
+ * fresh rate-limit key per request) while the last entry is the one Vercel
+ * itself set. Must take the LAST entry, not the first.
+ */
 export function getClientIp(req: Request): string {
   const hdr = (req as unknown as { headers: Headers }).headers;
-  return (
-    hdr.get("x-forwarded-for")?.split(",")[0].trim() ??
-    hdr.get("x-real-ip") ??
-    "unknown"
-  );
+  const xff = hdr.get("x-forwarded-for");
+  const lastHop = xff?.split(",").pop()?.trim();
+  return lastHop || hdr.get("x-real-ip") || "unknown";
 }

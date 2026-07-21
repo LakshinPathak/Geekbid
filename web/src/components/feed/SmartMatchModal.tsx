@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
-  const { auth, users } = useApp();
+  const { getValidToken, users } = useApp();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -37,12 +37,13 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
   };
 
   const loadMatches = useCallback(async () => {
-    if (!auth.accessToken) return;
     setLoading(true);
     setError(null);
     try {
+      const token = await getValidToken();
+      if (!token) throw new Error("Please log in again");
       const res = await fetch(`/api/jobs/${jobId}/smart-match`, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load matches");
@@ -57,7 +58,7 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [auth.accessToken, jobId]);
+  }, [getValidToken, jobId]);
 
   useEffect(() => {
     loadMatches();
@@ -80,14 +81,16 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
   };
 
   const handleConfirm = async () => {
-    if (!canAutoInvite || selectedCount === 0 || !auth.accessToken) return;
+    if (!canAutoInvite || selectedCount === 0) return;
     setSubmitting(true);
     try {
+      const token = await getValidToken();
+      if (!token) throw new Error("Please log in again");
       const res = await fetch(`/api/jobs/${jobId}/smart-match/invite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ freelancerIds: [...selected] }),
       });

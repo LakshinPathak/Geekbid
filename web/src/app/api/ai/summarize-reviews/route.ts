@@ -3,6 +3,8 @@ import { authenticateRequest } from "@/lib/auth";
 import { generateJSON, isAIAvailable } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
+import { getDb } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function POST(req: NextRequest) {
   if (!isAIAvailable()) {
@@ -22,16 +24,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
+    const body = await req.json();
+    const { freelancerId } = body;
+
+    if (!freelancerId || typeof freelancerId !== "string") {
+      return NextResponse.json({ error: "freelancerId is required" }, { status: 400 });
+    }
+
+    let freelancerObjectId: ObjectId;
+    try {
+      freelancerObjectId = new ObjectId(freelancerId);
+    } catch {
+      return NextResponse.json({ error: "Invalid freelancerId" }, { status: 400 });
+    }
+
+    // Re-fetch real reviews server-side by freelancerId — never trust
+    // client-supplied review content/freelancerName, which could be
+    // fabricated to produce a fake "trustScore"/sentiment summary that
+    // reads as authoritative platform analysis.
+    const db = await getDb();
+    const freelancer = await db.collection("users").findOne(
+      { _id: freelancerObjectId },
+      { projection: { fullName: 1, name: 1 } }
+    );
+    if (!freelancer) {
+      return NextResponse.json({ error: "Freelancer not found" }, { status: 404 });
+    }
+
+    const reviews = await db.collection("reviews")
+      .find({ revieweeId: freelancerId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    if (reviews.length === 0) {
+      return NextResponse.json({ error: "No reviews to summarize" }, { status: 400 });
+    }
+
+    // Quota is only charged once we know the request will actually reach the
+    // AI call (real freelancer, at least one review), matching the ordering
+    // convention evaluate-bids/bid-strategy already use.
     const quota = await checkAndConsumeAiQuota(auth.payload.userId);
     if (!quota.ok) {
       return NextResponse.json({ error: quota.error }, { status: 429 });
-    }
-
-    const body = await req.json();
-    const { reviews, freelancerName } = body;
-
-    if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
-      return NextResponse.json({ error: "reviews array is required" }, { status: 400 });
     }
 
     const systemInstruction = `You are analyzing freelancer reviews on GeekBid. Summarize the reviews for the named freelancer.
@@ -46,10 +81,10 @@ Return a JSON object with EXACTLY this shape:
   "trustScore": <integer 0-100>
 }`;
 
-    const prompt = `FREELANCER: ${freelancerName ?? "this freelancer"}
+    const prompt = `FREELANCER: ${freelancer.fullName ?? freelancer.name ?? "this freelancer"}
 
 REVIEWS:
-${(reviews as Array<{ rating: number; comment: string; reviewerRole: string }>).map((r, i) => `${i + 1}. Rating: ${r.rating}/5 — "${r.comment}" (from ${r.reviewerRole})`).join("\n")}`;
+${reviews.map((r, i) => `${i + 1}. Rating: ${r.rating}/5 — "${r.comment ?? ""}" (from ${r.reviewerRole ?? "user"})`).join("\n")}`;
 
     const result = await generateJSON<{
       summary: string;

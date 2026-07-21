@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hashSync, compareSync } from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { ObjectId } from "mongodb";
+import crypto from "crypto";
 
 // ─── Token Configuration ───────────────────────────────────────
 if (!process.env.NEXTAUTH_SECRET) throw new Error("NEXTAUTH_SECRET env var is not set");
@@ -20,6 +21,9 @@ export type TokenPayload = {
  role: string;
  email: string;
  type: "access" | "refresh";
+ // Only set on refresh tokens — identifies one logged-in device/browser so
+ // concurrent sessions get their own stored-token slot (see storeRefreshToken).
+ sessionId?: string;
 };
 
 export type AuthResult = {
@@ -36,20 +40,24 @@ export async function createAccessToken(userId: string, role: string, email: str
  .sign(ACCESS_SECRET);
 }
 
-export async function createRefreshToken(userId: string, role: string, email: string): Promise<string> {
- return new SignJWT({ userId, role, email, type: "refresh" })
+export async function createRefreshToken(userId: string, role: string, email: string, sessionId: string): Promise<string> {
+ return new SignJWT({ userId, role, email, type: "refresh", sessionId })
  .setProtectedHeader({ alg: "HS256" })
  .setIssuedAt()
  .setExpirationTime(REFRESH_TOKEN_EXPIRY)
  .sign(REFRESH_SECRET);
 }
 
-export async function createTokenPair(userId: string, role: string, email: string) {
+// sessionId identifies one logged-in device/browser. Defaults to a fresh
+// random id (new login/register/switch-role); refresh-token rotation passes
+// the existing session's id through so rotating doesn't collide with (or
+// evict) a different device's session — see storeRefreshToken.
+export async function createTokenPair(userId: string, role: string, email: string, sessionId: string = crypto.randomBytes(16).toString("hex")) {
  const [accessToken, refreshToken] = await Promise.all([
  createAccessToken(userId, role, email),
- createRefreshToken(userId, role, email),
+ createRefreshToken(userId, role, email, sessionId),
  ]);
- return { accessToken, refreshToken };
+ return { accessToken, refreshToken, sessionId };
 }
 
 // ─── Token Verification ────────────────────────────────────────
@@ -108,14 +116,18 @@ export function clearRefreshCookie(response: NextResponse): NextResponse {
 }
 
 // ─── Refresh Token Storage (DB-backed for rotation) ────────────
-export async function storeRefreshToken(userId: string, token: string) {
+// Keyed by {userId, sessionId} — one slot per logged-in device, not one slot
+// per user — so a second device's login/rotation doesn't overwrite (and
+// falsely theft-flag) a different device's still-valid session.
+export async function storeRefreshToken(userId: string, token: string, sessionId: string) {
  const db = await getDb();
  await db.collection("refresh_tokens").updateOne(
- { userId },
+ { userId, sessionId },
  {
  $set: {
  token,
  userId,
+ sessionId,
  createdAt: new Date(),
  expiresAt: new Date(Date.now() + REFRESH_COOKIE_MAX_AGE * 1000),
  },
@@ -124,13 +136,14 @@ export async function storeRefreshToken(userId: string, token: string) {
  );
 }
 
-async function validateStoredRefreshToken(userId: string, token: string): Promise<boolean> {
+async function validateStoredRefreshToken(userId: string, token: string, sessionId?: string): Promise<boolean> {
  const db = await getDb();
- const stored = await db.collection("refresh_tokens").findOne({
- userId,
- token,
- expiresAt: { $gt: new Date() },
- });
+ // sessionId is optional only to tolerate refresh tokens issued before this
+ // field existed (still valid, up to their original 7-day expiry) — falls
+ // back to the old userId-only lookup for those, same as before.
+ const query: Record<string, unknown> = { userId, token, expiresAt: { $gt: new Date() } };
+ if (sessionId) query.sessionId = sessionId;
+ const stored = await db.collection("refresh_tokens").findOne(query);
  return !!stored;
 }
 
@@ -218,8 +231,8 @@ export async function registerUser(
  );
 
  const userId = existing._id.toString();
- const { accessToken, refreshToken } = await createTokenPair(userId, roleStr, emailStr);
- await storeRefreshToken(userId, refreshToken);
+ const { accessToken, refreshToken, sessionId } = await createTokenPair(userId, roleStr, emailStr);
+ await storeRefreshToken(userId, refreshToken, sessionId);
 
  const safeUser = { ...existing, ...geekScoreUpdate, role: roleStr, roles: updatedRoles, _id: userId, id: userId, password: undefined };
  return { accessToken, refreshToken, user: safeUser, roleAdded: true };
@@ -254,8 +267,8 @@ export async function registerUser(
  const result = await db.collection("users").insertOne(user);
  const userId = result.insertedId.toString();
 
- const { accessToken, refreshToken } = await createTokenPair(userId, roleStr, user.email);
- await storeRefreshToken(userId, refreshToken);
+ const { accessToken, refreshToken, sessionId } = await createTokenPair(userId, roleStr, user.email);
+ await storeRefreshToken(userId, refreshToken, sessionId);
 
  const safeUser = { ...user, _id: userId, id: userId, password: undefined };
  return { accessToken, refreshToken, user: safeUser };
@@ -378,12 +391,12 @@ export async function googleLoginUser(profile: GoogleProfile) {
  }
 
  const userId = user._id.toString();
- const { accessToken, refreshToken } = await createTokenPair(
+ const { accessToken, refreshToken, sessionId } = await createTokenPair(
  userId,
  user.role,
  user.email
  );
- await storeRefreshToken(userId, refreshToken);
+ await storeRefreshToken(userId, refreshToken, sessionId);
 
  const safeUser = {
  ...user,
@@ -415,12 +428,12 @@ export async function loginUser(email: unknown, password: unknown) {
  if (user.suspended) return { error: "This account has been suspended. Contact support for assistance." };
 
  const userId = user._id.toString();
- const { accessToken, refreshToken } = await createTokenPair(
+ const { accessToken, refreshToken, sessionId } = await createTokenPair(
  userId,
  user.role,
  user.email
  );
- await storeRefreshToken(userId, refreshToken);
+ await storeRefreshToken(userId, refreshToken, sessionId);
 
  const safeUser = {
  ...user,
@@ -440,7 +453,8 @@ export async function refreshAccessToken(currentRefreshToken: string) {
  // 2. Validate against stored token (prevents reuse after rotation)
  const isValid = await validateStoredRefreshToken(
  payload.userId,
- currentRefreshToken
+ currentRefreshToken,
+ payload.sessionId
  );
  if (!isValid) {
  // Potential token theft — revoke all tokens for this user
@@ -466,10 +480,13 @@ export async function refreshAccessToken(currentRefreshToken: string) {
  return { error: "This account has been suspended. Contact support for assistance." };
  }
 
- // 4. Issue new token pair (rotation)
+ // 4. Issue new token pair (rotation) — reuse the same sessionId so
+ // rotating a device's token updates that device's own stored slot
+ // instead of colliding with (or being collided into by) another device.
+ const sessionId = payload.sessionId ?? crypto.randomBytes(16).toString("hex");
  const { accessToken, refreshToken: newRefreshToken } =
- await createTokenPair(user._id.toString(), user.role, user.email);
- await storeRefreshToken(user._id.toString(), newRefreshToken);
+ await createTokenPair(user._id.toString(), user.role, user.email, sessionId);
+ await storeRefreshToken(user._id.toString(), newRefreshToken, sessionId);
 
  return { accessToken, refreshToken: newRefreshToken, user: { ...user, _id: user._id.toString(), id: user._id.toString(), password: undefined } };
 }

@@ -80,6 +80,17 @@ export async function PATCH(req: NextRequest) {
  if (auth.payload.role !== "admin" && tx.clientId?.toString() !== auth.payload.userId) {
  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
  }
+ // job_escrow transactions must go through /api/jobs/[id]/complete, which
+ // releases this exact row AND flips job.status to "completed", credits
+ // the freelancer's first-job referral, and sends the completion summary
+ // email. Releasing here would move the money but leave the job stuck
+ // "accepted" forever with none of those side effects ever firing.
+ if (tx.purpose === "job_escrow" && auth.payload.role !== "admin") {
+ return NextResponse.json(
+ { error: "This is job escrow — mark the job as complete from the job page to release it." },
+ { status: 400 }
+ );
+ }
 
  const releasedTx = await db.collection("transactions").findOneAndUpdate(
  { _id: new ObjectId(transactionId), escrowStatus: "held" },
