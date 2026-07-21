@@ -1,0 +1,62 @@
+# QA Report — {TITLE}
+
+**Version**: {TAG}
+**Date**: {DATE}
+**Type**: {TYPE}
+
+---
+
+## Testing Strategy (LLM-inferred from planning.md — Step 3)
+
+> **Filled automatically by `dev-cycle-planner`.** Do **not** ask the developer which test kinds to use. Infer from `planning.md` Part A/B scope + what runners exist in WORKSPACE. Lists which **test kinds** are required for *this* change and why. Do **not** invent every layer by default — only what the plan justifies.
+
+| Test kind | Required? (yes/no) | Why (tie to planning.md scope) |
+|-----------|--------------------|--------------------------------|
+| unit | {yes/no} | {reason} |
+| integration | {yes/no} | {reason} |
+| api | {yes/no} | {reason} |
+| e2e / browser | {yes/no} | {reason} |
+| manual / scripted | {yes/no} | {reason} |
+| regression (issues) | {yes/no} | {reason} |
+
+**Sources merged into this file:** {developer test_scenarios / existing qa.md / planner-authored}
+
+---
+
+## User Stories
+
+| Story ID | Epic / Section | Requirement | Success Criteria | Agent Logic | Strategic Outcome | Mapping TC IDs | Status |
+|----------|---------------|-------------|------------------|-------------|-------------------|----------------|--------|
+| {US-ID} | {Section} | {Requirement} | {Success Criteria} | {Logic} | {Outcome} | {TC IDs} | {PASS/FAIL} |
+
+---
+
+## Test Cases
+
+| TC ID | Kind | Section ID | Target Story ID | Test Description | Target | Expected Action | Status |
+|-------|------|-----------|-----------------|------------------|--------|-----------------|--------|
+| {TC-ID} | {unit\|integration\|api\|e2e\|manual\|regression} | {Section} | {US-ID} | {Description} | {Target} | {Expected} | {PASS/FAIL} |
+
+> **Kind** must match a row marked **yes** in Testing Strategy (except rare one-offs justified in the description). `dev-cycle-tester` runs each case using the method implied by **Kind**.
+
+---
+
+## Regression Checks (issues only — see Step 7)
+
+| Area Checked | Kind | Method | Result |
+|--------------|------|--------|--------|
+| {area} | {kind} | {how it was verified} | {PASS/FAIL} |
+
+---
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| Total User Stories | {count} |
+| Total Test Cases | {count} |
+| By kind (required) | {unit: n, integration: n, …} |
+| Passed | {count} |
+| Failed | {count} |
+| Pass Rate | {percentage}% |
+| **Verdict** | {✅ GO / ❌ NO-GO} |

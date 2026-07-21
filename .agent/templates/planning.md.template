@@ -1,0 +1,140 @@
+# Planning — {version}
+
+> Generated: {date}
+> Type: {Epic | Issue}
+> GitHub Issue: #{issue_number}
+> Branch: {branch_name}
+> Status: {intake | planned | in-progress | done}
+
+---
+
+<!-- ============================================================
+     PART A — INTAKE (written at Step 0d, inbox/{version}/planning.md)
+     This part does NOT get rewritten at Step 3 — Part B is appended
+     below it. One file, one history, no separate prd.md/issue.md to
+     keep in sync with this one.
+     ============================================================ -->
+
+## Problem Statement
+
+{[epic] The gap or need this feature addresses}
+{[issue] Describe the bug — what's broken}
+
+## [epic only] Target Users
+
+{Who this is for}
+
+## Goals / Success Criteria
+
+{[epic] What "done" looks like, measurably}
+{[issue] What "fixed" looks like — the expected behavior}
+
+## [issue only] Steps to Reproduce
+
+1. {step}
+2. {step}
+
+## [issue only] Expected vs. Actual Behavior
+
+| | Behavior |
+|---|---|
+| Expected | {expected} |
+| Actual | {actual} |
+
+## [epic only] In-Scope
+
+- {item}
+
+## [epic only] Out-of-Scope
+
+- {item}
+
+## Functional Requirements
+
+- {requirement — specific and testable}
+- {requirement — specific and testable}
+
+## Constraints / Non-Goals
+
+{Anything explicitly excluded, or constraints on the approach}
+
+## [issue only] Affected Area / Environment / Severity
+
+| | |
+|---|---|
+| Affected area | {module/service} |
+| Environment | {where it reproduces} |
+| Severity | {High / Medium / Low} |
+
+> Note: no `## User Stories` or `## Test Cases` section here — those live
+> in `releases/{version}/qa.md` only (scaffolded at Step 3/4, filled at
+> Step 7, finalized at Step 12). See dev-cycle-gap-analysis §6a.
+
+---
+
+<!-- ============================================================
+     PART B — PLAN (appended at Step 3, once this file has moved
+     from inbox/{version}/planning.md to releases/{version}/planning.md)
+     ============================================================ -->
+
+## Proposed Solution
+
+{[epic] High-level approach}
+{[issue] Root cause + proposed fix}
+
+## Complexity Assessment
+
+| Signal | Value |
+|---|---|
+| Files touched | {count} |
+| Independent deliverable units | {count} |
+| Cross-cutting concern? | {Yes/No — which area} |
+| New external dependency / migration? | {Yes/No} |
+| **Verdict** | {Simple / Complex} |
+| Confirmed with developer? | {Yes — matched / Yes — overridden to X / Pending} |
+
+## Sub-Task Index (complex work only — see Step 4)
+
+> Tracking labels only — **all code ships on the single parent branch `{version}`** (no `{version}.{sub_n}` branches / stacked PRs).
+
+| Sub-Issue # | Version Tag | Title | Status |
+|---|---|---|---|
+| #{sub_issue_number} | {version}.{sub_n} | {title} | ⬜ |
+
+## Scope
+
+### Files to Create
+| # | File Path | Purpose |
+|---|-----------|---------|
+| 1 | {file_path} | {purpose} |
+
+### Files to Modify
+| # | File Path | What Changes |
+|---|-----------|-------------|
+| 1 | {file_path} | {description} |
+
+### Files to Delete
+| # | File Path | Reason |
+|---|-----------|--------|
+| — | None | — |
+
+## Implementation Steps
+
+1. {Step 1}
+2. {Step 2}
+3. {Step 3}
+
+## Risk Areas
+
+- **Estimated effort**: {Low / Medium / High}
+- **Risk areas**: {any concerns}
+
+---
+
+> ⏸️ **Developer: Review and approve Part A + Part B, and the `qa.md` skeleton
+> (Step 3/4), before development begins (Step 5 gate).**
+>
+> **If a developer-requested change alters Part A (scope, acceptance
+> criteria, expected behavior) — not just Part B implementation detail —
+> edit Part A in this same file first, then regenerate the affected rows
+> in `qa.md`. Never edit `qa.md`'s stories/cases out of sync with Part A.**

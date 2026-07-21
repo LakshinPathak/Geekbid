@@ -74,3 +74,9 @@ codebase-memory-mcp-main/
 .playwright-mcp/
 /*.png
 .env*
+
+# ──── Generated tool output (codebase indexing / dumps) ────
+graphify-out/
+web/graphify-out/
+repomix-output.xml
+web/repomix-output.xml

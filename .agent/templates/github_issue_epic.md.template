@@ -1,0 +1,39 @@
+## 📋 Overview
+
+{2-3 sentence summary of what this epic delivers and why it matters.}
+
+## 🎯 Objective
+
+{Clear, measurable goal — what does "done" look like for this feature?}
+
+## 📝 Requirements
+
+- [ ] {Requirement 1 — specific and testable}
+- [ ] {Requirement 2 — specific and testable}
+- [ ] {Requirement 3 — specific and testable}
+
+## ✅ Acceptance Criteria
+
+- When {action}, then {expected result}
+- When {action}, then {expected result}
+- When {action}, then {expected result}
+
+## 🔧 Technical Notes
+
+- **Files/Modules affected**: {list key files or areas}
+- **Dependencies**: {any dependencies or constraints}
+- **Architecture decisions**: {if any}
+
+## 📁 Artifacts
+
+- **Planning (intake Part A + plan Part B)**: `releases/{version}/planning.md`
+- **QA (user stories, test cases, results)**: `releases/{version}/qa.md`
+- **Test Scenarios**: `inbox/{version}/test_scenarios.md` (local-only, if provided)
+- **Branch**: `{version}`
+
+## 🏷️ Metadata
+
+- **Version**: `{version}`
+- **Type**: Epic (New Feature)
+- **Priority**: {High / Medium / Low}
+- **Milestone**: {milestone name or "None"}
