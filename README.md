@@ -5,7 +5,14 @@
 
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
-**Current version: v19** — Landing-page-only visual refresh (new display
+**Current version: `main`/`master`** — Smart Match & Auto-Invite (ranked
+freelancer matches + confirm-then-send batch invites) plus two full-codebase
+audit-and-fix rounds closing 83 correctness/security bugs across billing,
+escrow, auth, and every API route, and a production database-index gap that
+left several of those fixes without their real backstop until this pass
+found and closed it. See [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster).
+
+**v19** — Landing-page-only visual refresh (new display
 font, restyled Live Market widget, dark code-block price-decay formula, a
 violet/near-black color scheme sourced from a provided reference mockup)
 plus contrast and responsive fixes (13" laptop text sizing, mobile footer
@@ -29,26 +36,27 @@ See [What's in v17](#whats-in-v17).
 ## Table of Contents
 
 1. [How It Works](#how-it-works)
-2. [What's in v19](#whats-in-v19)
-3. [What's in v18](#whats-in-v18)
-4. [What's in v17](#whats-in-v17)
-5. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
-6. [Project Structure](#project-structure)
-7. [Tech Stack](#tech-stack)
-8. [Core Domain Model](#core-domain-model)
-9. [Features](#features)
-10. [Frontend Page Map](#frontend-page-map)
-11. [API Reference (full)](#api-reference-full)
-12. [Quick Start](#quick-start)
-13. [Docker](#docker)
-14. [Microservice Backend (experimental)](#microservice-backend-experimental)
-15. [Deployment (Vercel)](#deployment-vercel)
-16. [CI/CD Pipeline](#cicd-pipeline)
-17. [Environment Variables](#environment-variables)
-18. [Security](#security)
-19. [Troubleshooting](#troubleshooting)
-20. [Version History](#version-history)
-21. [License](#license)
+2. [What's in the Fix Pass (now on `main`/`master`)](#whats-in-the-fix-pass-now-on-mainmaster)
+3. [What's in v19](#whats-in-v19)
+4. [What's in v18](#whats-in-v18)
+5. [What's in v17](#whats-in-v17)
+6. [v17 refinements (post-Phase-4)](#v17-refinements-post-phase-4)
+7. [Project Structure](#project-structure)
+8. [Tech Stack](#tech-stack)
+9. [Core Domain Model](#core-domain-model)
+10. [Features](#features)
+11. [Frontend Page Map](#frontend-page-map)
+12. [API Reference (full)](#api-reference-full)
+13. [Quick Start](#quick-start)
+14. [Docker](#docker)
+15. [Microservice Backend (experimental)](#microservice-backend-experimental)
+16. [Deployment (Vercel)](#deployment-vercel)
+17. [CI/CD Pipeline](#cicd-pipeline)
+18. [Environment Variables](#environment-variables)
+19. [Security](#security)
+20. [Troubleshooting](#troubleshooting)
+21. [Version History](#version-history)
+22. [License](#license)
 
 ---
 
@@ -72,6 +80,100 @@ $400 ─────────────────────────
       ↑
    Posted   1h    2h    3h    4h
 ```
+
+---
+
+## What's in the Fix Pass (now on `main`/`master`)
+
+Two full-codebase audit-and-fix rounds — not scoped to one feature or page —
+closing 83 correctness/security bugs total across billing, escrow, auth, AI,
+and dozens of API routes, on top of the Smart Match & Auto-Invite feature
+(see [`release.md`](releases/epic_0.0.1/release.md)). Developed on branch
+`epic_0.0.1`, then merged into both `master` and `main`, which are now
+identical — this supersedes v19 as the current state of both branches.
+
+### Round 1 — full-codebase audit (`issues.md`, 61 issues)
+
+A systematic pass through every route and lib file, tracked issue-by-issue in
+[`issues.md`](issues.md) and worked through batch-by-batch in
+[`progress.md`](progress.md): 4 Critical, 17 High, 35 Medium, 5 Low — all 61
+resolved (ISSUE-6 and ISSUE-29 intentionally partial/scoped, see their rows;
+ISSUE-60 found already-resolved in existing code).
+
+| Bug | Fix |
+|---|---|
+| **Paid-plan gating silently no-oped without Razorpay/plan-ID env vars** | Every subscription passed as "paid" regardless of actual payment. Now fails closed |
+| **Featured-boost claim accepted any verified payment amount** | A $0.01 payment could claim a $10 boost. Now checks the captured amount matches the boost price exactly |
+| **Job cancel wasn't atomic** | Two racing requests could both cancel an already-accepted job. Fixed with a `findOneAndUpdate({status:"open"})` claim |
+| **Direct Hire offers had no UI to accept or decline** | The backend existed with no way to use it — added the accept/decline UI wired to `PATCH /api/jobs/offer-response` |
+| **Bid cooldown 429 still consumed the monthly bid quota** | A rejected bid attempt silently burned quota anyway |
+| **Accept/award minted "held" escrow with no real payment behind it** | A parallel flow created a second, disconnected ledger entry from the real payment |
+| **Webhook idempotency allowed concurrent double-processing** | Two near-simultaneous Razorpay webhook deliveries could both apply the same event |
+| **NoSQL injection via `referralCode`** | An unsanitized field could reach a Mongo query operator position |
+| **Assessment submit race inflated GeekScore** | Two concurrent submits could both pass the cooldown check and both credit — closed with an atomic unique-index claim |
+| **Forgot Password and Delete Account were dead stubs** | Built real flows: token-based reset (1h TTL, single-use, revokes sessions on completion) and self-serve soft-delete |
+| **Dispute "Split 50/50" had no payout mechanism at all** | Built the actual escrow split — see Round 2 below for a fee-leak bug found in this same code shortly after |
+
+Full 61-row detail, severity, and fix rationale: [`issues.md`](issues.md) (the
+source list) and [`progress.md`](progress.md) (batch-by-batch execution log,
+including two independent live re-verification passes against a real
+MongoDB instance).
+
+### Round 2 — adversarial re-review (`codereview_2026-07-20.md`, 22 issues)
+
+A second, independent pass (6 parallel reviewers split by area) specifically
+hunting for anything Round 1 missed or introduced — 2 Critical, 7 High, 11
+Medium, 2 Low, tracked in
+[`codereview_2026-07-20.md`](codereview_2026-07-20.md):
+
+| Bug | Fix |
+|---|---|
+| **Split-dispute resolution leaked the platform's fee back to the client** | Round 1's split math refunded the client `gross − net/2` instead of splitting `net` — silently gave away the platform's fee on every split resolution. Live-verified: a $900 gross / $90-fee dispute now correctly splits $405/$405, fee retained |
+| **A second, non-atomic "cancel" code path reopened the original race** | `PATCH /api/jobs/[id] {action:"cancel"}` duplicated the atomic cancel logic without the atomic guard, so it could still clobber an already-accepted job back to `cancelled`. Removed the duplicate — cancellation now only goes through the one atomic route |
+| **Dispute resolution had no idempotency guard** | Could be "resolved" a second time with a different outcome, silently overwriting the first resolution and its email. Now CAS-guarded, `409`s on a second attempt |
+| **Generic escrow release let a client bypass job completion entirely** | `PATCH /api/transactions {action:"release"}` released held funds without requiring the job to actually be marked complete first |
+| **Avatar upload could overwrite another user's avatar** | `/api/upload/sign` signed whatever `public_id` the caller sent — a forged value could clobber a stranger's Cloudinary asset. Now server-derives `public_id` from the caller's own userId; `avatarPublicId` also stripped from the public profile response |
+| **Invite-only / direct-offer jobs leaked into 4 more surfaces** | `recommended`, `match-radar`, `price-alerts`, and the freelancer dashboard all bypassed the visibility filter already applied to the main feed |
+| **Rate limiting sitewide was keyed on a spoofable `X-Forwarded-For`** | A client-suppliable header, using the *first* (attacker-controlled) hop — nullified the login/forgot-password/admin-key brute-force protection app-wide |
+| **Assessment time-limit check was skippable by omitting `startedAt`** | The elapsed-time guard only ran `if (startedAt)` — a client that simply didn't send the field took unlimited time |
+| **AI routes missing prompt-injection guards, input-length caps, and correct validation order** | Extended Round 1's `systemInstruction` separation to `bid-strategy`/`pricing-advisor`, added input-length caps app-wide, and reordered one route so quota is no longer consumed before request validation |
+| **Single-refresh-token-per-user storage caused false-positive multi-device logout** | A second device's login silently evicted the first — reuse-detection couldn't tell "stolen and replayed" from "a different, still-legitimate session." Moved to one token per `{userId, sessionId}` |
+
+Full 22-row detail: [`codereview_2026-07-20.md`](codereview_2026-07-20.md).
+
+### Production database gap found while fixing Round 2 (bigger than any single issue above)
+
+Re-verifying the refresh-token fix live surfaced that
+`web/scripts/create-fix-indexes.mjs` called `client.db()` (bare, no name)
+instead of the app's own `db("geekbid")` — with the deployed `MONGODB_URI`
+having no database-name path segment, every index the script "created"
+during Round 1 had actually been landing in an unrelated, empty `test`
+database. Direct inspection confirmed **4 of the 5 previously-claimed
+index-level fixes had never actually reached production**:
+`assessment_cooldowns` didn't exist as a collection, `transactions`'
+unique `razorpayPaymentId` index was absent, `subscriptions`' active-status
+partial-unique index was absent, and `password_reset_tokens` had no indexes
+at all beyond `_id` — meaning several of Round 1's atomicity guarantees had
+been running on application-level checks alone, with no real database-level
+backstop. Fixed the script to hardcode `db("geekbid")`, added a 6th index
+block for the refresh-token fix (a second production gap found the same
+way — the old deploy still had a conflicting single-token unique index that
+threw on every second-device login), and re-ran it — confirmed via direct
+index listing that all 6 blocks now exist correctly. Also found and fixed
+one bug not on either issue list while investigating this:
+`create-job-invite.ts`'s duplicate-invite guard was a non-atomic `findOne`
+pre-check with no unique index actually backing the `E11000` catch beneath
+it — added the missing compound unique index.
+
+### Merged to `main`/`master`
+
+`epic_0.0.1` (Smart Match & Auto-Invite plus both fix-pass rounds above) was
+merged into `master`, resolving 10 conflicting files — largely the same
+underlying bugs having been independently fixed on both sides via different
+commit paths, including the split-dispute fee leak and the duplicate cancel
+path, avatar-overwrite, and assessment-time-limit fixes above — then
+fast-forwarded onto `main` too. Verified post-merge: `tsc --noEmit` clean,
+full `npm run build` clean (all routes), `npm test` 11/11 passing.
 
 ---
 
@@ -1320,6 +1422,8 @@ Audit reports, oldest to newest:
 - [`GEEKBID_SAAS_BLUEPRINT.md`](GEEKBID_SAAS_BLUEPRINT.md) — SaaS tiering design, incl. webhook idempotency, quota-bypass closure, migration rollback strategy (v17)
 - Full API CRUD audit (v17 refinement) — every route exercised end-to-end, 7 bugs closed: a bid-list authorization leak, a one-sided dispute-visibility bug, two missing invite guards (ownership + open-status), a recency-sort bug, a crash-to-500 on malformed IDs, and a broken-recipient-name bug across 4 transactional-email call sites. See [v17 refinements](#v17-refinements-post-phase-4)
 - Full-app live browser testing (v17 refinement) — 14 more bugs closed, including two account-standing bypasses (suspended and soft-deleted users could both still log in, neither was ever checked), an authorization gap on Talent Pool messaging, and dispute resolution silently never releasing or refunding the actual escrowed funds despite reporting "resolved." See [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)
+- [`issues.md`](issues.md) / [`progress.md`](progress.md) — 61-issue full-codebase audit (now on `main`/`master`), 4 Critical/17 High/35 Medium/5 Low, spanning billing, escrow atomicity, NoSQL injection, and dead auth stubs (forgot-password, delete-account). See [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)
+- [`codereview_2026-07-20.md`](codereview_2026-07-20.md) — 22-issue adversarial re-review (now on `main`/`master`), including a spoofable-`X-Forwarded-For` rate-limit bypass app-wide, an avatar-overwrite exploit chain, and two Critical regressions the prior pass itself introduced (split-dispute fee leak, reopened non-atomic cancel race)
 
 Summary of protections in place:
 
@@ -1367,9 +1471,10 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `v19` | **Latest — also `main`/`master`** — landing-page-only visual refresh (new display font, restyled Live Market widget, dark code-block price-decay formula, wider How It Works/pricing cards, fixed testimonial-carousel clipping) plus a violet/near-black color scheme swap sourced from a user-provided reference mockup, a secondary-text contrast darkening on both landing and `/feed`, and two responsive fixes (hero/CTA/Live-Market text sizing that wrapped/oversized on 13" laptop widths, footer alignment inconsistency on mobile). Scoped entirely to `web/src/components/landing/*`, `web/src/components/feed/*`, and the pre-existing landing-only block in `globals.css` — zero shared-class changes, verified via `/login`/`/admin` before/after screenshots (see [What's in v19](#whats-in-v19)) |
+| `epic_0.0.1` | **Latest — also `main`/`master`** — Smart Match & Auto-Invite (ranked freelancer matches, confirm-then-send batch invites for Plus/Premium, Free preview) plus two full-codebase audit-and-fix rounds closing 83 bugs total: a 61-issue first pass (`issues.md`/`progress.md`) across billing, escrow, auth, and every API route, and a 22-issue adversarial re-review (`codereview_2026-07-20.md`) that caught two Critical regressions the first pass itself introduced (a split-dispute fee leak, a reopened non-atomic cancel race) plus a production database-index gap where 4 of 5 previously-claimed fixes were silently landing in the wrong Mongo database. Merged onto `master` then fast-forwarded onto `main` — both now identical (see [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)) |
+| `v19` | landing-page-only visual refresh (new display font, restyled Live Market widget, dark code-block price-decay formula, wider How It Works/pricing cards, fixed testimonial-carousel clipping) plus a violet/near-black color scheme swap sourced from a user-provided reference mockup, a secondary-text contrast darkening on both landing and `/feed`, and two responsive fixes (hero/CTA/Live-Market text sizing that wrapped/oversized on 13" laptop widths, footer alignment inconsistency on mobile). Scoped entirely to `web/src/components/landing/*`, `web/src/components/feed/*`, and the pre-existing landing-only block in `globals.css` — zero shared-class changes, verified via `/login`/`/admin` before/after screenshots (see [What's in v19](#whats-in-v19)) |
 | `v18` | full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile; a landing-page typography unification (`--font-serif` resolved to the same font as `--font-sans` — no serif face was ever loaded — leaving 3 competing heading systems and inconsistent numerals, fixed with 7 new `.landing-*` classes); and a fresh 340-case phase-wise CRUD re-audit ([`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md)) closing 5 more bugs, most notably **dispute resolution still silently never moving escrowed money** — the same bug the v17 audit believed it had fixed, but that pass validated against artificially-seeded data that never exercised the real dispute-raise-then-resolve lifecycle (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
-| `v17` | **Latest — also `main`/`master`** — real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
+| `v17` | real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
 | `v16` | Landing page + feed dashboard visual redesign, dual-role accounts (`roles[]` + `/api/auth/switch-role`), OAuth role-mismatch fix, and bug fixes (QuickBid floor violation, Counter-Bid-at-floor UI, feed duplicate-key crash, job detail layout) |
 | `v15` | Audit-driven fixes over v14: atomic AI-quota/milestone-escrow checks, rate limiting on AI/refresh/v1 routes, token-refresh race fix, `.env.example` brought in sync, root error/loading boundaries |
 | `v14` | Correctness/reliability fixes over v12: exact integer-cent money math, cross-tab auth sync, hardened Mongo singleton, no error leaks |
