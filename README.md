@@ -215,6 +215,28 @@ in this environment (missing local Cloudinary/Gemini/Razorpay secrets, not a
 fix-pass gap) and are called out in that section rather than silently
 skipped.
 
+### A fourth production database gap, found live after deploy (not a Round 3 code bug)
+
+Post-deploy, a real login attempt hit `Internal server error`. Root cause:
+`refresh_tokens` still had the **old** single-field unique index on `userId`
+alone, live in the database, alongside the correct compound
+`{userId, sessionId}` index — `scripts/create-fix-indexes.mjs` already
+contained the correct idempotent drop-old/create-new logic for exactly this
+(written during the Round 1/2 fix pass, see
+[Production database gap](#production-database-gap-found-while-fixing-round-2-bigger-than-any-single-issue-above)
+above), but the script had evidently never actually been run against this
+specific database — so every login for a user with any pre-existing
+`refresh_tokens` row (i.e. almost anyone who wasn't a brand-new signup) threw
+`E11000 duplicate key error ... index: userId_1` on the very next session.
+This is the same *class* of gap Round 2 found (claimed-fixed vs.
+actually-landed), just recurring on a database that hadn't been touched by
+that fix yet. Re-ran the existing script against the live database — it also
+found and fixed the identical stale-index problem on `subscriptions` (a
+plain `userId_1` sitting alongside the correct partial-unique one). Verified
+by hitting `POST /api/auth` three times in a row for the same user, both
+locally and against `https://geekbid.vercel.app` directly (same database, so
+the fix took effect immediately with no redeploy needed) — all `200 OK`.
+
 ---
 
 ## What's in v19
