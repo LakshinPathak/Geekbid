@@ -2,8 +2,15 @@
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
-import { X, Send, Loader2 } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { formatMoney, getCurrentPrice } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Props {
   freelancerId: string;
@@ -15,11 +22,11 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
   const { jobs, currentUser, bids, now, refreshCurrentUser, getValidToken } = useApp();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(onClose, 180);
+    setOpen(false);
+    setTimeout(onClose, 200);
   };
 
   const uid = currentUser?.id ?? currentUser?._id ?? "";
@@ -73,31 +80,14 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={handleClose}
-    >
-      <div
-        className={`w-full max-w-md rounded-2xl border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
-        style={{ background: "#ffffff", borderColor: "rgba(75,63,143,0.22)" }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="font-serif font-normal text-xl text-[#3d3a45]">Invite to Bid</h2>
-            <p className="text-[11px] text-[#46424e] mt-0.5">
-              Invite <span className="text-[#4b3f8f]">{freelancerName}</span> to one of your open jobs
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
-          >
-            <X className="h-4 w-4 text-[#46424e]" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose(); }}>
+      <DialogContent className="sm:max-w-md bg-[#ffffff] border-[rgba(75,63,143,0.22)] rounded-2xl p-6 gap-5">
+        <DialogHeader className="text-left gap-1">
+          <DialogTitle className="font-serif font-normal text-xl text-[#3d3a45]">Invite to Bid</DialogTitle>
+          <DialogDescription className="text-[11px] text-[#46424e] mt-0.5">
+            Invite <span className="text-[#4b3f8f]">{freelancerName}</span> to one of your open jobs
+          </DialogDescription>
+        </DialogHeader>
 
         {myOpenJobs.length === 0 ? (
           <div className="text-center py-8">
@@ -153,7 +143,7 @@ export default function InviteToBidModal({ freelancerId, freelancerName, onClose
             Send Invite
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

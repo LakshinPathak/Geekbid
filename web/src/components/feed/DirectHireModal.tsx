@@ -2,7 +2,14 @@
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
-import { X, Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Props {
   freelancerId: string;
@@ -22,11 +29,11 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
   const [price, setPrice] = useState(defaultPrice);
   const [estimatedHours, setEstimatedHours] = useState(defaultHours);
   const [submitting, setSubmitting] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(onClose, 180);
+    setOpen(false);
+    setTimeout(onClose, 200);
   };
 
   const handleSubmit = async () => {
@@ -53,31 +60,14 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={handleClose}
-    >
-      <div
-        className={`w-full max-w-lg rounded-2xl border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
-        style={{ background: "#ffffff", borderColor: "rgba(75,63,143,0.22)" }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="font-serif font-normal text-xl text-[#3d3a45]">Direct Hire</h2>
-            <p className="text-[11px] text-[#46424e] mt-0.5">
-              Sending offer to <span className="text-[#4b3f8f]">{freelancerName}</span>
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
-          >
-            <X className="h-4 w-4 text-[#46424e]" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose(); }}>
+      <DialogContent className="sm:max-w-lg bg-[#ffffff] border-[rgba(75,63,143,0.22)] rounded-2xl p-6 gap-5">
+        <DialogHeader className="text-left gap-1">
+          <DialogTitle className="font-serif font-normal text-xl text-[#3d3a45]">Direct Hire</DialogTitle>
+          <DialogDescription className="text-[11px] text-[#46424e] mt-0.5">
+            Sending offer to <span className="text-[#4b3f8f]">{freelancerName}</span>
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Info note */}
         <div className="rounded-full px-3 py-2 text-[11px]"
@@ -89,10 +79,11 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
         {/* Job title */}
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
+          <label htmlFor="direct-hire-title" className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
             Job Title <span className="text-[#c14d3a]">*</span>
           </label>
           <input
+            id="direct-hire-title"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="e.g. Build a React dashboard"
@@ -102,8 +93,9 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
 
         {/* Description */}
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Description</label>
+          <label htmlFor="direct-hire-description" className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Description</label>
           <textarea
+            id="direct-hire-description"
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Describe the project scope..."
@@ -115,10 +107,11 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
         {/* Price + Hours */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
+            <label htmlFor="direct-hire-price" className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
               Price ($) <span className="text-[#c14d3a]">*</span>
             </label>
             <input
+              id="direct-hire-price"
               type="number"
               value={price}
               onChange={e => setPrice(Number(e.target.value))}
@@ -127,8 +120,9 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Est. Hours</label>
+            <label htmlFor="direct-hire-hours" className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Est. Hours</label>
             <input
+              id="direct-hire-hours"
               type="number"
               value={estimatedHours}
               onChange={e => setEstimatedHours(Number(e.target.value))}
@@ -148,7 +142,7 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
         {/* Skills (read-only) */}
         {freelancerSkills.length > 0 && (
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Skills</label>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Skills</span>
             <div className="flex flex-wrap gap-1.5">
               {freelancerSkills.slice(0, 8).map(s => (
                 <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-[#f4f2ee] text-[#46424e] border border-[rgba(75,63,143,0.15)]">
@@ -173,7 +167,7 @@ export default function DirectHireModal({ freelancerId, freelancerName, freelanc
             Send Offer
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

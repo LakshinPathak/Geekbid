@@ -53,7 +53,8 @@ export default function CloudinaryAvatar({
       const parts = avatarUrl.split('/upload/');
       const afterUpload = parts[1] ?? '';
       const segments = afterUpload.split('/');
-      const publicId = segments.slice(1).join('/').replace(/\.[^/.]+$/, '') || afterUpload.replace(/\.[^/.]+$/, '');
+      const hasVersionSegment = /^v\d+$/.test(segments[0] ?? '');
+      const publicId = (hasVersionSegment ? segments.slice(1) : segments).join('/').replace(/\.[^/.]+$/, '') || afterUpload.replace(/\.[^/.]+$/, '');
 
       return (
         <div style={wrapperStyle} className={`relative ${className}`}>

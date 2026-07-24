@@ -3,8 +3,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
-import { X, Send, Loader2, Sparkles, Crown, CheckCircle2 } from "lucide-react";
+import { Send, Loader2, Sparkles, Crown, CheckCircle2 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface MatchRow {
   freelancerId: string;
@@ -24,7 +31,7 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
   const { getValidToken, users } = useApp();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(true);
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [topN, setTopN] = useState(0);
   const [canAutoInvite, setCanAutoInvite] = useState(false);
@@ -32,8 +39,8 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(onClose, 180);
+    setOpen(false);
+    setTimeout(onClose, 200);
   };
 
   const loadMatches = useCallback(async () => {
@@ -114,33 +121,17 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
   }, [users]);
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={handleClose}
-    >
-      <div
-        className={`w-full max-w-lg rounded-2xl border p-6 space-y-5 max-h-[90vh] flex flex-col ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
-        style={{ background: "#ffffff", borderColor: "rgba(75,63,143,0.22)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between shrink-0">
-          <div>
-            <h2 className="font-serif font-normal text-xl text-[#3d3a45] flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#4b3f8f]" />
-              Smart Match
-            </h2>
-            <p className="text-[11px] text-[#46424e] mt-0.5 line-clamp-2">
-              Ranked freelancers for <span className="text-[#4b3f8f]">{jobTitle}</span>
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
-          >
-            <X className="h-4 w-4 text-[#46424e]" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose(); }}>
+      <DialogContent className="sm:max-w-lg bg-[#ffffff] border-[rgba(75,63,143,0.22)] rounded-2xl p-6 gap-5 max-h-[90vh] flex flex-col">
+        <DialogHeader className="text-left gap-1 shrink-0">
+          <DialogTitle className="font-serif font-normal text-xl text-[#3d3a45] flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-[#4b3f8f]" />
+            Smart Match
+          </DialogTitle>
+          <DialogDescription className="text-[11px] text-[#46424e] mt-0.5 line-clamp-2">
+            Ranked freelancers for <span className="text-[#4b3f8f]">{jobTitle}</span>
+          </DialogDescription>
+        </DialogHeader>
 
         {!canAutoInvite && !loading && (
           <div className="rounded-2xl border border-[rgba(75,63,143,0.22)] bg-[rgba(75,63,143,0.06)] px-4 py-3 flex items-start gap-2">
@@ -236,7 +227,7 @@ export default function SmartMatchModal({ jobId, jobTitle, onClose }: Props) {
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

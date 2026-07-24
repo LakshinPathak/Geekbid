@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import { type Job, GEEK_TIERS } from "@/lib/utils";
 import { formatMoney } from "@/lib/utils";
@@ -24,7 +24,7 @@ interface User {
 }
 interface Bid { freelancerId: string; jobId: string; bidPrice: number; }
 interface Props {
-  users: User[]; jobs: Job[]; bids: Bid[]; now: Date; ownClientId: string;
+  users: User[]; jobs: Job[]; bids: Bid[]; ownClientId: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -41,6 +41,8 @@ function getTierStyle(label: string) {
     default:              return { bg: "bg-[#4b3f8f]/12", color: "text-[#4b3f8f]", border: "border-[#4b3f8f]/22",           rawColor: "#4b3f8f" };
   }
 }
+const EMPTY_BIDS: Bid[] = [];
+
 function availabilityBadge(avail?: string) {
   if (avail === "available") return { text: "Available", bg: "bg-[#4d7245]/12", color: "text-[#4d7245]", border: "border-[#4d7245]/22" };
   if (avail === "part-time") return { text: "Part-time", bg: "bg-[#4b3f8f]/12", color: "text-[#4b3f8f]", border: "border-[#4b3f8f]/22" };
@@ -73,7 +75,7 @@ function GeekScoreRing({ pct, color }: { pct: number; color: string }) {
 }
 
 // ── Single Freelancer Card ─────────────────────────────────────────
-function FreelancerCard({
+const FreelancerCard = memo(function FreelancerCard({
   freelancer, bids, myJobSkills,
 }: {
   freelancer: User; bids: Bid[]; myJobSkills: string[];
@@ -88,7 +90,7 @@ function FreelancerCard({
   useTilt3D(cardRef, isPointerFine);
 
   const fid = freelancer.id ?? freelancer._id ?? "";
-  const myBids = bids.filter(b => b.freelancerId === fid);
+  const myBids = bids;
   const avgBid = myBids.length > 0
     ? myBids.reduce((s, b) => s + b.bidPrice, 0) / myBids.length : null;
 
@@ -306,7 +308,7 @@ function FreelancerCard({
       )}
     </>
   );
-}
+});
 
 // ── Main TalentPool ────────────────────────────────────────────────
 export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
@@ -334,6 +336,16 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
   }, [myOpenJobs, smartMatchPickId]);
 
   const freelancers = useMemo(() => users.filter(u => u.role === "freelancer"), [users]);
+
+  const bidsByFreelancer = useMemo(() => {
+    const map = new Map<string, Bid[]>();
+    bids.forEach(b => {
+      const list = map.get(b.freelancerId);
+      if (list) list.push(b);
+      else map.set(b.freelancerId, [b]);
+    });
+    return map;
+  }, [bids]);
 
   const myJobSkills = useMemo(() => {
     const myJobs = jobs.filter(j => j.clientId === ownClientId && j.status === "open");
@@ -485,7 +497,7 @@ export default function TalentPool({ users, jobs, bids, ownClientId }: Props) {
             <FreelancerCard
               key={f.id ?? f._id}
               freelancer={f}
-              bids={bids}
+              bids={bidsByFreelancer.get(f.id ?? f._id ?? "") ?? EMPTY_BIDS}
               myJobSkills={myJobSkills}
             />
           ))}

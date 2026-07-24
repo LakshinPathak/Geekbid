@@ -2,8 +2,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Lock, X } from "lucide-react";
+import { Sparkles, Loader2, Lock } from "lucide-react";
 import { FEATURED_BOOST_PRICE_INR, FEATURED_BOOST_CURRENCY } from "@/lib/plans";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 declare global {
   interface Window {
@@ -30,6 +37,12 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
   const { currentUser, toggleFeatured, getValidToken } = useApp();
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [open, setOpen] = useState(true);
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    setTimeout(onClose, 200);
+  }, [onClose]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -169,24 +182,21 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
   }, [getValidToken, scriptLoaded, currentUser, jobId, jobTitle, finishBoost]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center victory-overlay" onClick={onClose}>
-      <div className="glass-panel-lg p-8 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-heading text-lg font-bold text-[#3d3a45] flex items-center gap-2">
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose(); }}>
+      <DialogContent className="sm:max-w-sm bg-[#fbfaf7] rounded-2xl p-8">
+        <DialogHeader className="text-left gap-1">
+          <DialogTitle className="font-heading text-lg font-bold text-[#3d3a45] flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[#4b3f8f]" /> Feature this job
-          </h3>
-          <button onClick={onClose} className="text-[#6f6a7d] hover:text-[#3d3a45] transition-colors">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <p className="text-sm text-[#6f6a7d] mb-1">
-          Your plan&apos;s included featured boosts are used up this month.
-        </p>
-        <p className="text-lg font-heading font-bold text-[#4b3f8f] mt-3 mb-6">
+          </DialogTitle>
+          <DialogDescription className="text-sm text-[#6f6a7d]">
+            Your plan&apos;s included featured boosts are used up this month.
+          </DialogDescription>
+        </DialogHeader>
+        <p className="text-lg font-heading font-bold text-[#4b3f8f] mt-1 mb-6">
           ₹{FEATURED_BOOST_PRICE_INR} one-off boost
         </p>
         <div className="flex gap-3">
-          <button onClick={onClose} className="btn-ghost flex-1 h-11 rounded-2xl text-sm">
+          <button onClick={handleClose} className="btn-ghost flex-1 h-11 rounded-2xl text-sm">
             Cancel
           </button>
           <button
@@ -198,7 +208,7 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
             {processing ? "Processing..." : "Pay & Feature"}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

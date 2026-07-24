@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getCurrentPrice, getHoursToFloor, formatHoursToFloor, formatMoney, type Job } from "@/lib/utils";
 import { getEffectiveDecayRate } from "@/lib/pricing";
 import { getCompetitionBadge, getPriceTrajectory } from "./feed-helpers";
@@ -33,6 +33,7 @@ export default function FreelancerJobCard({
  const cardRef = useRef<HTMLDivElement>(null);
  const isPointerFine = usePointerFine();
  useTilt3D(cardRef, isPointerFine);
+ const router = useRouter();
 
  const jobId = job.id ?? job._id ?? "";
  const current = getCurrentPrice(job, now);
@@ -66,13 +67,16 @@ export default function FreelancerJobCard({
  const decayPct = priceRange > 0 ? Math.round(((current - job.minimumPrice) / priceRange) * 100) : 0;
 
  const handleQuickBid = (e: React.MouseEvent) => {
- e.preventDefault();
+ e.stopPropagation();
  if (onQuickBid) onQuickBid(jobId);
  };
 
  return (
- <Link href={`/jobs/${jobId}`} className="block group">
- <div ref={cardRef} className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate p-5 transition-all duration-200 h-full flex flex-col gap-4 relative">
+ <div
+ ref={cardRef}
+ onClick={() => router.push(`/jobs/${jobId}`)}
+ className="glass-panel feed-glass-card feed-tilt-card feed-card-border-rotate p-5 transition-all duration-200 h-full flex flex-col gap-4 relative cursor-pointer group"
+ >
  {job.status === "open" && (
  <span className="absolute top-3 left-3 h-2 w-2 rounded-full bg-[#4d7245] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
  )}
@@ -208,13 +212,15 @@ export default function FreelancerJobCard({
  Counter →
  </button>
  ) : (
- <button className="btn-glass text-[11px] py-1.5 px-3 flex items-center gap-1">
+ <button
+ onClick={e => { e.stopPropagation(); router.push(`/jobs/${jobId}`); }}
+ className="btn-glass text-[11px] py-1.5 px-3 flex items-center gap-1"
+ >
  View Details →
  </button>
  )}
  </div>
  </div>
  </div>
- </Link>
  );
 }

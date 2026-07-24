@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
  getCurrentPrice, getHoursToFloor, formatHoursToFloor,
  formatMoney, type Job,
@@ -125,6 +126,7 @@ function MyJobCard({
  const cardRef = useRef<HTMLDivElement>(null);
  const isPointerFine = usePointerFine();
  useTilt3D(cardRef, isPointerFine);
+ const router = useRouter();
  const jobId = job.id ?? job._id ?? "";
  const isSmartMatchEligible =
    job.status === "open" && job.type !== "direct_offer";
@@ -146,7 +148,7 @@ function MyJobCard({
  );
 
  const handleAccept = (e: React.MouseEvent) => {
- e.preventDefault();
+ e.stopPropagation();
  onAcceptBest(jobId);
  };
 
@@ -164,8 +166,11 @@ function MyJobCard({
  <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#4d7245] animate-pulse z-10" title="Price actively decaying" aria-hidden="true" />
  )}
 
- {/* ── Card body (links to job detail) ───────────────────── */}
- <Link href={`/jobs/${jobId}`} className="block p-5">
+ {/* ── Card body (navigates to job detail) ───────────────── */}
+ <div
+ onClick={() => router.push(`/jobs/${jobId}`)}
+ className="block p-5 cursor-pointer"
+ >
  <div className="flex flex-col gap-4">
 
  {/* Header: badges */}
@@ -267,7 +272,7 @@ function MyJobCard({
  )}
  </div>
  </div>
- </Link>
+ </div>
 
  {isSmartMatchEligible && (
  <div className="px-5 pb-3 border-t border-[rgba(75,63,143,0.12)] bg-[#ffffff]">

@@ -63,7 +63,9 @@ export default function AvatarUploader({
     cropping: true,
     croppingAspectRatio: 1,
     maxFileSize: 5000000,
-    sources: ["local", "camera", "url"] as ("local" | "camera" | "url")[],
+    clientAllowedFormats: ["png", "jpg", "jpeg", "webp"],
+    resourceType: "image" as const,
+    sources: ["local", "camera"] as ("local" | "camera")[],
   };
 
   return (

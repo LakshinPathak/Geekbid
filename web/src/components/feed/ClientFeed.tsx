@@ -266,7 +266,6 @@ export default function ClientFeed() {
  users={users}
  jobs={jobs}
  bids={bids}
- now={now}
  ownClientId={uid}
  />
 

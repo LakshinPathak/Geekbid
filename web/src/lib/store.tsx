@@ -931,6 +931,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
  setChatMessages([]);
  setReviews([]);
  setRecommendedJobs([]);
+ setMilestones([]);
+ setReferralStats(null);
+ setWatchedJobIds([]);
+ setInvites([]);
  }, [clearAuth]);
 
  // ── Google OAuth (set auth from callback tokens) ───────────

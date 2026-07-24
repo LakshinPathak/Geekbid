@@ -3,8 +3,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
-import { X, MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
 import { formatMoney, getCurrentPrice } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Props {
   freelancerId: string;
@@ -18,11 +25,11 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(onClose, 180);
+    setOpen(false);
+    setTimeout(onClose, 200);
   };
 
   const uid = currentUser?.id ?? currentUser?._id ?? "";
@@ -56,35 +63,18 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={handleClose}
-    >
-      <div
-        className={`w-full max-w-md rounded-2xl border p-6 space-y-5 ${isClosing ? "animate-scale-out" : "animate-scale-in"}`}
-        style={{ background: "#ffffff", borderColor: "rgba(75,63,143,0.22)" }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="font-serif font-normal text-xl text-[#3d3a45]">Message Freelancer</h2>
-            <p className="text-[11px] text-[#46424e] mt-0.5">
-              Start a conversation with <span className="text-[#4b3f8f]">{freelancerName}</span>
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-[#f4f2ee] transition-colors"
-          >
-            <X className="h-4 w-4 text-[#46424e]" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose(); }}>
+      <DialogContent className="sm:max-w-md bg-[#ffffff] border-[rgba(75,63,143,0.22)] rounded-2xl p-6 gap-5">
+        <DialogHeader className="text-left gap-1">
+          <DialogTitle className="font-serif font-normal text-xl text-[#3d3a45]">Message Freelancer</DialogTitle>
+          <DialogDescription className="text-[11px] text-[#46424e] mt-0.5">
+            Start a conversation with <span className="text-[#4b3f8f]">{freelancerName}</span>
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Job selection */}
         <div className="space-y-2">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Select a Job Context</label>
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">Select a Job Context</span>
           {myOpenJobs.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-sm text-[#46424e]">No open jobs available.</p>
@@ -134,10 +124,11 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
 
         {/* Message textarea */}
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
+          <label htmlFor="message-freelancer-text" className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#46424e]">
             Message <span className="text-[#c14d3a]">*</span>
           </label>
           <textarea
+            id="message-freelancer-text"
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
             placeholder={`Hi ${freelancerName}, I'd like to discuss...`}
@@ -157,7 +148,7 @@ export default function MessageFreelancerModal({ freelancerId, freelancerName, o
             Send Message
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

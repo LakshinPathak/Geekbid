@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getCurrentPrice, formatMoney, type Job } from "@/lib/utils";
 import { getCompetitionBadge, getPriceTrajectory } from "./feed-helpers";
 import { getEffectiveDecayRate } from "@/lib/pricing";
@@ -18,6 +18,7 @@ interface RecommendedCarouselProps {
 // with scroll arrows that had nothing left to scroll to. A grid fills the
 // row evenly regardless of how many of the 5 slots are actually present.
 export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickBid }: RecommendedCarouselProps) {
+  const router = useRouter();
   if (jobs.length === 0) return null;
 
   return (
@@ -57,10 +58,10 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
           const decayPct = priceRange > 0 ? Math.round(((current - job.minimumPrice) / priceRange) * 100) : 0;
 
           return (
-            <Link
+            <div
               key={jobId}
-              href={`/jobs/${jobId}`}
-              className="group"
+              onClick={() => router.push(`/jobs/${jobId}`)}
+              className="group cursor-pointer"
             >
               <div className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(75,63,143,0.40)] transition-colors duration-200 relative">
                 {isNew && (
@@ -115,7 +116,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                 {/* QuickBid */}
                 <button
                   onClick={e => {
-                    e.preventDefault();
+                    e.stopPropagation();
                     if (onQuickBid) onQuickBid(jobId);
                   }}
                   className="mt-auto btn-primary w-full justify-center text-[11px] tracking-[0.06em] uppercase py-2 rounded-full"
@@ -124,7 +125,7 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
                   QuickBid
                 </button>
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>
