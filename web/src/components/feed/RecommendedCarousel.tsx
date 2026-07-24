@@ -63,7 +63,10 @@ export default function RecommendedCarousel({ jobs, now, mySkills = [], onQuickB
               onClick={() => router.push(`/jobs/${jobId}`)}
               className="group cursor-pointer"
             >
-              <div className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(75,63,143,0.40)] transition-colors duration-200 relative">
+              <div
+                className="card feed-glass-card h-full flex flex-col gap-3 p-4 hover:border-[rgba(75,63,143,0.40)] transition-colors duration-200 relative"
+                style={{ overflow: "visible" }}
+              >
                 {isNew && (
                   <span className="absolute -top-1.5 -right-1.5 h-5 px-1.5 rounded-full bg-[#4b3f8f] text-[#ffffff] text-[9px] font-bold flex items-center justify-center feed-badge-pop z-10">
                     NEW
