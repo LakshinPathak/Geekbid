@@ -6,11 +6,14 @@
 ![CI/CD](https://github.com/LakshinPathak/Geekbid/actions/workflows/ci.yml/badge.svg)
 
 **Current version: `main`/`master`** — Smart Match & Auto-Invite (ranked
-freelancer matches + confirm-then-send batch invites) plus two full-codebase
-audit-and-fix rounds closing 83 correctness/security bugs across billing,
-escrow, auth, and every API route, and a production database-index gap that
-left several of those fixes without their real backstop until this pass
-found and closed it. See [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster).
+freelancer matches + confirm-then-send batch invites) plus **three**
+full-codebase audit-and-fix rounds now closing 129 correctness/security bugs
+across billing, escrow, auth, AI, and every API route, and a production
+database-index gap (found twice — Round 2 found it in one script, Round 3
+found the same bug still live in 5 sibling scripts) that left several fixes
+without their real backstop until each pass found and closed it. Round 3 was
+verified live against the deployed production app, not just locally. See
+[What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster).
 
 **v19** — Landing-page-only visual refresh (new display
 font, restyled Live Market widget, dark code-block price-decay formula, a
@@ -85,12 +88,14 @@ $400 ─────────────────────────
 
 ## What's in the Fix Pass (now on `main`/`master`)
 
-Two full-codebase audit-and-fix rounds — not scoped to one feature or page —
-closing 83 correctness/security bugs total across billing, escrow, auth, AI,
+Three full-codebase audit-and-fix rounds — not scoped to one feature or page —
+closing 129 correctness/security bugs total across billing, escrow, auth, AI,
 and dozens of API routes, on top of the Smart Match & Auto-Invite feature
-(see [`release.md`](releases/epic_0.0.1/release.md)). Developed on branch
-`epic_0.0.1`, then merged into both `master` and `main`, which are now
-identical — this supersedes v19 as the current state of both branches.
+(see [`release.md`](releases/epic_0.0.1/release.md)). Rounds 1–2 were
+developed on branch `epic_0.0.1`, merged into both `master` and `main`; Round
+3 was developed on branch `v20`, fast-forwarded onto both, and — unlike the
+first two rounds — verified live against the deployed production app
+(`https://geekbid.vercel.app`), not just locally.
 
 ### Round 1 — full-codebase audit (`issues.md`, 61 issues)
 
@@ -174,6 +179,41 @@ commit paths, including the split-dispute fee leak and the duplicate cancel
 path, avatar-overwrite, and assessment-time-limit fixes above — then
 fast-forwarded onto `main` too. Verified post-merge: `tsc --noEmit` clean,
 full `npm run build` clean (all routes), `npm test` 11/11 passing.
+
+### Round 3 — full-codebase code review + live browser verification (branch `v20`, 46 issues)
+
+A third pass, independent of Rounds 1–2: 6 parallel reviewers split by area
+(auth/security core, payments/billing, core business API, AI/chat/dashboards/
+admin, frontend pages, shared components/UI) against the state of the
+codebase as of the Round 1–2 merge — 2 Critical, 9 High, 15 Medium, ~20 Low,
+tracked in [`web/CODE_REVIEW_REPORT.md`](web/CODE_REVIEW_REPORT.md). All 46
+fixed, then verified with Playwright against a live, freshly-seeded instance
+of the app (not just `tsc`/build) — which caught one real regression the fix
+pass itself introduced, fixed before merging.
+
+| Bug | Fix |
+|---|---|
+| **The Round 2 wrong-database bug was still live in 5 more scripts** | Round 2 found and fixed `create-fix-indexes.mjs` calling bare `client.db()` instead of `db("geekbid")`. Round 3 found the identical bug, unfixed, in `migrate-plan-limits.mjs`, `migrate-plan-names.mjs`, `rollback-plan-names.mjs`, `verify-migration.mjs`, and `create-phase4-indexes.mjs` — meaning the `webhook_events`/`subscriptions` indexes those scripts were supposed to create may never have reached production either |
+| **A stale/retried Razorpay webhook could resurrect a cancelled subscription** | `handleCharged`/`handlePaymentFailed` didn't check subscription status before mutating it (unlike their siblings `handleHalted`/`handleCancelled`, which did) — a webhook replayed by the retry-webhooks cron after a user cancelled could flip them back to paid with no valid payment behind it |
+| **`/api/upload/sign` folder/public_id bypass** | Omitting `folder` entirely skipped both the folder allowlist *and* the avatar public_id scoping, letting an authenticated user get a signed request to overwrite another user's Cloudinary asset |
+| **NoSQL-injection primitive in `idFilter()`, reachable from `/api/bids` and `/api/invites`** | Falling back to a raw, unvalidated request value as a MongoDB filter when it wasn't a valid ObjectId — a crafted `{"$ne": null}`-style payload could match an arbitrary document instead of failing "not found" |
+| **Milestone approval could silently report "paid" with no money moved** | The escrow-release lookup had no `purpose: "job_escrow"` filter (could grab an unrelated `featured_boost` transaction instead), and `escrowReleased: true` was set unconditionally even when no matching transaction was found. Now the whole approve action rolls back with a `409` if the escrow transaction can't actually be released |
+| **`logout()` didn't clear all client state** | `milestones`, `referralStats`, `watchedJobIds`, and `invites` survived a logout on a shared/unreloaded tab, briefly showing the next user the previous user's financial/referral data |
+| **5 hand-rolled modals had no focus trap, Escape-to-close, or `role="dialog"`** | `DirectHireModal`, `MessageFreelancerModal`, `SmartMatchModal`, `InviteToBidModal`, `FeaturedBoostModal` built their own backdrop/panel instead of using the existing accessible `ui/dialog.tsx` (Radix) primitive already used elsewhere in the app. Rebuilt on top of it; live-verified all 5 open, close on Escape, and submit correctly |
+| **AI quota charged before request validation on 5 of 8 AI routes** | A request that failed validation (empty/oversized input) still burned a unit of the user's monthly AI quota on `chat-assist`, `generate-description`, `pricing-advisor`, `quality-check`, `smart-search` — reordered to match the 3 routes that already did this correctly |
+| **Admin "Current Price" and "Bids" columns were stale/wrong** | Hardcoded to `job.startingPrice` (never decayed) and derived from a capped, stale client-side `bids` array instead of the job's authoritative `bidCount`. Live-verified against the admin panel: current price now shows the real decayed value, bid counts match the database exactly |
+
+Full 46-row detail, severity, failure scenarios, and fix rationale:
+[`web/CODE_REVIEW_REPORT.md`](web/CODE_REVIEW_REPORT.md). The same file's
+"Browser verification" section documents the live Playwright pass: the CSP
+regression it caught (`script-src` allowed `checkout.razorpay.com` but not
+`cdn.razorpay.com`, which Razorpay's own checkout script loads at runtime for
+its risk-detection sub-script — fixed and reverified clean), plus every fix
+above confirmed working end-to-end against a real MongoDB Atlas instance and
+the live-deployed app. Two things were explicitly *not* exercised end-to-end
+in this environment (missing local Cloudinary/Gemini/Razorpay secrets, not a
+fix-pass gap) and are called out in that section rather than silently
+skipped.
 
 ---
 
@@ -1340,6 +1380,14 @@ URL, with no custom deploy scripting or GitHub Actions secrets required for depl
 itself (see [CI/CD Pipeline](#cicd-pipeline) below for why that workflow file has no
 deploy job).
 
+> **Current status:** the live `geekbid` Vercel project (`https://geekbid.vercel.app`)
+> is **not** connected to the GitHub App today — pushing to `main`/`master` does not
+> auto-deploy it. The Round 3 fixes were deployed manually: `vercel link --project
+> geekbid` then `vercel --prod` from `web/`. If you want push-to-deploy back, go through
+> step 1 below (Vercel → Project Settings → Git → Connect Git Repository) to link it to
+> `LakshinPathak/Geekbid`; all Production/Preview env vars are already configured on the
+> project, so that's the only piece missing.
+
 **One-time setup:**
 
 1. Go to [vercel.com/new](https://vercel.com/new) and import the `LakshinPathak/Geekbid` GitHub repo (installs Vercel's GitHub App the first time — this is the "necessary GitHub-side" step; it can't be scripted from the repo itself, it's a one-time OAuth grant through Vercel's UI).
@@ -1424,6 +1472,7 @@ Audit reports, oldest to newest:
 - Full-app live browser testing (v17 refinement) — 14 more bugs closed, including two account-standing bypasses (suspended and soft-deleted users could both still log in, neither was ever checked), an authorization gap on Talent Pool messaging, and dispute resolution silently never releasing or refunding the actual escrowed funds despite reporting "resolved." See [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)
 - [`issues.md`](issues.md) / [`progress.md`](progress.md) — 61-issue full-codebase audit (now on `main`/`master`), 4 Critical/17 High/35 Medium/5 Low, spanning billing, escrow atomicity, NoSQL injection, and dead auth stubs (forgot-password, delete-account). See [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)
 - [`codereview_2026-07-20.md`](codereview_2026-07-20.md) — 22-issue adversarial re-review (now on `main`/`master`), including a spoofable-`X-Forwarded-For` rate-limit bypass app-wide, an avatar-overwrite exploit chain, and two Critical regressions the prior pass itself introduced (split-dispute fee leak, reopened non-atomic cancel race)
+- [`web/CODE_REVIEW_REPORT.md`](web/CODE_REVIEW_REPORT.md) — 46-issue third-round review (6 parallel scoped reviewers, now on `main`/`master`), including the Round-2 wrong-database bug recurring in 5 more scripts, a stale-webhook subscription-resurrection race, an `/api/upload/sign` overwrite bypass, and a NoSQL-injection primitive in `idFilter()`. Verified live against the deployed production app, which caught a CSP regression the fix pass itself introduced
 
 Summary of protections in place:
 
@@ -1471,7 +1520,8 @@ cd web && rm -rf .next node_modules && npm install && npm run dev
 
 | Branch/tag | Description |
 |--------|-------------|
-| `epic_0.0.1` | **Latest — also `main`/`master`** — Smart Match & Auto-Invite (ranked freelancer matches, confirm-then-send batch invites for Plus/Premium, Free preview) plus two full-codebase audit-and-fix rounds closing 83 bugs total: a 61-issue first pass (`issues.md`/`progress.md`) across billing, escrow, auth, and every API route, and a 22-issue adversarial re-review (`codereview_2026-07-20.md`) that caught two Critical regressions the first pass itself introduced (a split-dispute fee leak, a reopened non-atomic cancel race) plus a production database-index gap where 4 of 5 previously-claimed fixes were silently landing in the wrong Mongo database. Merged onto `master` then fast-forwarded onto `main` — both now identical (see [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)) |
+| `v20` | **Latest — also `main`/`master`** — a third full-codebase code review (6 parallel scoped reviewers, 46 issues, `web/CODE_REVIEW_REPORT.md`) on top of everything in `epic_0.0.1` below: closes the Round-2 wrong-database bug recurring in 5 more scripts, a stale-webhook subscription-resurrection race, an `/api/upload/sign` avatar-overwrite bypass, a NoSQL-injection primitive in `idFilter()`, a milestone-approval flow that could silently report "paid" with no money moved, and 41 more — then verified live with Playwright against the deployed production app, catching and fixing one CSP regression the fix pass itself introduced. Fast-forwarded onto both `master` and `main` — both now identical (see [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)) |
+| `epic_0.0.1` | Smart Match & Auto-Invite (ranked freelancer matches, confirm-then-send batch invites for Plus/Premium, Free preview) plus two full-codebase audit-and-fix rounds closing 83 bugs total: a 61-issue first pass (`issues.md`/`progress.md`) across billing, escrow, auth, and every API route, and a 22-issue adversarial re-review (`codereview_2026-07-20.md`) that caught two Critical regressions the first pass itself introduced (a split-dispute fee leak, a reopened non-atomic cancel race) plus a production database-index gap where 4 of 5 previously-claimed fixes were silently landing in the wrong Mongo database. Merged onto `master` then fast-forwarded onto `main` (see [What's in the Fix Pass](#whats-in-the-fix-pass-now-on-mainmaster)) |
 | `v19` | landing-page-only visual refresh (new display font, restyled Live Market widget, dark code-block price-decay formula, wider How It Works/pricing cards, fixed testimonial-carousel clipping) plus a violet/near-black color scheme swap sourced from a user-provided reference mockup, a secondary-text contrast darkening on both landing and `/feed`, and two responsive fixes (hero/CTA/Live-Market text sizing that wrapped/oversized on 13" laptop widths, footer alignment inconsistency on mobile). Scoped entirely to `web/src/components/landing/*`, `web/src/components/feed/*`, and the pre-existing landing-only block in `globals.css` — zero shared-class changes, verified via `/login`/`/admin` before/after screenshots (see [What's in v19](#whats-in-v19)) |
 | `v18` | full sitewide visual retheme, "Royal Dark" (navy/gold) → "Pastel Indigo" (cream/indigo), color/shape only, zero backend or CRUD changes. Sourced from 4 Fable 5 mockups distilled into a token spec with a WCAG contrast audit, executed in 9 phases across every page (client/freelancer/admin) with live Playwright verification per phase. Found and fixed a `.glass-input` bug that pill-radius'd textareas into text-clipping ovals, 6 plain `.ts` files a `*.tsx`-only sweep had skipped, and the shadcn `components/ui/*` primitives never being scheduled in any phase. Two more structural bugs surfaced in live production testing after: `dark:` Tailwind variants on the shadcn primitives responding to OS `prefers-color-scheme` (removed — one fixed palette, no theme toggle), and every custom class in `globals.css` being unlayered CSS that silently defeated Tailwind utility overrides sitewide (fixed via `@layer components`). Also on `v18`: a full mobile-viewport QA pass (390/360/768px, both roles + admin) closing 6 more bugs — most notably the admin sidebar having no responsive behavior at all, squeezing every admin page into a ~134px strip on mobile; a landing-page typography unification (`--font-serif` resolved to the same font as `--font-sans` — no serif face was ever loaded — leaving 3 competing heading systems and inconsistent numerals, fixed with 7 new `.landing-*` classes); and a fresh 340-case phase-wise CRUD re-audit ([`CRUD_TEST_FINAL.md`](./CRUD_TEST_FINAL.md)) closing 5 more bugs, most notably **dispute resolution still silently never moving escrowed money** — the same bug the v17 audit believed it had fixed, but that pass validated against artificially-seeded data that never exercised the real dispute-raise-then-resolve lifecycle (see [What's in v18](#whats-in-v18), [`NEW_THEME.md`](./NEW_THEME.md), [`FRONTEND_PAGES.md`](./FRONTEND_PAGES.md), [`RESPONSIVE.md`](./RESPONSIVE.md)) |
 | `v17` | real Free/Plus/Premium SaaS tiering (`lib/plans.ts` source of truth, tier enforcement on every plan-gated resource, 3 quota-bypass bugs closed, admin plan overrides + per-tier fee config, pay-per-boost featured-job monetization, full Razorpay recurring subscription billing code), plus a post-Phase-4 refinement round: sitewide typography overhaul, layout consistency fixes, a redesigned/consolidated landing page, a full API CRUD audit closing 7 bugs, and a full-app live browser testing pass (185-row MECE checklist, both roles + admin) closing 14 more, most notably dispute resolution silently never moving any escrowed money (see [What's in v17](#whats-in-v17), [v17 refinements](#v17-refinements-post-phase-4), and [`CRUD_INTERACTION_TEST_PLAN.md`](./CRUD_INTERACTION_TEST_PLAN.md)) |
