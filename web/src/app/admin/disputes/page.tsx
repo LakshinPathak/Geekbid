@@ -52,7 +52,6 @@ export default function AdminDisputesPage() {
       setPages(data.pages);
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filter, getHeaders]);
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);

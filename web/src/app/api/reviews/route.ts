@@ -16,18 +16,20 @@ export async function GET(req: NextRequest) {
  // of the 50 most recent reviews platform-wide (including a guessable
  // jobId for otherwise access-controlled invite-only jobs). Public-profile
  // reviews (?userId=) stay public since ratings are shown on public
- // profiles; an unscoped request now instead requires auth and returns
- // only the caller's own reviews (given + received) for the "my reviews"
- // views in profile/my-jobs, never a platform-wide dump.
+ // profiles; any other request (unscoped, or jobId-only) now requires
+ // auth — a bare jobId used to skip authentication entirely, letting
+ // anyone read an invite-only job's reviews just by guessing its id.
  let filter: Record<string, unknown> = {};
  if (userId) {
  filter = { revieweeId: userId };
- } else if (!jobId) {
+ } else {
  const auth = await authenticateRequest(req);
  if ("error" in auth) {
  return NextResponse.json({ error: auth.error }, { status: auth.status });
  }
+ if (!jobId) {
  filter = { $or: [{ reviewerId: auth.payload.userId }, { revieweeId: auth.payload.userId }] };
+ }
  }
  if (jobId) filter.jobId = jobId;
 
@@ -74,9 +76,14 @@ export async function POST(req: NextRequest) {
 
  const db = await getDb();
 
- // Verify job exists and is accepted with released escrow
+ // Verify job exists and is accepted with released escrow. `purpose:
+ // "job_escrow"` matters here — a job can also carry an unrelated
+ // "released" transaction (e.g. an admin-released manual payment, or a
+ // featured-boost payment tagged with the same jobId) that would otherwise
+ // wrongly authorize a review before the actual job escrow was released.
  const transaction = await db.collection("transactions").findOne({
  jobId,
+ purpose: "job_escrow",
  escrowStatus: "released",
  });
 
@@ -132,21 +139,21 @@ export async function POST(req: NextRequest) {
  allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
 
  await db.collection("users").updateOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(revieweeId) },
+ { _id: new ObjectId(revieweeId) },
  { $set: { averageRating: Number(avgRating.toFixed(2)), totalReviews: allReviews.length } }
  );
 
  // Fire-and-forget: email the reviewed user
  const reviewee = await db.collection("users").findOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(revieweeId) },
+ { _id: new ObjectId(revieweeId) },
  { projection: { email: 1, fullName: 1, name: 1 } }
  );
  const reviewer = await db.collection("users").findOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(auth.payload.userId) },
+ { _id: new ObjectId(auth.payload.userId) },
  { projection: { fullName: 1, name: 1 } }
  );
  const jobForReview = await db.collection("jobs").findOne(
- { _id: (await import("mongodb")).ObjectId.createFromHexString(jobId) },
+ { _id: new ObjectId(jobId) },
  { projection: { title: 1 } }
  );
  if (reviewee?.email) {

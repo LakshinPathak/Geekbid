@@ -54,19 +54,25 @@ describe("computeBidHistoryScore", () => {
 
   it("scores fraction of positive outcomes on similar-skill bids", () => {
     const jobs = jobsMap([
+      // Accepted but not yet completed — not a proven positive outcome.
       job("j1", ["React"], { acceptedBy: "f1" }),
       job("j2", ["React", "Node"]),
       job("j3", ["React"], { status: "completed", acceptedBy: "f1" }),
     ]);
     const bids = [{ jobId: "j1" }, { jobId: "j2" }, { jobId: "j3" }];
-    assert.equal(computeBidHistoryScore("f1", ["React"], bids, jobs), 67);
+    assert.equal(computeBidHistoryScore("f1", ["React"], bids, jobs), 33);
+  });
+
+  it("does not count accepted-but-in-progress jobs as positive history", () => {
+    const jobs = jobsMap([job("j1", ["React"], { acceptedBy: "f1" })]);
+    assert.equal(computeBidHistoryScore("f1", ["React"], [{ jobId: "j1" }], jobs), 0);
   });
 });
 
 describe("computeSmartMatchScore", () => {
   it("applies 50/30/20 weights", () => {
     const jobs = jobsMap([
-      job("j1", ["React"], { acceptedBy: "f1" }),
+      job("j1", ["React"], { status: "completed", acceptedBy: "f1" }),
     ]);
     const result = computeSmartMatchScore(
       "f1",

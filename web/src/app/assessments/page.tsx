@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { toast } from "sonner";
 import {
- Award, Clock, CheckCircle2, XCircle, ArrowLeft, ArrowRight, Timer, Brain,
+ Clock, CheckCircle2, XCircle, ArrowLeft, ArrowRight, Timer, Brain,
 } from "lucide-react";
 import Link from "next/link";
 

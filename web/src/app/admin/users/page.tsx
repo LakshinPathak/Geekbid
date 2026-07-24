@@ -16,8 +16,6 @@ type User = {
   avatarUrl?: string; avatarInitial?: string;
 };
 
-type EditState = { userId: string; field: string; value: string | boolean | number } | null;
-
 export default function AdminUsersPage() {
   const { getValidToken } = useApp();
   const [users, setUsers] = useState<User[]>([]);
@@ -28,6 +26,7 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<User | null>(null);
+  const [editForm, setEditForm] = useState({ fullName: "", role: "", geekScore: "" });
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [suspendTarget, setSuspendTarget] = useState<User | null>(null);
@@ -59,6 +58,11 @@ export default function AdminUsersPage() {
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
+  function openEditUser(u: User) {
+    setEditUser(u);
+    setEditForm({ fullName: u.fullName, role: u.role, geekScore: String(u.geekScore) });
+  }
+
   async function updateUser(id: string, patch: Record<string, unknown>) {
     setActionLoading(true);
     const res = await fetch(`/api/admin/users/${id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(patch) });
@@ -78,7 +82,7 @@ export default function AdminUsersPage() {
 
   async function suspendUser() {
     if (!suspendTarget) return;
-    await updateUser(suspendTarget.id, { suspended: !suspendTarget.suspended });
+    await updateUser(suspendTarget.id, { suspended: !suspendTarget.suspended, suspendReason });
     setSuspendTarget(null);
     setSuspendReason("");
   }
@@ -190,7 +194,7 @@ export default function AdminUsersPage() {
                           className="p-1.5 rounded-xl text-[#6f6a7d] hover:text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.08)] transition-all">
                           <Shield className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => setEditUser(u)}
+                        <button onClick={() => openEditUser(u)}
                           className="p-1.5 rounded-xl text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[rgba(255,255,255,0.05)] transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
@@ -235,12 +239,12 @@ export default function AdminUsersPage() {
           <div className="space-y-3">
             <label className="block">
               <span className="text-xs text-[#6f6a7d]">Full Name</span>
-              <input defaultValue={editUser.fullName} id="edit-name"
+              <input value={editForm.fullName} onChange={e => setEditForm(p => ({ ...p, fullName: e.target.value }))}
                 className="glass-input w-full mt-1 px-3 py-2.5 rounded-2xl text-sm" />
             </label>
             <label className="block">
               <span className="text-xs text-[#6f6a7d]">Role</span>
-              <select id="edit-role" defaultValue={editUser.role}
+              <select value={editForm.role} onChange={e => setEditForm(p => ({ ...p, role: e.target.value }))}
                 className="glass-input w-full mt-1 px-3 py-2.5 rounded-2xl text-sm bg-[#f4f2ee]">
                 <option value="freelancer">Freelancer</option>
                 <option value="client">Client</option>
@@ -249,16 +253,18 @@ export default function AdminUsersPage() {
             </label>
             <label className="block">
               <span className="text-xs text-[#6f6a7d]">GeekScore</span>
-              <input type="number" defaultValue={editUser.geekScore} id="edit-score"
+              <input type="number" value={editForm.geekScore} onChange={e => setEditForm(p => ({ ...p, geekScore: e.target.value }))}
                 className="glass-input w-full mt-1 px-3 py-2.5 rounded-2xl text-sm" />
             </label>
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => {
-                  const name = (document.getElementById("edit-name") as HTMLInputElement).value;
-                  const role = (document.getElementById("edit-role") as HTMLSelectElement).value;
-                  const score = parseInt((document.getElementById("edit-score") as HTMLInputElement).value);
-                  updateUser(editUser.id, { fullName: name, role, geekScore: score });
+                  const score = parseInt(editForm.geekScore, 10);
+                  updateUser(editUser.id, {
+                    fullName: editForm.fullName,
+                    role: editForm.role,
+                    geekScore: Number.isNaN(score) ? undefined : score,
+                  });
                 }}
                 disabled={actionLoading}
                 className="btn-primary flex-1 py-2.5 rounded-2xl text-sm flex items-center justify-center gap-2">
@@ -295,6 +301,11 @@ export default function AdminUsersPage() {
               ? `Restore access for ${suspendTarget.fullName}?`
               : `Suspend ${suspendTarget.fullName}? They will not be able to log in.`}
           </p>
+          {!suspendTarget.suspended && (
+            <textarea value={suspendReason} onChange={e => setSuspendReason(e.target.value)}
+              placeholder="Reason for suspension..." rows={2}
+              className="glass-input w-full px-3 py-2.5 rounded-2xl text-sm resize-none mb-3" />
+          )}
           <div className="flex gap-2">
             <button onClick={suspendUser} disabled={actionLoading}
               className={`flex-1 py-2.5 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${

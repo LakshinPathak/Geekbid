@@ -39,17 +39,24 @@ async function main() {
 
   const client = new MongoClient(uri);
   await client.connect();
-  const db = client.db();
+  // Must match lib/mongodb.ts's explicit db("geekbid") — MONGODB_URI has no
+  // path segment, so a bare client.db() silently resolves to whatever the
+  // driver/URI defaults to (observed: the unrelated "test" database), not
+  // the app's real database.
+  const db = client.db("geekbid");
 
   try {
+    // Mark every doc this migration touches with migratedFromLegacyPlan so
+    // rollback-plan-names.mjs can revert only these documents, not users who
+    // sign up natively under the new plan names after this runs.
     const proResult = await db
       .collection("users")
-      .updateMany({ plan: "pro" }, { $set: { plan: "plus" } });
+      .updateMany({ plan: "pro" }, { $set: { plan: "plus", migratedFromLegacyPlan: true } });
     console.log(`plan 'pro' -> 'plus': matched ${proResult.matchedCount}, modified ${proResult.modifiedCount}`);
 
     const enterpriseResult = await db
       .collection("users")
-      .updateMany({ plan: "enterprise" }, { $set: { plan: "premium" } });
+      .updateMany({ plan: "enterprise" }, { $set: { plan: "premium", migratedFromLegacyPlan: true } });
     console.log(`plan 'enterprise' -> 'premium': matched ${enterpriseResult.matchedCount}, modified ${enterpriseResult.modifiedCount}`);
 
     const remainingLegacy = await db

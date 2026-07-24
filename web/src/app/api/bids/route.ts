@@ -74,6 +74,14 @@ export async function POST(req: NextRequest) {
  );
  }
 
+ // Validate jobId is a well-formed ObjectId string BEFORE it's ever used
+ // to build a Mongo filter. Falling back to `findOne({ id: jobId })` with
+ // an unvalidated raw request value would let an object like
+ // `{"$ne": null}` be smuggled straight into a filter (NoSQL injection).
+ if (typeof jobId !== "string" || !/^[a-f\d]{24}$/i.test(jobId)) {
+ return NextResponse.json({ error: "Invalid jobId" }, { status: 400 });
+ }
+
  const db = await getDb();
 
  // A bid can only land on a job that's still open — otherwise a direct

@@ -16,17 +16,20 @@ async function getUserContact(userId: string): Promise<{ email: string; name: st
 }
 
 // 1. Subscription created — welcome + receipt (legally required in India/EU)
-export async function sendSubscriptionWelcomeEmail(userId: string, plan: 'plus' | 'premium', amount: number) {
+// subscriptionId is the local subscription document id — a stable per-
+// subscription identifier so a retried/replayed activation event dedupes
+// against trackedSend instead of always minting a fresh key off Date.now().
+export async function sendSubscriptionWelcomeEmail(userId: string, plan: 'plus' | 'premium', amount: number, subscriptionId: string) {
   const contact = await getUserContact(userId);
   if (!contact) return;
   const config = getPlanConfig(plan);
   const subject = `Welcome to GeekBid ${config.name}!`;
   await trackedSend({
     to: contact.email, recipientId: userId, emailType: "subscription_welcome", subject,
-    idempotencyKey: `sub_welcome:${userId}:${plan}:${Date.now()}`, metadata: {},
+    idempotencyKey: `sub_welcome:${userId}:${subscriptionId}`, metadata: {},
     html: wrapHtml(subject, `
       ${heading(`You're on ${config.name} now, ${contact.name}!`)}
-      ${subtext(`Your subscription is active. You've been charged ${highlight(`$${amount.toFixed(2)}`)} for the first billing cycle.`)}
+      ${subtext(`Your subscription is active. You've been charged ${highlight(`₹${amount.toFixed(2)}`)} for the first billing cycle.`)}
       ${infoCard([
         ["Plan", config.name],
         ["Jobs/month", String(config.limits.jobsPerMonth)],
@@ -51,7 +54,7 @@ export async function sendPaymentReceiptEmail(userId: string, plan: 'plus' | 'pr
       ${heading("Payment received")}
       ${subtext(`Thanks, ${contact.name} — your ${config.name} plan renewed successfully.`)}
       ${infoCard([
-        ["Amount charged", `$${amount.toFixed(2)}`],
+        ["Amount charged", `₹${amount.toFixed(2)}`],
         ["Plan", config.name],
         ["Next billing date", new Date(periodEnd).toLocaleDateString()],
         ...(razorpayPaymentId ? [["Payment ID", razorpayPaymentId] as [string, string]] : []),
@@ -115,14 +118,19 @@ export async function sendPlanChangeEmail(
   return sendPlanDowngradedEmail(userId, fromPlan, toPlan, reason);
 }
 
-export async function sendPlanUpgradedEmail(userId: string, fromPlan: string, toPlan: string) {
+// contextId is an optional stable disambiguator (e.g. `${subscriptionId}:${periodStart}`)
+// for callers that have one available, so repeated/retried calls for the
+// same underlying event dedupe against trackedSend instead of always
+// generating a fresh key. Callers without extra context (e.g. sendPlanChangeEmail)
+// fall back to just userId:fromPlan:toPlan, which is still stable — no Date.now().
+export async function sendPlanUpgradedEmail(userId: string, fromPlan: string, toPlan: string, contextId: string = "") {
   const contact = await getUserContact(userId);
   if (!contact) return;
   const config = getPlanConfig(toPlan);
   const subject = `You're now on GeekBid ${config.name}!`;
   await trackedSend({
     to: contact.email, recipientId: userId, emailType: "plan_upgraded", subject,
-    idempotencyKey: `plan_upgraded:${userId}:${fromPlan}:${toPlan}:${Date.now()}`, metadata: {},
+    idempotencyKey: `plan_upgraded:${userId}:${fromPlan}:${toPlan}${contextId ? `:${contextId}` : ""}`, metadata: {},
     html: wrapHtml(subject, `
       ${heading(`Welcome to ${config.name}, ${contact.name}!`)}
       ${subtext(`Your plan changed from ${highlight(fromPlan)} to ${highlight(config.name)}.`)}
@@ -137,7 +145,7 @@ export async function sendPlanUpgradedEmail(userId: string, fromPlan: string, to
   });
 }
 
-export async function sendPlanDowngradedEmail(userId: string, fromPlan: string, toPlan: string, reason: string) {
+export async function sendPlanDowngradedEmail(userId: string, fromPlan: string, toPlan: string, reason: string, contextId: string = "") {
   const contact = await getUserContact(userId);
   if (!contact) return;
   const config = getPlanConfig(toPlan);
@@ -149,7 +157,7 @@ export async function sendPlanDowngradedEmail(userId: string, fromPlan: string, 
     : "your subscription ended";
   await trackedSend({
     to: contact.email, recipientId: userId, emailType: "plan_downgraded", subject,
-    idempotencyKey: `plan_downgraded:${userId}:${fromPlan}:${toPlan}:${Date.now()}`, metadata: {},
+    idempotencyKey: `plan_downgraded:${userId}:${fromPlan}:${toPlan}:${reason}${contextId ? `:${contextId}` : ""}`, metadata: {},
     html: wrapHtml(subject, `
       ${heading(`You've been moved to ${config.name}`)}
       ${subtext(`Hi ${contact.name}, ${reasonText}, so your account moved from ${highlight(fromPlan)} to ${highlight(config.name)}.`)}
@@ -159,13 +167,13 @@ export async function sendPlanDowngradedEmail(userId: string, fromPlan: string, 
   });
 }
 
-export async function sendPlanCancelledEmail(userId: string, fromPlan: string) {
+export async function sendPlanCancelledEmail(userId: string, fromPlan: string, contextId: string = "") {
   const contact = await getUserContact(userId);
   if (!contact) return;
   const subject = "Your GeekBid subscription has been cancelled";
   await trackedSend({
     to: contact.email, recipientId: userId, emailType: "plan_cancelled", subject,
-    idempotencyKey: `plan_cancelled:${userId}:${fromPlan}:${Date.now()}`, metadata: {},
+    idempotencyKey: `plan_cancelled:${userId}:${fromPlan}${contextId ? `:${contextId}` : ""}`, metadata: {},
     html: wrapHtml(subject, `
       ${heading("Subscription cancelled")}
       ${subtext(`Hi ${contact.name}, your ${highlight(fromPlan)} subscription has been cancelled as requested. You'll keep access until the end of your current billing period.`)}

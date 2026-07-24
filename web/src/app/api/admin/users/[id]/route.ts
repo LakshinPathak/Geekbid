@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const body = await req.json();
   // Allowlist prevents field injection — only these fields can be updated by admin
-  const allowed = ["role", "geekScore", "isVerified", "suspended", "bio", "skills", "fullName"];
+  const allowed = ["role", "geekScore", "isVerified", "suspended", "suspendReason", "bio", "skills", "fullName"];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
@@ -79,10 +79,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   );
   if (result.matchedCount === 0) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  // Suspending a user must end their existing session too, not just block
-  // future logins/refreshes — otherwise an already-issued refresh token
-  // keeps working until it naturally expires.
-  if (update.suspended === true) {
+  // Suspending a user — or changing their role (e.g. admin -> freelancer) —
+  // must end their existing session too, not just block future
+  // logins/refreshes. Otherwise an already-issued access token keeps
+  // passing requireAdmin()/role checks against the old role until it
+  // naturally expires (~15 min), and an already-issued refresh token keeps
+  // working until its own expiry.
+  if (update.suspended === true || "role" in update) {
     await revokeRefreshToken(id);
   }
 

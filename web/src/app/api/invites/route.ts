@@ -100,14 +100,17 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "inviteId and response (accepted|declined) required" }, { status: 400 });
     }
 
+    // Validate inviteId is a well-formed ObjectId string BEFORE it's ever
+    // used to build a Mongo filter. Falling back to `findOne({ _id: inviteId })`
+    // with an unvalidated raw request value would let an object like
+    // `{"$ne": null}` be smuggled straight into a filter (NoSQL injection).
+    if (typeof inviteId !== "string" || !/^[a-f\d]{24}$/i.test(inviteId)) {
+      return NextResponse.json({ error: "Invalid inviteId" }, { status: 400 });
+    }
+
     const db = await getDb();
 
-    let invite: Record<string, unknown> | null = null;
-    try {
-      invite = await db.collection("invites").findOne({ _id: new ObjectId(inviteId) });
-    } catch {
-      invite = await db.collection("invites").findOne({ _id: inviteId });
-    }
+    const invite = await db.collection("invites").findOne({ _id: new ObjectId(inviteId) });
 
     if (!invite) {
       return NextResponse.json({ error: "Invite not found" }, { status: 404 });
@@ -119,18 +122,10 @@ export async function PATCH(req: NextRequest) {
 
     const respondedAt = new Date().toISOString();
     // Atomically claim the pending invite so concurrent accept/decline calls can't both succeed
-    let claimed;
-    try {
-      claimed = await db.collection("invites").findOneAndUpdate(
-        { _id: new ObjectId(inviteId), status: "pending" },
-        { $set: { status: response, respondedAt } }
-      );
-    } catch {
-      claimed = await db.collection("invites").findOneAndUpdate(
-        { _id: inviteId, status: "pending" },
-        { $set: { status: response, respondedAt } }
-      );
-    }
+    const claimed = await db.collection("invites").findOneAndUpdate(
+      { _id: new ObjectId(inviteId), status: "pending" },
+      { $set: { status: response, respondedAt } }
+    );
     if (!claimed) {
       return NextResponse.json({ error: "Invite already responded to" }, { status: 409 });
     }

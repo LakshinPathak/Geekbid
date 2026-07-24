@@ -7,7 +7,7 @@ import { formatMoney, SKILL_TAXONOMY, JOB_CATEGORIES, type JobCategory } from "@
 import { toast } from "sonner";
 import {
  ArrowLeft, ArrowRight, Check, Zap, DollarSign, Clock, Target,
- TrendingDown, Eye, EyeOff, Globe, Lock, X, AlertCircle, Loader2, Activity,
+ TrendingDown, Globe, Lock, X, AlertCircle, Loader2, Activity,
 } from "lucide-react";
 import { getDemandMultiplier } from "@/lib/pricing";
 import AIDescriptionButton from "@/components/ai/AIDescriptionButton";
@@ -30,7 +30,6 @@ function DecayCurvePreview({
  deadline: number; pricingMode: "adaptive" | "fixed"; hoursToFloor: number;
 }) {
  const svgRef = useRef<SVGSVGElement>(null);
- const [hoverHour, setHoverHour] = useState<number | null>(null);
  const [scrubHour, setScrubHour] = useState(0);
  const [isDragging, setIsDragging] = useState(false);
 
@@ -502,8 +501,9 @@ export default function PostJobPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Job Title *</label>
+ <label htmlFor="job-title" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Job Title *</label>
  <input
+ id="job-title"
  value={title}
  onChange={e => setTitle(e.target.value)}
  placeholder="e.g. Build AI chatbot for customer support"
@@ -589,10 +589,11 @@ export default function PostJobPage() {
  </div>
 
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Estimated Hours</label>
+ <label htmlFor="estimated-hours" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Estimated Hours</label>
  <div className="relative">
  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="estimated-hours"
  type="number"
  value={estimatedHours}
  onChange={e => setEstimatedHours(Number(e.target.value))}
@@ -671,10 +672,11 @@ export default function PostJobPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
+ <label htmlFor="starting-price" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Starting Price ($) *</label>
  <div className="relative">
  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="starting-price"
  type="number"
  value={startingPrice}
  onChange={e => setStartingPrice(Number(e.target.value))}

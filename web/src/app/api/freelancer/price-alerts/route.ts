@@ -22,13 +22,16 @@ export async function GET(req: NextRequest) {
  const invitedObjectIds = invitedJobIds
  .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
  .filter((oid): oid is ObjectId => oid !== null);
+ // Bounded so this query can't scan every open job platform-wide as the
+ // platform grows — only the top 15 alerts are ever returned below, so a
+ // few hundred candidates is plenty.
  const openJobs = await db.collection("jobs").find({
  status: "open",
  $or: [
  { visibility: { $ne: "invite_only" } },
  ...(invitedObjectIds.length > 0 ? [{ visibility: "invite_only", _id: { $in: invitedObjectIds } }] : []),
  ],
- }).toArray();
+ }).limit(500).toArray();
 
  // Find jobs where price is approaching floor (within 20% of floor)
  const alerts = openJobs.map(job => {

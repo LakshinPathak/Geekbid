@@ -50,13 +50,20 @@ export async function GET(req: NextRequest) {
  .project({ fullName: 1, avatarInitial: 1, avatarUrl: 1, geekScore: 1, role: 1 })
  .toArray();
 
- const teamJobs = await db.collection("jobs")
- .find({ clientId: { $in: [team.ownerId, ...team.memberIds] } })
- .toArray();
-
- const teamTransactions = await db.collection("transactions")
- .find({ clientId: { $in: [team.ownerId, ...team.memberIds] } })
- .toArray();
+ // Only counts/sums are needed here — pulling every job and transaction
+ // document into memory just to .length/.reduce() them doesn't scale as a
+ // team's history grows. countDocuments and a $sum aggregation do the same
+ // math server-side without materializing the full documents.
+ const teamMemberIds = [team.ownerId, ...team.memberIds];
+ const [totalJobs, activeJobs, spendAgg] = await Promise.all([
+ db.collection("jobs").countDocuments({ clientId: { $in: teamMemberIds } }),
+ db.collection("jobs").countDocuments({ clientId: { $in: teamMemberIds }, status: "open" }),
+ db.collection("transactions").aggregate([
+ { $match: { clientId: { $in: teamMemberIds } } },
+ { $group: { _id: null, total: { $sum: "$grossAmount" } } },
+ ]).toArray(),
+ ]);
+ const totalSpend = (spendAgg[0]?.total as number | undefined) ?? 0;
 
  return NextResponse.json({
  ...team,
@@ -64,9 +71,9 @@ export async function GET(req: NextRequest) {
  id: team._id.toString(),
  members: memberUsers.map(u => ({ ...u, _id: u._id.toString(), id: u._id.toString() })),
  analytics: {
- totalJobs: teamJobs.length,
- activeJobs: teamJobs.filter(j => j.status === "open").length,
- totalSpend: teamTransactions.reduce((s, t) => s + (t.grossAmount ?? 0), 0),
+ totalJobs,
+ activeJobs,
+ totalSpend,
  },
  });
  } catch (err) {

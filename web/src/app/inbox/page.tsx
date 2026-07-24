@@ -47,6 +47,15 @@ function InboxContent() {
  }
  }, [searchParams, chatRooms]);
 
+ // chatRooms can refresh (e.g. after a poll) without the currently selected
+ // room in the new list — reset the selection so we don't render a chat
+ // pane for a room that no longer exists in `chatRooms`.
+ useEffect(() => {
+ if (selectedRoom && chatRooms.length > 0 && !chatRooms.find(r => r.id === selectedRoom)) {
+ setSelectedRoom(null);
+ }
+ }, [selectedRoom, chatRooms]);
+
  const filteredRooms = useMemo(() => {
  if (!searchQuery.trim()) return chatRooms;
  return chatRooms.filter(r => {
@@ -165,7 +174,7 @@ function InboxContent() {
 
  {/* Right Panel — Chat Area */}
  <div className={`${selectedRoom ? "flex" : "hidden md:flex"} flex-col flex-1`}>
- {!selectedRoom ? (
+ {!selectedRoom || !activeRoom ? (
  <div className="flex-1 flex items-center justify-center text-center px-4">
  <div>
  <div className="h-16 w-16 rounded-xl glass-panel-sm flex items-center justify-center mx-auto mb-4">

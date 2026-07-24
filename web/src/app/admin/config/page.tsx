@@ -71,7 +71,6 @@ export default function AdminConfigPage() {
     const envRes = await fetch("/api/admin/config/env-status", { headers });
     if (envRes.ok) setEnvStatus(await envRes.json());
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getHeaders]);
 
   useEffect(() => { fetchConfig(); }, [fetchConfig]);

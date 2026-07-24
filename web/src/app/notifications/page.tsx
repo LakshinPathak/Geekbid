@@ -5,7 +5,7 @@ import { useApp } from "@/lib/store";
 import { timeAgo } from "@/lib/utils";
 import {
  Bell, CheckCheck, Zap, DollarSign, MessageSquare,
- TrendingDown, Clock, Inbox,
+ TrendingDown, Clock,
 } from "lucide-react";
 
 type FilterType = "all" | "price_drop" | "counter_bid" | "payment" | "job_match";

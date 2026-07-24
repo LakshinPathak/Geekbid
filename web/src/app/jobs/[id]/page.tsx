@@ -2,13 +2,13 @@
 import { use, useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier, getCategoryLabel } from "@/lib/utils";
+import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier } from "@/lib/utils";
 import { getDemandLevel, getEffectiveDecayRate, getDemandMultiplier, getAdaptivePrice } from "@/lib/pricing";
 import { toast } from "sonner";
 import AuctionVictoryModal from "@/components/modals/AuctionVictoryModal";
 import {
- Clock, TrendingDown, DollarSign, Zap, ArrowLeft, Eye, Shield, Send,
- MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, User, Activity, Sparkles,
+ Clock, DollarSign, Zap, ArrowLeft, Eye, Send,
+ MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, Activity, Sparkles,
 } from "lucide-react";
 import AIBidStrategist from "@/components/ai/AIBidStrategist";
 import AIBidEvaluator from "@/components/ai/AIBidEvaluator";
@@ -20,6 +20,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const { jobs, bids, users, now, currentUser, acceptJob, acceptBid, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
  const [respondingToOffer, setRespondingToOffer] = useState(false);
  const [accepting, setAccepting] = useState(false);
+ const [acceptingBidId, setAcceptingBidId] = useState<string | null>(null);
  const [bidding, setBidding] = useState(false);
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
@@ -277,8 +278,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const sliderVal = sliderNum > 0 ? sliderNum : aggressiveBid;
  const sliderHourly = job.estimatedHours > 0 ? sliderVal / job.estimatedHours : 0;
  const bidsBelow = sliderNum > 0 ? jobBids.filter(b => b.bidPrice < sliderNum).length : 0;
- const posFloor = 0;
- const posCurrent = 100;
  const posMyBid = sliderNum > 0
  ? Math.max(2, Math.min(98, ((sliderNum - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100))
  : null;
@@ -313,7 +312,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  };
 
  const handleAcceptBid = async (bidId: string, freelancerName?: string) => {
+ if (acceptingBidId) return;
+ setAcceptingBidId(bidId);
  const r = await acceptBid(job.id ?? job._id ?? "", bidId);
+ setAcceptingBidId(null);
  if (r.ok) {
  const freelancer = r.freelancerId ? users.find(u => u.id === r.freelancerId) : undefined;
  const client = users.find(u => u.id === job.clientId);
@@ -532,8 +534,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  <td className="py-3 px-2 text-right">
  {isOpen && (
  <button onClick={() => handleAcceptBid(bid.id, bidder?.fullName)}
- className="btn-primary text-[11px] py-1.5 px-2.5 whitespace-nowrap">
- Accept
+ disabled={acceptingBidId !== null}
+ className="btn-primary text-[11px] py-1.5 px-2.5 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+ {acceptingBidId === bid.id ? "Accepting…" : "Accept"}
  </button>
  )}
  </td>
@@ -1128,7 +1131,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  { icon: Clock, label: "Estimated Hours", value: `${job.estimatedHours}h` },
  { icon: Calendar, label: "Posted", value: new Date(job.postedAt).toLocaleDateString() },
  { icon: Timer, label: "Deadline", value: deadlineDate.toLocaleDateString() },
- { icon: Eye, label: "Visibility", value: "Public" },
+ { icon: Eye, label: "Visibility", value: job.visibility === "invite_only" ? "Invite Only" : "Public" },
  { icon: DollarSign, label: "Platform Fee", value: "10%" },
  ].map(item => (
  <div key={item.label} className="flex items-center justify-between">

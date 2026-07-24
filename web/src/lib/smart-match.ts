@@ -75,10 +75,9 @@ export function computeBidHistoryScore(
   const positive = similarSkillBids.filter((b) => {
     const job = jobsById.get(b.jobId);
     if (!job) return false;
-    return (
-      job.acceptedBy === freelancerId ||
-      (job.status === "completed" && job.acceptedBy === freelancerId)
-    );
+    // Only count a job as positive history once it's actually completed —
+    // "accepted but still in progress" isn't a proven positive outcome yet.
+    return job.status === "completed" && job.acceptedBy === freelancerId;
   });
 
   return Math.round((positive.length / similarSkillBids.length) * 100);

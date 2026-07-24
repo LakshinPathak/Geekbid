@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { authenticateRequest, createTokenPair, storeRefreshToken, setRefreshCookie } from "@/lib/auth";
+import { authenticateRequest, createTokenPair, storeRefreshToken, setRefreshCookie, revokeRefreshToken } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/sanitize";
 import { ObjectId } from "mongodb";
 
@@ -47,6 +47,15 @@ export async function POST(req: NextRequest) {
  }
 
  const userId = user._id.toString();
+ // The access token doesn't carry a sessionId (only refresh tokens do), so
+ // there's no way to identify and revoke just the caller's own pre-switch
+ // session here. Revoke every stored refresh-token session for this user
+ // instead — otherwise the pre-switch refresh token stays valid for up to
+ // its full 7-day lifetime and keeps minting access tokens carrying the old
+ // role. This forces re-login on other devices too, which is an acceptable
+ // (and safe) tradeoff for closing that gap.
+ await revokeRefreshToken(userId);
+
  const { accessToken, refreshToken, sessionId } = await createTokenPair(userId, roleStr, user.email);
  await storeRefreshToken(userId, refreshToken, sessionId);
 

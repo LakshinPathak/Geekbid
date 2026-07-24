@@ -57,13 +57,25 @@ export async function PATCH(
  return NextResponse.json({ error: "Job was already accepted or cancelled" }, { status: 409 });
  }
 
- // Notify all bidders
+ // Notify all bidders — batch-fetch the freelancers with a single $in query
+ // instead of one findOne per bidder, and fire off the email sends without
+ // awaiting each one in turn, so cancellation doesn't block the response on
+ // notification delivery (matches the fire-and-forget pattern used for
+ // notification emails elsewhere in this codebase).
  const bids = await db.collection("bids").find({ jobId }).toArray();
  const freelancerIds = [...new Set(bids.map((b) => b.freelancerId))];
- for (const fid of freelancerIds) {
- const freelancer = await db.collection("users").findOne({ _id: new ObjectId(fid) }).catch(() => null);
- if (freelancer?.email) {
- await sendJobCancelledEmail(freelancer.email, freelancer.fullName ?? "Freelancer", job.title).catch(console.error);
+ if (freelancerIds.length > 0) {
+ const freelancerObjectIds = freelancerIds
+ .map((fid) => { try { return new ObjectId(fid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ const freelancers = await db.collection("users")
+ .find({ _id: { $in: freelancerObjectIds } })
+ .project({ email: 1, fullName: 1 })
+ .toArray();
+ for (const freelancer of freelancers) {
+ if (freelancer.email) {
+ sendJobCancelledEmail(freelancer.email as string, (freelancer.fullName as string) ?? "Freelancer", job.title).catch(console.error);
+ }
  }
  }
 

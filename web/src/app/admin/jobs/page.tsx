@@ -1,22 +1,15 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/lib/store";
-import { formatMoney, timeAgo } from "@/lib/utils";
+import { formatMoney, timeAgo, getCurrentPrice, type Job } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Briefcase, Search, Loader2, Edit2, Trash2, Star, X,
   ChevronLeft, ChevronRight, MessageSquare,
 } from "lucide-react";
 
-type Job = {
-  _id: string; id: string; title: string; description?: string;
-  status: string; startingPrice: number; minimumPrice: number;
-  decayRatePerHour: number; skillsRequired: string[]; category?: string;
-  featured?: boolean; postedAt: string; clientId?: string;
-};
-
 export default function AdminJobsPage() {
-  const { getValidToken, bids } = useApp();
+  const { getValidToken } = useApp();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -145,8 +138,7 @@ export default function AdminJobsPage() {
                   <p className="text-sm text-[#6f6a7d]">No jobs found</p>
                 </td></tr>
               ) : jobs.map(job => {
-                const jobBids = bids.filter(b => b.jobId === (job.id ?? job._id));
-                const currentPrice = job.startingPrice;
+                const currentPrice = getCurrentPrice(job, new Date());
                 return (
                   <tr key={job.id} className="border-b border-[rgba(75,63,143,0.08)] hover:bg-[rgba(75,63,143,0.02)] transition-colors">
                     <td className="px-5 py-3.5">
@@ -174,7 +166,7 @@ export default function AdminJobsPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="flex items-center gap-1 text-xs text-[#6f6a7d]">
-                        <MessageSquare className="h-3 w-3" /> {jobBids.length}
+                        <MessageSquare className="h-3 w-3" /> {job.bidCount ?? 0}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">

@@ -16,9 +16,14 @@ export async function GET(req: NextRequest) {
  const filter: Record<string, unknown> = { status: "open" };
  if (category && category !== "all") filter.category = category;
 
- const allOpenJobs = await db.collection("jobs").find(filter).toArray();
+ // Bounded to a representative sample rather than every open job
+ // platform-wide — this is market-intelligence aggregation, not a
+ // complete dataset export, and an unbounded scan (plus the O(jobs x bids)
+ // JS reduction below) doesn't scale with platform size.
+ const MAX_SAMPLE_JOBS = 500;
+ const allOpenJobs = await db.collection("jobs").find(filter).limit(MAX_SAMPLE_JOBS).toArray();
  const jobIds = allOpenJobs.map(j => j._id.toString());
- const allBids = await db.collection("bids").find({ jobId: { $in: jobIds } }).toArray();
+ const allBids = await db.collection("bids").find({ jobId: { $in: jobIds } }).limit(2000).toArray();
 
  const avgStarting = allOpenJobs.length > 0
  ? Math.round(allOpenJobs.reduce((s, j) => s + j.startingPrice, 0) / allOpenJobs.length) : 0;

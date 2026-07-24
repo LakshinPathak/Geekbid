@@ -40,7 +40,11 @@ async function main() {
 
   const client = new MongoClient(uri);
   await client.connect();
-  const db = client.db();
+  // Must match lib/mongodb.ts's explicit db("geekbid") — MONGODB_URI has no
+  // path segment, so a bare client.db() silently resolves to whatever the
+  // driver/URI defaults to (observed: the unrelated "test" database), not
+  // the app's real database.
+  const db = client.db("geekbid");
 
   try {
     const now = new Date().toISOString();

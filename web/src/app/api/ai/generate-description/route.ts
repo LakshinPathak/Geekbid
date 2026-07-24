@@ -25,11 +25,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
-    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
-    if (!quota.ok) {
-      return NextResponse.json({ error: quota.error }, { status: 429 });
-    }
-
     const body = await req.json();
     const { title, skills, category, estimatedHours, budget } = body;
 
@@ -41,6 +36,14 @@ export async function POST(req: NextRequest) {
     }
     if (skills && (!Array.isArray(skills) || skills.length > MAX_SKILLS)) {
       return NextResponse.json({ error: `skills must be an array of ${MAX_SKILLS} or fewer` }, { status: 400 });
+    }
+
+    // Quota is only charged once we know the request will actually reach the
+    // AI call — checking validation first means a doomed-to-400 request never
+    // burns a unit of the caller's monthly AI quota.
+    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.error }, { status: 429 });
     }
 
     const systemInstruction = `You are a technical writing expert helping a client post a job on GeekBid, a reverse-auction freelance platform.

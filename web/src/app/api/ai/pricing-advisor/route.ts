@@ -26,11 +26,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
-    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
-    if (!quota.ok) {
-      return NextResponse.json({ error: quota.error }, { status: 429 });
-    }
-
     const body = await req.json();
     const { title, skills, category, estimatedHours, recentJobs } = body;
 
@@ -45,6 +40,14 @@ export async function POST(req: NextRequest) {
     }
     if (recentJobs && (!Array.isArray(recentJobs) || recentJobs.length > MAX_RECENT_JOBS)) {
       return NextResponse.json({ error: `recentJobs must be an array of ${MAX_RECENT_JOBS} or fewer` }, { status: 400 });
+    }
+
+    // Quota is only charged once we know the request will actually reach the
+    // AI call — checking validation first means a doomed-to-400 request never
+    // burns a unit of the caller's monthly AI quota.
+    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.error }, { status: 429 });
     }
 
     const systemInstruction = `You are a pricing expert for GeekBid, a reverse-auction freelance platform where job prices decay over time.

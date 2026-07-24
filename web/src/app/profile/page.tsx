@@ -6,7 +6,7 @@ import { formatMoney, getGeekTier, SKILL_TAXONOMY } from "@/lib/utils";
 import { toast } from "sonner";
 import {
  User, Star, Briefcase, Clock, DollarSign, MessageSquare,
- CheckCircle2, Code, Shield, Pencil, GitBranch, Trash2, ChevronDown,
+ CheckCircle2, Pencil, GitBranch,
  X, Save, Loader2, AlertTriangle, Share2, Copy, Users,
 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
@@ -358,10 +358,11 @@ export default function ProfilePage() {
  <p className="text-[#4b3f8f] text-xs uppercase tracking-wider font-semibold mb-4">Personal Info</p>
  <div className="space-y-4">
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Full Name</label>
+ <label htmlFor="profile-full-name" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Full Name</label>
  <div className="relative">
  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="profile-full-name"
  value={fullName} onChange={e => setFullName(e.target.value)}
  className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -429,20 +430,20 @@ export default function ProfilePage() {
  {/* Hourly Rate */}
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
+ <label htmlFor="profile-rate-min" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Min Rate ($/hr)</label>
  <div className="relative">
  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
- <input type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
+ <input id="profile-rate-min" type="number" value={hourlyRateMin} onChange={e => setHourlyRateMin(Number(e.target.value))}
  className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  />
  </div>
  </div>
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
+ <label htmlFor="profile-rate-max" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Max Rate ($/hr)</label>
  <div className="relative">
  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
- <input type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
+ <input id="profile-rate-max" type="number" value={hourlyRateMax} onChange={e => setHourlyRateMax(Number(e.target.value))}
  className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
  />

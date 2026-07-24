@@ -25,11 +25,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many AI requests. Please slow down." }, { status: 429 });
     }
 
-    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
-    if (!quota.ok) {
-      return NextResponse.json({ error: quota.error }, { status: 429 });
-    }
-
     const body = await req.json();
     const { message, context } = body;
 
@@ -41,6 +36,14 @@ export async function POST(req: NextRequest) {
     }
     if (context && (typeof context !== "string" || context.length > MAX_CONTEXT_LENGTH)) {
       return NextResponse.json({ error: `context must be ${MAX_CONTEXT_LENGTH} characters or fewer` }, { status: 400 });
+    }
+
+    // Quota is only charged once we know the request will actually reach the
+    // AI call — checking validation first means a doomed-to-400 request never
+    // burns a unit of the caller's monthly AI quota.
+    const quota = await checkAndConsumeAiQuota(auth.payload.userId);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.error }, { status: 429 });
     }
 
     const systemInstruction = [

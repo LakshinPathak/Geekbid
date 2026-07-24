@@ -2,11 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
-import { formatMoney, getCurrentPrice, timeAgo, getCategoryLabel } from "@/lib/utils";
+import { formatMoney, getCurrentPrice, timeAgo } from "@/lib/utils";
 import { toast } from "sonner";
 import {
- Briefcase, Clock, TrendingDown, CheckCircle2, PlusCircle,
- Calendar, MessageSquare, ArrowRight, Inbox, Star, X, Sparkles,
+ Briefcase, TrendingDown, CheckCircle2, PlusCircle,
+ Calendar, MessageSquare, ArrowRight, Star, X, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import FeaturedBoostModal from "@/components/modals/FeaturedBoostModal";

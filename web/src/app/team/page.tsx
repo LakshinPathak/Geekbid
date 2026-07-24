@@ -5,7 +5,7 @@ import { useApp } from "@/lib/store";
 import { formatMoney } from "@/lib/utils";
 import { toast } from "sonner";
 import {
- Users, Plus, Mail, CheckCircle2, ArrowLeft, Briefcase, DollarSign, Activity, AlertTriangle,
+ Users, Plus, Mail, ArrowLeft, Briefcase, DollarSign, Activity, AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
@@ -154,7 +154,9 @@ export default function TeamPage() {
  <Users className="h-12 w-12 text-[#6f6a7d] mx-auto mb-4" />
  <h1 className="font-heading text-2xl font-bold text-[#3d3a45] mb-2">Create a Team</h1>
  <p className="text-[#6f6a7d] text-sm mb-6">Group your organization under a shared billing and job management umbrella.</p>
+ <label htmlFor="team-name" className="sr-only">Team name</label>
  <input
+ id="team-name"
  value={teamName} onChange={e => setTeamName(e.target.value)}
  placeholder="Team name"
  className="glass-input rounded-2xl mb-4"
@@ -263,7 +265,9 @@ export default function TeamPage() {
  <Mail className="h-4 w-4 text-[#4b3f8f]" /> Invite Members
  </h2>
  <div className="flex gap-2">
+ <label htmlFor="invite-email" className="sr-only">Colleague&apos;s email</label>
  <input
+ id="invite-email"
  value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
  placeholder="colleague@company.com"
  className="glass-input flex-1 rounded-2xl"

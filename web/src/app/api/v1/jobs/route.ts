@@ -161,14 +161,27 @@ export async function POST(req: NextRequest) {
  // gap as the internal /api/jobs route, closed the same way here.
  const numStartingPrice = Number(startingPrice);
  const numMinimumPrice = Number(minimumPrice);
- const numDecayRate = Number(decayRatePerHour) || 10;
- const numEstimatedHours = Number(estimatedHours) || 0;
+ // decayRatePerHour/estimatedHours are optional on this public route (unlike
+ // the internal /api/jobs route, which requires them), so a default is only
+ // applied when the field is omitted — but a *provided* value must still be
+ // bounds-checked the same way the internal route checks it (finite,
+ // non-negative). Previously `Number(x) || default` only caught NaN/0, so a
+ // negative decayRatePerHour sailed straight through and made the job's
+ // price *increase* over time instead of decay.
+ const numDecayRate = decayRatePerHour === undefined || decayRatePerHour === null
+ ? 10
+ : Number(decayRatePerHour);
+ const numEstimatedHours = estimatedHours === undefined || estimatedHours === null
+ ? 0
+ : Number(estimatedHours);
  if (
  !Number.isFinite(numStartingPrice) || numStartingPrice <= 0 ||
- !Number.isFinite(numMinimumPrice) || numMinimumPrice < 0
+ !Number.isFinite(numMinimumPrice) || numMinimumPrice < 0 ||
+ !Number.isFinite(numDecayRate) || numDecayRate < 0 ||
+ !Number.isFinite(numEstimatedHours) || numEstimatedHours < 0
  ) {
  return NextResponse.json(
- { success: false, error: { code: "ERR_VALIDATION", message: "startingPrice and minimumPrice must be valid numbers (startingPrice greater than 0, minimumPrice not negative)" } },
+ { success: false, error: { code: "ERR_VALIDATION", message: "startingPrice and minimumPrice must be valid numbers (startingPrice greater than 0, minimumPrice not negative); decayRatePerHour and estimatedHours, if provided, must be valid non-negative numbers" } },
  { status: 400 }
  );
  }

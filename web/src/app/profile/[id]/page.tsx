@@ -3,9 +3,9 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { GEEK_TIERS, formatMoney } from "@/lib/utils";
+import { GEEK_TIERS } from "@/lib/utils";
 import {
-  ArrowLeft, Star, Award, Briefcase, Zap,
+  ArrowLeft, Star, Briefcase, Zap,
   CheckCircle2, MessageSquare, Shield, Send, Crown,
 } from "lucide-react";
 import DirectHireModal from "@/components/feed/DirectHireModal";

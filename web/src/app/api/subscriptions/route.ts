@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
         { _id: new ObjectId(auth.payload.userId) },
         { $set: { plan, subscriptionId: result.insertedId.toString(), planExpiresAt: periodEnd } }
       );
-      await sendSubscriptionWelcomeEmail(auth.payload.userId, plan, config.price).catch((err) =>
+      await sendSubscriptionWelcomeEmail(auth.payload.userId, plan, config.price, result.insertedId.toString()).catch((err) =>
         console.error("[Subscription Welcome Email Failed]", err)
       );
 
@@ -250,10 +250,23 @@ export async function PATCH(req: NextRequest) {
 
     if (action === "cancel") {
       if (isRazorpayConfigured && !isMockSub) {
-        await razorpayRequest(`/subscriptions/${sub.razorpaySubscriptionId}/cancel`, {
-          method: "POST",
-          body: { cancel_at_cycle_end: 1 },
-        }).catch((err) => console.error("[Razorpay Cancel Error]", err));
+        // Must actually succeed before the local DB reflects "will cancel" —
+        // previously the error was swallowed with .catch(console.error) and
+        // the local cancelAtPeriodEnd flag was set unconditionally, so a
+        // failed Razorpay call left the user believing they'd cancelled while
+        // Razorpay would keep billing them.
+        try {
+          await razorpayRequest(`/subscriptions/${sub.razorpaySubscriptionId}/cancel`, {
+            method: "POST",
+            body: { cancel_at_cycle_end: 1 },
+          });
+        } catch (err) {
+          console.error("[Razorpay Cancel Error]", err);
+          return NextResponse.json(
+            { error: "Failed to cancel subscription with Razorpay. Please try again." },
+            { status: 502 }
+          );
+        }
       }
       await db.collection("subscriptions").updateOne(
         { _id: sub._id },
@@ -270,7 +283,7 @@ export async function PATCH(req: NextRequest) {
         );
         await handleDowngrade(auth.payload.userId, sub.plan, "free", "mock_cancel", "user", db);
       }
-      await sendPlanCancelledEmail(auth.payload.userId, sub.plan).catch((err) =>
+      await sendPlanCancelledEmail(auth.payload.userId, sub.plan, sub._id.toString()).catch((err) =>
         console.error("[Plan Cancelled Email Failed]", err)
       );
       return NextResponse.json({
@@ -291,10 +304,22 @@ export async function PATCH(req: NextRequest) {
 
       if (isRazorpayConfigured && !isMockSub) {
         const newPlanId = RAZORPAY_PLAN_IDS[newPlan as PlanTier & ('plus' | 'premium')];
-        await razorpayRequest(`/subscriptions/${sub.razorpaySubscriptionId}`, {
-          method: "PATCH",
-          body: { plan_id: newPlanId, schedule_change_at: "cycle_end" },
-        }).catch((err) => console.error("[Razorpay Plan Change Error]", err));
+        // Same fix as the cancel action above: must succeed before the local
+        // pendingPlanChange field is written, otherwise a failed Razorpay
+        // call silently promises a plan change that will never actually
+        // apply at the next renewal.
+        try {
+          await razorpayRequest(`/subscriptions/${sub.razorpaySubscriptionId}`, {
+            method: "PATCH",
+            body: { plan_id: newPlanId, schedule_change_at: "cycle_end" },
+          });
+        } catch (err) {
+          console.error("[Razorpay Plan Change Error]", err);
+          return NextResponse.json(
+            { error: "Failed to change plan with Razorpay. Please try again." },
+            { status: 502 }
+          );
+        }
       }
 
       await db.collection("subscriptions").updateOne(

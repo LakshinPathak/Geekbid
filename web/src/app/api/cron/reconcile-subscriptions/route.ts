@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { razorpayRequest, isRazorpayConfigured } from "@/lib/razorpay";
 import { handleDowngrade, enforceExpiredTeamSeatDeadlines } from "@/lib/plan-downgrade";
 import { constantTimeEqual } from "@/lib/sanitize";
+import { sendGracePeriodReminderEmail } from "@/lib/billing-emails";
 
 function mapRazorpayStatus(rzpStatus: string): string | null {
   switch (rzpStatus) {
@@ -78,11 +79,54 @@ export async function GET(req: NextRequest) {
     gracePeriodEndsAt: { $lte: now },
   }).toArray();
 
+  let graceExpiredCount = 0;
   for (const sub of expiredGrace) {
-    await handleDowngrade(sub.userId, sub.plan, "free", "grace_period_expired", "cron", db);
-    await db.collection("subscriptions").updateOne(
-      { _id: sub._id },
+    // Atomically claim the subscription before downgrading — same pattern as
+    // the webhook route's findOneAndUpdate claim (see
+    // api/webhooks/razorpay/route.ts). Without this, two overlapping cron
+    // runs (a slow run still in flight when the next scheduled run starts)
+    // could both read this doc while it's still "past_due" and both call
+    // handleDowngrade for the same subscription — double-revoking API keys/
+    // team seats and double-sending the downgrade email. Only the request
+    // that wins this single-document status flip proceeds.
+    const claimed = await db.collection("subscriptions").findOneAndUpdate(
+      { _id: sub._id, status: "past_due" },
       { $set: { status: "cancelled", updatedAt: now } }
+    );
+    if (!claimed) continue; // already claimed by a concurrent run
+    await handleDowngrade(sub.userId, sub.plan, "free", "grace_period_expired", "cron", db);
+    graceExpiredCount++;
+  }
+
+  // Grace period reminders — nudge past_due users before their grace period
+  // expires (sendGracePeriodReminderEmail was defined but never wired up).
+  // Sent once per threshold per subscription, tracked via graceRemindersSent
+  // so overlapping cron runs / repeated daily runs don't re-send.
+  const upcomingGrace = await db.collection("subscriptions").find({
+    status: "past_due",
+    gracePeriodEndsAt: { $gt: now },
+  }).toArray();
+
+  const ONE_DAY_MS = 24 * 3600000;
+  for (const sub of upcomingGrace) {
+    const msLeft = new Date(sub.gracePeriodEndsAt).getTime() - Date.now();
+    const daysLeft = Math.ceil(msLeft / ONE_DAY_MS);
+    const threshold: "3day" | "1day" | null = daysLeft <= 1 ? "1day" : daysLeft <= 3 ? "3day" : null;
+    if (!threshold) continue;
+
+    const alreadySent: string[] = sub.graceRemindersSent ?? [];
+    if (alreadySent.includes(threshold)) continue;
+
+    // Same atomic-claim pattern as above so concurrent cron runs can't both
+    // pass the alreadySent check and both send the same threshold's reminder.
+    const claimedReminder = await db.collection("subscriptions").findOneAndUpdate(
+      { _id: sub._id, status: "past_due", graceRemindersSent: { $ne: threshold } },
+      { $addToSet: { graceRemindersSent: threshold }, $set: { updatedAt: new Date().toISOString() } }
+    );
+    if (!claimedReminder) continue;
+
+    await sendGracePeriodReminderEmail(sub.userId, sub.plan, daysLeft, sub.gracePeriodEndsAt).catch((err) =>
+      console.error("[Grace Period Reminder Email Failed]", err)
     );
   }
 
@@ -90,5 +134,5 @@ export async function GET(req: NextRequest) {
   // over_limit team's owner-given deadline has passed.
   await enforceExpiredTeamSeatDeadlines(db);
 
-  return NextResponse.json({ reconciled: corrected, graceExpired: expiredGrace.length });
+  return NextResponse.json({ reconciled: corrected, graceExpired: graceExpiredCount });
 }

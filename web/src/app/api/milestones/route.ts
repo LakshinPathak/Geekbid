@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
  if (!jobId || !Array.isArray(milestones) || milestones.length === 0) {
  return NextResponse.json({ error: "jobId and milestones array required" }, { status: 400 });
  }
+ if (!ObjectId.isValid(jobId)) {
+ return NextResponse.json({ error: "Invalid jobId" }, { status: 400 });
+ }
 
  const db = await getDb();
  const job = await db.collection("jobs").findOne({ _id: new ObjectId(jobId) });
@@ -123,11 +126,17 @@ export async function PATCH(req: NextRequest) {
  if (!milestoneId || !action) {
  return NextResponse.json({ error: "milestoneId and action required" }, { status: 400 });
  }
+ if (!ObjectId.isValid(milestoneId)) {
+ return NextResponse.json({ error: "Invalid milestoneId" }, { status: 400 });
+ }
 
  const db = await getDb();
  const milestone = await db.collection("milestones").findOne({ _id: new ObjectId(milestoneId) });
  if (!milestone) return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
 
+ if (!ObjectId.isValid(milestone.jobId)) {
+ return NextResponse.json({ error: "Milestone has an invalid jobId" }, { status: 400 });
+ }
  const job = await db.collection("jobs").findOne({ _id: new ObjectId(milestone.jobId) });
  if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
 
@@ -179,6 +188,8 @@ export async function PATCH(req: NextRequest) {
  // escrow (the UI calls this button "Approve & Release"); previously this
  // only flipped the milestone's status and never touched the transaction.
  if (action === "approve") {
+ let released = false;
+ let escrowError: string | null = null;
  try {
  // Atomically claim this milestone's release right first. The old code
  // checked `!milestone.escrowReleased` against a read taken at the top of
@@ -186,25 +197,40 @@ export async function PATCH(req: NextRequest) {
  // request) could both pass the check before either write landed and both
  // release escrow for the same milestone. The $ne guard makes MongoDB
  // serialize the check-and-claim into one atomic operation.
- const claimed = await db.collection("milestones").findOneAndUpdate(
+ const escrowClaim = await db.collection("milestones").findOneAndUpdate(
  { _id: new ObjectId(milestoneId), escrowReleased: { $ne: true } },
  { $set: { escrowReleased: true } }
  );
 
- if (claimed) {
- const tx = await db.collection("transactions").findOne({ jobId: milestone.jobId, escrowStatus: "held" });
- if (tx) {
+ if (escrowClaim) {
+ // Target the exact row created at accept time (job.escrowTransactionId),
+ // not an ambiguous {jobId, escrowStatus:"held"} filter — a job can also
+ // carry an unrelated "held" transaction from a featured-boost payment.
+ // Falls back to the tagged-purpose filter for pre-migration rows that
+ // predate escrowTransactionId, matching jobs/[id]/route.ts and
+ // jobs/[id]/complete/route.ts.
+ const tx = job.escrowTransactionId
+ ? await db.collection("transactions").findOne({ _id: new ObjectId(job.escrowTransactionId), escrowStatus: "held" })
+ : await db.collection("transactions").findOne({ jobId: milestone.jobId, purpose: "job_escrow", escrowStatus: "held" });
+ if (!tx) {
+ escrowError = "No held escrow transaction found for this job's milestone payout.";
+ } else {
  // Exact integer-cent math: no float drift, and the "fully released" check is
  // an exact comparison instead of the old `>= gross - 0.01` fudge.
  const alreadyReleasedCents = toCents(tx.releasedAmount ?? 0);
  const grossCents = toCents(tx.grossAmount);
  const amountToReleaseCents = Math.min(toCents(milestone.amount || 0), grossCents - alreadyReleasedCents);
- if (amountToReleaseCents > 0) {
+ if (amountToReleaseCents <= 0) {
+ // Nothing left to release against this transaction (e.g. already
+ // fully released by other milestones) — not a failure.
+ released = true;
+ } else {
  const newReleasedCents = alreadyReleasedCents + amountToReleaseCents;
  const isFullyReleased = newReleasedCents >= grossCents;
  // Compare-and-swap on the exact `releasedAmount` we read: if another
  // milestone on this same job released escrow between our read and
- // write, matchedCount is 0 and we skip rather than stomp that update.
+ // write, matchedCount is 0 and we treat this as a failed release
+ // rather than silently marking the milestone released-with-no-payout.
  const txUpdate = await db.collection("transactions").updateOne(
  { _id: tx._id, escrowStatus: "held", releasedAmount: tx.releasedAmount ?? null },
  {
@@ -221,12 +247,35 @@ export async function PATCH(req: NextRequest) {
  { _id: new ObjectId(milestoneId) },
  { $set: { releasedAmount: toDollars(amountToReleaseCents), releasedAt: new Date().toISOString() } }
  );
+ released = true;
+ } else {
+ escrowError = "Escrow release was contended by a concurrent update — please retry.";
  }
  }
  }
+ } else {
+ // Another request already claimed and released escrow for this
+ // milestone — nothing more for this request to do.
+ released = true;
  }
- } catch (escrowErr) {
- console.error("[Milestone Escrow Release Failed]", escrowErr);
+ } catch (err) {
+ console.error("[Milestone Escrow Release Failed]", err);
+ escrowError = "Escrow release failed unexpectedly.";
+ }
+
+ if (!released) {
+ // Money never actually moved — don't leave the milestone marked
+ // "approved"/escrowReleased, which would make the client believe the
+ // freelancer was paid when they weren't. Roll back the status change
+ // made by the CAS above and surface a clear error instead.
+ await db.collection("milestones").updateOne(
+ { _id: new ObjectId(milestoneId) },
+ { $set: { status: requiredStatus }, $unset: { approvedAt: "", escrowReleased: "" } }
+ );
+ return NextResponse.json(
+ { error: `Milestone approval could not release escrow (${escrowError ?? "unknown error"}). Please retry or contact support.` },
+ { status: 409 }
+ );
  }
  }
 

@@ -337,11 +337,12 @@ function LoginPageContent() {
  <>
  {/* Full name */}
  <div>
- <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
+ <label htmlFor="register-name" className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
  style={{ color: "#6f6a7d" }}>Full Name</label>
  <div className="relative">
  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
  <input
+ id="register-name"
  placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
  className="w-full h-12 rounded-full text-sm outline-none transition-all"
  style={{
@@ -386,11 +387,12 @@ function LoginPageContent() {
 
  {/* Email */}
  <div>
- <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
+ <label htmlFor="auth-email" className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
  style={{ color: "#6f6a7d" }}>Email</label>
  <div className="relative">
  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
  <input
+ id="auth-email"
  type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
  className="w-full h-12 rounded-full text-sm outline-none transition-all"
  style={{
@@ -406,7 +408,7 @@ function LoginPageContent() {
  {/* Password */}
  <div>
  <div className="flex items-center justify-between mb-1.5">
- <label className="text-xs font-semibold uppercase tracking-wider"
+ <label htmlFor="auth-password" className="text-xs font-semibold uppercase tracking-wider"
  style={{ color: "#6f6a7d" }}>Password</label>
  {mode === "login" && (
  <button type="button" onClick={() => router.push("/forgot-password")} className="text-xs transition-colors hover:opacity-80"
@@ -416,6 +418,7 @@ function LoginPageContent() {
  <div className="relative">
  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
  <input
+ id="auth-password"
  type={showPwd ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
  className="w-full h-12 rounded-full text-sm outline-none transition-all"
  style={{

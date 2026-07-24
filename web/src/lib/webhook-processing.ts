@@ -1,7 +1,9 @@
 import type { Db } from "mongodb";
 import { ObjectId } from "mongodb";
 import { handleDowngrade } from "@/lib/plan-downgrade";
+import { getPlanConfig } from "@/lib/plans";
 import {
+  sendSubscriptionWelcomeEmail,
   sendPaymentReceiptEmail,
   sendPaymentFailedWarningEmail,
   sendPlanUpgradedEmail,
@@ -33,6 +35,16 @@ async function handleActivated(subId: string, db: Db) {
     { _id: new ObjectId(sub.userId) },
     { $set: { plan: sub.plan, subscriptionId: sub._id.toString() } }
   );
+
+  // Real (non-mock) subscriptions previously never got the welcome/receipt
+  // email — sendSubscriptionWelcomeEmail was only ever called from the mock
+  // branch of POST /api/subscriptions. This is the real activation path
+  // (subscription.activated webhook), so send it here too — it's legally
+  // required in India/EU per the function's own doc comment.
+  const config = getPlanConfig(sub.plan);
+  await sendSubscriptionWelcomeEmail(sub.userId, sub.plan, config.price, sub._id.toString()).catch((err) =>
+    console.error("[Subscription Welcome Email Failed]", err)
+  );
 }
 
 async function handleCharged(subId: string, payload: Record<string, unknown>, db: Db) {
@@ -50,6 +62,14 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
 
   const existingSub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
   if (!existingSub) return;
+  // Same stale-event guard as handleHalted/handleCancelled — a retried/replayed
+  // subscription.charged event (e.g. the retry-webhooks cron sweeping an old
+  // 'failed' delivery) must not resurrect a subscription that's already been
+  // cancelled since this event was first attempted.
+  if (existingSub.status === "cancelled") {
+    console.log(`[Charged] Skipping stale event for already-cancelled subscription ${subId}`);
+    return;
+  }
 
   // Transition #12/#11: a plan change scheduled for cycle-end applies on the
   // renewal charge, not immediately when the user requested it.
@@ -99,9 +119,13 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
 
   if (planChanged) {
     const isUpgrade = appliedPlan === "premium" && existingSub.plan === "plus";
+    // Stable per (subscription, billing cycle) so a retried/replayed charged
+    // event dedupes against trackedSend instead of re-sending the same plan
+    // change email on every retry.
+    const contextId = `${existingSub._id.toString()}:${currentPeriodStart}`;
     const emailPromise = isUpgrade
-      ? sendPlanUpgradedEmail(existingSub.userId, existingSub.plan, appliedPlan)
-      : sendPlanDowngradedEmail(existingSub.userId, existingSub.plan, appliedPlan, "scheduled_plan_change");
+      ? sendPlanUpgradedEmail(existingSub.userId, existingSub.plan, appliedPlan, contextId)
+      : sendPlanDowngradedEmail(existingSub.userId, existingSub.plan, appliedPlan, "scheduled_plan_change", contextId);
     await emailPromise.catch((err) => console.error("[Plan Change Email Failed]", err));
   }
 }
@@ -110,6 +134,16 @@ async function handlePaymentFailed(subId: string | null, db: Db) {
   if (!subId) return;
   const now = new Date().toISOString();
   const gracePeriodEndsAt = new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 3600000).toISOString();
+
+  // Same stale-event guard as handleHalted/handleCancelled — a retried/
+  // replayed payment.failed event must not knock an already-cancelled
+  // subscription back into past_due.
+  const existingSub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
+  if (!existingSub) return;
+  if (existingSub.status === "cancelled") {
+    console.log(`[Payment Failed] Skipping stale event for already-cancelled subscription ${subId}`);
+    return;
+  }
 
   const sub = await db.collection("subscriptions").findOneAndUpdate(
     { razorpaySubscriptionId: subId },

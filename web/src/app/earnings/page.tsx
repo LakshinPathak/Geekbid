@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/store";
 import { formatMoney, timeAgo } from "@/lib/utils";
 import {
- DollarSign, TrendingUp, Clock, CheckCircle2, AlertCircle, Wallet, ArrowUpRight,
+ DollarSign, TrendingUp, Clock, CheckCircle2, AlertCircle, Wallet,
 } from "lucide-react";
 
 export default function EarningsPage() {

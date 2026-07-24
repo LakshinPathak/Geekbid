@@ -6,6 +6,7 @@ import { hashSync } from "bcryptjs";
 import crypto from "crypto";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // GET /api/keys — list user's API keys (masked)
 export async function GET(req: NextRequest) {
@@ -46,8 +47,14 @@ export async function POST(req: NextRequest) {
  return NextResponse.json({ error: auth.error }, { status: auth.status });
  }
 
+ if (!(await checkRateLimit(`api-keys:${auth.payload.userId}`, 10, 15 * 60 * 1000))) {
+ return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+ }
+
  const body = await req.json();
- const { name } = body;
+ // Force string type — a non-string truthy `name` (e.g. a number or object)
+ // would otherwise throw on `.trim()` below before reaching the outer catch.
+ const name = String(body?.name ?? "").trim();
 
  if (!name) return NextResponse.json({ error: "Key name required" }, { status: 400 });
 

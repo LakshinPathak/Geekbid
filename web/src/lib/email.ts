@@ -211,6 +211,18 @@ function userName(text: string): string {
  return `<strong style="color:#3d3a45;">${text}</strong>`;
 }
 
+// ── Escape user-supplied free text before it's interpolated into an email's
+// HTML body (review comments, job/milestone titles, dispute reasons, display
+// names, etc.) — none of it is otherwise sanitized before reaching here. ──
+function escapeHtml(value: unknown): string {
+ return String(value ?? "")
+ .replace(/&/g, "&amp;")
+ .replace(/</g, "&lt;")
+ .replace(/>/g, "&gt;")
+ .replace(/"/g, "&quot;")
+ .replace(/'/g, "&#39;");
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 1. WELCOME EMAIL — after user registration
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -221,7 +233,7 @@ export async function sendWelcomeEmail(to: string, name: string, role: string, u
  to, recipientId: userId, emailType: "welcome", subject,
  idempotencyKey: `welcome:${userId ?? to}`, metadata: {},
  html: wrapHtml("Welcome to GeekBid", `
- ${heading(`Welcome aboard, ${name}!`)}
+ ${heading(`Welcome aboard, ${escapeHtml(name)}!`)}
  ${subtext(`Your account is live. You signed up as a ${highlight(isFreelancer ? "Freelancer" : "Client")}.`)}
  ${subtext(isFreelancer
  ? "GeekBid's adaptive pricing means better rates as you bid smart. Build your reputation, earn more."
@@ -246,8 +258,8 @@ export async function sendNewBidEmail(to: string, clientName: string, freelancer
  idempotencyKey: `new_bid:${jobId}:${freelancerName}`, metadata: { jobId, bidId },
  html: wrapHtml("New Bid Received", `
  ${heading("New bid on your job!")}
- ${subtext(`Hey ${clientName}, ${userName(freelancerName)} placed a counter-bid on your listing.`)}
- ${infoCard([["📋 Job", jobTitle], ["💵 Bid Amount", `$${bidPrice.toLocaleString()}`], ["👤 Bidder", freelancerName], ["⏰ Time", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })]])}
+ ${subtext(`Hey ${escapeHtml(clientName)}, ${userName(escapeHtml(freelancerName))} placed a counter-bid on your listing.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["💵 Bid Amount", `$${bidPrice.toLocaleString()}`], ["👤 Bidder", escapeHtml(freelancerName)], ["⏰ Time", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })]])}
  ${subtext("Review the bid and compare it with the current adaptive price to decide.")}
  ${ctaButton("View All Bids →", `${APP_URL}/jobs/${jobId}`)}
  `),
@@ -264,8 +276,8 @@ export async function sendDirectOfferEmail(to: string, freelancerName: string, j
  idempotencyKey: `direct_offer:${jobId}`, metadata: { jobId },
  html: wrapHtml("Direct Hire Offer", `
  ${heading("You've got a direct offer! 🎯")}
- ${subtext(`${freelancerName}, a client specifically wants ${highlight("you")} for this project. No auction, no competition.`)}
- ${infoCard([["📋 Project", jobTitle], ["💰 Offered Price", `$${price.toLocaleString()}`], ["🔒 Type", "Direct Hire — Fixed Price"], ["📅 Response Window", "7 days"]])}
+ ${subtext(`${escapeHtml(freelancerName)}, a client specifically wants ${highlight("you")} for this project. No auction, no competition.`)}
+ ${infoCard([["📋 Project", escapeHtml(jobTitle)], ["💰 Offered Price", `$${price.toLocaleString()}`], ["🔒 Type", "Direct Hire — Fixed Price"], ["📅 Response Window", "7 days"]])}
  ${subtext("Direct offers are only available to freelancers with a GeekScore above 500.")}
  ${ctaButton("Review This Offer →", `${APP_URL}/jobs/${jobId}`)}
  `),
@@ -285,8 +297,8 @@ export async function sendOfferResponseEmail(to: string, clientName: string, fre
  idempotencyKey: `offer_response:${jobId}`, metadata: { jobId },
  html: wrapHtml("Offer Response", `
  ${heading(accepted ? "Your offer was accepted! ✅" : "Offer declined ❌")}
- ${subtext(`${clientName}, ${userName(freelancerName)} has ${accepted ? "accepted" : "declined"} your direct offer.`)}
- ${infoCard([["📋 Job", jobTitle], ["💰 Price", `$${price.toLocaleString()}`], ["📌 Status", accepted ? "Accepted — Escrow Created" : "Declined"]])}
+ ${subtext(`${escapeHtml(clientName)}, ${userName(escapeHtml(freelancerName))} has ${accepted ? "accepted" : "declined"} your direct offer.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["💰 Price", `$${price.toLocaleString()}`], ["📌 Status", accepted ? "Accepted — Escrow Created" : "Declined"]])}
  ${subtext(accepted ? "Funds are now held in escrow. The freelancer will begin work shortly." : "You can send an offer to another freelancer or post the job publicly.")}
  ${ctaButton(accepted ? "View Project →" : "Find Another Dev →", `${APP_URL}/jobs/${jobId}`)}
  `),
@@ -303,8 +315,8 @@ export async function sendJobAcceptedEmail(to: string, clientName: string, freel
  idempotencyKey: `job_accepted:${jobId}`, metadata: { jobId },
  html: wrapHtml("Job Accepted", `
  ${heading("Your job has been accepted! ✅")}
- ${subtext(`${clientName}, ${userName(freelancerName)} accepted your job at the current adaptive price.`)}
- ${infoCard([["📋 Job", jobTitle], ["💰 Final Price", `$${finalPrice.toLocaleString()}`], ["🛡️ Escrow", "Funds are held securely"], ["👤 Developer", freelancerName]])}
+ ${subtext(`${escapeHtml(clientName)}, ${userName(escapeHtml(freelancerName))} accepted your job at the current adaptive price.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["💰 Final Price", `$${finalPrice.toLocaleString()}`], ["🛡️ Escrow", "Funds are held securely"], ["👤 Developer", escapeHtml(freelancerName)]])}
  ${subtext("The payment is held in escrow and will be released when you approve the deliverables.")}
  ${ctaButton("View Project →", `${APP_URL}/jobs/${jobId}`)}
  `),
@@ -321,8 +333,8 @@ export async function sendMilestoneApprovedEmail(to: string, freelancerName: str
  idempotencyKey: `milestone_approved:${milestoneId ?? milestoneTitle}`, metadata: { milestoneId },
  html: wrapHtml("Milestone Approved", `
  ${heading("Milestone approved! 💰")}
- ${subtext(`${freelancerName}, the client has approved your milestone delivery.`)}
- ${infoCard([["📋 Job", jobTitle], ["🏁 Milestone", milestoneTitle], ["💵 Amount", `$${amount.toLocaleString()}`], ["✅ Status", "Approved — Payment Processing"]])}
+ ${subtext(`${escapeHtml(freelancerName)}, the client has approved your milestone delivery.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["🏁 Milestone", escapeHtml(milestoneTitle)], ["💵 Amount", `$${amount.toLocaleString()}`], ["✅ Status", "Approved — Payment Processing"]])}
  ${subtext("The funds from escrow are being released to your account. Keep up the excellent work!")}
  ${ctaButton("View Earnings →", `${APP_URL}/earnings`)}
  `),
@@ -339,8 +351,8 @@ export async function sendDisputeEmail(to: string, recipientName: string, jobTit
  idempotencyKey: `dispute_raised:${transactionId ?? jobTitle}`, metadata: { transactionId },
  html: wrapHtml("Dispute Opened", `
  ${heading("A dispute has been opened ⚠️")}
- ${subtext(`${recipientName}, a dispute has been filed on a project you're involved with.`)}
- ${infoCard([["📋 Job", jobTitle], ["📝 Reason", reason || "Not specified"], ["🔍 Status", "Under Review"], ["⏱️ Filed", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })]])}
+ ${subtext(`${escapeHtml(recipientName)}, a dispute has been filed on a project you're involved with.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["📝 Reason", escapeHtml(reason) || "Not specified"], ["🔍 Status", "Under Review"], ["⏱️ Filed", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })]])}
  ${subtext("Our team will review the dispute and may reach out to both parties.")}
  ${ctaButton("View My Jobs →", `${APP_URL}/my-jobs`)}
  `),
@@ -357,8 +369,8 @@ export async function sendTeamInviteEmail(to: string, teamName: string, inviterN
  idempotencyKey: `team_invite:${teamId ?? teamName}:${to}`, metadata: { teamId },
  html: wrapHtml("Team Invitation", `
  ${heading("You've been invited to a team! 👥")}
- ${subtext(`${userName(inviterName)} wants you on their team.`)}
- ${infoCard([["🏢 Team", teamName], ["👤 Invited By", inviterName], ["🤝 Role", "Team Member"]])}
+ ${subtext(`${userName(escapeHtml(inviterName))} wants you on their team.`)}
+ ${infoCard([["🏢 Team", escapeHtml(teamName)], ["👤 Invited By", escapeHtml(inviterName)], ["🤝 Role", "Team Member"]])}
  ${subtext("As a team member, you'll collaborate on jobs, share clients, and track collective earnings.")}
  ${ctaButton("View Invitation →", `${APP_URL}/team`)}
  `),
@@ -376,9 +388,9 @@ export async function sendNewReviewEmail(to: string, revieweeName: string, revie
  idempotencyKey: `review:${reviewId ?? `${jobTitle}:${reviewerName}`}`, metadata: { reviewId },
  html: wrapHtml("New Review", `
  ${heading("You received a review! ⭐")}
- ${subtext(`${revieweeName}, ${userName(reviewerName)} left you a review on a completed project.`)}
+ ${subtext(`${escapeHtml(revieweeName)}, ${userName(escapeHtml(reviewerName))} left you a review on a completed project.`)}
  <div style="text-align:center;margin:20px 0;"><span style="color:#e0a23e;font-size:32px;letter-spacing:4px;">${stars}</span></div>
- ${comment ? `<div style="background:#fbfaf7;border-radius:12px;padding:16px 20px;margin:16px 0;border-left:3px solid #4b3f8f;"><p style="color:#3d3a45;font-size:14px;font-style:italic;margin:0;line-height:1.6;">"${comment}"</p><p style="color:#6f6a7d;font-size:12px;margin:10px 0 0;">— ${reviewerName} on "${jobTitle}"</p></div>` : ""}
+ ${comment ? `<div style="background:#fbfaf7;border-radius:12px;padding:16px 20px;margin:16px 0;border-left:3px solid #4b3f8f;"><p style="color:#3d3a45;font-size:14px;font-style:italic;margin:0;line-height:1.6;">"${escapeHtml(comment)}"</p><p style="color:#6f6a7d;font-size:12px;margin:10px 0 0;">— ${escapeHtml(reviewerName)} on "${escapeHtml(jobTitle)}"</p></div>` : ""}
  ${subtext("Reviews contribute to your GeekScore and help you land more projects.")}
  ${ctaButton("View Your Profile →", `${APP_URL}/profile`)}
  `),
@@ -395,8 +407,8 @@ export async function sendReferralSignupEmail(to: string, referrerName: string, 
  idempotencyKey: `referral:${to}:${referredName}`, metadata: {},
  html: wrapHtml("Referral Signup", `
  ${heading("Your referral signed up! 🎁")}
- ${subtext(`${referrerName}, ${highlight(referredName)} just joined GeekBid using your referral link.`)}
- ${infoCard([["👤 New User", referredName], ["✅ Status", "Signed Up"], ["🎁 Referral Credit", "Pending — credited after first job"]])}
+ ${subtext(`${escapeHtml(referrerName)}, ${highlight(escapeHtml(referredName))} just joined GeekBid using your referral link.`)}
+ ${infoCard([["👤 New User", escapeHtml(referredName)], ["✅ Status", "Signed Up"], ["🎁 Referral Credit", "Pending — credited after first job"]])}
  ${subtext("Keep sharing your referral link — the more developers you bring in, the more credits you earn.")}
  ${ctaButton("View Referral Dashboard →", `${APP_URL}/profile`)}
  `),
@@ -413,8 +425,8 @@ export async function sendMilestoneSubmittedEmail(to: string, clientName: string
  idempotencyKey: `milestone_submitted:${milestoneId ?? milestoneTitle}`, metadata: { milestoneId },
  html: wrapHtml("Milestone Submitted", `
  ${heading("Milestone submitted for review 📦")}
- ${subtext(`${clientName}, ${userName(freelancerName)} has completed and submitted a milestone for your review.`)}
- ${infoCard([["📋 Job", jobTitle], ["🏁 Milestone", milestoneTitle], ["💵 Amount", `$${amount.toLocaleString()}`], ["⏳ Action Needed", "Review & Approve"]])}
+ ${subtext(`${escapeHtml(clientName)}, ${userName(escapeHtml(freelancerName))} has completed and submitted a milestone for your review.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["🏁 Milestone", escapeHtml(milestoneTitle)], ["💵 Amount", `$${amount.toLocaleString()}`], ["⏳ Action Needed", "Review & Approve"]])}
  ${subtext("Please review the deliverables and approve the milestone to release the escrowed payment.")}
  ${ctaButton("Review Milestone →", `${APP_URL}/my-jobs`)}
  `),
@@ -431,8 +443,8 @@ export async function sendEscrowReleasedEmail(to: string, freelancerName: string
  idempotencyKey: `escrow_released:${transactionId}`, metadata: { transactionId },
  html: wrapHtml("Payment Released", `
  ${heading("Payment released! 💸")}
- ${subtext(`${freelancerName}, the client has released the escrowed funds for your work.`)}
- ${infoCard([["📋 Job", jobTitle], ["💵 Amount", `$${amount.toLocaleString()}`], ["✅ Status", "Released to your account"], ["📅 Date", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })]])}
+ ${subtext(`${escapeHtml(freelancerName)}, the client has released the escrowed funds for your work.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["💵 Amount", `$${amount.toLocaleString()}`], ["✅ Status", "Released to your account"], ["📅 Date", new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })]])}
  ${subtext("Great work! Keep delivering quality to maintain your GeekScore.")}
  ${ctaButton("View Earnings →", `${APP_URL}/earnings`)}
  `),
@@ -448,9 +460,9 @@ export async function sendAssessmentPassedEmail(to: string, name: string, skill:
  to, emailType: "assessment_passed", subject,
  idempotencyKey: `assessment_passed:${assessmentId}:${to}`, metadata: { assessmentId },
  html: wrapHtml("Assessment Passed", `
- ${heading(`You're now ${skill}-verified! 🏆`)}
- ${subtext(`Congratulations ${name}, you passed the ${highlight(skill)} skill assessment.`)}
- ${infoCard([["🧠 Skill", skill], ["📊 Score", `${score}%`], ["⭐ GeekScore Bonus", "+50 points"], ["🏅 Badge", `${skill} Verified`]])}
+ ${heading(`You're now ${escapeHtml(skill)}-verified! 🏆`)}
+ ${subtext(`Congratulations ${escapeHtml(name)}, you passed the ${highlight(escapeHtml(skill))} skill assessment.`)}
+ ${infoCard([["🧠 Skill", escapeHtml(skill)], ["📊 Score", `${score}%`], ["⭐ GeekScore Bonus", "+50 points"], ["🏅 Badge", `${escapeHtml(skill)} Verified`]])}
  ${subtext("Your verified badge is now visible on your profile. Clients prefer verified freelancers — expect more offers!")}
  ${ctaButton("View Your Profile →", `${APP_URL}/profile`)}
  `),
@@ -467,8 +479,8 @@ export async function sendDisputeResolvedEmail(to: string, name: string, jobTitl
  idempotencyKey: `dispute_resolved:${transactionId ?? jobTitle}:${to}`, metadata: { transactionId },
  html: wrapHtml("Dispute Resolved", `
  ${heading("Dispute resolved ✅")}
- ${subtext(`${name}, the dispute on your project has been reviewed and resolved by our team.`)}
- ${infoCard([["📋 Job", jobTitle], ["📌 Resolution", resolution || "See dashboard"], ["🔍 Status", "Closed"]])}
+ ${subtext(`${escapeHtml(name)}, the dispute on your project has been reviewed and resolved by our team.`)}
+ ${infoCard([["📋 Job", escapeHtml(jobTitle)], ["📌 Resolution", escapeHtml(resolution) || "See dashboard"], ["🔍 Status", "Closed"]])}
  ${subtext("If you have further concerns, you can raise a new dispute from your jobs dashboard.")}
  ${ctaButton("View My Jobs →", `${APP_URL}/my-jobs`)}
  `),
@@ -487,14 +499,14 @@ export async function sendJobPostedEmail(
  to, emailType: "job_posted", subject,
  idempotencyKey: `job_posted:${jobId}`, metadata: { jobId },
  html: wrapHtml("Job Posted", `
- ${heading(`Your job is live, ${clientName}! 🚀`)}
- ${subtext(`"${highlight(jobTitle)}" has been published and is now visible to thousands of developers on GeekBid.`)}
+ ${heading(`Your job is live, ${escapeHtml(clientName)}! 🚀`)}
+ ${subtext(`"${highlight(escapeHtml(jobTitle))}" has been published and is now visible to thousands of developers on GeekBid.`)}
  ${infoCard([
- ["📋 Job Title", jobTitle],
+ ["📋 Job Title", escapeHtml(jobTitle)],
  ["💰 Starting Price", `$${startingPrice.toLocaleString()}`],
  ["📉 Floor Price", `$${minimumPrice.toLocaleString()}`],
  ["⚙️ Pricing Mode", pricingMode === "fixed" ? "Dutch Auction (Fixed Decay)" : "Adaptive (Demand-Driven)"],
- ["📁 Category", category],
+ ["📁 Category", escapeHtml(category)],
  ["⏰ Deadline", new Date(deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })],
  ])}
  ${subtext(pricingMode === "adaptive"
@@ -515,8 +527,8 @@ export async function sendPaymentConfirmationEmail(
 ) {
  const subject = `💳 Payment of ${currency} ${amount.toLocaleString()} confirmed — escrow held`;
  const rows: [string, string][] = [
- ["💳 Amount", `${currency} ${amount.toLocaleString()}`],
- ["📋 Project", jobTitle || "—"],
+ ["💳 Amount", `${escapeHtml(currency)} ${amount.toLocaleString()}`],
+ ["📋 Project", escapeHtml(jobTitle) || "—"],
  ["🔒 Escrow Status", "Funds Held Securely"],
  ["🧾 Transaction ID", transactionId.slice(0, 12) + "..."],
  ];
@@ -525,7 +537,7 @@ export async function sendPaymentConfirmationEmail(
  to, emailType: "payment_confirmed", subject,
  idempotencyKey: `payment_confirmed:${transactionId}`, metadata: { transactionId },
  html: wrapHtml("Payment Confirmed", `
- ${heading(`Payment received, ${clientName}! 🔒`)}
+ ${heading(`Payment received, ${escapeHtml(clientName)}! 🔒`)}
  ${subtext(`Your payment has been verified and the funds are now held securely in GeekBid escrow.`)}
  ${infoCard(rows)}
  ${subtext("The funds will be released to the freelancer only after you approve the delivered work. You maintain full control.")}
@@ -548,11 +560,11 @@ export async function sendBookingConfirmationEmail(
  to, emailType: "booking_confirmed", subject,
  idempotencyKey: `booking_confirmed:${jobId}:${to}`, metadata: { jobId },
  html: wrapHtml("Booking Confirmed", `
- ${heading(`Congrats ${freelancerName}, you're booked! 🎉`)}
- ${subtext(`You accepted "${highlight(jobTitle)}" posted by ${highlight(clientName)}. The client's payment is now held in escrow — start delivering!`)}
+ ${heading(`Congrats ${escapeHtml(freelancerName)}, you're booked! 🎉`)}
+ ${subtext(`You accepted "${highlight(escapeHtml(jobTitle))}" posted by ${highlight(escapeHtml(clientName))}. The client's payment is now held in escrow — start delivering!`)}
  ${infoCard([
- ["📋 Project", jobTitle],
- ["👤 Client", clientName],
+ ["📋 Project", escapeHtml(jobTitle)],
+ ["👤 Client", escapeHtml(clientName)],
  ["💰 Agreed Price", `$${finalPrice.toLocaleString()}`],
  ["🔒 Escrow Held", `$${escrowAmount.toLocaleString()}`],
  ["📊 Platform Fee (10%)", `$${platformFee.toLocaleString()}`],
@@ -577,10 +589,10 @@ export async function sendJobCompletedEmail(
  idempotencyKey: `job_completed:${transactionId}:${to}`, metadata: { transactionId },
  html: wrapHtml("Project Completed", `
  ${heading(`Project completed! 🏁`)}
- ${subtext(`${clientName}, you've released escrow for "${highlight(jobTitle)}" — the freelancer has been paid.`)}
+ ${subtext(`${escapeHtml(clientName)}, you've released escrow for "${highlight(escapeHtml(jobTitle))}" — the freelancer has been paid.`)}
  ${infoCard([
- ["📋 Project", jobTitle],
- ["👤 Freelancer", freelancerName],
+ ["📋 Project", escapeHtml(jobTitle)],
+ ["👤 Freelancer", escapeHtml(freelancerName)],
  ["💰 Total Paid", `$${totalPaid.toLocaleString()}`],
  ["📊 Platform Fee", `$${platformFee.toLocaleString()}`],
  ["💸 Freelancer Received", `$${(totalPaid - platformFee).toLocaleString()}`],
@@ -606,12 +618,12 @@ export async function sendPriceTargetAlertEmail(
  idempotencyKey: `price_target:${jobId}:${bidId}`, metadata: { jobId, bidId },
  html: wrapHtml("Price Target Alert", `
  ${heading(`Bid alert! 🎯`)}
- ${subtext(`${clientName}, a counter-bid close to your budget floor just came in for "${highlight(jobTitle)}".`)}
+ ${subtext(`${escapeHtml(clientName)}, a counter-bid close to your budget floor just came in for "${highlight(escapeHtml(jobTitle))}".`)}
  ${infoCard([
  ["💰 Bid Amount", `$${bidPrice.toLocaleString()}`],
  ["📉 Your Floor Price", `$${minimumPrice.toLocaleString()}`],
  ["📊 % of Floor", `${percentOfFloor}%`],
- ["👤 Bidder", freelancerName],
+ ["👤 Bidder", escapeHtml(freelancerName)],
  ])}
  ${subtext("This bid is very close to your target price. Review the freelancer's profile and consider accepting before someone else does!")}
  ${ctaButton("Review This Bid →", `${APP_URL}/jobs/${jobId}`)}
@@ -633,9 +645,9 @@ export async function sendJobCancelledEmail(
  idempotencyKey: key,
  metadata: {},
  html: wrapHtml("Job Cancelled", `
- ${subtext(`Hi ${freelancerName}, a job you bid on has been cancelled by the client.`)}
+ ${subtext(`Hi ${escapeHtml(freelancerName)}, a job you bid on has been cancelled by the client.`)}
  ${infoCard([
- ["📋 Job", jobTitle],
+ ["📋 Job", escapeHtml(jobTitle)],
  ["📅 Status", "Cancelled"],
  ])}
  ${subtext("Browse other available jobs on the feed.")}
@@ -662,11 +674,11 @@ export async function sendJobCompletedSummaryEmail(
  idempotencyKey: key,
  metadata: {},
  html: wrapHtml("Project Complete", `
- ${subtext(`Hi ${clientName}, your project has been marked complete. Great work!`)}
+ ${subtext(`Hi ${escapeHtml(clientName)}, your project has been marked complete. Great work!`)}
  ${infoCard([
- ["📋 Project", jobTitle],
+ ["📋 Project", escapeHtml(jobTitle)],
  ["💰 Final Price", `$${finalPrice.toLocaleString()}`],
- ["🤝 Freelancer", freelancerName],
+ ["🤝 Freelancer", escapeHtml(freelancerName)],
  ["📅 Status", "Completed"],
  ])}
  ${subtext("Don't forget to leave a review for your freelancer.")}
@@ -681,11 +693,11 @@ export async function sendJobCompletedSummaryEmail(
  idempotencyKey: `${key}:freelancer`,
  metadata: {},
  html: wrapHtml("Project Complete", `
- ${subtext(`Hi ${freelancerName}, the client has marked "${jobTitle}" as complete. Congratulations!`)}
+ ${subtext(`Hi ${escapeHtml(freelancerName)}, the client has marked "${escapeHtml(jobTitle)}" as complete. Congratulations!`)}
  ${infoCard([
- ["📋 Project", jobTitle],
+ ["📋 Project", escapeHtml(jobTitle)],
  ["💰 Earned", `$${finalPrice.toLocaleString()}`],
- ["👤 Client", clientName],
+ ["👤 Client", escapeHtml(clientName)],
  ])}
  ${subtext("Your GeekScore™ has been updated. Keep up the great work!")}
  ${ctaButton("View My Profile →", `${APP_URL}/profile`)}
@@ -706,7 +718,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
  idempotencyKey: `password_reset:${tokenHash}`,
  metadata: {},
  html: wrapHtml("Reset your password", `
- ${heading(`Reset your password, ${name}`)}
+ ${heading(`Reset your password, ${escapeHtml(name)}`)}
  ${subtext("We received a request to reset your GeekBid password. This link expires in 1 hour.")}
  ${ctaButton("Reset Password →", resetUrl)}
  ${subtext("If you didn't request this, you can safely ignore this email — your password won't be changed.")}

@@ -25,13 +25,16 @@ export async function GET(req: NextRequest) {
  const invitedObjectIds = invitedJobIds
  .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
  .filter((oid): oid is ObjectId => oid !== null);
+ // Bounded so this dashboard query can't scan every open job platform-wide
+ // as the platform grows — a few hundred is plenty to compute the
+ // matched-job count and earning-potential estimate below.
  const allOpenJobs = await db.collection("jobs").find({
  status: "open",
  $or: [
  { visibility: { $ne: "invite_only" } },
  ...(invitedObjectIds.length > 0 ? [{ visibility: "invite_only", _id: { $in: invitedObjectIds } }] : []),
  ],
- }).toArray();
+ }).limit(500).toArray();
 
  const mySkills: string[] = user?.skills ?? [];
  const matchedJobs = allOpenJobs.filter(j =>

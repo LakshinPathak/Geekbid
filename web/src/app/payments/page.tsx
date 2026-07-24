@@ -2,10 +2,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { formatMoney, timeAgo } from "@/lib/utils";
+import { formatMoney } from "@/lib/utils";
 import { toast } from "sonner";
 import {
- CreditCard, Shield, CheckCircle2, AlertCircle, Clock,
+ CreditCard, CheckCircle2, AlertCircle, Clock,
  DollarSign, ArrowRight, Loader2, XCircle,
  Zap, Lock, RefreshCw,
 } from "lucide-react";
@@ -81,6 +81,7 @@ export default function PaymentsPage() {
  const [disputeConfirm, setDisputeConfirm] = useState<string | null>(null);
  const [disputeReason, setDisputeReason] = useState("");
  const [disputeSubmitting, setDisputeSubmitting] = useState(false);
+ const [releasing, setReleasing] = useState(false);
 
  useEffect(() => {
  if (typeof window === "undefined") return;
@@ -274,7 +275,9 @@ export default function PaymentsPage() {
  }, [amount, description, getValidToken, config, scriptLoaded, currentUser, fetchTransactions]);
 
  const handleRelease = async (txId: string) => {
+ setReleasing(true);
  const r = await releaseEscrow(txId);
+ setReleasing(false);
  if (r.ok) {
  toast.success("Escrow released!", { description: r.message });
  setReleaseConfirm(null);
@@ -613,15 +616,17 @@ export default function PaymentsPage() {
  <div className="flex gap-3">
  <button
  onClick={() => setReleaseConfirm(null)}
- className="btn-ghost flex-1 h-10 rounded-2xl text-sm"
+ disabled={releasing}
+ className="btn-ghost flex-1 h-10 rounded-2xl text-sm disabled:opacity-50"
  >
  Cancel
  </button>
  <button
  onClick={() => handleRelease(releaseConfirm)}
- className="btn-primary flex-1 h-10 rounded-2xl text-sm"
+ disabled={releasing}
+ className="btn-primary flex-1 h-10 rounded-2xl text-sm disabled:opacity-50"
  >
- Confirm Release
+ {releasing ? "Releasing..." : "Confirm Release"}
  </button>
  </div>
  </div>
