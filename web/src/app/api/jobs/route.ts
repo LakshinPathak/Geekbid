@@ -1,0 +1,223 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
+import { sendJobPostedEmail } from "@/lib/email";
+import { getPlanConfigWithOverrides } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { resetPlanLimitsIfStale } from "@/lib/reset-plan-limits";
+
+// GET /api/jobs — list all jobs (public), supports ?category= filter
+export async function GET(req: NextRequest) {
+ try {
+ const db = await getDb();
+ const { searchParams } = new URL(req.url);
+ const category = searchParams.get("category");
+
+ const filter: Record<string, unknown> = {};
+ if (category && category !== "all") {
+ filter.category = category;
+ }
+
+ // Invite-only jobs must not show up in the public feed for everyone —
+ // only the client who posted it, an invited freelancer, or an admin.
+ // The endpoint itself stays public/unauthenticated for open jobs.
+ const auth = await authenticateRequest(req);
+ const callerId = "error" in auth ? null : auth.payload.userId;
+ const isAdmin = "error" in auth ? false : auth.payload.role === "admin";
+
+ if (!isAdmin) {
+ const orClauses: Record<string, unknown>[] = [{ visibility: { $ne: "invite_only" } }];
+ if (callerId) {
+ orClauses.push({ visibility: "invite_only", clientId: callerId });
+ const invitedJobIds = await db.collection("invites").distinct("jobId", { freelancerId: callerId });
+ const invitedObjectIds = invitedJobIds
+ .map((jid: string) => { try { return new ObjectId(jid); } catch { return null; } })
+ .filter((oid): oid is ObjectId => oid !== null);
+ if (invitedObjectIds.length > 0) {
+ orClauses.push({ visibility: "invite_only", _id: { $in: invitedObjectIds } });
+ }
+ }
+ filter.$or = orClauses;
+ }
+
+ const jobs = await db
+ .collection("jobs")
+ .find(filter)
+ .sort({ featured: -1, postedAt: -1 })
+ .limit(100)
+ .toArray();
+ return NextResponse.json(
+ jobs.map((j) => ({ ...j, _id: j._id.toString(), id: j._id.toString() }))
+ );
+ } catch (err) {
+ console.error("[Jobs GET Error]", err);
+ return NextResponse.json(
+ { error: "Failed to fetch jobs" },
+ { status: 500 }
+ );
+ }
+}
+
+// POST /api/jobs — create a new job (protected)
+export async function POST(req: NextRequest) {
+ try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json(
+ { error: auth.error },
+ { status: auth.status }
+ );
+ }
+
+ if (auth.payload.role !== "client") {
+ return NextResponse.json(
+ { error: "Only clients can post jobs" },
+ { status: 403 }
+ );
+ }
+
+ const body = await req.json();
+ const {
+ title,
+ description,
+ skillsRequired,
+ startingPrice,
+ minimumPrice,
+ decayRatePerHour,
+ estimatedHours,
+ deadlineAt,
+ category,
+ } = body;
+
+ if (!title) {
+ return NextResponse.json(
+ { error: "Title required" },
+ { status: 400 }
+ );
+ }
+
+ // Price/hours fields were previously only coerced with Number(), so an
+ // omitted field silently became NaN and was stored as-is (a broken job
+ // that decays/renders incorrectly for everyone who opens it) — validate
+ // before any quota is consumed.
+ const numStartingPrice = Number(startingPrice);
+ const numMinimumPrice = Number(minimumPrice);
+ const numDecayRate = Number(decayRatePerHour);
+ const numEstimatedHours = Number(estimatedHours);
+ if (
+ !Number.isFinite(numStartingPrice) || numStartingPrice <= 0 ||
+ !Number.isFinite(numMinimumPrice) || numMinimumPrice < 0 ||
+ !Number.isFinite(numDecayRate) || numDecayRate < 0 ||
+ !Number.isFinite(numEstimatedHours) || numEstimatedHours <= 0
+ ) {
+ return NextResponse.json(
+ { error: "startingPrice, minimumPrice, decayRatePerHour, and estimatedHours must all be valid non-negative numbers (startingPrice and estimatedHours must be greater than 0)" },
+ { status: 400 }
+ );
+ }
+ if (numMinimumPrice > numStartingPrice) {
+ return NextResponse.json(
+ { error: "minimumPrice cannot be greater than startingPrice" },
+ { status: 400 }
+ );
+ }
+
+ const validCategories = ["ai_ml", "web_dev", "mobile", "devops", "security", "data_eng", "blockchain", "design", "writing", "video", "qa", "other"];
+ const jobCategory = validCategories.includes(category) ? category : "other";
+
+ const db = await getDb();
+
+ // Plan limit enforcement — applies to every tier, not just free.
+ const user = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ let jobQuotaReserved = false;
+ const plan = user?.plan ?? "free";
+ const config = await getPlanConfigWithOverrides(plan, db);
+ if (user) {
+ const limits = user.planLimits ?? { jobsPostedThisMonth: 0, monthResetAt: new Date(0).toISOString() };
+ await resetPlanLimitsIfStale(db, user._id, limits.monthResetAt);
+ // Atomic check-and-increment so two concurrent requests can't both
+ // read "under the cap" before either write lands.
+ const capped = await db.collection("users").findOneAndUpdate(
+ {
+ _id: user._id,
+ $or: [
+ { "planLimits.jobsPostedThisMonth": { $lt: config.limits.jobsPerMonth } },
+ { "planLimits.jobsPostedThisMonth": { $exists: false } },
+ ],
+ },
+ { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
+ );
+ if (!capped) {
+ return NextResponse.json({ error: `${config.name} plan limit: ${config.limits.jobsPerMonth} jobs/month. Upgrade for more.` }, { status: 403 });
+ }
+ jobQuotaReserved = true;
+ }
+ const now = new Date().toISOString();
+ const validVisibility = ["public", "invite_only"];
+ const job = {
+ clientId: auth.payload.userId,
+ title,
+ description: description ?? "",
+ skillsRequired: skillsRequired ?? [],
+ startingPrice: numStartingPrice,
+ minimumPrice: numMinimumPrice,
+ decayRatePerHour: numDecayRate,
+ estimatedHours: numEstimatedHours,
+ postedAt: now,
+ deadlineAt:
+ deadlineAt ?? new Date(Date.now() + 48 * 3600000).toISOString(),
+ status: "open",
+ category: jobCategory,
+ featured: false,
+ visibility: validVisibility.includes(body.visibility) ? body.visibility : "public",
+ // Lock in the poster's fee rate at creation time so a later plan change
+ // doesn't retroactively alter the split on an already-posted job.
+ platformFeePercent: config.platformFeePercent,
+ // Adaptive pricing fields
+ pricingMode: body.pricingMode === "fixed" ? "fixed" : "adaptive",
+ bidCount: 0,
+ uniqueBidderCount: 0,
+ lastBidAt: null,
+ lowestCounterBid: null,
+ priceHistory: [
+ { price: numStartingPrice, at: now, event: "posted" },
+ ],
+ };
+
+ const result = await db.collection("jobs").insertOne(job);
+ const jobId = result.insertedId.toString();
+ // Free-plan counter was already incremented atomically above alongside the
+ // cap check; only non-free plans still need a plain increment here.
+ if (!jobQuotaReserved) {
+ await db.collection("users").updateOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { $inc: { "planLimits.jobsPostedThisMonth": 1 } }
+ );
+ }
+
+ // Fire-and-forget: send job posted confirmation to client
+ const poster = await db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { email: 1, name: 1 } }
+ );
+ if (poster?.email) {
+ sendJobPostedEmail(
+ poster.email, poster.name ?? "Client",
+ title, numStartingPrice, numMinimumPrice,
+ job.pricingMode, job.deadlineAt, jobCategory, jobId
+ ).catch(() => {});
+ }
+
+ return withPlanHeader(
+ NextResponse.json({ ...job, _id: jobId, id: jobId }, { status: 201 }),
+ plan
+ );
+ } catch (err) {
+ console.error("[Jobs POST Error]", err);
+ return NextResponse.json(
+ { error: "Failed to create job" },
+ { status: 500 }
+ );
+ }
+}

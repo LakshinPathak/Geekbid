@@ -1,0 +1,68 @@
+# Progress — {version}
+
+> **Internal agent tracker** — lives at `.agent/progress.md`
+> NOT part of releases. NOT pushed to `{GITHUB_ORG}/{GITHUB_REPO}` releases folder.
+
+> Type: {Epic | Issue}
+> Workspace: {WORKSPACE_DIR}  <!-- codebase | legacy_codebase | pre-existing name -->
+> GitHub Issue: #{issue_number}
+> Parent Issue (if this is a sub-task): #{parent_issue_number}
+> Branch: {version}
+> Base branch: {base_branch}  <!-- branch {version} was created from; ask on legacy at Step 2 -->
+> GitHub Access Method: {MCP | git_token}  <!-- set once in Step 0e, don't re-decide each session -->
+> Created: {date}
+> Last Updated: {date}
+
+---
+
+## Status
+
+| Step | Description | Status | Completed At |
+|------|------------|--------|-------------|
+| 1 | Developer Describes Epic/Issue | ⬜ | — |
+| 2 | Version + Inbox + GitHub Issue | ⬜ | — |
+| 3 | Planning → planning.md | ⬜ | — |
+| 4 | Task Decomposition (if complex) | ⬜ | — |
+| 5 | ⏸️ Developer Reviews Planning | ⬜ | — |
+| 6 | Development / Fix | ⬜ | — |
+| 7 | Testing (User Stories + Test Cases / Regressions) | ⬜ | — |
+| 8 | ⏸️ Developer Reviews Code + Tests | ⬜ | — |
+| 9 | Push Branch + Create Pull Request | ⬜ | — |
+| 10 | ⏸️ Human/Developer Review + Merge to Staging | ⬜ | — |
+| 11 | Create GitHub Release | ⬜ | — |
+| 12 | Generate qa.md + release.md | ⬜ | — |
+| 13 | Push to Releases + Close Issues + Cleanup | ⬜ | — |
+
+**Legend:** ✅ Done | 🔄 In Progress | ⏸️ Waiting for Developer | ⬜ Not Started | ❌ Blocked
+
+## Current Step
+
+**Step {N}**: {description}
+
+## Sub-Tasks (complex work only — see Step 4)
+
+> All sub-tasks share the parent branch `{version}` — do not create `{version}.{sub_n}` branches.
+
+| Sub-Issue # | Version Tag | Title | Status |
+|---|---|---|---|
+| #{sub_issue_number} | {version}.{sub_n} | {title} | ⬜ |
+
+## Notes
+
+- {any notes, blockers, or context for resuming}
+
+## Artifacts
+
+| Artifact | Path | Status |
+|----------|------|--------|
+| Inbox | `inbox/{version}/` | ⬜ |
+| Planning | `releases/{version}/planning.md` | ⬜ |
+| QA Report | `releases/{version}/qa.md` | ⬜ |
+| Release Notes | `releases/{version}/release.md` | ⬜ |
+
+## GitHub Links
+
+- **Issue**: https://github.com/{GITHUB_ORG}/{GITHUB_REPO}/issues/{issue_number}
+- **Branch**: {version}
+- **PR**: {pr_url}
+- **Releases Repo**: https://github.com/{GITHUB_ORG}/{GITHUB_REPO}

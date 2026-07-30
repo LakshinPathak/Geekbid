@@ -1,0 +1,1151 @@
+"use client";
+import { use, useMemo, useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useApp } from "@/lib/store";
+import { formatMoney, getCurrentPrice, getHoursToFloor, formatHoursToFloor, timeAgo, getGeekTier } from "@/lib/utils";
+import { getDemandLevel, getEffectiveDecayRate, getDemandMultiplier, getAdaptivePrice } from "@/lib/pricing";
+import { toast } from "sonner";
+import AuctionVictoryModal from "@/components/modals/AuctionVictoryModal";
+import {
+ Clock, DollarSign, Zap, ArrowLeft, Eye, Send,
+ MessageSquare, BarChart3, Timer, Calendar, CheckCircle2, Activity, Sparkles,
+} from "lucide-react";
+import AIBidStrategist from "@/components/ai/AIBidStrategist";
+import AIBidEvaluator from "@/components/ai/AIBidEvaluator";
+import PlanLimitBanner from "@/components/PlanLimitBanner";
+import SmartMatchModal from "@/components/feed/SmartMatchModal";
+
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+ const { id: jobId } = use(params);
+ const { jobs, bids, users, now, currentUser, acceptJob, acceptBid, counterBid, respondToOffer, milestones, fetchMilestones, updateMilestone, getUserPlanConfig, planUsage } = useApp();
+ const [respondingToOffer, setRespondingToOffer] = useState(false);
+ const [accepting, setAccepting] = useState(false);
+ const [acceptingBidId, setAcceptingBidId] = useState<string | null>(null);
+ const [bidding, setBidding] = useState(false);
+ const [counterPrice, setCounterPrice] = useState("");
+ const [counterError, setCounterError] = useState("");
+ const [victoryData, setVictoryData] = useState<null | {
+ jobId: string; jobTitle: string; finalPrice: number; startingPrice: number;
+ freelancerName: string; freelancerScore?: number; clientName: string;
+ }>(null);
+
+ // ── P0: Price ticker delta tracking ──────────────────────────────────────
+ const [priceDelta, setPriceDelta] = useState(0);
+ const [priceFlash, setPriceFlash] = useState<"drop" | null>(null);
+ const prevPriceRef = useRef<number | null>(null);
+ const price30sRef = useRef<{ price: number; at: number } | null>(null);
+
+ // ── P0: 1-second countdown display ───────────────────────────────────────
+ const [countdownDisplay, setCountdownDisplay] = useState("");
+
+ // ── P0: Bid cooldown ──────────────────────────────────────────────────────
+ const [cooldownMinsLeft, setCooldownMinsLeft] = useState(0);
+ const prevCooldownRef = useRef(0);
+ const uid = currentUser?.id ?? currentUser?._id ?? "";
+
+ // ── P2: New-bid flash notification ───────────────────────────────────────
+ const prevBidCountRef = useRef<number>(-1);
+ const [newBidFlash, setNewBidFlash] = useState(false);
+ const [showSmartMatch, setShowSmartMatch] = useState(false);
+
+ const job = useMemo(() => jobs.find(j => (j.id === jobId) || (j._id === jobId)), [jobs, jobId]);
+ const jobMilestones = useMemo(() => milestones.filter(m => m.jobId === jobId).sort((a, b) => a.order - b.order), [milestones, jobId]);
+ useEffect(() => { fetchMilestones(jobId); }, [jobId, fetchMilestones]);
+ const jobBids = useMemo(() => bids.filter(b => b.jobId === jobId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [bids, jobId]);
+
+ const myLastBid = useMemo(() => {
+ if (!uid) return null;
+ return bids.filter(b => b.jobId === jobId && b.freelancerId === uid)
+ .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
+ }, [bids, jobId, uid]);
+
+ // Sparkline points (must stay before early return)
+ const sparklinePoints = useMemo(() => {
+ if (!job) return "";
+ const elapsedH = (now.getTime() - new Date(job.postedAt).getTime()) / 3600000;
+ const isAdapt = job.pricingMode !== "fixed";
+ const totalHrs = Math.max(elapsedH, 1);
+ const steps = 40;
+ const points: string[] = [];
+ const chartW = 200, chartH = 50;
+ for (let i = 0; i <= steps; i++) {
+ const h = (i / steps) * totalHrs;
+ const t = new Date(new Date(job.postedAt).getTime() + h * 3600000);
+ const p = isAdapt ? getAdaptivePrice(job, t) : getCurrentPrice(job, t);
+ const x = (i / steps) * chartW;
+ const y = chartH - ((p - job.minimumPrice) / Math.max(job.startingPrice - job.minimumPrice, 1)) * chartH;
+ points.push(`${x},${y}`);
+ }
+ return points.join(" ");
+ }, [job, now]);
+
+ // P0 effect: price flash + 30s delta (fires on each 5s `now` tick)
+ useEffect(() => {
+ if (!job) return;
+ const cur = getCurrentPrice(job, now);
+ const nowT = now.getTime();
+ let timer: ReturnType<typeof setTimeout> | null = null;
+ if (prevPriceRef.current !== null && cur < prevPriceRef.current - 0.001) {
+ setPriceFlash("drop");
+ timer = setTimeout(() => setPriceFlash(null), 650);
+ }
+ prevPriceRef.current = cur;
+ if (!price30sRef.current) {
+ price30sRef.current = { price: cur, at: nowT };
+ } else if (nowT - price30sRef.current.at >= 30000) {
+ setPriceDelta(price30sRef.current.price - cur);
+ price30sRef.current = { price: cur, at: nowT };
+ }
+ return () => { if (timer) clearTimeout(timer); };
+ }, [job, now]);
+
+ // P0 effect: 1-second countdown ticker
+ useEffect(() => {
+ if (!job?.deadlineAt) return;
+ const tick = () => {
+ const ms = new Date(job.deadlineAt).getTime() - Date.now();
+ if (ms <= 0) { setCountdownDisplay("Expired"); return; }
+ const s = Math.floor(ms / 1000);
+ const d = Math.floor(s / 86400);
+ const h = Math.floor((s % 86400) / 3600);
+ const m = Math.floor((s % 3600) / 60);
+ const sec = s % 60;
+ if (s > 86400) setCountdownDisplay(`${d}d ${h}h remaining`);
+ else if (s < 600) setCountdownDisplay(`${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`);
+ else setCountdownDisplay(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`);
+ };
+ tick();
+ const id = setInterval(tick, 1000);
+ return () => clearInterval(id);
+ }, [job?.deadlineAt]);
+
+ // P0 effect: cooldown countdown (1-second)
+ useEffect(() => {
+ if (!myLastBid) { setCooldownMinsLeft(0); return; }
+ const update = () => {
+ const minsLeft = Math.max(0, 30 - (Date.now() - new Date(myLastBid.createdAt).getTime()) / 60000);
+ setCooldownMinsLeft(minsLeft);
+ prevCooldownRef.current = minsLeft;
+ };
+ update();
+ const id = setInterval(update, 1000);
+ return () => clearInterval(id);
+ }, [myLastBid]);
+
+ // P2 effect: detect new bids from store's 5s polling cycle
+ useEffect(() => {
+ if (prevBidCountRef.current === -1) {
+ prevBidCountRef.current = jobBids.length;
+ return;
+ }
+ if (jobBids.length > prevBidCountRef.current) {
+ const newest = jobBids[0];
+ const bidder = users.find(u => u.id === newest?.freelancerId);
+ toast(`⚡ New bid! ${bidder?.fullName ?? "Someone"} bid ${formatMoney(newest?.bidPrice ?? 0)}`);
+ setNewBidFlash(true);
+ const t = setTimeout(() => setNewBidFlash(false), 2000);
+ prevBidCountRef.current = jobBids.length;
+ return () => clearTimeout(t);
+ }
+ prevBidCountRef.current = jobBids.length;
+ }, [jobBids, users]);
+
+ if (!job) return (
+ <div className="flex items-center justify-center min-h-[60vh] bg-[#ffffff]">
+ <p className="text-[#6f6a7d] text-lg">Job not found</p>
+ </div>
+ );
+
+ const client = users.find(u => u.id === job.clientId);
+ const current = getCurrentPrice(job, now);
+ const eta = getHoursToFloor(job, now);
+ const isAtFloor = eta <= 0;
+ const isFreelancer = currentUser?.role === "freelancer";
+ const isClient = currentUser?.role === "client" && (currentUser.id === job.clientId || currentUser._id === job.clientId);
+ const isOpen = job.status === "open";
+ const isSmartMatchEligible = isOpen && job.type !== "direct_offer";
+ // A direct-offer job has no bidding — the offered freelancer can only
+ // accept or decline the fixed price. Gates the freelancer action panel
+ // below so it renders Accept/Decline (wired to respondToOffer) instead of
+ // the auction Accept/Counter-bid form, which offer-response would reject.
+ const isDirectOfferForMe = isFreelancer && job.type === "direct_offer" && job.offeredTo === uid;
+ const pricePercent = ((current - job.minimumPrice) / (job.startingPrice - job.minimumPrice)) * 100;
+ const deadlineDate = new Date(job.deadlineAt);
+ const deadlineMs = deadlineDate.getTime() - now.getTime();
+ const deadlineHrs = Math.max(0, deadlineMs / 3600000);
+
+ // Pricing intelligence
+ const elapsedHrs = (now.getTime() - new Date(job.postedAt).getTime()) / 3600000;
+ const bidderCount = job.uniqueBidderCount ?? job.bidCount ?? 0;
+ const isAdaptive = job.pricingMode !== "fixed";
+ const demandMultiplier = isAdaptive ? getDemandMultiplier(bidderCount, elapsedHrs) : 1;
+ const effectiveRate = isAdaptive ? getEffectiveDecayRate(job.decayRatePerHour, bidderCount, elapsedHrs) : job.decayRatePerHour;
+ const demand = getDemandLevel(bidderCount);
+ const isHot = bidderCount >= 5;
+ // GET /api/bids only returns bids the caller placed or bids on jobs the
+ // caller posted (privacy fix — bids carry freelancer identity + price).
+ // For a freelancer viewing someone else's job they haven't bid on yet,
+ // jobBids is correctly empty even when job.bidCount says otherwise —
+ // distinguish "genuinely no bids" from "bids exist but are hidden from
+ // this viewer" so the panel doesn't contradict the Demand/Lowest Counter
+ // fields shown elsewhere on the same page.
+ const hasHiddenBids = jobBids.length === 0 && bidderCount > 0;
+ const displayBidCount = jobBids.length > 0 ? jobBids.length : bidderCount;
+
+ // P2: Forward projection for adaptive chart
+ const projectionData = (() => {
+ if (!isAdaptive || eta <= 0) return null;
+ const chartW = 200, projW = 70, chartH = 50;
+ const capHrs = Math.min(eta, 24);
+ const curY = chartH - ((current - job.minimumPrice) / Math.max(job.startingPrice - job.minimumPrice, 1)) * chartH;
+ const genPoints = (extraBidders: number): string => {
+ const mock = extraBidders > 0
+ ? { ...job, uniqueBidderCount: bidderCount + extraBidders, bidCount: (job.bidCount ?? 0) + extraBidders }
+ : job;
+ const pts = [`${chartW},${curY.toFixed(1)}`];
+ for (const h of [0.5, 1, 2, 4, 8, capHrs]) {
+ if (h > capHrs + 0.05) break;
+ const futureT = new Date(now.getTime() + h * 3600000);
+ const p = Math.max(getAdaptivePrice(mock, futureT), job.minimumPrice);
+ const x = chartW + (h / capHrs) * projW;
+ const y = Math.max(0, Math.min(chartH, chartH - ((p - job.minimumPrice) / Math.max(job.startingPrice - job.minimumPrice, 1)) * chartH));
+ pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+ }
+ return pts.join(" ");
+ };
+ const rate3 = getEffectiveDecayRate(job.decayRatePerHour, bidderCount + 3, elapsedHrs);
+ const eta3 = rate3 > 0 ? (current - job.minimumPrice) / rate3 : eta * 1.5;
+ return { pts0: genPoints(0), pts3: genPoints(3), eta0: eta, eta3 };
+ })();
+
+ // P2: Best-value bid for client comparison
+ const bestValueBid = isClient && jobBids.length > 0
+ ? [...jobBids]
+ .filter(b => { const u = users.find(u2 => u2.id === b.freelancerId); return u != null && u.geekScore > 500; })
+ .sort((a, b) => a.bidPrice - b.bidPrice)[0] ?? null
+ : null;
+
+ // P1: Bid statistics
+ const bidPrices = jobBids.map(b => b.bidPrice);
+ const minBid = bidPrices.length > 0 ? Math.min(...bidPrices) : null;
+ const maxBid = bidPrices.length > 0 ? Math.max(...bidPrices) : null;
+ const avgBid = bidPrices.length > 0 ? bidPrices.reduce((s, p) => s + p, 0) / bidPrices.length : null;
+ const myBidsOnJob = jobBids.filter(b => b.freelancerId === uid);
+ const myLowestBid = myBidsOnJob.length > 0 ? Math.min(...myBidsOnJob.map(b => b.bidPrice)) : null;
+ // jobBids only ever contains bids this viewer is authorized to see (their
+ // own, or all of them if they own the job) — never competitors' bids on a
+ // job they don't own. A rank computed against jobBids would silently
+ // undercount real competition. job.lowestCounterBid is a public aggregate
+ // field instead: if it still equals my own lowest bid, no one has beaten
+ // it (the field only ever updates downward to a genuinely lower price).
+ const amILeading = myLowestBid !== null && job.lowestCounterBid != null
+ ? myLowestBid <= job.lowestCounterBid
+ : null;
+
+ // P1: Smart bid suggestions
+ const aggressiveBid = Math.round(job.minimumPrice + (current - job.minimumPrice) * 0.3);
+ const competitiveBid = Math.round(job.minimumPrice + (current - job.minimumPrice) * 0.6);
+ // Once the price has decayed to the floor, current === minimumPrice, so every
+ // suggestion/slider/position-bar computation above collapses to the same single
+ // point — there's no room left to counter below the accept price. Show a plain
+ // message instead of a form that looks interactive but can't actually do anything.
+ const atFloor = current <= job.minimumPrice;
+
+ // P0: Cooldown SVG ring
+ const RING_R = 28;
+ const RING_C = 2 * Math.PI * RING_R;
+ const isOnCooldown = cooldownMinsLeft > 0;
+ const ringOffset = isOnCooldown ? RING_C * (1 - cooldownMinsLeft / 30) : RING_C;
+ const cooldownExpiresAt = myLastBid ? new Date(myLastBid.createdAt).getTime() + 30 * 60000 : 0;
+ const justUnlocked = !isOnCooldown && cooldownExpiresAt > 0 && (now.getTime() - cooldownExpiresAt) < 120000;
+
+ // P0: Countdown urgency class
+ const countdownClass = deadlineHrs > 24
+ ? "text-[#6f6a7d] text-sm"
+ : deadlineHrs > 6
+ ? "text-[#4b3f8f] font-mono text-sm tabular-nums"
+ : deadlineHrs > 1
+ ? "text-[#7a6a2c] font-mono text-sm tabular-nums animate-pulse"
+ : deadlineHrs > (10 / 60)
+ ? "text-[#c14d3a] font-mono text-sm tabular-nums animate-shake"
+ : "text-[#c14d3a] font-mono text-2xl font-bold tabular-nums animate-shake";
+
+ // P8: Demand-scaled glow on price
+ const priceGlow = `0 0 ${20 + Math.min(bidderCount * 10, 50)}px rgba(75,63,143,${(0.15 + Math.min(bidderCount * 0.04, 0.3)).toFixed(2)})`;
+
+ // P1: Slider / position helpers
+ const sliderNum = Number(counterPrice);
+ const sliderVal = sliderNum > 0 ? sliderNum : aggressiveBid;
+ const sliderHourly = job.estimatedHours > 0 ? sliderVal / job.estimatedHours : 0;
+ const bidsBelow = sliderNum > 0 ? jobBids.filter(b => b.bidPrice < sliderNum).length : 0;
+ const posMyBid = sliderNum > 0
+ ? Math.max(2, Math.min(98, ((sliderNum - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100))
+ : null;
+ const posMinBid = minBid != null
+ ? Math.max(2, Math.min(98, ((minBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100))
+ : null;
+
+ const handleAccept = async () => {
+ if (accepting) return;
+ setAccepting(true);
+ const r = await acceptJob(job.id ?? job._id ?? "");
+ setAccepting(false);
+ if (r.ok) {
+ // Use the server's authoritative winner, not a client-side re-derivation —
+ // re-sorting local bids can disagree with the backend's actual pick on a
+ // price tie or a stale bids cache (previously showed the wrong freelancer
+ // name in this modal).
+ const freelancer = r.freelancerId ? users.find(u => u.id === r.freelancerId) : undefined;
+ const client = users.find(u => u.id === job.clientId);
+ setVictoryData({
+ jobId: job.id ?? job._id ?? "",
+ jobTitle: job.title,
+ finalPrice: r.finalPrice ?? current,
+ startingPrice: job.startingPrice,
+ freelancerName: freelancer?.fullName ?? "Freelancer",
+ freelancerScore: freelancer?.geekScore,
+ clientName: client?.fullName ?? "Client",
+ });
+ } else {
+ toast.error("Cannot accept", { description: r.message });
+ }
+ };
+
+ const handleAcceptBid = async (bidId: string, freelancerName?: string) => {
+ if (acceptingBidId) return;
+ setAcceptingBidId(bidId);
+ const r = await acceptBid(job.id ?? job._id ?? "", bidId);
+ setAcceptingBidId(null);
+ if (r.ok) {
+ const freelancer = r.freelancerId ? users.find(u => u.id === r.freelancerId) : undefined;
+ const client = users.find(u => u.id === job.clientId);
+ setVictoryData({
+ jobId: job.id ?? job._id ?? "",
+ jobTitle: job.title,
+ finalPrice: r.finalPrice ?? current,
+ startingPrice: job.startingPrice,
+ freelancerName: freelancer?.fullName ?? freelancerName ?? "Freelancer",
+ freelancerScore: freelancer?.geekScore,
+ clientName: client?.fullName ?? "Client",
+ });
+ } else {
+ toast.error("Cannot accept", { description: r.message });
+ }
+ };
+
+ const handleOfferResponse = async (response: "accepted" | "declined") => {
+ setRespondingToOffer(true);
+ const r = await respondToOffer(job.id ?? job._id ?? "", response);
+ setRespondingToOffer(false);
+ if (r.ok) {
+ if (response === "accepted") {
+ toast.success("Offer accepted!", { description: r.message });
+ } else {
+ toast.success("Offer declined", { description: r.message });
+ }
+ } else {
+ toast.error("Couldn't respond to offer", { description: r.message });
+ }
+ };
+
+ const handleCounter = async () => {
+ if (bidding) return;
+ setCounterError("");
+ const price = Number(counterPrice);
+ if (!price || price <= 0) { setCounterError("Enter a valid price"); return; }
+ if (price > current) { setCounterError(`Price must be at most ${formatMoney(current)}`); return; }
+ if (price < job.minimumPrice) { setCounterError(`Price must be at least ${formatMoney(job.minimumPrice)}`); return; }
+ setBidding(true);
+ const r = await counterBid(job.id ?? job._id ?? "", price);
+ setBidding(false);
+ if (r.ok) { toast.success("Counter-bid sent!", { description: r.message }); setCounterPrice(""); }
+ else toast.error("Counter-bid failed", { description: r.message });
+ };
+
+ return (
+ <div className="min-h-screen bg-[#ffffff] grid-bg">
+ {victoryData && (
+ <AuctionVictoryModal data={victoryData} onClose={() => setVictoryData(null)} />
+ )}
+ {showSmartMatch && isClient && isSmartMatchEligible && (
+ <SmartMatchModal
+ jobId={job.id ?? job._id ?? jobId}
+ jobTitle={job.title}
+ onClose={() => setShowSmartMatch(false)}
+ />
+ )}
+ <div className="bg-[#fbfaf7] max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+ <Link href="/feed" className="inline-flex items-center gap-1.5 text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors mb-6">
+ <ArrowLeft className="h-4 w-4" /> Back to Feed
+ </Link>
+
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+ {/* ─── Left Column ─── */}
+ <div className="lg:col-span-2 space-y-4">
+ {/* Job header */}
+ <div className="glass-panel scanline p-6 sm:p-8">
+ <div className="flex justify-between items-start">
+ <div className="flex-1">
+ <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#3d3a45]">{job.title}</h1>
+ {client && (
+ <div className="flex items-center gap-2 mt-3">
+ <div className="w-8 h-8 bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] text-xs font-semibold rounded-full flex items-center justify-center">
+ {client.avatarInitial}
+ </div>
+ <div>
+ <p className="text-sm text-[#6f6a7d]">Posted by <span className="text-[#3d3a45] font-medium">{client.fullName}</span></p>
+ <p className="text-xs text-[#6f6a7d] flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(job.postedAt)}</p>
+ </div>
+ </div>
+ )}
+ </div>
+ <span className={`shrink-0 ${
+ job.status === "open" ? "badge-active"
+ : job.status === "accepted" || job.status === "completed" ? "badge-completed"
+ : "badge-pending"
+ }`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
+ </div>
+ <div className="mt-4 flex flex-wrap gap-1.5">
+ {job.skillsRequired.map(s => {
+ const isMatch = currentUser?.skills?.includes(s);
+ return (
+ <span key={s} className={`px-2.5 py-1 rounded-full text-xs border ${
+ isMatch ? "bg-[#4b3f8f] text-[#ffffff] border-transparent" : "bg-[#ffffff] border-[rgba(75,63,143,0.22)] text-[#6f6a7d]"
+ }`}>{isMatch && "✓ "}{s}</span>
+ );
+ })}
+ </div>
+ </div>
+
+ {/* Description */}
+ <div className="glass-panel p-6 sm:p-8">
+ <p className="text-[#6f6a7d] text-xs uppercase tracking-wider font-semibold mb-3">Description</p>
+ <p className="text-[#6f6a7d] text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+ </div>
+
+ {/* Price Analytics */}
+ <div className="glass-panel p-6">
+ <div className="flex items-center gap-2 mb-4">
+ <BarChart3 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Price Analytics</p>
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+ <div>
+ <p className="text-[#6f6a7d] text-xs">Starting Price</p>
+ <p className="terminal-amount text-xl text-[#3d3a45] mt-1">{formatMoney(job.startingPrice)}</p>
+ </div>
+ <div>
+ <p className="text-[#6f6a7d] text-xs">Current Price</p>
+ <p className="terminal-amount text-xl text-[#4b3f8f] mt-1 animate-price-pulse">{formatMoney(current)}</p>
+ </div>
+ <div>
+ <p className="text-[#6f6a7d] text-xs">Floor Price</p>
+ <p className="terminal-amount text-xl text-[#3d3a45] mt-1">{formatMoney(job.minimumPrice)}</p>
+ </div>
+ <div>
+ <p className="text-[#6f6a7d] text-xs">Decay Rate</p>
+ <p className="terminal-amount text-xl text-[#c14d3a] mt-1">-${job.decayRatePerHour}/hr</p>
+ </div>
+ </div>
+ <div className="h-2 bg-[#f4f2ee] rounded-full mt-4 overflow-hidden">
+ <div className="decay-bar h-2 transition-all" style={{ width: `${Math.max(0, Math.min(100, pricePercent))}%` }} />
+ </div>
+ <div className="flex justify-between mt-2 text-xs text-[#6f6a7d]">
+ <span>Floor: {formatMoney(job.minimumPrice)}</span>
+ <span>Start: {formatMoney(job.startingPrice)}</span>
+ </div>
+ </div>
+
+ {/* ─── Bids: P2 comparison table (client) or P1 animated feed (others) ─── */}
+ <div className={`glass-panel p-6 relative overflow-hidden transition-[border-color] ${isHot ? "!border-[rgba(75,63,143,0.30)]" : ""} ${newBidFlash ? "animate-border-flash" : ""}`}>
+ {/* P8: Ember particles for hot jobs */}
+ {isHot && (
+ <div className="absolute top-3 right-16 flex gap-2 pointer-events-none">
+ <span className="text-[8px] text-[#7a6a2c] animate-ember opacity-70">✦</span>
+ <span className="text-[8px] text-[#4b3f8f] animate-ember opacity-50 [animation-delay:0.4s]">✦</span>
+ <span className="text-[8px] text-[#7a6a2c] animate-ember opacity-60 [animation-delay:0.9s]">✦</span>
+ </div>
+ )}
+
+ {isClient ? (
+ /* ── P2: Client Bid Comparison Matrix ── */
+ <>
+ {/* AI Bid Evaluator */}
+ {jobBids.length > 0 && (
+ <div className="mb-4">
+ <AIBidEvaluator
+ jobId={job.id ?? job._id ?? ""}
+ bids={jobBids}
+ freelancers={users}
+ onAcceptBid={async (bid) => {
+ const bidder = users.find(u => u.id === bid.freelancerId);
+ await handleAcceptBid(bid.id ?? bid._id ?? "", bidder?.fullName);
+ }}
+ />
+ </div>
+ )}
+ <div className="flex items-center gap-2 mb-4">
+ <BarChart3 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Bid Comparison ({jobBids.length})</p>
+ {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+ </div>
+ {jobBids.length === 0 ? (
+ <p className="text-[#6f6a7d] text-sm">No bids yet.</p>
+ ) : (
+ <>
+ <div className="overflow-x-auto -mx-1">
+ <table className="w-full text-xs min-w-[500px]">
+ <thead>
+ <tr className="border-b border-[rgba(75,63,143,0.22)]">
+ {["Freelancer", "Price", "GeekScore", "Skills", "When", ""].map(h => (
+ <th key={h} className={`py-2 px-2 text-[#6f6a7d] font-semibold uppercase tracking-wider text-[11px] ${h === "Price" || h === "When" || h === "" ? "text-right" : h === "GeekScore" || h === "Skills" ? "text-center" : "text-left"}`}>{h}</th>
+ ))}
+ </tr>
+ </thead>
+ <tbody>
+ {jobBids.map(bid => {
+ const bidder = users.find(u => u.id === bid.freelancerId);
+ const tier = bidder ? getGeekTier(bidder.geekScore) : null;
+ const skillMatches = bidder ? bidder.skills.filter(s => job.skillsRequired.includes(s)).length : 0;
+ const isBest = bid.id === bestValueBid?.id;
+ const isNew = (now.getTime() - new Date(bid.createdAt).getTime()) < 300000;
+ return (
+ <tr key={bid.id} className={`border-b border-[rgba(75,63,143,0.22)]/60 transition-colors ${isBest ? "bg-[#4b3f8f]/[0.04]" : "hover:bg-[#f4f2ee]"}`}>
+ <td className="py-3 px-2">
+ <div className="flex items-center gap-2">
+ <div className="w-7 h-7 bg-[#ffffff] border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
+ {bidder?.avatarInitial ?? "?"}
+ </div>
+ <span className="text-[#3d3a45] font-medium truncate max-w-[90px]">{bidder?.fullName ?? "Freelancer"}</span>
+ {isBest && <span className="text-[9px] bg-[#4b3f8f] text-[#ffffff] border border-transparent rounded-full px-1 font-bold shrink-0">★</span>}
+ {isNew && <span className="text-[9px] bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] rounded-full px-1 font-bold animate-pulse shrink-0">NEW</span>}
+ </div>
+ </td>
+ <td className="py-3 px-2 text-right font-heading font-bold text-[#4b3f8f]">{formatMoney(bid.bidPrice)}</td>
+ <td className="py-3 px-2 text-center text-[#6f6a7d]">
+ {bidder ? `${bidder.geekScore}${tier ? ` · ${tier.label}` : ""}` : "—"}
+ </td>
+ <td className="py-3 px-2 text-center">
+ <span className={`font-medium ${skillMatches === job.skillsRequired.length ? "text-[#4b3f8f]" : skillMatches > 0 ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`}>
+ {skillMatches}/{job.skillsRequired.length} ✓
+ </span>
+ </td>
+ <td className="py-3 px-2 text-right text-[#6f6a7d]">{timeAgo(bid.createdAt)}</td>
+ <td className="py-3 px-2 text-right">
+ {isOpen && (
+ <button onClick={() => handleAcceptBid(bid.id, bidder?.fullName)}
+ disabled={acceptingBidId !== null}
+ className="btn-primary text-[11px] py-1.5 px-2.5 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+ {acceptingBidId === bid.id ? "Accepting…" : "Accept"}
+ </button>
+ )}
+ </td>
+ </tr>
+ );
+ })}
+ </tbody>
+ </table>
+ </div>
+
+ {/* Best value recommendation */}
+ {bestValueBid && (() => {
+ const bidder = users.find(u => u.id === bestValueBid.freelancerId);
+ return (
+ <div className="mt-4 glass-panel-sm border border-[rgba(75,63,143,0.35)]/30 p-3 flex items-center gap-3">
+ <span className="text-lg shrink-0">💡</span>
+ <div>
+ <p className="text-[#4b3f8f] text-xs font-semibold">Best value</p>
+ <p className="text-[#6f6a7d] text-xs mt-0.5">
+ {bidder?.fullName ?? "Freelancer"} — {formatMoney(bestValueBid.bidPrice)} — lowest price among GeekScore &gt; 500 bidders
+ </p>
+ </div>
+ </div>
+ );
+ })()}
+ </>
+ )}
+ </>
+ ) : (
+ /* ── P1: Animated Bid Activity Feed (freelancers / viewers) ── */
+ <>
+ <div className="flex items-center justify-between mb-4">
+ <div className="flex items-center gap-2">
+ <MessageSquare className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Live Bids ({displayBidCount})</p>
+ {isHot && <span className="text-[11px] bg-[rgba(224,162,62,0.10)] text-[#7a6a2c] border border-[rgba(224,162,62,0.20)] rounded-full px-2 py-0.5 font-bold">🔥 Hot</span>}
+ </div>
+ {isFreelancer && amILeading !== null && (
+ <span className={`text-[11px] rounded-full px-2.5 py-0.5 border ${amILeading ? "text-[#4d7245] bg-[#4d7245]/10 border-[#4d7245]/20" : "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.30)]"}`}>
+ {amILeading ? "Your bid is the lowest" : `Lowest counter: ${formatMoney(job.lowestCounterBid ?? myLowestBid ?? 0)}`}
+ </span>
+ )}
+ {isFreelancer && amILeading === null && (jobBids.length > 0 || hasHiddenBids) && (
+ <span className="text-[11px] text-[#6f6a7d]">You haven't bid yet</span>
+ )}
+ </div>
+
+ {jobBids.length === 0 ? (
+ hasHiddenBids ? (
+ <p className="text-[#6f6a7d] text-sm">
+ {bidderCount} {bidderCount === 1 ? "bid has" : "bids have"} already been placed on this job. Bid identities and messages stay private to the client — check Lowest Counter above for the current benchmark.
+ </p>
+ ) : (
+ <p className="text-[#6f6a7d] text-sm">No bids yet. Be the first!</p>
+ )
+ ) : (
+ <>
+ <div className="space-y-3">
+ {jobBids.map((bid, i) => {
+ const bidder = users.find(u => u.id === bid.freelancerId);
+ const tier = bidder ? getGeekTier(bidder.geekScore) : null;
+ const isNew = (now.getTime() - new Date(bid.createdAt).getTime()) < 300000;
+ const isMyBid = bid.freelancerId === uid;
+ return (
+ <div
+ key={bid.id}
+ className={`glass-panel-sm p-4 transition-colors animate-slide-up ${
+ isMyBid ? "!border-[rgba(75,63,143,0.30)]" : "hover:!border-[rgba(75,63,143,0.35)]/10"
+ }`}
+ style={{ animationDelay: `${i * 0.07}s`, animationFillMode: "both" }}
+ >
+ <div className="flex items-start justify-between gap-3">
+ <div className="flex items-center gap-3 flex-1 min-w-0">
+ <div className="w-9 h-9 bg-[#ffffff] border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-xs font-bold rounded-full flex items-center justify-center shrink-0 relative">
+ {bidder?.avatarInitial ?? "?"}
+ {isNew && <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4b3f8f] rounded-full animate-pulse" />}
+ </div>
+ <div className="flex-1 min-w-0">
+ <div className="flex items-center gap-2 flex-wrap">
+ <span className="text-sm font-medium text-[#3d3a45]">{bidder?.fullName ?? "Freelancer"}</span>
+ {isNew && <span className="text-[9px] font-bold bg-[#4b3f8f] text-[#ffffff] border border-transparent rounded-full px-1.5 py-0.5 animate-pulse">NEW</span>}
+ {tier && <span className="bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] text-[11px] px-2 py-0.5 rounded-full">GS: {bidder?.geekScore}</span>}
+ {isMyBid && <span className="text-[9px] font-bold bg-[rgba(75,63,143,0.12)] text-[#4b3f8f] border border-[rgba(75,63,143,0.22)] rounded-full px-1.5 py-0.5">You</span>}
+ <span className={`text-[11px] px-2 py-0.5 rounded-full ${bid.bidType === "accept" ? "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]" : "bg-[rgba(75,63,143,0.12)] text-[#4b3f8f]"}`}>{bid.bidType}</span>
+ </div>
+ 
+ <p className="text-[11px] text-[#6f6a7d] mt-1">{timeAgo(bid.createdAt)}</p>
+ </div>
+ </div>
+ <p className="font-heading text-lg font-bold text-[#4b3f8f] shrink-0">{formatMoney(bid.bidPrice)}</p>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+
+ {/* Bid statistics bar */}
+ {minBid !== null && maxBid !== null && avgBid !== null && (
+ <div className="mt-4 glass-panel-sm rounded-2xl p-4">
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-3">Bid Range</p>
+ <div className="relative h-2 bg-[#f4f2ee] rounded-full mb-3">
+ <div
+ className="absolute h-0.5 bg-[#4b3f8f] rounded-none"
+ style={{
+ left: `${Math.max(0, ((minBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
+ right: `${100 - Math.min(100, ((maxBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100)}%`,
+ }}
+ />
+ <div
+ className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#4b3f8f] rounded-full border-2 border-[#ffffff] -ml-1"
+ style={{ left: `${((avgBid - job.minimumPrice) / Math.max(current - job.minimumPrice, 1)) * 100}%` }}
+ title={`Avg: ${formatMoney(avgBid)}`}
+ />
+ </div>
+ <div className="flex justify-between text-[11px] text-[#6f6a7d]">
+ <span>Min: <span className="text-[#4b3f8f] font-medium">{formatMoney(minBid)}</span></span>
+ <span>Avg: <span className="text-[#6f6a7d] font-medium">{formatMoney(avgBid)}</span></span>
+ <span>Max: <span className="text-[#c14d3a] font-medium">{formatMoney(maxBid)}</span></span>
+ </div>
+ </div>
+ )}
+ </>
+ )}
+ </>
+ )}
+ </div>
+
+ {/* Milestones */}
+ {jobMilestones.length > 0 && (
+ <div className="glass-panel p-6">
+ <div className="flex items-center gap-2 mb-4">
+ <CheckCircle2 className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Milestones ({jobMilestones.filter(m => m.status === "approved").length}/{jobMilestones.length} completed)</p>
+ </div>
+ <div className="h-2 bg-[#f4f2ee] rounded-full mb-4 overflow-hidden">
+ <div className="decay-bar h-2 transition-all" style={{ width: `${(jobMilestones.filter(m => m.status === "approved").length / jobMilestones.length) * 100}%` }} />
+ </div>
+ <div className="space-y-3">
+ {jobMilestones.map(ms => {
+ const statusColors: Record<string, string> = {
+ pending: "text-[#6f6a7d] bg-[#f4f2ee] border-[rgba(75,63,143,0.22)]",
+ in_progress: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.25)]",
+ submitted: "text-[#4b3f8f] bg-[rgba(75,63,143,0.12)] border-[rgba(75,63,143,0.25)]",
+ approved: "text-[#4b3f8f] bg-[rgba(75,63,143,0.10)] border-[rgba(75,63,143,0.25)]",
+ disputed: "text-[#c14d3a] bg-[rgba(193,77,58,0.08)] border-[rgba(193,77,58,0.20)]",
+ };
+ return (
+ <div key={ms.id} className="glass-panel-sm rounded-2xl p-4">
+ <div className="flex items-center justify-between mb-1">
+ <div className="flex items-center gap-2">
+ <span className="text-[#6f6a7d] text-xs font-mono">#{ms.order}</span>
+ <span className="text-[#3d3a45] text-sm font-medium">{ms.title}</span>
+ </div>
+ <div className="flex items-center gap-2">
+ <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${statusColors[ms.status] ?? statusColors.pending}`}>
+ {ms.status.replace("_", " ")}
+ </span>
+ <span className="text-[#4b3f8f] text-sm font-semibold">{formatMoney(ms.amount)}</span>
+ </div>
+ </div>
+ {ms.description && <p className="text-[#6f6a7d] text-xs mt-1">{ms.description}</p>}
+ <div className="flex gap-2 mt-2">
+ {isFreelancer && ms.status === "in_progress" && (
+ <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] border border-transparent px-3 py-1 rounded-full hover:bg-[#3d3373]/20 transition-colors">
+ Submit
+ </button>
+ )}
+ {isClient && ms.status === "submitted" && (
+ <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] font-semibold px-3 py-1 rounded-full hover:bg-[#3d3373] transition-colors">
+ Approve &amp; Release
+ </button>
+ )}
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
+ </div>
+
+ {/* ─── Right Column ─── */}
+ <div className="space-y-4 lg:sticky lg:top-20 self-start">
+ {/* Pricing Intelligence Card */}
+ {isAdaptive && (
+ <div className="glass-panel p-5">
+ <div className="flex items-center gap-2 mb-4">
+ <Activity className="h-4 w-4 text-[#4b3f8f]" />
+ <p className="text-[#3d3a45] text-sm font-semibold">Pricing Intelligence</p>
+ <span className="text-[11px] bg-[#4b3f8f]/20 text-[#4b3f8f] px-1.5 py-0.5 rounded-full font-medium ml-auto">Adaptive</span>
+ </div>
+ <div className="space-y-2.5">
+ <div className="flex justify-between items-center">
+ <span className="text-[#6f6a7d] text-xs">Base Decay</span>
+ <span className="text-[#6f6a7d] text-xs font-medium">-${job.decayRatePerHour}/hr</span>
+ </div>
+ <div className="flex justify-between items-center">
+ <span className="text-[#6f6a7d] text-xs">Effective Decay</span>
+ <span className="text-[#4b3f8f] text-xs font-bold">-${effectiveRate.toFixed(1)}/hr ({demandMultiplier.toFixed(2)}×)</span>
+ </div>
+ <div className="flex justify-between items-center">
+ <span className="text-[#6f6a7d] text-xs">Demand</span>
+ {demand ? (
+ <span className={`${demand.bgColor} ${demand.color} border ${demand.borderColor} rounded-full px-2 py-0.5 text-[11px] font-bold`}>
+ {demand.label} ({bidderCount} bidder{bidderCount !== 1 ? "s" : ""})
+ </span>
+ ) : (
+ <span className="text-[#6f6a7d] text-xs">No bids yet</span>
+ )}
+ </div>
+ {job.lowestCounterBid && (
+ <div className="flex justify-between items-center">
+ <span className="text-[#6f6a7d] text-xs">Lowest Counter</span>
+ <span className="text-[#4b3f8f] text-xs font-medium">{formatMoney(job.lowestCounterBid)}</span>
+ </div>
+ )}
+ {job.lastBidAt && (
+ <div className="flex justify-between items-center">
+ <span className="text-[#6f6a7d] text-xs">Last Activity</span>
+ <span className="text-[#6f6a7d] text-xs">{timeAgo(job.lastBidAt)}</span>
+ </div>
+ )}
+ </div>
+
+ {/* Price Trajectory Chart (history + P2 projection) */}
+ <div className="mt-4 glass-panel-sm rounded-2xl p-4">
+ <div className="flex items-center justify-between mb-3">
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider">Price Trajectory</p>
+ <div className="flex items-center gap-1">
+ <div className="w-1.5 h-1.5 rounded-full bg-[#4b3f8f] animate-pulse" />
+ <span className="text-[9px] text-[#4b3f8f]/60">LIVE</span>
+ </div>
+ </div>
+ {/* Extended viewBox 0 0 270 60: 0-200 history, 200-270 projection */}
+ <svg viewBox="0 0 270 60" className="w-full h-16" preserveAspectRatio="none">
+ <defs>
+ <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0%" stopColor="#4b3f8f" stopOpacity="0.35" />
+ <stop offset="50%" stopColor="#4b3f8f" stopOpacity="0.1" />
+ <stop offset="100%" stopColor="#4b3f8f" stopOpacity="0" />
+ </linearGradient>
+ <filter id="sparkGlow">
+ <feGaussianBlur stdDeviation="1.5" result="b" />
+ <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+ </filter>
+ </defs>
+ {/* Floor reference line at y=50 (minimumPrice level) across full width */}
+ <line x1="0" y1="50" x2="270" y2="50" stroke="rgba(75,63,143,0.35)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.35" />
+ <text x="202" y="48" fontSize="5" fill="#b3aec0" opacity="0.6" fontFamily="monospace">FLOOR</text>
+ {/* Historical sparkline */}
+ {sparklinePoints && (
+ <>
+ <polygon points={`0,60 ${sparklinePoints} 200,60`} fill="url(#sparkGrad)" />
+ <polyline points={sparklinePoints} fill="none" stroke="#4b3f8f" strokeWidth="1.5" strokeLinejoin="round" filter="url(#sparkGlow)" />
+ {/* Vertical "now" divider */}
+ <line x1="200" y1="0" x2="200" y2="60" stroke="#4b3f8f" strokeWidth="0.5" opacity="0.2" />
+ {/* P2: Projection lines */}
+ {projectionData && (
+ <>
+ {/* 0 more bids (faster decay) */}
+ <polyline
+ points={projectionData.pts0}
+ fill="none"
+ stroke="#4b3f8f"
+ strokeWidth="1.2"
+ strokeDasharray="4,3"
+ opacity="0.5"
+ strokeLinejoin="round"
+ />
+ {/* +3 more bids (slower decay) */}
+ <polyline
+ points={projectionData.pts3}
+ fill="none"
+ stroke="#4b3f8f"
+ strokeWidth="1.2"
+ strokeDasharray="4,3"
+ opacity="0.25"
+ strokeLinejoin="round"
+ />
+ </>
+ )}
+ {(() => {
+ const lastPt = sparklinePoints.split(" ").pop()?.split(",");
+ if (!lastPt || lastPt.length < 2) return null;
+ const cx = parseFloat(lastPt[0]), cy = parseFloat(lastPt[1]);
+ return (
+ <>
+ <circle cx={cx} cy={cy} r={2} fill="none" stroke="#4b3f8f" strokeWidth="0.5" opacity="0.4">
+ <animate attributeName="r" from="2" to="8" dur="2s" repeatCount="indefinite" />
+ <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
+ </circle>
+ <circle cx={cx} cy={cy} r={2.5} fill="#4b3f8f" filter="url(#sparkGlow)" />
+ </>
+ );
+ })()}
+ </>
+ )}
+ </svg>
+ <div className="flex justify-between mt-1.5">
+ <span className="text-[#6f6a7d] text-[9px]">Posted</span>
+ <span className="text-[#4b3f8f]/50 text-[9px]">Now ↑</span>
+ {!isAtFloor && <span className="text-[#6f6a7d] text-[9px]">Floor ETA →</span>}
+ </div>
+ {/* P2: Scenario labels */}
+ {projectionData && (
+ <div className="mt-2 pt-2 border-t border-[rgba(75,63,143,0.22)] space-y-1">
+ <div className="flex items-center gap-1.5">
+ <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#4b3f8f" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.5" /></svg>
+ <span className="text-[9px] text-[#6f6a7d]">0 more bids → Floor in ~{Math.round(projectionData.eta0)}h</span>
+ </div>
+ <div className="flex items-center gap-1.5">
+ <svg width={16} height={4}><line x1="0" y1="2" x2="16" y2="2" stroke="#4b3f8f" strokeWidth="1.2" strokeDasharray="4,3" opacity="0.25" /></svg>
+ <span className="text-[9px] text-[#6f6a7d]">+3 more bids → Floor in ~{Math.round(projectionData.eta3)}h</span>
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ )}
+
+ {/* ─── P0: Live price card ─── */}
+ <div className="glass-panel p-6 relative overflow-hidden hover:border-[rgba(75,63,143,0.35)]/15 transition-colors">
+ <div className="absolute top-0 left-0 right-0 h-px bg-[rgba(75,63,143,0.40)]" />
+ <div className="flex items-center gap-2 mb-3">
+ <div className="w-2.5 h-2.5 bg-[#4b3f8f] rounded-full animate-glow-ring" />
+ <p className="text-[#6f6a7d] text-sm font-medium">Live Price</p>
+ </div>
+
+ {/* P1: Demand-scaled glow; P0: price-flash animation */}
+ <p
+ className={`terminal-amount text-4xl text-[#4b3f8f] ${priceFlash === "drop" ? "animate-price-flash" : "animate-price-pulse"}`}
+ style={{ textShadow: priceGlow }}
+ >
+ {formatMoney(current)}
+ </p>
+
+ {/* P0: 30s delta indicator */}
+ {priceDelta > 0.01 && (
+ <p className="text-[#c14d3a] text-xs mt-1 font-medium">↓ -{formatMoney(priceDelta)} in last 30s</p>
+ )}
+
+ <p className="text-[#6f6a7d] text-xs line-through mt-1">Started at {formatMoney(job.startingPrice)}</p>
+
+ {/* P0: Urgency countdown */}
+ <div className="flex items-center gap-1.5 mt-2">
+ <Timer className={`h-4 w-4 ${deadlineHrs < 1 ? "text-[#c14d3a]" : deadlineHrs < 6 ? "text-[#7a6a2c]" : "text-[#6f6a7d]"}`} />
+ {isAtFloor ? (
+ <span className="text-[#6f6a7d] text-sm">At floor price</span>
+ ) : (
+ <span className={countdownClass}>{countdownDisplay || formatHoursToFloor(eta)}</span>
+ )}
+ </div>
+ <p className="text-[#6f6a7d] text-xs mt-1">Closes {deadlineDate.toLocaleDateString()}</p>
+ </div>
+
+ {/* ─── P0: Freelancer Actions / Cooldown ─── */}
+ {isFreelancer && isOpen && (
+ isDirectOfferForMe ? (
+ /* Direct offer — fixed price, no bidding: accept or decline only. */
+ <div className="glass-panel p-6 space-y-3">
+ <p className="text-[#3d3a45] text-sm font-semibold flex items-center gap-1.5">
+ <Zap className="h-4 w-4 text-[#4b3f8f]" /> Direct offer at {formatMoney(job.startingPrice)}
+ </p>
+ <p className="text-[#6f6a7d] text-xs">
+ {client?.fullName ?? "This client"} sent you this job directly at a fixed price — no bidding needed.
+ </p>
+ <button
+ onClick={() => handleOfferResponse("accepted")}
+ disabled={respondingToOffer}
+ className="btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready disabled:opacity-50"
+ >
+ <Zap className="h-4 w-4" /> Accept at {formatMoney(job.startingPrice)}
+ </button>
+ <button
+ onClick={() => handleOfferResponse("declined")}
+ disabled={respondingToOffer}
+ className="btn-ghost w-full py-3 rounded-2xl text-sm disabled:opacity-50"
+ >
+ Decline offer
+ </button>
+ </div>
+ ) : isOnCooldown ? (
+ /* P0: Cooldown ring */
+ <div className="glass-panel p-6 flex flex-col items-center gap-3">
+ <svg width={72} height={72} viewBox="0 0 72 72">
+ {/* Background ring */}
+ <circle cx={36} cy={36} r={RING_R} fill="none" stroke="rgba(75,63,143,0.22)" strokeWidth={5} />
+ {/* Depleting ring — starts full, depletes clockwise */}
+ <circle
+ cx={36} cy={36} r={RING_R}
+ fill="none"
+ stroke="#4b3f8f"
+ strokeWidth={5}
+ strokeLinecap="round"
+ strokeDasharray={RING_C}
+ strokeDashoffset={ringOffset}
+ transform="rotate(-90 36 36)"
+ style={{ transition: "stroke-dashoffset 1s linear" }}
+ />
+ <text x={36} y={40} textAnchor="middle" fontSize={11} fill="#3d3a45" fontFamily="monospace">
+ {Math.ceil(cooldownMinsLeft)}m
+ </text>
+ </svg>
+ <div className="text-center">
+ <p className="text-[#6f6a7d] text-sm font-medium">⏳ Cooldown active</p>
+ <p className="text-[#6f6a7d] text-xs mt-1">
+ Bid again at {new Date((myLastBid ? new Date(myLastBid.createdAt).getTime() : 0) + 30 * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+ </p>
+ </div>
+ </div>
+ ) : (
+ /* Normal bid actions */
+ <div className="space-y-3">
+ <PlanLimitBanner
+ used={planUsage.bidsPlacedThisMonth}
+ limit={getUserPlanConfig().limits.bidsPerMonth}
+ label="bids"
+ planName={getUserPlanConfig().name}
+ />
+ <button onClick={handleAccept} disabled={accepting}
+ className={`btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm payment-ready disabled:opacity-50 ${justUnlocked ? "animate-glow-ring" : ""}`}>
+ <Zap className="h-4 w-4" /> Accept at {formatMoney(current)}
+ </button>
+
+ <div className="flex items-center gap-3">
+ <div className="flex-1 h-px bg-[rgba(75,63,143,0.15)]" />
+ <span className="text-xs text-[#6f6a7d]">or</span>
+ <div className="flex-1 h-px bg-[rgba(75,63,143,0.15)]" />
+ </div>
+
+ {/* ─── P1 + P5 + P10: Enhanced Counter-Bid Form ─── */}
+ <div className="glass-panel p-5 space-y-4">
+ <p className="text-[#3d3a45] text-sm font-semibold flex items-center gap-1.5">
+ <MessageSquare className="h-4 w-4 text-[#4b3f8f]" /> Counter-Bid
+ </p>
+
+ {atFloor ? (
+ <p className="text-[#6f6a7d] text-[13px] leading-relaxed p-3 rounded-2xl bg-[#ffffff] border border-[rgba(75,63,143,0.15)]">
+ This job has decayed to its floor price of <span className="text-[#4b3f8f] font-medium">{formatMoney(job.minimumPrice)}</span> — accepting and countering at the floor now do the same thing. You can still submit a counter-bid at the floor below if you&apos;d rather have the client review it instead of accepting outright.
+ </p>
+ ) : (
+ <>
+ {/* P5: Smart bid suggestion chips */}
+ <div>
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-2">Suggested</p>
+ <div className="grid grid-cols-2 gap-2">
+ <button
+ onClick={() => setCounterPrice(String(aggressiveBid))}
+ className={`text-left p-2.5 rounded-2xl border transition-all ${Number(counterPrice) === aggressiveBid ? "border-[rgba(75,63,143,0.35)]/50 bg-[#4b3f8f]/5" : "border-[rgba(75,63,143,0.22)] bg-[#ffffff] hover:border-[rgba(75,63,143,0.35)]/40"}`}
+ >
+ <p className="text-[11px] text-[#6f6a7d] font-semibold">Aggressive</p>
+ <p className="font-heading text-base font-bold text-[#4b3f8f]">{formatMoney(aggressiveBid)}</p>
+ <p className="text-[9px] text-[#6f6a7d] mt-0.5">30% above floor · below {jobBids.filter(b => b.bidPrice > aggressiveBid).length} bidders</p>
+ </button>
+ <button
+ onClick={() => setCounterPrice(String(competitiveBid))}
+ className={`text-left p-2.5 rounded-2xl border transition-all ${Number(counterPrice) === competitiveBid ? "border-[#4b3f8f]/50 bg-[#4b3f8f]/5" : "border-[rgba(75,63,143,0.22)] bg-[#ffffff] hover:border-[rgba(75,63,143,0.35)]/20"}`}
+ >
+ <p className="text-[11px] text-[#6f6a7d] font-semibold">Competitive</p>
+ <p className="font-heading text-base font-bold text-[#4b3f8f]">{formatMoney(competitiveBid)}</p>
+ <p className="text-[9px] text-[#6f6a7d] mt-0.5">60% above floor · below {jobBids.filter(b => b.bidPrice > competitiveBid).length} bidders</p>
+ </button>
+ </div>
+ </div>
+
+ {/* P10: Price slider */}
+ <div>
+ <div className="flex justify-between text-[11px] text-[#6f6a7d] mb-1.5">
+ <span>Floor {formatMoney(job.minimumPrice)}</span>
+ <span>Current {formatMoney(current)}</span>
+ </div>
+ <input
+ type="range"
+ min={job.minimumPrice}
+ max={Math.floor(current)}
+ step={5}
+ value={sliderNum > 0 ? sliderNum : aggressiveBid}
+ onChange={e => setCounterPrice(e.target.value)}
+ className="w-full h-2 bg-[#f4f2ee] rounded-full appearance-none cursor-pointer"
+ />
+ {sliderHourly > 0 && (
+ <p className="text-[11px] text-[#6f6a7d] mt-1.5">
+ Effective rate: <span className="text-[#4b3f8f] font-medium">{formatMoney(sliderHourly)}/hr</span>
+ {bidsBelow > 0 && <span className="text-[#6f6a7d]"> · below {bidsBelow} of {jobBids.length} bids</span>}
+ </p>
+ )}
+ </div>
+
+ {/* P5: Position bar */}
+ {posMyBid !== null && (
+ <div>
+ <p className="text-[#6f6a7d] text-[11px] uppercase tracking-wider font-semibold mb-1.5">Your bid vs market</p>
+ <div className="relative h-2 bg-[#f4f2ee] rounded-full">
+ {/* Min bid marker */}
+ {posMinBid !== null && (
+ <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-3 bg-[#4b3f8f]/40 rounded-full -ml-0.5" style={{ left: `${posMinBid}%` }} title={`Lowest: ${formatMoney(minBid!)}`} />
+ )}
+ {/* Your bid marker */}
+ <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#4b3f8f] rounded-full border-2 border-[#ffffff] -ml-1.5 shadow-[0_0_8px_rgba(75,63,143,0.5)]" style={{ left: `${posMyBid}%` }} />
+ </div>
+ <div className="flex justify-between text-[9px] text-[#6f6a7d] mt-1">
+ <span>Floor</span>
+ <span className="text-[#4b3f8f]">↑ you</span>
+ <span>Current</span>
+ </div>
+ </div>
+ )}
+ </>
+ )}
+
+ {/* Price text input */}
+ <div className="relative">
+ <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6a7d] text-sm pointer-events-none">$</span>
+ <input
+ type="number"
+ placeholder={`${job.minimumPrice} – ${Math.floor(current)}`}
+ value={counterPrice}
+ onChange={e => { setCounterPrice(e.target.value); setCounterError(""); }}
+ className="glass-input w-full h-11 pl-8! pr-4 font-heading text-lg"
+ />
+ </div>
+
+ {counterError && <p className="text-[#c14d3a] text-xs">{counterError}</p>}
+ <button onClick={handleCounter} disabled={bidding}
+ className="btn-glass w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+ <Send className="h-4 w-4" /> Submit Counter-Bid
+ </button>
+ </div>
+ </div>
+ )
+ )}
+
+ {/* AI Bid Strategist — freelancers only; not applicable to a fixed-price direct offer */}
+ {isFreelancer && isOpen && !isDirectOfferForMe && (
+ <AIBidStrategist
+ job={job}
+ currentPrice={current}
+ competitorBids={jobBids.map(b => ({ bidPrice: b.bidPrice }))}
+ onApplyBid={(amount) => setCounterPrice(String(amount))}
+ />
+ )}
+
+ {isClient && isOpen && (
+ <div className="space-y-3">
+ {isSmartMatchEligible && (
+ <button
+ type="button"
+ onClick={() => setShowSmartMatch(true)}
+ className="btn-primary w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm"
+ >
+ <Sparkles className="h-4 w-4" /> Smart Match
+ </button>
+ )}
+ <Link href={`/post-job`}>
+ <button className="btn-ghost w-full py-3 text-sm">
+ Edit Job
+ </button>
+ </Link>
+ </div>
+ )}
+
+ {job.status === "accepted" && (
+ <div className="glass-panel p-6 text-center border-[rgba(75,63,143,0.30)]">
+ <CheckCircle2 className="h-8 w-8 text-[#4b3f8f] mx-auto mb-2" />
+ <p className="font-heading text-lg font-bold text-[#3d3a45]">Job Accepted</p>
+ <p className="terminal-amount text-2xl text-[#4b3f8f] mt-1">{formatMoney(job.finalPrice ?? current)}</p>
+ {job.acceptedBy && (
+ <p className="text-[#6f6a7d] text-xs mt-2">
+ Accepted by {users.find(u => u.id === job.acceptedBy)?.fullName ?? "Freelancer"}
+ </p>
+ )}
+ <div className="mt-4 space-y-2">
+ <Link href="/inbox">
+ <button className="btn-primary w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 text-sm">
+ <MessageSquare className="h-4 w-4" /> Message
+ </button>
+ </Link>
+ <Link href="/my-jobs">
+ <button className="btn-glass w-full py-2.5 rounded-2xl text-sm mt-2">
+ View My Jobs
+ </button>
+ </Link>
+ </div>
+ </div>
+ )}
+
+ {/* Job details sidebar */}
+ <div className="glass-panel p-6 space-y-3">
+ {[
+ { icon: Clock, label: "Estimated Hours", value: `${job.estimatedHours}h` },
+ { icon: Calendar, label: "Posted", value: new Date(job.postedAt).toLocaleDateString() },
+ { icon: Timer, label: "Deadline", value: deadlineDate.toLocaleDateString() },
+ { icon: Eye, label: "Visibility", value: job.visibility === "invite_only" ? "Invite Only" : "Public" },
+ { icon: DollarSign, label: "Platform Fee", value: "10%" },
+ ].map(item => (
+ <div key={item.label} className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <item.icon className="h-4 w-4 text-[#6f6a7d]" />
+ <span className="text-[#6f6a7d] text-sm">{item.label}</span>
+ </div>
+ <span className="text-[#3d3a45] text-sm font-medium">{item.value}</span>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
+}

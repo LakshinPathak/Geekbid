@@ -1,0 +1,521 @@
+"use client";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/store";
+import { Logo } from "@/components/Logo";
+import {
+ ArrowRight, Code, Briefcase,
+ Mail, Lock, User, Loader2, Eye, EyeOff,
+ TrendingDown, CheckCircle2,
+} from "lucide-react";
+
+function PasswordStrength({ password }: { password: string }) {
+ const len = password.length;
+ const level = len === 0 ? 0 : len < 6 ? 1 : len < 10 ? 2 : 3;
+ const colors = ["bg-[rgba(75,63,143,0.08)]", "bg-[#c14d3a]", "bg-[#a08a3c]", "bg-[#3d3373]"];
+ return (
+ <div className="bg-transparent flex gap-1 mt-1.5">
+ {[1, 2, 3].map(i => (
+ <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= level ? colors[level] : "bg-[rgba(75,63,143,0.08)]"}`} />
+ ))}
+ </div>
+ );
+}
+
+function LoginPageContent() {
+ const params = useSearchParams();
+ const router = useRouter();
+ const { login, register, currentUser, mounted, loading, googleAuth } = useApp();
+
+ const initialRole = (params.get("role") as "freelancer" | "client") || "freelancer";
+ const initialTab = params.get("tab") === "register" ? "register" : "login";
+
+ const [role, setRole] = useState<"freelancer" | "client">(initialRole === "client" ? "client" : "freelancer");
+ const [mode, setMode] = useState<"login" | "register">(initialTab);
+ const [name, setName] = useState("");
+ const [email, setEmail] = useState("");
+ const [password, setPassword] = useState("");
+ const [showPwd, setShowPwd] = useState(false);
+ const [error, setError] = useState("");
+ const [success, setSuccess] = useState("");
+ // Tracks which google_exchange code has already been redeemed — the
+ // one-time code stays in the URL until the deferred router.replace below
+ // actually navigates away, and a re-render in that window (e.g. from the
+ // successful login itself updating shared app state) can re-run this
+ // effect. Without this guard, that second run tries to redeem an
+ // already-consumed code, which correctly fails and overwrites the
+ // success message with a spurious "Failed to process Google login" —
+ // even though the login already succeeded.
+ const processedExchangeCodeRef = useRef<string | null>(null);
+
+ // Typewriter state
+ const [phraseIndex, setPhraseIndex] = useState(0);
+ const [charIndex, setCharIndex] = useState(0);
+ const [isDeleting, setIsDeleting] = useState(false);
+ const PHRASES = [
+   "prices find their true value.",
+   "talent meets opportunity.",
+   "hiring gets transparent.",
+   "the market decides the rate.",
+ ];
+
+ // Ticker state
+ const [tickerIndex, setTickerIndex] = useState(0);
+ const TICKER_JOBS = [
+   { title: "AI Chatbot Build", price: 647, decay: 15, floor: 500, start: 2400, progress: 27 },
+   { title: "Brand Logo + Kit", price: 750, decay: 12, floor: 400, start: 1200, progress: 45 },
+   { title: "Explainer Video Edit", price: 1100, decay: 20, floor: 600, start: 2000, progress: 58 },
+ ];
+
+ useEffect(() => {
+   const id = setInterval(() => setTickerIndex(p => (p + 1) % TICKER_JOBS.length), 3000);
+   return () => clearInterval(id);
+ }, []);
+
+ useEffect(() => {
+   const current = PHRASES[phraseIndex];
+   const speed = isDeleting ? 30 : 60;
+   if (!isDeleting && charIndex === current.length) {
+     const timeout = setTimeout(() => setIsDeleting(true), 2000);
+     return () => clearTimeout(timeout);
+   }
+   if (isDeleting && charIndex === 0) {
+     setIsDeleting(false);
+     setPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+     return;
+   }
+   const timeout = setTimeout(() => {
+     setCharIndex((prev) => prev + (isDeleting ? -1 : 1));
+   }, speed);
+   return () => clearTimeout(timeout);
+ }, [charIndex, isDeleting, phraseIndex]);
+
+ useEffect(() => {
+ const exchangeCode = params.get("google_exchange");
+ const googleError = params.get("error");
+
+ if (googleError) {
+ setError(`Google login failed: ${googleError.replace(/_/g, " ")}`);
+ return;
+ }
+
+ if (exchangeCode) {
+ if (processedExchangeCodeRef.current === exchangeCode) return;
+ processedExchangeCodeRef.current = exchangeCode;
+ (async () => {
+ try {
+ const res = await fetch("/api/auth/google/exchange", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ code: exchangeCode }),
+ });
+ const data = await res.json();
+ if (data.error) throw new Error(data.error);
+ googleAuth(data.accessToken, data.expiresIn, data.user);
+ setSuccess(data.roleAdded ? `${data.user.role} role added to your account!` : "Signed in with Google!");
+ setTimeout(() => router.replace(data.user.role === "admin" ? "/admin" : "/feed"), 300);
+ } catch {
+ setError("Failed to process Google login");
+ }
+ })();
+ }
+ }, [params, router, googleAuth]);
+
+ useEffect(() => {
+ if (mounted && currentUser) router.replace(currentUser.role === "admin" ? "/admin" : "/feed");
+ }, [mounted, currentUser, router]);
+
+ const handleSubmit = useCallback(async (e: React.FormEvent) => {
+ e.preventDefault();
+ setError("");
+ setSuccess("");
+ if (mode === "register" && !name.trim()) { setError("Full name is required"); return; }
+ if (!email.trim()) { setError("Email is required"); return; }
+ if (!password.trim() || password.length < 6) { setError("Password must be at least 6 characters"); return; }
+
+ const result = mode === "login"
+ ? await login(email, password)
+ : await register(name, email, password, role);
+
+ if (result.ok) {
+ setSuccess(mode === "login" ? "Welcome back!" : result.message);
+ setTimeout(() => router.push(result.role === "admin" ? "/admin" : "/feed"), 500);
+ } else {
+ setError(result.message);
+ }
+ }, [mode, name, email, password, role, login, register, router]);
+
+ if (!mounted) return null;
+ if (currentUser) return null;
+
+ return (
+ <div className="min-h-screen flex" style={{ background: "#fbfaf7" }}>
+
+ {/* ─── Left Branding Panel (lg+) ─── */}
+ <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col justify-between p-12"
+ style={{ background: "#f0edfa" }}>
+
+ {/* Dot grid overlay */}
+ <div className="absolute inset-0"
+ style={{
+ backgroundImage: "radial-gradient(circle, rgba(75,63,143,0.04) 1px, transparent 1px)",
+ backgroundSize: "24px 24px",
+ }} />
+
+ {/* Glow blobs */}
+ <div className="absolute top-[30%] left-[20%] w-[500px] h-[500px] rounded-full blur-[160px]"
+ style={{ background: "rgba(75,63,143,0.07)" }} />
+ <div className="absolute bottom-[-80px] right-[-80px] w-[220px] h-[220px] rounded-full blur-[80px]"
+ style={{ background: "rgba(75,63,143,0.05)" }} />
+
+ {/* Logo */}
+ <div className="relative z-10">
+ <Link href="/" className="flex items-center gap-2.5">
+ <Logo markClassName="h-9 w-9" textClassName="font-heading text-2xl font-bold" />
+ </Link>
+ </div>
+
+ {/* Hero text — eyebrow + headline shift to match the active tab (and,
+     while registering, the selected role) so the branding panel always
+     reads as relevant to what the visitor is about to do, not just
+     generic marketing copy. Keyed by mode/role so React remounts this
+     block on every switch, replaying the fade-in-up entrance. */}
+ <div key={mode === "register" ? `register-${role}` : "login"}
+      className="relative z-10 flex-1 flex flex-col justify-center animate-fade-in-up">
+   <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-5"
+      style={{ color: "#6f6a7d" }}>
+     {mode === "register" ? "Join 2,400+ Engineers & Clients" : "Reverse Auction Marketplace"}
+   </p>
+   {mode === "login" ? (
+     <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
+         style={{ color: "#3d3a45" }}>
+       The marketplace where{" "}
+       <span style={{ color: "#4b3f8f" }}>
+         {PHRASES[phraseIndex].substring(0, charIndex)}
+       </span>
+       <span className="animate-pulse" style={{ color: "#4b3f8f" }}>|</span>
+     </h1>
+   ) : (
+     <h1 className="font-heading text-4xl xl:text-5xl font-bold leading-tight"
+         style={{ color: "#3d3a45" }}>
+       {role === "client" ? (
+         <>Post a job. Watch the{" "}
+           <span style={{ color: "#4b3f8f" }}>price find itself.</span>
+         </>
+       ) : (
+         <>Start bidding on{" "}
+           <span style={{ color: "#4b3f8f" }}>real work, today.</span>
+         </>
+       )}
+     </h1>
+   )}
+
+   {/* Stats row */}
+   <div className="grid grid-cols-3 gap-4 mt-10 mb-6">
+     {[
+       { value: "2,400+", label: "Engineers" },
+       { value: "$1.2M", label: "Total Volume" },
+       { value: "94%", label: "Satisfaction" },
+     ].map((stat) => (
+       <div key={stat.label} className="text-center">
+         <p className="font-heading text-2xl xl:text-3xl font-bold"
+            style={{ color: "#4b3f8f" }}>{stat.value}</p>
+         <p className="text-[10px] uppercase tracking-[0.12em] mt-1"
+            style={{ color: "#6f6a7d" }}>{stat.label}</p>
+       </div>
+     ))}
+   </div>
+
+   <div className="h-px my-6" style={{ background: "rgba(75,63,143,0.12)" }} />
+
+   {/* Live Auction Ticker */}
+   <div className="relative z-10 space-y-2">
+     <div className="flex items-center gap-2 mb-3">
+       <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "#4b3f8f" }} />
+       <span className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+             style={{ color: "#6f6a7d" }}>Live Auctions</span>
+     </div>
+     {TICKER_JOBS.map((job, i) => (
+       <div
+         key={job.title}
+         className="rounded-2xl p-3.5 border transition-all duration-500"
+         style={{
+           background: i === tickerIndex ? "#ffffff" : "rgba(255,255,255,0.5)",
+           borderColor: i === tickerIndex ? "rgba(75,63,143,0.35)" : "rgba(75,63,143,0.08)",
+           transform: i === tickerIndex ? "scale(1.02)" : "scale(1)",
+           opacity: i === tickerIndex ? 1 : 0.5,
+         }}
+       >
+         <div className="flex items-center justify-between">
+           <div className="flex items-center gap-2.5">
+             <div className="h-7 w-7 rounded-xl flex items-center justify-center"
+                  style={{ background: "rgba(75,63,143,0.12)" }}>
+               <TrendingDown className="h-3.5 w-3.5" style={{ color: "#4b3f8f" }} />
+             </div>
+             <p className="text-xs font-medium" style={{ color: i === tickerIndex ? "#3d3a45" : "#6f6a7d" }}>{job.title}</p>
+           </div>
+           <div className="text-right">
+             <p className="text-sm font-bold font-heading" style={{ color: "#4b3f8f" }}>${job.price.toLocaleString()}</p>
+             <p className="text-[10px]" style={{ color: "#96543f" }}>-${job.decay}/hr</p>
+           </div>
+         </div>
+         {i === tickerIndex && (
+           <div className="mt-2.5">
+             <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(75,63,143,0.08)" }}>
+               <div className="h-full rounded-full transition-all duration-1000"
+                    style={{ width: `${job.progress}%`, background: "#4b3f8f" }} />
+             </div>
+             <div className="flex justify-between mt-1">
+               <span className="text-[9px]" style={{ color: "#6f6a7d" }}>Floor: ${job.floor.toLocaleString()}</span>
+               <span className="text-[9px]" style={{ color: "#6f6a7d" }}>Start: ${job.start.toLocaleString()}</span>
+             </div>
+           </div>
+         )}
+       </div>
+     ))}
+   </div>
+ </div>
+
+ </div>
+
+ {/* ─── Right Form Panel ─── */}
+ <div className="flex-1 flex items-center justify-center px-6 py-12 relative"
+ style={{ background: "#fbfaf7" }}>
+
+ {/* Dot grid */}
+ <div className="absolute inset-0 pointer-events-none"
+ style={{
+ backgroundImage: "radial-gradient(circle, rgba(75,63,143,0.035) 1px, transparent 1px)",
+ backgroundSize: "24px 24px",
+ }} />
+
+ {/* Glow */}
+ <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none"
+ style={{ background: "rgba(75,63,143,0.05)" }} />
+
+ <div className="w-full max-w-md relative z-10 animate-fade-in-up">
+
+ {/* Mobile logo — centered as the page's focal branding element,
+     not pinned to the left edge like a nav-bar logo would be */}
+ <div className="lg:hidden flex items-center justify-center gap-2.5 mb-8">
+ <Link href="/" className="flex items-center gap-2.5">
+ <Logo markClassName="h-9 w-9" textClassName="font-heading text-xl font-bold" />
+ </Link>
+ </div>
+
+ {/* Tab switcher — centered on mobile (matches the logo above it),
+     left-aligned on desktop where it sits above left-aligned form copy */}
+ <div className="flex w-fit mx-auto lg:mx-0 p-1 mb-8 rounded-full"
+ style={{ background: "rgba(75,63,143,0.08)", border: "1px solid rgba(75,63,143,0.12)" }}>
+ <button
+ onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
+ className="px-6 py-2 rounded-full text-sm font-medium transition-all"
+ style={mode === "login"
+ ? { background: "#4b3f8f", color: "#ffffff", fontWeight: 700 }
+ : { color: "#6f6a7d" }}
+ >Log in</button>
+ <button
+ onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
+ className="px-6 py-2 rounded-full text-sm font-medium transition-all"
+ style={mode === "register"
+ ? { background: "#4b3f8f", color: "#ffffff", fontWeight: 700 }
+ : { color: "#6f6a7d" }}
+ >Sign up</button>
+ </div>
+
+ {/* Heading */}
+ <h2 className="font-heading text-2xl font-bold" style={{ color: "#3d3a45" }}>
+ {mode === "login" ? "Welcome back." : "Create your account."}
+ </h2>
+ <p className="text-sm mt-1" style={{ color: "#6f6a7d" }}>
+ {mode === "login" ? "Enter your credentials to continue" : "Get started with GeekBid today"}
+ </p>
+
+ <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+ {mode === "register" && (
+ <>
+ {/* Full name */}
+ <div>
+ <label htmlFor="register-name" className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
+ style={{ color: "#6f6a7d" }}>Full Name</label>
+ <div className="relative">
+ <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
+ <input
+ id="register-name"
+ placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
+ className="w-full h-12 rounded-full text-sm outline-none transition-all"
+ style={{
+ paddingLeft: "44px", paddingRight: "16px",
+ background: "rgba(75,63,143,0.08)",
+ border: "1px solid rgba(75,63,143,0.15)",
+ color: "#3d3a45",
+ }}
+ />
+ </div>
+ </div>
+
+ {/* Role selector */}
+ <div>
+ <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
+ style={{ color: "#6f6a7d" }}>I am a...</label>
+ <div className="grid grid-cols-2 gap-3">
+ <button type="button" onClick={() => setRole("client")}
+ className="rounded-2xl p-4 text-center cursor-pointer transition-all duration-300"
+ style={role === "client"
+ ? { background: "rgba(75,63,143,0.12)", border: "1px solid rgba(75,63,143,0.40)", }
+ : { background: "rgba(75,63,143,0.04)", border: "1px solid rgba(75,63,143,0.15)" }}>
+ <Briefcase className="h-5 w-5 mx-auto mb-1.5"
+ style={{ color: role === "client" ? "#4b3f8f" : "#6f6a7d" }} />
+ <p className="text-sm font-medium" style={{ color: role === "client" ? "#3d3a45" : "#6f6a7d" }}>I&apos;m a Client</p>
+ <p className="text-xs mt-0.5" style={{ color: "#6f6a7d" }}>I need to hire</p>
+ </button>
+ <button type="button" onClick={() => setRole("freelancer")}
+ className="rounded-2xl p-4 text-center cursor-pointer transition-all duration-300"
+ style={role === "freelancer"
+ ? { background: "rgba(75,63,143,0.12)", border: "1px solid rgba(75,63,143,0.40)", }
+ : { background: "rgba(75,63,143,0.04)", border: "1px solid rgba(75,63,143,0.15)" }}>
+ <Code className="h-5 w-5 mx-auto mb-1.5"
+ style={{ color: role === "freelancer" ? "#4b3f8f" : "#6f6a7d" }} />
+ <p className="text-sm font-medium" style={{ color: role === "freelancer" ? "#3d3a45" : "#6f6a7d" }}>I&apos;m a Freelancer</p>
+ <p className="text-xs mt-0.5" style={{ color: "#6f6a7d" }}>I want to work</p>
+ </button>
+ </div>
+ </div>
+ </>
+ )}
+
+ {/* Email */}
+ <div>
+ <label htmlFor="auth-email" className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
+ style={{ color: "#6f6a7d" }}>Email</label>
+ <div className="relative">
+ <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
+ <input
+ id="auth-email"
+ type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
+ className="w-full h-12 rounded-full text-sm outline-none transition-all"
+ style={{
+ paddingLeft: "44px", paddingRight: "16px",
+ background: "rgba(75,63,143,0.08)",
+ border: "1px solid rgba(75,63,143,0.15)",
+ color: "#3d3a45",
+ }}
+ />
+ </div>
+ </div>
+
+ {/* Password */}
+ <div>
+ <div className="flex items-center justify-between mb-1.5">
+ <label htmlFor="auth-password" className="text-xs font-semibold uppercase tracking-wider"
+ style={{ color: "#6f6a7d" }}>Password</label>
+ {mode === "login" && (
+ <button type="button" onClick={() => router.push("/forgot-password")} className="text-xs transition-colors hover:opacity-80"
+ style={{ color: "#4b3f8f" }}>Forgot password?</button>
+ )}
+ </div>
+ <div className="relative">
+ <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6f6a7d" }} />
+ <input
+ id="auth-password"
+ type={showPwd ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
+ className="w-full h-12 rounded-full text-sm outline-none transition-all"
+ style={{
+ paddingLeft: "44px", paddingRight: "44px",
+ background: "rgba(75,63,143,0.08)",
+ border: "1px solid rgba(75,63,143,0.15)",
+ color: "#3d3a45",
+ }}
+ />
+ <button type="button" onClick={() => setShowPwd(!showPwd)}
+ className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors hover:opacity-80"
+ style={{ color: "#6f6a7d" }}>
+ {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+ </button>
+ </div>
+ {mode === "register" && <PasswordStrength password={password} />}
+ </div>
+
+ {/* Error / Success */}
+ {error && (
+ <div className="flex items-center gap-2 text-sm rounded-2xl px-4 py-3 animate-fade-in-up"
+ style={{ color: "#c14d3a", background: "rgba(193,77,58,0.10)", border: "1px solid rgba(193,77,58,0.25)" }}>
+ <span>✗</span> {error}
+ </div>
+ )}
+ {success && (
+ <div className="flex items-center gap-2 text-sm rounded-2xl px-4 py-3 animate-fade-in-up"
+ style={{ color: "#4b3f8f", background: "rgba(75,63,143,0.12)", border: "1px solid rgba(75,63,143,0.30)" }}>
+ <CheckCircle2 className="h-4 w-4" /> {success}
+ </div>
+ )}
+
+ {/* Submit */}
+ <button type="submit" disabled={loading}
+ className="w-full h-12 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+ style={{ background: "#4b3f8f", color: "#ffffff" }}>
+ {loading
+ ? <Loader2 className="h-5 w-5 animate-spin" />
+ : <>{mode === "login" ? "Log in" : "Create account"} <ArrowRight className="h-4 w-4" /></>}
+ </button>
+ </form>
+
+ {/* Divider */}
+ <div className="flex items-center gap-4 my-6">
+ <div className="flex-1 h-px" style={{ background: "rgba(75,63,143,0.12)" }} />
+ <span className="text-xs" style={{ color: "#6f6a7d" }}>or</span>
+ <div className="flex-1 h-px" style={{ background: "rgba(75,63,143,0.12)" }} />
+ </div>
+
+ {/* Google OAuth */}
+ <button
+ onClick={() => window.location.href = `/api/auth/google?role=${role}&intent=${mode === "register" ? "register" : "login"}`}
+ type="button"
+ className="w-full h-12 rounded-full text-sm font-medium flex items-center justify-center gap-3 transition-all"
+ style={{
+ background: "rgba(75,63,143,0.08)",
+ border: "1px solid rgba(75,63,143,0.22)",
+ color: "#6f6a7d",
+ }}
+ onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(75,63,143,0.15)"; }}
+ onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(75,63,143,0.08)"; }}
+ >
+ <svg className="h-4 w-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+ Continue with Google
+ </button>
+
+ {/* Switch mode */}
+ <p className="text-center text-sm mt-6" style={{ color: "#6f6a7d" }}>
+ {mode === "login" ? "New to GeekBid?" : "Already have an account?"}{" "}
+ <button onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
+ className="font-semibold transition-colors hover:opacity-80"
+ style={{ color: "#4b3f8f" }}>
+ {mode === "login" ? "Create Account" : "Log in"}
+ </button>
+ </p>
+
+ {/* Terms */}
+ <p className="text-xs mt-4 text-center" style={{ color: "#6f6a7d" }}>
+ By continuing, you agree to our{" "}
+ <span className="hover:underline cursor-pointer" style={{ color: "#4b3f8f" }}>Terms</span> and{" "}
+ <span className="hover:underline cursor-pointer" style={{ color: "#4b3f8f" }}>Privacy Policy</span>.
+ </p>
+ </div>
+ </div>
+ </div>
+ );
+}
+
+export default function LoginPage() {
+ return (
+ <Suspense fallback={
+ <div className="min-h-screen flex items-center justify-center" style={{ background: "#fbfaf7" }}>
+ <div className="h-8 w-8 border-2 rounded-full animate-spin"
+ style={{ borderColor: "rgba(75,63,143,0.40)", borderTopColor: "#4b3f8f" }} />
+ </div>
+ }>
+ <LoginPageContent />
+ </Suspense>
+ );
+}
