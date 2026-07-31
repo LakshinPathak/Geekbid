@@ -48,10 +48,10 @@ export default function Footer() {
           <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Platform</p>
             <div className="flex flex-col items-center sm:items-start gap-2.5">
-              <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Browse Jobs</Link>
-              <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Post a Job</Link>
-              <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Find Work</Link>
-              <Link href="/pricing" className="text-sm text-[#46424e] hover:text-[#17171f] transition-colors">Pricing</Link>
+              <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Browse Jobs</Link>
+              <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Post a Job</Link>
+              <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Find Work</Link>
+              <Link href="/pricing" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Pricing</Link>
             </div>
           </div>
           {/* Company */}

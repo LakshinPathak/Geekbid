@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, RotateCcw } from "lucide-react";
-import { useInView, useReducedMotion } from "./hooks";
+import { useInView, useReducedMotion, useCountUp } from "./hooks";
 
 type Phase = "idle" | "held" | "released";
 
@@ -15,11 +15,24 @@ const STATIONS = [
 const TRAVEL_TO_ESCROW_MS = 900;
 const RELEASE_DELAY_MS = 800;
 
+// Merged in from the former standalone AuthorityStream section (the
+// "140 bids this week, 1 decision was yours" stat strip). Rendered
+// here as a thin resolved readout rather than a re-run of its old
+// timed tick-collapse-and-ripple sequence, so it doesn't compete with
+// the token/perimeter interaction below for motion budget.
+const TICK_COUNT = 27;
+const SURVIVOR_INDEX = 13; // center tick
+
 /** Payment -> Escrow -> Payout, but state-gated rather than a one-shot
  *  flythrough: the token travels in and visibly stops inside the
  *  escrow boundary and stays there — stillness is the point — until
  *  the user clicks Approve. Money literally cannot cross the boundary
- *  until that event fires, mirroring how escrow actually works. */
+ *  until that event fires, mirroring how escrow actually works.
+ *
+ *  Also carries a compact stat strip (bid volume collapsing to "1
+ *  decision was yours") merged in from the former standalone
+ *  AuthorityStream section — a thin bar inside this one continuous
+ *  band, not a second competing panel. */
 export default function EscrowPerimeter() {
   const section = useInView(0.2);
   const reducedMotion = useReducedMotion();
@@ -27,6 +40,7 @@ export default function EscrowPerimeter() {
   const [releasing, setReleasing] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const bidCount = useCountUp(140, 1100, 0, section.inView);
 
   useEffect(() => {
     timeoutsRef.current.forEach(clearTimeout);
@@ -90,6 +104,45 @@ export default function EscrowPerimeter() {
         >
           Your money never leaves escrow until you approve
         </h2>
+
+        {/* Stat strip merged from AuthorityStream: volume context ("140
+            bids this week") resolving to the one decision that mattered
+            — framing the diagram below as what happens once that
+            decision is made. */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10"
+          style={{
+            opacity: section.inView ? 1 : 0,
+            transform: section.inView ? "translateY(0)" : "translateY(16px)",
+            transition: "opacity 0.7s ease 140ms, transform 0.7s ease 140ms",
+          }}
+        >
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono-il text-3xl sm:text-4xl text-[#17171f]">{bidCount}</span>
+            <span className="text-sm text-[#46424e]">bids this week</span>
+          </div>
+
+          <div className="relative h-7 flex items-end gap-[2.5px]" aria-hidden="true">
+            {Array.from({ length: TICK_COUNT }).map((_, i) => {
+              const isSurvivor = i === SURVIVOR_INDEX;
+              return (
+                <div
+                  key={i}
+                  className="w-[2.5px] rounded-full"
+                  style={{
+                    height: isSurvivor ? 26 : 13,
+                    backgroundColor: isSurvivor ? "#5b21b6" : "rgba(91,33,182,0.24)",
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono-il text-[#5b21b6]">1</span>
+            <span className="text-sm text-[#46424e]">decision was yours</span>
+          </div>
+        </div>
 
         <div
           className="relative mt-16 mb-6"

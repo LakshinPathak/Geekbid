@@ -62,7 +62,7 @@ export default function Testimonials() {
             {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
               <div
                 key={`${t.name}-${i}`}
-                className="landing-testimonial-border group relative rounded-2xl p-px overflow-hidden flex-shrink-0"
+                className="landing-testimonial-border group relative rounded-2xl p-px overflow-hidden flex-shrink-0 transition-transform duration-300 ease-out hover:-translate-y-1"
                 style={{ minWidth: "360px", maxWidth: "420px" }}
               >
                 {/* inner card */}

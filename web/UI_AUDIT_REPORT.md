@@ -132,3 +132,53 @@ All new motion reuses the existing `useInView`/`useReducedMotion` hooks from `we
 - `MechanismTrace.tsx` — `viewBox="-40 -20 680 200"` still in place; all 5 station labels (Post, Decay, Bid, Accept, Escrow) confirmed visible in both the burst and idle animation states and under reduced motion.
 - `data.ts` — all three testimonial `photo` fields still `""`; `CloudinaryAvatar` initials fallback (DO/EJ/MC) confirmed rendering, no CSP image errors.
 - `PricingSection.tsx` — `flex flex-col justify-center` on the feature `<ul>` still present; no dead-space regression from the new stairs connector, which sits above the cards, not inside them.
+
+---
+
+## Second Consolidation & Full Motion Pass
+
+Second round, done to cut the page down further and extend motion to the sections the first pass hadn't touched. Split across 4 parallel agents, each owning a disjoint set of landing components (no shared files, so no merge conflicts); a 5th step (this one) applied the resulting `page.tsx` wiring, ran an integration verification pass, and wrote this section.
+
+### Scroll-length reduction (this pass, on top of the first pass)
+
+Measured via `document.documentElement.scrollHeight` at `http://localhost:3000/`, before this pass's edits and after full integration:
+
+| Viewport | Before (end of pass 1) | After (end of pass 2) | Reduction |
+|---|---|---|---|
+| Desktop 1440×900 | 10,768px | 10,185px | 583px (5.4%) |
+| Mobile 390×844 | 14,554px | 14,171px | 383px (2.6%) |
+
+Cumulative from the very first (pre-audit) baseline: desktop 11,194px → 10,185px (**1,009px, 9.0% shorter**); mobile 14,695px → 14,171px (524px, 3.6% shorter).
+
+### Sections consolidated (this pass)
+
+- **`SocialProof` folded into `Hero`.** The logo/live-activity ticker strip was its own thin full-width section; moved into the bottom of `Hero.tsx` as a sub-block instead. `SocialProof.tsx` deleted (nothing else imported it). Net height impact was small (~40-100px) rather than a big win — the original standalone section had almost no chrome of its own — but it's one fewer top-level scroll beat, and the ticker now gets a proper `useInView` reveal it didn't have as a bare section.
+- **`AuthorityStream` folded into `EscrowPerimeter` as a stat strip.** The first pass already tried pairing these two side-by-side in a grid and reverted it for looking lopsided (documented above). This time, instead of a competing column, `AuthorityStream`'s content (the "140 bids this week" count-up, tick chart, "1 decision was yours" line) was merged directly into `EscrowPerimeter.tsx` as a compact horizontal strip sitting between the heading and the payment→escrow→payout diagram — one continuous dark band instead of two. The strip's own timed tick-collapse animation was intentionally simplified to a resolved static graphic so it doesn't compete with the escrow diagram's existing token/perimeter motion for attention. `AuthorityStream.tsx` deleted. Verified at 390/768/1440px — reads as one coherent section at every width (wraps to two lines on mobile without crowding).
+- **`PayoffBand` folded into `CTA`.** `PayoffBand` was a small standalone stat/log-line reveal ("Friday, 5:04pm. Three jobs hired. Zero emails sent.") sitting directly above the final CTA. Moved into the top of `CTA.tsx`'s own section as a dark lead-in block, so the log-line plays right before the "Ready to hire smarter?" headline as one scroll beat instead of two. `PayoffBand.tsx` deleted.
+- **`PriceDecayShowcase` + `CaseTimeline` pairing — evaluated, rejected.** `PriceDecayShowcase` renders `HowItWorks.tsx` internally, whose 4-step grid (`lg:grid-cols-[1fr_40px_1fr_40px_1fr_40px_1fr]`) and the `MarketTerminal` price display key off Tailwind's *viewport* breakpoints, not the actual column width — at a paired ~660-716px column these would still fire their full-width layout and cram badly. `CaseTimeline` alone would tolerate halving fine; the blocker is entirely `PriceDecayShowcase`'s side (and its `HowItWorks` dependency, which was out of scope to fix here). Rejected the pairing and tightened vertical rhythm on both instead (`PriceDecayShowcase` `py-24 sm:py-32` → `py-16 sm:py-24`; `CaseTimeline` `py-10 sm:py-14` → `py-8 sm:py-12`, heading `mb-10` → `mb-8`).
+- **`Testimonials` + `FAQ` pairing — evaluated, rejected.** Testimonials is an auto-scrolling horizontal carousel with fixed-pixel card widths (360-420px) and full-bleed decorative quote marks explicitly hidden below `lg` — tuned for full viewport width. Halving it into a grid cell would show ~1.3 cards at a time instead of ~3.5, gutting the carousel, and pairing a starved carousel against a full-width-comfortable FAQ accordion produced mismatched visual density plus a jarring scroll-vs-click interaction clash. Kept both as separate full-width sections; applied motion to each instead (below).
+
+### Motion added (this pass)
+
+All motion reuses the existing `useInView`/`useReducedMotion` hooks (`web/src/components/landing/hooks.ts`) and the established `stroke-dasharray`/`stroke-dashoffset` draw-on-view idiom; accent stays `#5b21b6` (`#a78bfa` on dark bands, matching the existing convention), no bounce/elastic easing anywhere, capped at 1-2 accents per section to avoid the page feeling busy.
+
+- **`Hero.tsx`** — the newly-folded ticker block gets an opacity/translateY reveal gated on `useInView(0.4)`; the ticker's scroll animation itself now stops under reduced motion (renders as a static single row) instead of scrolling indefinitely with no gate.
+- **`CeilingToFloor.tsx`** — left untouched. On inspection it already had a full motion treatment from earlier work (heading reveals, stage fade-in, bid-drop/dock choreography with reduced-motion branches at both the JS and CSS level) — adding more would have broken the "1-2 accents, do less" rule for no benefit.
+- **`LiveAuctions.tsx`** — a small live-pulse dot next to "Right now on GeekBid" (JS-gated off under reduced motion), and a subtle `scale(1.05)` pulse on each card's price tied to the existing `flash` state (already inert under reduced motion since `flash` never fires then).
+- **`EscrowPerimeter.tsx`** — no new motion beyond the merged stat strip itself (kept static/resolved by design, see above) — its pre-existing perimeter-draw/held-state animation from the first pass is unchanged and still gated correctly.
+- **`Comparison.tsx`** — already had a scroll reveal plus a 60ms/row stagger from the first pass (matching `Categories.tsx`'s 70ms convention); left as-is rather than churned.
+- **`Testimonials.tsx`** — added a subtle hover lift (`-translate-y-1`, 300ms ease-out, no scale) on cards, on top of the existing carousel entrance fade.
+- **`FAQ.tsx`** — split the single header fade into a per-row stagger (each question fades/rises in with a ~60ms delay per row); the existing `grid-template-rows` accordion mechanism itself was untouched and re-verified working.
+- **`CTA.tsx`** — the folded-in `PayoffBand` log-line block has its own `useInView(0.3)` reveal, separate from the headline/button reveal below it.
+- **`Footer.tsx`** — hover-only micro-interaction (`translate-x-0.5`, 200ms ease-out) on the Platform links; deliberately no scroll-reveal added, since the footer is usually already in or about to leave view when the fold-in would fire.
+
+### Verification
+
+- **TypeScript**: `npx tsc --noEmit` clean, zero errors, after integrating all four agents' changes and the `page.tsx` rewiring.
+- **Integration screenshots** at 1440px and 390px (full-page) plus targeted crops at the three merge points (Hero/ticker boundary, Escrow/Authority strip, PayoffBand/CTA boundary) confirm every consolidated section reads as one coherent band with no overlap, no orphaned spacing, and correct stacking on mobile.
+- **Console**: exactly 1 error before and after, matching the pre-existing baseline (`500 @ /api/jobs`, item #6 above) — no new errors introduced by any of the four agents' changes or the integration.
+- **`git diff` scope check**: confirmed only the intended files changed (`page.tsx` rewiring + the 12 component files listed above, 3 deletions) — no stray edits outside each agent's assigned slice.
+
+### Note on repo history (disclosure, not part of this pass)
+
+`git log` on this checkout shows only 2 commits total, and the first is a single 711-file "initial" commit containing the whole project (confirmed via `git reflog` — it's a genuine `commit (initial)`, not a squash of older history). Whatever commit history predates that is not recoverable from this checkout. This happened before this pass and isn't something either consolidation pass caused or could fix — flagging it here for visibility since it hadn't been written down anywhere yet.

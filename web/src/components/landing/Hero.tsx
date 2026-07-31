@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ArrowRight, Code } from "lucide-react";
 import PriceDecayDemo from "./PriceDecayDemo";
-import { usePointerFine, useMousePosition } from "./hooks";
+import { usePointerFine, useMousePosition, useInView, useReducedMotion } from "./hooks";
 
 /* Fixed, hand-authored particle positions — deterministic (never
    Math.random() during render) so there's no SSR/hydration mismatch. */
@@ -31,10 +31,30 @@ const TRUST_BADGES = [
 const HEADLINE_LINE_1 = "Hire freelancers";
 const HEADLINE_LINE_2 = "at the right price";
 
+/* Live activity ticker — folded in from the old standalone SocialProof
+   section (was its own full-width <section>; now a sub-block under the
+   CTA/demo area so the page is one section shorter). */
+const TICKER_ITEMS = [
+  { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
+  { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
+  { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
+  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
+  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
+  { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
+  { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
+  { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
+  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
+  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
+];
+
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isPointerFine = usePointerFine();
   useMousePosition(sectionRef, { x: "--mx", y: "--my" }, isPointerFine);
+  const reducedMotion = useReducedMotion();
+  const ticker = useInView(0.4);
 
   return (
     <section
@@ -79,7 +99,12 @@ export default function Hero() {
       <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#7c3aed]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent pointer-events-none" />
 
-      <div className="relative w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      {/* Single flex child of the section (was implicitly true when the
+          grid div was the only sibling here) — wrapping it keeps the
+          folded-in ticker stacked below the grid instead of becoming a
+          second row-direction flex item next to it. */}
+      <div className="relative w-full max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left: Copy — staggered entrance */}
         <div className="text-center lg:text-left">
           {/* Badge */}
@@ -149,6 +174,36 @@ export default function Hero() {
             <PriceDecayDemo />
           </div>
         </div>
+      </div>
+
+      {/* Live activity ticker (folded in from SocialProof) — one restrained
+          scroll reveal, no new motion vocabulary. Reduced motion drops the
+          marquee scroll and shows the first row as a static strip. */}
+      <div
+        ref={ticker.ref}
+        className="relative w-full mt-12 md:mt-14 border-y border-[rgba(91,33,182,0.15)] bg-[#fbfaf7] py-3 overflow-hidden"
+        style={{
+          opacity: ticker.inView ? 1 : 0,
+          transform: ticker.inView ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      >
+        {/* Left gradient fade mask */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to right, #fbfaf7, transparent)" }} />
+        {/* Center glow highlight — items brighten as they pass center */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 100% at 50% 50%, rgba(91,33,182,0.06) 0%, transparent 70%)", zIndex: 5 }} />
+        {/* Right gradient fade mask */}
+        <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to left, #fbfaf7, transparent)" }} />
+        <div className={`flex items-center gap-12 whitespace-nowrap ${reducedMotion ? "" : "animate-marquee"}`}>
+          {TICKER_ITEMS.map((item, i) => (
+            <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#46424e] font-sans shrink-0">
+              <span>{item.icon}</span>
+              <span>{item.text}</span>
+              {i % 6 !== 5 && <span className="text-[rgba(91,33,182,0.3)] ml-4">·</span>}
+            </span>
+          ))}
+        </div>
+      </div>
       </div>
     </section>
   );

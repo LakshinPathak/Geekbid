@@ -48,10 +48,10 @@ export default function CaseTimeline() {
   const railPct = reducedMotion ? 100 : (litCount / STEP_COUNT) * 100;
 
   return (
-    <section ref={section.ref} className="py-10 sm:py-14 border-t border-[rgba(91,33,182,0.22)] bg-white">
+    <section ref={section.ref} className="py-8 sm:py-12 border-t border-[rgba(91,33,182,0.22)] bg-white">
       <div className="mx-auto max-w-[820px] px-5 sm:px-8">
         <div
-          className="text-center mb-10"
+          className="text-center mb-8"
           style={{
             opacity: section.inView ? 1 : 0,
             transform: section.inView ? "translateY(0)" : "translateY(24px)",

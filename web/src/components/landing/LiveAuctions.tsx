@@ -77,8 +77,11 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
       </div>
       <div className="flex items-baseline gap-2.5 mb-2.5">
         <span
-          className="font-mono-il text-2xl sm:text-3xl font-medium transition-colors duration-[400ms]"
-          style={{ color: auction.flash ? "#c14d3a" : "#17171f" }}
+          className="font-mono-il text-2xl sm:text-3xl font-medium transition-[color,transform] duration-[400ms] ease-out inline-block"
+          style={{
+            color: auction.flash ? "#c14d3a" : "#17171f",
+            transform: auction.flash ? "scale(1.05)" : "scale(1)",
+          }}
         >
           ${auction.current.toLocaleString()}
         </span>
@@ -145,7 +148,15 @@ export default function LiveAuctions() {
           }}
         >
           <div>
-            <p className="landing-label text-[#5b21b6] mb-3">Right now on GeekBid</p>
+            <p className="landing-label text-[#5b21b6] mb-3 inline-flex items-center gap-2">
+              <span
+                className={`h-1.5 w-1.5 rounded-full bg-[#5b21b6] inline-block ${
+                  reducedMotion ? "" : "animate-live-breathe"
+                }`}
+                aria-hidden="true"
+              />
+              Right now on GeekBid
+            </p>
             <h2 className="landing-h2 text-3xl sm:text-5xl text-[#17171f]">
               Live auctions dropping
             </h2>
