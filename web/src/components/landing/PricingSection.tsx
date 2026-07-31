@@ -99,8 +99,11 @@ export default function PricingSection() {
         {/* Ascending-stairs connector: Free -> Plus -> Premium as a
             right-angle stepped path that draws itself on view-entry;
             each tier's badge dot lights the instant the draw reaches
-            its anchor. Hidden on mobile/tablet stacked layout, where
-            "ascending" has no spatial meaning. */}
+            its anchor. Hidden below `md` (768px), where the grid below
+            is still a single stacked column and "ascending" has no
+            spatial meaning — note 768px itself is the `md` breakpoint,
+            so tablet already gets the real 3-column grid + this
+            connector, not the stacked mobile layout the name implies. */}
         <div ref={stair.ref} className="hidden md:block relative h-11 -mb-1" aria-hidden="true">
           {/* Path only inside the non-uniformly-scaled SVG (stretching a
               stepped line is fine); badge dots are plain HTML elements
@@ -172,7 +175,7 @@ export default function PricingSection() {
                 href={tier.config.price === 0 ? "/login" : "/pricing"}
                 className={`w-full py-3 rounded-full font-semibold text-sm text-center transition-all flex items-center justify-center gap-2 ${
                   tier.highlight
-                    ? "bg-[#5b21b6] text-[#ffffff] hover:bg-[#7c3aed]"
+                    ? "bg-[#5b21b6] text-[#ffffff] hover:bg-[#4a1a94]"
                     : "border border-[rgba(91,33,182,0.3)] text-[#17171f] hover:border-[#5b21b6] hover:bg-[#5b21b6]/5"
                 }`}
               >

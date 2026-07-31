@@ -16,7 +16,10 @@ export default function FAQ() {
       ref={section.ref}
       className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-white scroll-mt-20"
     >
-      <div className="mx-auto max-w-[760px] px-5 sm:px-8">
+      {/* Narrow column keeps Q&A line-length readable through laptop
+          widths; widen only past `2xl` so a 1920px+ viewport isn't 60%
+          empty margin either side of plain white background. */}
+      <div className="mx-auto max-w-[760px] 2xl:max-w-[900px] px-5 sm:px-8">
         <div
           className="text-center mb-12"
           style={{

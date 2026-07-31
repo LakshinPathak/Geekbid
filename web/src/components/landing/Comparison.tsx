@@ -15,7 +15,10 @@ export default function Comparison() {
       {/* Per-section ambient tint (cool blue, distinct from the gold used elsewhere) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#5b21b6]/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
-      <div id="compare" className="relative mx-auto max-w-5xl px-5 sm:px-8 scroll-mt-20">
+      {/* max-w-6xl matches PricingSection's container below (same parent
+          <WhyGeekBidSection>) — they used to run 1024px vs 1152px, so the
+          table's edges and the pricing cards' edges didn't line up. */}
+      <div id="compare" className="relative mx-auto max-w-6xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#17171f]">
             Why <span className="text-[#5b21b6]">GeekBid</span>, not the old way
@@ -25,7 +28,13 @@ export default function Comparison() {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Below ~550px the table's min-w-[500px] no longer fits and this
+            scrolls horizontally — the fade mask + caption make that
+            swipeable-ness visible instead of the table just looking cut
+            off with only a thin native scrollbar as the only clue. */}
+        <div className="relative">
+          <div className="absolute right-0 top-0 bottom-2 w-10 pointer-events-none z-10 sm:hidden" style={{ background: "linear-gradient(to left, #ffffff, transparent)" }} />
+          <div className="overflow-x-auto">
           <div className="glass-panel overflow-hidden min-w-[500px]" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 150ms, transform 0.7s ease 150ms" }}>
             {/* Header */}
             <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[rgba(91,33,182,0.22)]">
@@ -60,7 +69,9 @@ export default function Comparison() {
               </div>
             ))}
           </div>
+          </div>
         </div>
+        <p className="sm:hidden text-center text-xs text-[#46424e]/70 mt-3">Swipe to see the Traditional column →</p>
       </div>
     </div>
   );

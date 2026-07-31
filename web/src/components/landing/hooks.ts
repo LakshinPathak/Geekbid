@@ -171,6 +171,13 @@ export function useActiveSection(ids: string[]): string | null {
 
     const obs = new IntersectionObserver(
       (entries) => {
+        // Ignore intersection reports while still pinned to the very top of
+        // the page (e.g. the observer's first callback firing against a
+        // not-yet-settled initial layout) — nothing should read as "active"
+        // before the visitor has actually scrolled into one of these
+        // sections, so a mis-fire here can't light up e.g. "Pricing" while
+        // sitting in the Hero.
+        if (window.scrollY < 10) return;
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);

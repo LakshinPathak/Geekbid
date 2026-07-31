@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useInView, useReducedMotion } from "./hooks";
-import { AUCTIONS, type Auction } from "./data";
+import { AUCTIONS, CATEGORIES, type Auction } from "./data";
 
 interface AuctionState extends Auction {
   current: number;
@@ -62,8 +62,13 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
   );
 
   return (
-    <div
-      className="bg-[#fbfaf7] border border-[rgba(91,33,182,0.22)] rounded-2xl p-5 sm:p-6 hover:shadow-[0_16px_30px_-14px_rgba(91,33,182,0.2)] hover:border-[rgba(91,33,182,0.4)] transition-all duration-300"
+    // The hover lift/shadow/border-brighten was implying these cards were
+    // clickable without actually being links — since the data behind them
+    // is illustrative (no real per-job page exists), route to /feed, the
+    // same destination "Browse all auctions" above already points to.
+    <Link
+      href="/feed"
+      className="block bg-[#fbfaf7] border border-[rgba(91,33,182,0.22)] rounded-2xl p-5 sm:p-6 hover:shadow-[0_16px_30px_-14px_rgba(91,33,182,0.2)] hover:border-[rgba(91,33,182,0.4)] transition-all duration-300"
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-center justify-between mb-3.5">
@@ -96,18 +101,24 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
         />
       </div>
       <div className="text-xs text-[#46424e]">{auction.bidders} freelancers bidding</div>
-    </div>
+    </Link>
   );
 }
 
 /** "Right now on GeekBid" — a grid of independently live-decaying
  *  auctions, dramatizing the same reverse-auction mechanic as
- *  MarketTerminal but as breadth (3 jobs at once) rather than depth
+ *  MarketTerminal but as breadth (many jobs at once) rather than depth
  *  (one job in detail). Freezes to a representative mid-decay frame
- *  under prefers-reduced-motion instead of running the interval. */
+ *  under prefers-reduced-motion instead of running the interval.
+ *
+ *  Absorbs the former standalone Categories section: category chips
+ *  filter this same grid instead of rendering a second, parallel
+ *  "grid of numbers in cards" a few pixels below — breadth (browse by
+ *  category) and depth (watch it decay live) are one interaction. */
 export default function LiveAuctions() {
   const section = useInView(0.15);
   const reducedMotion = useReducedMotion();
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [auctions, setAuctions] = useState<AuctionState[]>(() =>
     AUCTIONS.map((a) => initialState(a, false))
   );
@@ -133,14 +144,21 @@ export default function LiveAuctions() {
     return () => clearTimeout(t);
   }, [auctions, reducedMotion]);
 
+  const filtered = useMemo(
+    () => (activeCategory ? auctions.filter((a) => a.category === activeCategory) : auctions),
+    [auctions, activeCategory]
+  );
+  const activeCategoryData = CATEGORIES.find((c) => c.name === activeCategory);
+
   return (
     <section
+      id="live"
       ref={section.ref}
-      className="@container py-16 sm:py-24 lg:py-20 border-t border-[rgba(91,33,182,0.22)] bg-white"
+      className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-white scroll-mt-20"
     >
-      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:pr-6">
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
         <div
-          className="flex items-end justify-between mb-11 flex-wrap gap-4"
+          className="flex items-end justify-between mb-8 flex-wrap gap-4"
           style={{
             opacity: section.inView ? 1 : 0,
             transform: section.inView ? "translateY(0)" : "translateY(24px)",
@@ -170,8 +188,62 @@ export default function LiveAuctions() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 @[420px]:grid-cols-2 @[860px]:grid-cols-3 gap-5">
-          {auctions.map((auction, i) => (
+        {/* Category chips — breadth (browse by category, with its own
+            live count/decay stats) filters the same depth grid below
+            instead of duplicating it in a second parallel section. */}
+        <div
+          className="flex flex-wrap gap-2 mb-6"
+          style={{
+            opacity: section.inView ? 1 : 0,
+            transform: section.inView ? "translateY(0)" : "translateY(16px)",
+            transition: "opacity 0.7s ease 80ms, transform 0.7s ease 80ms",
+          }}
+        >
+          <button
+            onClick={() => setActiveCategory(null)}
+            className="landing-label px-3.5 py-2 min-h-[44px] inline-flex items-center rounded-full border transition-colors"
+            style={{
+              color: activeCategory === null ? "#ffffff" : "#46424e",
+              backgroundColor: activeCategory === null ? "#5b21b6" : "transparent",
+              borderColor: activeCategory === null ? "#5b21b6" : "rgba(91,33,182,0.28)",
+            }}
+          >
+            All
+          </button>
+          {CATEGORIES.map((cat) => {
+            const active = activeCategory === cat.name;
+            return (
+              <button
+                key={cat.name}
+                onClick={() => setActiveCategory(active ? null : cat.name)}
+                className="landing-label px-3.5 py-2 min-h-[44px] rounded-full border transition-colors inline-flex items-center gap-1.5"
+                style={{
+                  color: active ? "#ffffff" : "#46424e",
+                  backgroundColor: active ? "#5b21b6" : "transparent",
+                  borderColor: active ? "#5b21b6" : "rgba(91,33,182,0.28)",
+                }}
+              >
+                <cat.icon className="h-3 w-3" />
+                {cat.name}
+                <span style={{ opacity: 0.65 }}>{cat.count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {activeCategoryData && (
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1.5 mb-8 text-sm text-[#46424e]">
+            <span>
+              <span className="font-mono-il text-[#5b21b6]">{activeCategoryData.avgDrop}%</span> avg price drop
+            </span>
+            <span>
+              <span className="font-mono-il text-[#5b21b6]">{activeCategoryData.timeToHire}</span> median time-to-hire
+            </span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((auction, i) => (
             <div
               key={auction.id}
               style={{
@@ -184,6 +256,10 @@ export default function LiveAuctions() {
             </div>
           ))}
         </div>
+
+        <p className="text-[10px] text-[#46424e]/60 mt-6">
+          Auctions and category stats shown are illustrative — sign up to browse real listings.
+        </p>
       </div>
     </section>
   );

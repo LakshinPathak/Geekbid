@@ -47,30 +47,30 @@ export default function Footer() {
           {/* Platform */}
           <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Platform</p>
-            <div className="flex flex-col items-center sm:items-start gap-2.5">
-              <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Browse Jobs</Link>
-              <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Post a Job</Link>
-              <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Find Work</Link>
-              <Link href="/pricing" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-block">Pricing</Link>
+            <div className="flex flex-col items-center sm:items-start gap-0.5 sm:gap-2.5">
+              <Link href="/feed" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Browse Jobs</Link>
+              <Link href="/post-job" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Post a Job</Link>
+              <Link href="/login?role=freelancer" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Find Work</Link>
+              <Link href="/pricing" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Pricing</Link>
             </div>
           </div>
           {/* Company */}
           <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Company</p>
-            <div className="flex flex-col items-center sm:items-start gap-2.5">
-              <span className="text-sm text-[#46424e]">About Us</span>
-              <span className="text-sm text-[#46424e]">Careers</span>
-              <span className="text-sm text-[#46424e]">Blog</span>
-              <span className="text-sm text-[#46424e]">Contact</span>
+            <div className="flex flex-col items-center sm:items-start gap-0.5 sm:gap-2.5">
+              <Link href="/about" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">About Us</Link>
+              <Link href="/careers" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Careers</Link>
+              <Link href="/blog" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Blog</Link>
+              <Link href="/contact" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Contact</Link>
             </div>
           </div>
           {/* Legal */}
           <div className="flex flex-col items-center sm:items-start">
             <p className="landing-label text-[#5b21b6] mb-4">Legal</p>
-            <div className="flex flex-col items-center sm:items-start gap-2.5">
-              <span className="text-sm text-[#46424e]">Terms of Service</span>
-              <span className="text-sm text-[#46424e]">Privacy Policy</span>
-              <span className="text-sm text-[#46424e]">Cookie Policy</span>
+            <div className="flex flex-col items-center sm:items-start gap-0.5 sm:gap-2.5">
+              <Link href="/terms" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Terms of Service</Link>
+              <Link href="/privacy" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Privacy Policy</Link>
+              <Link href="/cookies" className="text-sm text-[#46424e] hover:text-[#17171f] transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 sm:py-1.5">Cookie Policy</Link>
             </div>
           </div>
         </div>

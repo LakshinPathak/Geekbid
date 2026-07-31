@@ -19,7 +19,14 @@ export default function LandingGate({ children }: { children: ReactNode }) {
   if (!mounted || currentUser) return null;
 
   return (
-    <div className="bg-[#fbfaf7] text-[#17171f] overflow-x-hidden">
+    // overflow-x-clip (not overflow-x-hidden) on purpose: setting only
+    // overflow-x to a non-"visible" value forces the browser to compute
+    // overflow-y as "auto" (CSS overflow spec), which turns this div into
+    // a scroll container and breaks `position: sticky` on <Nav> below —
+    // "clip" is exempt from that visible/non-visible coupling and still
+    // blocks the horizontal bleed from the hero's oversized mesh/glow
+    // backgrounds, so the sticky header keeps working.
+    <div className="bg-[#fbfaf7] text-[#17171f] overflow-x-clip">
       {children}
     </div>
   );

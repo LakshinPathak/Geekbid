@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowRight, Code } from "lucide-react";
 import PriceDecayDemo from "./PriceDecayDemo";
 import { usePointerFine, useMousePosition, useInView, useReducedMotion } from "./hooks";
@@ -55,6 +55,19 @@ export default function Hero() {
   useMousePosition(sectionRef, { x: "--mx", y: "--my" }, isPointerFine);
   const reducedMotion = useReducedMotion();
   const ticker = useInView(0.4);
+  // The marquee had no pause mechanism at all (unlike the Testimonials
+  // carousel, which at least paused on mouse hover) — add both, since
+  // onMouseEnter/onMouseLeave never fire on touch. A short delay after
+  // release avoids resuming mid-swipe.
+  const [tickerPaused, setTickerPaused] = useState(false);
+  const tickerResumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pauseTicker() {
+    if (tickerResumeTimeoutRef.current) clearTimeout(tickerResumeTimeoutRef.current);
+    setTickerPaused(true);
+  }
+  function resumeTickerSoon() {
+    tickerResumeTimeoutRef.current = setTimeout(() => setTickerPaused(false), 600);
+  }
 
   return (
     <section
@@ -128,7 +141,7 @@ export default function Hero() {
               ))}
             </span>
             <span className="block">
-              <em className="landing-gradient-shimmer not-italic">
+              <em className="landing-emphasis not-italic">
                 {HEADLINE_LINE_2}
               </em>
             </span>
@@ -194,7 +207,14 @@ export default function Hero() {
         <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 40% 100% at 50% 50%, rgba(91,33,182,0.06) 0%, transparent 70%)", zIndex: 5 }} />
         {/* Right gradient fade mask */}
         <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-10" style={{ background: "linear-gradient(to left, #fbfaf7, transparent)" }} />
-        <div className={`flex items-center gap-12 whitespace-nowrap ${reducedMotion ? "" : "animate-marquee"}`}>
+        <div
+          className={`flex items-center gap-12 whitespace-nowrap ${reducedMotion ? "" : "animate-marquee"}`}
+          style={{ animationPlayState: tickerPaused ? "paused" : "running" }}
+          onMouseEnter={pauseTicker}
+          onMouseLeave={() => setTickerPaused(false)}
+          onTouchStart={pauseTicker}
+          onTouchEnd={resumeTickerSoon}
+        >
           {TICKER_ITEMS.map((item, i) => (
             <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#46424e] font-sans shrink-0">
               <span>{item.icon}</span>

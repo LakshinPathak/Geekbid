@@ -6,7 +6,10 @@ import { useReducedMotion } from "./hooks";
 /* ─── Live price decay demo (moved verbatim, plus a new price-tick-
    synced glow orb layered behind the card). Freezes to a representative
    static frame under prefers-reduced-motion instead of running the
-   interval loop — same pattern as PriceDecayShowcase's MarketTerminal. */
+   interval loop — same pattern as PriceDecayShowcase's MarketTerminal.
+   Also loops back to the start price once it hits the floor, same as
+   MarketTerminal, rather than stopping dead — a visitor who lingers on
+   the page shouldn't see the "live" demo go permanently stale. */
 export default function PriceDecayDemo() {
   const reducedMotion = useReducedMotion();
   const [price, setPrice] = useState(2400);
@@ -21,21 +24,21 @@ export default function PriceDecayDemo() {
   useEffect(() => {
     if (reducedMotion) return;
     const id = setInterval(() => {
+      setFlashCount((n) => n + 1);
+      tickRef.current += 1;
+      if (tickRef.current % 3 === 0) {
+        const ids = [sparkIdRef.current++, sparkIdRef.current++];
+        setSparks((p) => [...p, ...ids.map((sid) => ({ id: sid, x: (Math.random() - 0.5) * 60 }))]);
+        setTimeout(() => setSparks((p) => p.filter((s) => !ids.includes(s.id))), 1400);
+      }
       setElapsed((prev) => {
         const next = prev + 1;
-        const newPrice = Math.max(2400 - DECAY * next, MIN);
-        setPrice(newPrice);
-        setFlashCount((n) => n + 1);
-        tickRef.current += 1;
-        if (tickRef.current % 3 === 0) {
-          const ids = [sparkIdRef.current++, sparkIdRef.current++];
-          setSparks((p) => [...p, ...ids.map((sid) => ({ id: sid, x: (Math.random() - 0.5) * 60 }))]);
-          setTimeout(() => setSparks((p) => p.filter((s) => !ids.includes(s.id))), 1400);
-        }
+        const newPrice = 2400 - DECAY * next;
         if (newPrice <= MIN) {
-          clearInterval(id);
-          return prev;
+          setPrice(2400);
+          return 0;
         }
+        setPrice(newPrice);
         return next;
       });
     }, 120);

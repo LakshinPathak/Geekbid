@@ -82,8 +82,12 @@ export default function EscrowPerimeter() {
   const tokenX = phase === "idle" ? 10 : phase === "held" ? 50 : 90;
 
   return (
-    <section ref={section.ref} className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-[#fbfaf7]">
-      <div className="mx-auto max-w-[820px] px-5 sm:px-8 text-center">
+    <section id="trust" ref={section.ref} className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-[#fbfaf7] scroll-mt-20">
+      {/* 820px reads well as a focused, quiet column through laptop
+          widths, but leaves ~550px of empty margin per side at 1920px+
+          with nothing else in the section to fill it — widen only past
+          `2xl` so nothing changes at the sizes this was already tuned for. */}
+      <div className="mx-auto max-w-[820px] 2xl:max-w-[1100px] px-5 sm:px-8 text-center">
         <p
           className="landing-label text-[#5b21b6]"
           style={{

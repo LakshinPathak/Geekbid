@@ -3,19 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, CheckCircle2 } from "lucide-react";
 import CloudinaryAvatar from "@/components/CloudinaryAvatar";
-import { useInView } from "./hooks";
+import { useInView, useReducedMotion } from "./hooks";
 import { TESTIMONIALS } from "./data";
 
 export default function Testimonials() {
   const testimonialsSection = useInView(0.1);
+  const reducedMotion = useReducedMotion();
   const carouselRef = useRef<HTMLDivElement>(null);
   const carouselPausedRef = useRef(false);
+  const touchResumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeDot, setActiveDot] = useState(0);
   const lastDotRef = useRef(0);
 
   useEffect(() => {
     const el = carouselRef.current;
-    if (!el) return;
+    // Every other timed animation on the page freezes under reduced motion
+    // (price tickers, escrow token travel, FAQ transitions) — this carousel
+    // hadn't been wired up to match.
+    if (!el || reducedMotion) return;
     const id = setInterval(() => {
       if (carouselPausedRef.current) return;
       const mid = el.scrollWidth / 2;
@@ -26,10 +31,23 @@ export default function Testimonials() {
       if (newDot !== lastDotRef.current) { lastDotRef.current = newDot; setActiveDot(newDot); }
     }, 30);
     return () => clearInterval(id);
-  }, []);
+  }, [reducedMotion]);
+
+  // onMouseEnter/onMouseLeave (below) never fire on touch, so without this
+  // the auto-scroll keeps drifting mid-swipe and fights the user's own
+  // scroll gesture. Pause for the duration of the touch, then give it a
+  // moment after release before resuming so it doesn't yank the carousel
+  // out from under any residual momentum scroll.
+  function handleTouchStart() {
+    carouselPausedRef.current = true;
+    if (touchResumeTimeoutRef.current) clearTimeout(touchResumeTimeoutRef.current);
+  }
+  function handleTouchEnd() {
+    touchResumeTimeoutRef.current = setTimeout(() => { carouselPausedRef.current = false; }, 600);
+  }
 
   return (
-    <section id="testimonials" ref={testimonialsSection.ref} className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] relative overflow-hidden">
+    <section id="testimonials" ref={testimonialsSection.ref} className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] relative overflow-hidden scroll-mt-20">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#5b21b6]/[0.03] rounded-full blur-[120px]" />
@@ -58,6 +76,8 @@ export default function Testimonials() {
             style={{ opacity: testimonialsSection.inView ? 1 : 0, transform: testimonialsSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}
             onMouseEnter={() => { carouselPausedRef.current = true; }}
             onMouseLeave={() => { carouselPausedRef.current = false; }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
             {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
               <div
@@ -117,15 +137,22 @@ export default function Testimonials() {
         </div>
 
         {/* Navigation dots */}
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex justify-center mt-6">
           {TESTIMONIALS.map((_, i) => (
+            // The visible dot stays 6-20px (unchanged), but the button's
+            // own hit area is a real 44x44 touch target around it instead
+            // of being sized to match the dot exactly.
             <button
               key={i}
               aria-label={`Testimonial ${i + 1}`}
               onClick={() => { if (carouselRef.current) { const mid = carouselRef.current.scrollWidth / 2; carouselRef.current.scrollLeft = (mid / TESTIMONIALS.length) * i; } }}
-              className="rounded-full transition-all duration-300"
-              style={{ width: activeDot === i ? 20 : 6, height: 6, background: activeDot === i ? "#5b21b6" : "rgba(168,153,126,0.35)" }}
-            />
+              className="flex items-center justify-center h-11 w-11 -mx-1"
+            >
+              <span
+                className="rounded-full transition-all duration-300 block"
+                style={{ width: activeDot === i ? 20 : 6, height: 6, background: activeDot === i ? "#5b21b6" : "rgba(168,153,126,0.35)" }}
+              />
+            </button>
           ))}
         </div>
       </div>
