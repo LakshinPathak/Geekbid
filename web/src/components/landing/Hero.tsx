@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Code } from "lucide-react";
 import PriceDecayDemo from "./PriceDecayDemo";
 import { usePointerFine, useMousePosition, useInView, useReducedMotion } from "./hooks";
@@ -31,6 +31,18 @@ const TRUST_BADGES = [
 const HEADLINE_LINE_1 = "Hire freelancers";
 const HEADLINE_LINE_2 = "at the right price";
 
+/* Signature load moment: line 2 of the headline ticks through a few
+   decaying price values — the same mechanic the rest of the page
+   demonstrates — before settling into the real words. Skips straight
+   to the settled text under prefers-reduced-motion. */
+const HEADLINE_TICKS = ["$4,200", "$3,150", "$2,050", "$980"];
+
+const MECH_STEPS = [
+  { label: "Posted", value: "$2,400 ceiling" },
+  { label: "Decaying", value: "−$25 every hour" },
+  { label: "Locked in", value: "$1,400 by a freelancer" },
+];
+
 /* Live activity ticker — folded in from the old standalone SocialProof
    section (was its own full-width <section>; now a sub-block under the
    CTA/demo area so the page is one section shorter). */
@@ -55,9 +67,8 @@ export default function Hero() {
   useMousePosition(sectionRef, { x: "--mx", y: "--my" }, isPointerFine);
   const reducedMotion = useReducedMotion();
   const ticker = useInView(0.4);
-  // The marquee had no pause mechanism at all (unlike the Testimonials
-  // carousel, which at least paused on mouse hover) — add both, since
-  // onMouseEnter/onMouseLeave never fire on touch. A short delay after
+  // The marquee had no pause mechanism at all — add both mouse and touch,
+  // since onMouseEnter/onMouseLeave never fire on touch. A short delay after
   // release avoids resuming mid-swipe.
   const [tickerPaused, setTickerPaused] = useState(false);
   const tickerResumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,6 +79,25 @@ export default function Hero() {
   function resumeTickerSoon() {
     tickerResumeTimeoutRef.current = setTimeout(() => setTickerPaused(false), 600);
   }
+
+  // -1 = settled on the real headline text; 0..n = still cycling through
+  // HEADLINE_TICKS. Starts ticking immediately on mount so it's finished
+  // well before the rest of the staggered entrance below it.
+  const [tickPhase, setTickPhase] = useState(reducedMotion ? -1 : 0);
+  useEffect(() => {
+    if (reducedMotion) { setTickPhase(-1); return; }
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      if (i >= HEADLINE_TICKS.length) {
+        clearInterval(id);
+        setTickPhase(-1);
+      } else {
+        setTickPhase(i);
+      }
+    }, 130);
+    return () => clearInterval(id);
+  }, [reducedMotion]);
 
   return (
     <section
@@ -140,9 +170,12 @@ export default function Hero() {
                 </span>
               ))}
             </span>
-            <span className="block">
-              <em className="landing-emphasis not-italic">
-                {HEADLINE_LINE_2}
+            <span className="block animate-fade-in-up" style={{ animationDelay: "270ms" }}>
+              <em
+                key={tickPhase}
+                className={`landing-emphasis not-italic landing-price-tick inline-block ${tickPhase >= 0 ? "font-mono-il tabular-nums" : ""}`}
+              >
+                {tickPhase >= 0 ? HEADLINE_TICKS[tickPhase] : HEADLINE_LINE_2}
               </em>
             </span>
           </h1>
@@ -162,11 +195,11 @@ export default function Hero() {
               </Link>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: "750ms" }}>
-              <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>
+              <Link href="/pricing">
                 <button className="group btn-ghost text-base px-10 py-4 rounded-full">
                   <Code className="h-4 w-4" /> See Pricing
                 </button>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -179,11 +212,44 @@ export default function Hero() {
               </div>
             ))}
           </div>
+
+          {/* Inline mechanism teaser — same low-commitment "expand for
+              proof" affordance as the formula/case-study toggles further
+              down the page, surfaced here so a skeptical first-time
+              visitor gets the gist without leaving the fold. */}
+          <details className="landing-mech-toggle group mt-8 max-w-md mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "950ms" }}>
+            <summary className="landing-formula-toggle list-none">
+              <span className="landing-formula-toggle-inner landing-label text-[#46424e] group-hover:text-[#5b21b6] transition-colors">
+                ◈ Why does the price fall? ◈
+              </span>
+            </summary>
+            <div className="mt-9 px-1">
+              <div className="relative h-3">
+                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-dashed border-[rgba(91,33,182,0.28)]" aria-hidden="true" />
+                <span className="landing-mech-dot absolute top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-[#5b21b6]" style={{ left: 0 }} aria-hidden="true" />
+                <div className="relative grid grid-cols-3">
+                  {MECH_STEPS.map((s) => (
+                    <div key={s.label} className="flex justify-center">
+                      <span className="h-3 w-3 rounded-full border-2 border-[#5b21b6] bg-[#fbfaf7]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                {MECH_STEPS.map((s) => (
+                  <div key={s.label} className="text-center">
+                    <p className="landing-label text-[#5b21b6]">{s.label}</p>
+                    <p className="text-[11px] text-[#46424e] mt-1 leading-snug">{s.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Right: Live Price Decay Demo */}
         <div className="animate-fade-in-right flex justify-center" style={{ animationDelay: "500ms" }}>
-          <div className="w-full max-w-sm">
+          <div className="w-full max-w-md">
             <PriceDecayDemo />
           </div>
         </div>

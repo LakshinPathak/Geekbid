@@ -183,12 +183,18 @@ export const STATS: Stat[] = [
   { value: 4, suffix: "hr", label: "Avg Match Time", prefix: "<" },
 ];
 
+/* Trimmed to the two rows that aren't already made elsewhere on the
+   page — Price Discovery/Pricing echo the mechanic section, Payment
+   Security echoes the escrow section; repeating them here was the
+   same claim a third time. */
 export const COMPARISONS: Comparison[] = [
-  { feature: "Price Discovery", geekbid: "Automatic via decay algorithm", traditional: "Manual back-and-forth negotiation" },
   { feature: "Time to Hire", geekbid: "Hours, not weeks", traditional: "2-6 weeks average" },
-  { feature: "Pricing", geekbid: "Market-driven, transparent", traditional: "Opaque, inflated rates" },
-  { feature: "Payment Security", geekbid: "Built-in escrow + disputes", traditional: "Invoice and hope" },
-  { feature: "Reputation", geekbid: "GeekScore™ data-driven", traditional: "Subjective reviews" },
+  { feature: "Price Discovery", geekbid: "Live reverse auction — price decays to true market rate", traditional: "Manual quotes and back-and-forth negotiation" },
+  { feature: "Reputation", geekbid: "GeekScore™ (data-driven reputation score)", traditional: "Subjective reviews" },
+  { feature: "Payment Security", geekbid: "Escrow-protected, released on your approval", traditional: "Upfront or invoice-based, no built-in protection" },
+  { feature: "Platform Fees", geekbid: "As low as 5% on paid plans", traditional: "15-20%+ commission" },
+  { feature: "Bid Transparency", geekbid: "See live bids, GeekScores, and win rates", traditional: "Blind proposals with little signal" },
+  { feature: "Dispute Resolution", geekbid: "Built-in, escrow-backed process", traditional: "Ad-hoc, often unresolved" },
 ];
 
 export const TESTIMONIALS: Testimonial[] = [
@@ -250,6 +256,9 @@ export const AUCTIONS: Auction[] = [
   { id: 1, title: "Landing page for fintech app", category: "Design", start: 1400, floor: 620, bidders: 3, secondsLeft: 5400 },
   { id: 2, title: "React dashboard rebuild", category: "Development", start: 2800, floor: 1450, bidders: 5, secondsLeft: 9200 },
   { id: 3, title: "20 blog posts on SaaS pricing", category: "Writing", start: 900, floor: 380, bidders: 7, secondsLeft: 3100 },
+  { id: 4, title: "Launch campaign for D2C skincare brand", category: "Marketing", start: 1800, floor: 820, bidders: 4, secondsLeft: 7300 },
+  { id: 5, title: "60-second explainer video, motion graphics", category: "Video & Animation", start: 2100, floor: 950, bidders: 2, secondsLeft: 11200 },
+  { id: 6, title: "Fine-tune a support-ticket classifier", category: "Data & AI", start: 3400, floor: 1600, bidders: 6, secondsLeft: 15800 },
 ];
 
 export const CATEGORIES: Category[] = [
@@ -278,7 +287,7 @@ export const CASE_STUDY: CaseStudy = {
 };
 
 export const FAQS: Faq[] = [
-  { q: "How does the reverse auction actually work?", a: "You post a job with a starting budget ceiling. Freelancers submit bids, and each new bid must beat the current lowest price. The price drops live until you choose a winner or time runs out." },
+  { q: "Can I set my own floor price and decay rate?", a: "Yes. When you post a job you choose the starting ceiling, the floor it will never drop below, and how fast it decays per hour — we just suggest defaults based on your category." },
   { q: "Is posting a job really free?", a: "Yes. Posting, receiving bids, and messaging freelancers costs nothing. We only charge freelancers a success fee when they win a job." },
   { q: "What happens if I never find a price I like?", a: "You are never obligated to hire. If no bid meets your bar before time runs out, you can relist the job or close it with no cost." },
   { q: "How do you keep quality from racing to the bottom with price?", a: "Every bid shows the freelancer's rating, past work, and win rate alongside the price, so you're never choosing blind on price alone." },

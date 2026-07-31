@@ -7,9 +7,9 @@ import { useInView } from "./hooks";
 const PAYOFF_LINES = ["Friday, 5:04pm.", "Three jobs hired.", "Zero emails sent."];
 
 /* Closing section: a quiet log-line lead-in (merged from the former
- * PayoffBand section — same continuous scroll beat, just folded into
- * this section instead of living as its own full-width band), then the
- * hook (badge + headline) and one shared pair of CTA buttons. */
+ * PayoffBand section), then the hook (badge + headline) and one shared
+ * pair of CTA buttons — all on one continuous background rather than a
+ * separate full-bleed dark band, so it reads as one section, not two. */
 export default function CTA() {
   const payoff = useInView(0.3);
 
@@ -21,10 +21,12 @@ export default function CTA() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.2)] to-transparent" />
       </div>
 
-      {/* Lead-in: quiet log-line trace, full-bleed dark band before the headline */}
-      <div ref={payoff.ref} className="relative z-10 bg-[#1b1523] py-16 sm:py-20">
-        <div className="mx-auto max-w-[600px] px-5 sm:px-8 text-center">
-          <div className="flex flex-col items-center gap-3.5">
+      <div className="relative z-10 pt-14 sm:pt-20 pb-14 sm:pb-20">
+        {/* Lead-in: quiet log-line trace — same background as the headline
+            below it, not a separate full-bleed band, so this reads as one
+            continuous section instead of two stacked blocks. */}
+        <div ref={payoff.ref} className="mx-auto max-w-[600px] px-5 sm:px-8 text-center mb-10 sm:mb-14">
+          <div className="flex flex-col items-center gap-3">
             {PAYOFF_LINES.map((line, i) => (
               <div
                 key={line}
@@ -35,12 +37,12 @@ export default function CTA() {
                   transition: `opacity 0.7s ease ${i * 0.4}s, transform 0.7s ease ${i * 0.4}s`,
                 }}
               >
-                <span className="h-1 w-1 rounded-full bg-[#a78bfa] shrink-0" aria-hidden="true" />
+                <span className="h-1 w-1 rounded-full bg-[#5b21b6] shrink-0" aria-hidden="true" />
                 <span
                   className={
                     i === 0
-                      ? "font-mono-il text-sm text-[#7d729a]"
-                      : "text-xl sm:text-2xl font-medium text-[#f3effa]"
+                      ? "font-mono-il text-sm text-[#6f6a7d]"
+                      : "text-xl sm:text-2xl font-medium text-[#17171f]"
                   }
                 >
                   {line}
@@ -49,9 +51,7 @@ export default function CTA() {
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-5 text-center relative z-10">
           <div className="inline-flex items-center gap-2 landing-eyebrow text-[#5b21b6] border border-[rgba(91,33,182,0.22)] px-3 py-1.5 rounded-full mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-[#5b21b6] animate-pulse inline-block" />

@@ -3,6 +3,7 @@
 import { Fragment, useRef } from "react";
 import { useTilt3D, usePointerFine } from "./hooks";
 import { STEPS, type Step } from "./data";
+import CaseTimeline from "./CaseTimeline";
 
 function StepCard({ step, idx, inView }: { step: Step; idx: number; inView: boolean }) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -35,7 +36,7 @@ function StepCard({ step, idx, inView }: { step: Step; idx: number; inView: bool
  *  4-step explanation share one scroll beat instead of two. */
 export default function HowItWorks({ inView }: { inView: boolean }) {
   return (
-    <div className="mt-20 sm:mt-28">
+    <div>
       <div className="text-center mb-10 sm:mb-14" style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
         <h3 className="landing-header-glow landing-h3 text-2xl sm:text-4xl text-[#17171f] max-w-3xl mx-auto text-balance">
           From posting to payment in <span className="text-[#5b21b6]">four</span> simple steps
@@ -63,29 +64,21 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
         ))}
       </div>
 
-      {/* Price decay formula callout — collapsed by default to save vertical space */}
-      <details className="mt-16 sm:mt-20 group">
-        <summary className="landing-formula-toggle list-none">
-          <span className="landing-formula-toggle-inner landing-label text-[#46424e] group-hover:text-[#5b21b6] transition-colors">
-            ◈ View the Price Decay Formula ◈
-          </span>
-        </summary>
-        <div className="landing-code-block mt-9 font-mono-il text-sm sm:text-base leading-loose">
-          <span className="cm">{"// Price Decay Formula"}</span>
-          <br />
-          <span className="kw">const</span> <span className="vr">currentPrice</span> = <span className="fn">max</span>(
-          <br />
-          {"  "}<span className="vr">startPrice</span> - (<span className="vr">decayRate</span> * <span className="vr">hoursElapsed</span>),
-          <br />
-          {"  "}<span className="vr">floorPrice</span>
-          <br />
-          );
-          <br />
-          <br />
-          <span className="cm">{"// Example: $2,400 → $800 over 64 hours, -$25/hr, floor $800"}</span>
-        </div>
-        <p className="text-sm text-[#46424e] mt-4 text-center">Prices never go below your configured minimum. You control the speed.</p>
-      </details>
+      {/* One real case, start to finish — demoted from its own top-level
+          section (was a fourth re-demonstration of the same decay/bid
+          mechanic MarketTerminal already shows live above) into concrete
+          proof, shown directly rather than gated behind a click. */}
+      <div
+        className="mt-16 sm:mt-20"
+        style={{
+          opacity: inView ? 1 : 0,
+          transform: inView ? "translateY(0)" : "translateY(20px)",
+          transition: "opacity 0.6s ease 600ms, transform 0.6s ease 600ms",
+        }}
+      >
+        <p className="landing-label text-[#5b21b6] text-center mb-5">A Real Case, Start to Finish</p>
+        <CaseTimeline />
+      </div>
     </div>
   );
 }

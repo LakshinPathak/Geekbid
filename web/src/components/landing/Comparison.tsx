@@ -4,9 +4,10 @@ import { Zap, Check, X } from "lucide-react";
 import { useInView } from "./hooks";
 import { COMPARISONS } from "./data";
 
-/** Nested content only (no <section> of its own) — rendered inside
- *  WhyGeekBidSection alongside PricingSection so "why us" and "what
- *  it costs" share one scroll beat instead of two. */
+/** The "why us" comparison table — lives on its own dedicated /compare
+ *  page (linked from Nav), same as Pricing and FAQ, rather than as an
+ *  in-page landing section. No <section> of its own since the page
+ *  shell around it owns that. */
 export default function Comparison() {
   const comparisonSection = useInView(0.08);
 
@@ -15,9 +16,6 @@ export default function Comparison() {
       {/* Per-section ambient tint (cool blue, distinct from the gold used elsewhere) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#5b21b6]/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
-      {/* max-w-6xl matches PricingSection's container below (same parent
-          <WhyGeekBidSection>) — they used to run 1024px vs 1152px, so the
-          table's edges and the pricing cards' edges didn't line up. */}
       <div id="compare" className="relative mx-auto max-w-6xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#17171f]">
