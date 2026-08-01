@@ -26,6 +26,14 @@ export default function CTA() {
   return (
     <section ref={sectionRef} className="relative grid-bg overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Same flanking-ring motif as the Trust section right above —
+            a deliberate echo between the two, and it fills the wide
+            gutters either side of the centered headline on large
+            screens instead of leaving them flat. */}
+        <div className="absolute top-1/2 -left-[220px] -translate-y-1/2 h-[440px] w-[440px] rounded-full border border-[rgba(91,33,182,0.1)]" />
+        <div className="absolute top-1/2 -left-[220px] -translate-y-1/2 h-[320px] w-[320px] rounded-full border border-[rgba(91,33,182,0.08)]" />
+        <div className="absolute top-1/2 -right-[220px] -translate-y-1/2 h-[440px] w-[440px] rounded-full border border-[rgba(91,33,182,0.1)]" />
+        <div className="absolute top-1/2 -right-[220px] -translate-y-1/2 h-[320px] w-[320px] rounded-full border border-[rgba(91,33,182,0.08)]" />
         <div
           className="absolute w-[900px] h-[700px] -translate-x-1/2 -translate-y-1/2 transition-[left,top] duration-500 ease-out motion-reduce:transition-none"
           style={{ left: "var(--cta-mx, 50%)", top: "var(--cta-my, 50%)" }}

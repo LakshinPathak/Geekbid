@@ -92,11 +92,33 @@ export default function EscrowPerimeter() {
   const held = phase === "held";
 
   return (
-    <section id="trust" ref={section.ref} className="relative py-16 sm:py-24 bg-[#fbfaf7] scroll-mt-20">
+    <section id="trust" ref={section.ref} className="grid-bg relative py-16 sm:py-24 overflow-hidden scroll-mt-20">
+      {/* This was the one section on the page with no background texture
+          at all — a flat, empty rectangle that only got more noticeably
+          empty as the container widened for large screens. Two large
+          "perimeter" rings flanking the content (mostly cropped off-
+          canvas, very low opacity) plus the shared dot-grid give it the
+          same atmosphere every other section already has, without a
+          center glow blob — keeps the "calm, no pulsing light" read the
+          Trust theme wants, just no longer literally bare. */}
+      <div
+        className="absolute top-1/2 -left-[220px] -translate-y-1/2 h-[440px] w-[440px] rounded-full border border-[rgba(91,33,182,0.1)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-1/2 -left-[220px] -translate-y-1/2 h-[320px] w-[320px] rounded-full border border-[rgba(91,33,182,0.08)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-1/2 -right-[220px] -translate-y-1/2 h-[440px] w-[440px] rounded-full border border-[rgba(91,33,182,0.1)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-1/2 -right-[220px] -translate-y-1/2 h-[320px] w-[320px] rounded-full border border-[rgba(91,33,182,0.08)]"
+        aria-hidden="true"
+      />
       {/* Gradient hairline instead of a flat border — matches Hero's and
-          PriceDecayShowcase's top rule. No glow blob added here (unlike
-          LiveAuctions/Footer): this section is deliberately the calmest,
-          glow-free stretch on the page, fitting its "trust" theme. */}
+          PriceDecayShowcase's top rule. */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
       {/* Widened from the original 820px, which left a very noticeable
           empty margin per side from laptop widths up — the diagram below

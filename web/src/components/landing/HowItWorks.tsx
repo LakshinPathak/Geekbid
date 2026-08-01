@@ -1,7 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
-import { useTilt3D, usePointerFine, useReducedMotion, useRafThrottle } from "./hooks";
+import { Fragment, useRef } from "react";
+import { useTilt3D, usePointerFine, useReducedMotion, useInView } from "./hooks";
 import { STEPS, type Step } from "./data";
 import CaseTimeline from "./CaseTimeline";
 
@@ -19,10 +19,12 @@ const ICON_HOVER_CLASS: Record<string, string> = {
 
 function StepCard({
   step,
-  cardProgress,
+  revealed,
+  delayMs,
 }: {
   step: Step;
-  cardProgress: number;
+  revealed: boolean;
+  delayMs: number;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const isPointerFine = usePointerFine();
@@ -32,11 +34,11 @@ function StepCard({
   return (
     <div
       ref={cardRef}
-      className="group glass-card landing-glass-card landing-tilt-card landing-step-card hover:border-[rgba(91,33,182,0.35)] transition-all duration-300 relative overflow-hidden h-full"
+      className="group glass-card landing-glass-card landing-tilt-card landing-step-card hover:border-[rgba(91,33,182,0.35)] transition-[border-color,box-shadow] duration-300 relative overflow-hidden h-full"
       style={{
-        opacity: cardProgress,
-        transform: `translateY(${(1 - cardProgress) * 24}px)`,
-        transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
+        opacity: revealed ? 1 : 0,
+        transform: revealed ? "translateY(0)" : "translateY(20px)",
+        transition: `opacity 0.6s cubic-bezier(0.2,0.78,0.2,1) ${delayMs}ms, transform 0.6s cubic-bezier(0.2,0.78,0.2,1) ${delayMs}ms`,
       }}
     >
       <span className="absolute top-3 right-3 text-[10px] font-bold font-mono text-[#5b21b6] border border-[rgba(91,33,182,0.28)] bg-[rgba(91,33,182,0.06)] px-1.5 py-0.5 rounded-full tracking-wider">{step.num}</span>
@@ -56,53 +58,23 @@ function StepCard({
   );
 }
 
+// Fixed cascade, not scroll-scrubbed — a card/connector reveal tied 1:1 to
+// scroll position gets stuck mid-fade the instant the user stops scrolling
+// (exactly what happened with the previous implementation: pause partway
+// down the section and the last card+connector would just sit there
+// half-faded until scrolling resumed, reading as broken rather than
+// designed). A one-shot useInView trigger plus a fixed per-track delay
+// always finishes the cascade once it starts, regardless of scroll speed
+// or whether the user stops scrolling entirely.
+const TRACK_DELAY_MS = 130;
+
 /** Nested content only (no <section>/id of its own) — rendered inside
  *  PriceDecayShowcase's section so the live-mechanism demo and the
- *  4-step explanation share one scroll beat instead of two.
- *
- *  The step grid's own reveal is tied to actual scroll position (not a
- *  fixed-duration timer gated by a single "is this in view" boolean):
- *  scrolling slowly through the grid's reveal window draws the cards
- *  and connectors in step by step; jumping past it completes instantly.
- *  Same mechanism drives a solid fill line (with a leading dot) growing
- *  along each dashed connector, rather than a lone pulsing dot. */
+ *  4-step explanation share one scroll beat instead of two. */
 export default function HowItWorks({ inView }: { inView: boolean }) {
-  const gridRef = useRef<HTMLDivElement>(null);
+  const grid = useInView(0.2);
   const reducedMotion = useReducedMotion();
-  const [progress, setProgress] = useState(0);
-
-  const updateProgress = useRafThrottle(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const vh = window.innerHeight;
-    // Reveal window: starts once the grid's top edge is 90% down the
-    // viewport (just entering from the bottom) and finishes once it
-    // reaches 45% up — an ordinary mid-scroll span, not a fixed clock.
-    const start = vh * 0.9;
-    const end = vh * 0.45;
-    const raw = (start - rect.top) / (start - end);
-    setProgress(Math.min(1, Math.max(0, raw)));
-  });
-
-  useEffect(() => {
-    if (reducedMotion) {
-      setProgress(1);
-      return;
-    }
-    updateProgress();
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress);
-    return () => {
-      window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reducedMotion]);
-
-  // 7 tracks in reveal order: card, connector, card, connector, card,
-  // connector, card — each gets an equal 1/7 slice of total progress.
-  const segmentProgress = (segmentIdx: number) => Math.min(1, Math.max(0, progress * 7 - segmentIdx));
+  const revealed = reducedMotion || grid.inView;
 
   return (
     <div>
@@ -115,28 +87,31 @@ export default function HowItWorks({ inView }: { inView: boolean }) {
         </p>
       </div>
 
-      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_40px_1fr_40px_1fr_40px_1fr] gap-5 lg:gap-0 items-stretch">
+      <div ref={grid.ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_40px_1fr_40px_1fr_40px_1fr] gap-5 lg:gap-0 items-stretch">
         {STEPS.map((s, idx) => {
-          const cardProgress = reducedMotion ? 1 : segmentProgress(idx * 2);
-          const connectorProgress = reducedMotion ? 1 : segmentProgress(idx * 2 + 1);
+          const cardDelay = reducedMotion ? 0 : idx * 2 * TRACK_DELAY_MS;
+          const connectorDelay = reducedMotion ? 0 : (idx * 2 + 1) * TRACK_DELAY_MS;
           return (
             <Fragment key={s.num}>
-              <StepCard step={s} cardProgress={cardProgress} />
+              <StepCard step={s} revealed={revealed} delayMs={cardDelay} />
               {idx < STEPS.length - 1 && (
                 <div className="hidden lg:flex items-center justify-center mt-8 relative self-start">
                   <div className="w-full border-t border-dashed border-[rgba(91,33,182,0.28)]" />
                   <div
                     className="absolute left-0 top-1/2 -translate-y-1/2 h-px bg-[#5b21b6]"
-                    style={{ width: `${connectorProgress * 100}%`, transition: reducedMotion ? "none" : "width 0.15s linear" }}
+                    style={{
+                      width: revealed ? "100%" : "0%",
+                      transition: reducedMotion ? "none" : `width 0.5s cubic-bezier(0.2,0.78,0.2,1) ${connectorDelay}ms`,
+                    }}
                     aria-hidden="true"
                   />
                   <div
-                    className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 -translate-x-1/2"
-                    style={{
-                      left: `${connectorProgress * 100}%`,
-                      opacity: connectorProgress > 0 && connectorProgress < 1 ? 1 : 0,
-                      transition: reducedMotion ? "none" : "left 0.15s linear, opacity 0.2s ease",
-                    }}
+                    className={`absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 -translate-x-1/2 ${revealed && !reducedMotion ? "landing-connector-travel" : ""}`}
+                    style={
+                      revealed && !reducedMotion
+                        ? { animationDelay: `${connectorDelay}ms` }
+                        : { left: "0%", opacity: 0 }
+                    }
                     aria-hidden="true"
                   >
                     {/* Nested so the pulse keyframe's own `transform: scale(...)`

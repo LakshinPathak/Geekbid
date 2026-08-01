@@ -107,6 +107,15 @@
 .landing-scope .glass-panel:hover {
   border-color: rgba(91,33,182,0.35);
 }
+/* .grid-bg's dot pattern still uses the old #4b3f8f-family token too —
+   shared with ~17 non-landing pages, so scoped rather than edited
+   globally. Bumped from 0.06 to 0.08 at the same time: at the old
+   opacity + old color it was faint enough to be functionally invisible,
+   which is part of why full-width sections using it still read as flat
+   empty canvas on wide screens instead of textured atmosphere. */
+.landing-scope .grid-bg {
+  background-image: radial-gradient(circle, rgba(91,33,182,0.08) 1px, transparent 1px);
+}
 
 /* ── Royal Dark Design Tokens ──────────────────────────────────── */
 :root {
@@ -939,6 +948,7 @@ textarea.glass-input { border-radius: 16px; }
   .landing-mesh-bg,
   .landing-glow-orb,
   .landing-connector-dot,
+  .landing-connector-travel,
   .landing-testimonial-border,
   .landing-icon-pop,
   .landing-fake-cursor,
@@ -1048,6 +1058,20 @@ textarea.glass-input { border-radius: 16px; }
 .landing-connector-dot {
   animation: connector-pulse 1.8s ease-in-out infinite;
 }
+
+/* One-shot travel envelope for the connector's leading dot — a single
+   keyframe carries it appear -> ride the fill's leading edge -> vanish,
+   since a plain CSS transition can only interpolate straight from one
+   value to another and can't do that three-part arc in one step. Runs
+   once (fill-mode: both) with a per-connector animation-delay so it
+   stays in lockstep with that connector's own fill-line transition. */
+@keyframes connector-travel {
+  0%   { left: 0%;   opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+.landing-connector-travel { animation: connector-travel 0.6s cubic-bezier(0.2,0.78,0.2,1) both; }
 
 /* ── HowItWorks step icons — per-step hover treatment, distinct per
    icon's own meaning rather than one generic pop shared by all four ── */
