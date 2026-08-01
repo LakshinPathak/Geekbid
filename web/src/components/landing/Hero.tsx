@@ -146,7 +146,7 @@ export default function Hero() {
           grid div was the only sibling here) — wrapping it keeps the
           folded-in ticker stacked below the grid instead of becoming a
           second row-direction flex item next to it. */}
-      <div className="relative w-full max-w-[1400px] mx-auto">
+      <div className="relative w-full max-w-[1600px] mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left: Copy — staggered entrance */}
         <div className="text-center lg:text-left">

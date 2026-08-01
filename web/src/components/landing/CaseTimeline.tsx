@@ -70,7 +70,7 @@ export default function CaseTimeline() {
   const railPct = reducedMotion ? 100 : (litCount / STEP_COUNT) * 100;
 
   return (
-    <div ref={section.ref} className="mx-auto max-w-[820px]">
+    <div ref={section.ref} className="mx-auto max-w-[960px]">
         <div
           className="bg-[#fbfaf7] border border-[rgba(91,33,182,0.22)] rounded-[18px] p-6 sm:p-8"
           style={{

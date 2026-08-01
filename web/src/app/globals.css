@@ -74,6 +74,28 @@
 .landing-scope .font-mono-il {
   font-family: var(--font-landing-mono), var(--font-mono);
 }
+/* .btn-primary/.btn-ghost set their own explicit font-family and (on
+   primary) background-color, which beats the inherited .landing-scope
+   rule above on specificity alone — without this override every CTA
+   button on the landing page silently fell back to the app-wide Plus
+   Jakarta Sans face and the old #4b3f8f indigo instead of Archivo and
+   the live #5b21b6, even though every other element around it had
+   already moved. Scoped here (not edited globally) because both classes
+   are shared with ~30 non-landing pages/modals. */
+.landing-scope .btn-primary {
+  background: #5b21b6;
+  font-family: var(--font-landing-display), var(--font-sans);
+}
+.landing-scope .btn-primary:hover {
+  background: #4c1a99;
+}
+.landing-scope .btn-ghost {
+  color: #46424e;
+  font-family: var(--font-landing-display), var(--font-sans);
+}
+.landing-scope .btn-ghost:hover {
+  color: #17171f;
+}
 
 /* ── Royal Dark Design Tokens ──────────────────────────────────── */
 :root {

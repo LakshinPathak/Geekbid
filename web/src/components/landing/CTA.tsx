@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
-import { useInView } from "./hooks";
+import { useInView, useMousePosition, usePointerFine, useReducedMotion } from "./hooks";
 
 const PAYOFF_LINES = ["Friday, 5:04pm.", "Three jobs hired.", "Zero emails sent."];
 
@@ -12,11 +13,25 @@ const PAYOFF_LINES = ["Friday, 5:04pm.", "Three jobs hired.", "Zero emails sent.
  * separate full-bleed dark band, so it reads as one section, not two. */
 export default function CTA() {
   const payoff = useInView(0.3);
+  const headline = useInView(0.5);
+  const sectionRef = useRef<HTMLElement>(null);
+  const pointerFine = usePointerFine();
+  const reducedMotion = useReducedMotion();
+  // Outer wrapper carries the --cta-mx/--cta-my write target and the
+  // position transition; the inner div keeps its own pulse animation
+  // (cta-urgent-glow, which sets `transform: scale(...)`) — splitting them
+  // avoids that keyframe clobbering an inline translate on the same node.
+  useMousePosition(sectionRef, { x: "--cta-mx", y: "--cta-my" }, pointerFine && !reducedMotion);
 
   return (
-    <section className="relative grid-bg overflow-hidden">
+    <section ref={sectionRef} className="relative grid-bg overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="landing-cta-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#5b21b6]/[0.09] rounded-full blur-[160px]" />
+        <div
+          className="absolute w-[900px] h-[700px] -translate-x-1/2 -translate-y-1/2 transition-[left,top] duration-500 ease-out motion-reduce:transition-none"
+          style={{ left: "var(--cta-mx, 50%)", top: "var(--cta-my, 50%)" }}
+        >
+          <div className="landing-cta-glow w-full h-full bg-[#5b21b6]/[0.09] rounded-full blur-[160px]" />
+        </div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.4)] to-transparent" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.2)] to-transparent" />
       </div>
@@ -52,20 +67,45 @@ export default function CTA() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-5xl px-5 text-center relative z-10">
+        <div className="mx-auto max-w-6xl px-5 text-center relative z-10">
           <div className="inline-flex items-center gap-2 landing-eyebrow text-[#5b21b6] border border-[rgba(91,33,182,0.22)] px-3 py-1.5 rounded-full mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-[#5b21b6] animate-pulse inline-block" />
             Join 2,400+ freelancers on GeekBid
           </div>
-          <h2 className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl 2xl:text-7xl text-[#17171f]">
-            Ready to hire<br /><em className="text-[#5b21b6] not-italic">smarter?</em>
+          <h2
+            ref={headline.ref}
+            className="landing-header-glow landing-display text-4xl sm:text-5xl md:text-6xl 2xl:text-7xl text-[#17171f]"
+          >
+            Ready to hire<br />
+            <span className="relative inline-block">
+              <svg
+                className="absolute -inset-x-[8%] -inset-y-[10%] w-[116%] h-[120%] -z-10"
+                viewBox="0 0 220 60"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M8 40 Q 55 20, 110 34 T 212 26"
+                  fill="none"
+                  stroke="rgba(196,181,253,0.65)"
+                  strokeWidth="26"
+                  strokeLinecap="round"
+                  style={{
+                    strokeDasharray: 300,
+                    strokeDashoffset: reducedMotion || headline.inView ? 0 : 300,
+                    transition: reducedMotion ? "none" : "stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s",
+                  }}
+                />
+              </svg>
+              <em className="relative text-[#5b21b6] not-italic">smarter?</em>
+            </span>
           </h2>
           <p className="landing-subhead text-base sm:text-lg text-[#46424e] mt-6 max-w-lg mx-auto">
             Join thousands of companies using reverse auctions to find the best freelance talent at the right price.
           </p>
         </div>
 
-        <div className="mx-auto max-w-5xl px-5 text-center relative z-10 mt-10">
+        <div className="mx-auto max-w-6xl px-5 text-center relative z-10 mt-10">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/login?tab=register&role=client">
               <button className="group btn-primary text-base px-12 py-4 rounded-full">

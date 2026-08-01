@@ -98,11 +98,12 @@ export default function EscrowPerimeter() {
           LiveAuctions/Footer): this section is deliberately the calmest,
           glow-free stretch on the page, fitting its "trust" theme. */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
-      {/* 820px reads well as a focused, quiet column through laptop
-          widths, but leaves ~550px of empty margin per side at 1920px+
-          with nothing else in the section to fill it — widen only past
-          `2xl` so nothing changes at the sizes this was already tuned for. */}
-      <div className="mx-auto max-w-[820px] 2xl:max-w-[1100px] px-5 sm:px-8 text-center">
+      {/* Widened from the original 820px, which left a very noticeable
+          empty margin per side from laptop widths up — the diagram below
+          is percentage-positioned (10%–90%) so it fills whatever column
+          width it's given, and the headline/stat-strip stay short enough
+          not to need a narrower reading column of their own. */}
+      <div className="mx-auto max-w-[1100px] px-5 sm:px-8 text-center">
         <p
           className="landing-label text-[#5b21b6]"
           style={{

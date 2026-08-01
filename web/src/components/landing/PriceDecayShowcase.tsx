@@ -19,7 +19,7 @@ export default function PriceDecayShowcase() {
       ref={section.ref}
       className="relative pt-4 sm:pt-6 pb-16 sm:pb-24 overflow-hidden scroll-mt-20 bg-[#fbfaf7]"
     >
-      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
+      <div className="relative mx-auto max-w-[1600px] px-5 sm:px-8">
         <HowItWorks inView={section.inView} />
       </div>
     </section>

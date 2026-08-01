@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, Flame } from "lucide-react";
 import Link from "next/link";
 import { useInView, useReducedMotion } from "./hooks";
 import { AUCTIONS, CATEGORIES, type Auction } from "./data";
+
+// Category name -> its chip icon, so each card can wear the same glyph as
+// its filter chip instead of a bare text pill — one visual language for
+// "what kind of job is this" across the whole section.
+const CATEGORY_ICON = new Map(CATEGORIES.map((c) => [c.name, c.icon]));
+
+// Below this % of its original range, an auction reads as "closing soon" —
+// a small warm flag on top of the plain countdown, using the same
+// terracotta the price-drop flash already uses for urgency.
+const CLOSING_SOON_PCT = 25;
 
 interface AuctionState extends Auction {
   current: number;
@@ -60,6 +70,8 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
     4,
     Math.min(100, Math.round(((auction.current - auction.floor) / (auction.start - auction.floor)) * 100))
   );
+  const CatIcon = CATEGORY_ICON.get(auction.category);
+  const closingSoon = pct <= CLOSING_SOON_PCT;
 
   return (
     // The hover lift/shadow/border-brighten was implying these cards were
@@ -72,23 +84,41 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-center justify-between mb-3.5">
-        <span className="landing-label text-[#46424e] bg-[#f4f2ee] px-2.5 py-1 rounded-full">
+        <span className="landing-label text-[#46424e] bg-[#f4f2ee] px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
+          {CatIcon && <CatIcon className="h-3 w-3" />}
           {auction.category}
         </span>
-        <span className="text-[11px] text-[#b3aec0]">{formatTime(auction.secondsLeft)}</span>
+        {closingSoon ? (
+          <span className="text-[11px] font-medium text-[#c14d3a] inline-flex items-center gap-1">
+            <Flame className="h-3 w-3" />
+            {formatTime(auction.secondsLeft)}
+          </span>
+        ) : (
+          <span className="text-[11px] text-[#b3aec0]">{formatTime(auction.secondsLeft)}</span>
+        )}
       </div>
       <div className="text-[15px] font-medium mb-4 min-h-[40px] text-[#17171f]">
         {auction.title}
       </div>
       <div className="flex items-baseline gap-2.5 mb-2.5">
-        <span
-          className="font-mono-il text-2xl sm:text-3xl font-medium transition-[color,transform] duration-[400ms] ease-out inline-block"
-          style={{
-            color: auction.flash ? "#c14d3a" : "#17171f",
-            transform: auction.flash ? "scale(1.05)" : "scale(1)",
-          }}
-        >
-          ${auction.current.toLocaleString()}
+        <span className="relative inline-flex items-baseline">
+          <ChevronDown
+            className="h-4 w-4 absolute -left-[18px] top-1/2 text-[#c14d3a] transition-[opacity,transform] duration-300 ease-out"
+            style={{
+              opacity: auction.flash ? 1 : 0,
+              transform: auction.flash ? "translateY(-50%)" : "translateY(-70%)",
+            }}
+            aria-hidden="true"
+          />
+          <span
+            className="font-mono-il text-2xl sm:text-3xl font-medium transition-[color,transform] duration-[400ms] ease-out inline-block"
+            style={{
+              color: auction.flash ? "#c14d3a" : "#17171f",
+              transform: auction.flash ? "scale(1.05)" : "scale(1)",
+            }}
+          >
+            ${auction.current.toLocaleString()}
+          </span>
         </span>
         <span className="font-mono-il text-[13px] text-[#b3aec0] line-through">
           ${auction.start.toLocaleString()}
@@ -96,7 +126,7 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
       </div>
       <div className="h-[5px] bg-[#f4f2ee] rounded-full overflow-hidden mb-3.5">
         <div
-          className="h-full bg-[#5b21b6] rounded-full transition-[width] duration-[1200ms] ease-linear"
+          className="landing-decay-bar-fill h-full rounded-full transition-[width] duration-[1200ms] ease-linear"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -162,7 +192,7 @@ export default function LiveAuctions() {
           touch of the same atmosphere as its neighbors. */}
       <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#5b21b6]/[0.035] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
-      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
+      <div className="relative mx-auto max-w-[1600px] px-5 sm:px-8">
         <div
           className="flex items-end justify-between mb-8 flex-wrap gap-4"
           style={{

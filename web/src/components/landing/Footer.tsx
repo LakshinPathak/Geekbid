@@ -34,7 +34,7 @@ export default function Footer() {
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-5">
+      <div className="relative mx-auto max-w-[1600px] px-5">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-12 mb-12 text-center sm:text-left">
           {/* Brand */}
           <div className="sm:col-span-1 flex flex-col items-center sm:items-start">

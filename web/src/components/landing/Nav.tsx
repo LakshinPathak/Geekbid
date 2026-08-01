@@ -62,7 +62,7 @@ export default function Nav() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-[rgba(91,33,182,0.22)] bg-[#ffffff]">
       <ScrollProgress />
-      <div className="flex h-14 items-center justify-between px-5 sm:px-8 max-w-[1400px] mx-auto">
+      <div className="flex h-14 items-center justify-between px-5 sm:px-8 max-w-[1600px] mx-auto">
         <div className="group flex items-center gap-2.5">
           <Logo
             markClassName="h-7 w-7 transition-transform duration-[180ms] ease-out group-hover:translate-y-[2px]"
