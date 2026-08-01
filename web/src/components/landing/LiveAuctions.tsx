@@ -154,9 +154,15 @@ export default function LiveAuctions() {
     <section
       id="live"
       ref={section.ref}
-      className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-white scroll-mt-20"
+      className="relative py-16 sm:py-24 bg-white scroll-mt-20 overflow-hidden"
     >
-      <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
+      {/* Soft top wash — bridges the cream-to-white seam with a blob
+          instead of an instant color flip, and gives this section (the
+          plainest on the page — no ambient glow at all previously) a
+          touch of the same atmosphere as its neighbors. */}
+      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#5b21b6]/[0.035] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
+      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
         <div
           className="flex items-end justify-between mb-8 flex-wrap gap-4"
           style={{

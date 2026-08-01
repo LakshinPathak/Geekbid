@@ -14,7 +14,7 @@ export default function CTA() {
   const payoff = useInView(0.3);
 
   return (
-    <section className="border-t border-[rgba(91,33,182,0.22)] relative grid-bg overflow-hidden">
+    <section className="relative grid-bg overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="landing-cta-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#5b21b6]/[0.09] rounded-full blur-[160px]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.4)] to-transparent" />

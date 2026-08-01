@@ -17,7 +17,12 @@ const CONSTELLATION_DOTS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[rgba(91,33,182,0.22)] py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
+    <footer className="py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
+      {/* Gradient hairline instead of a flat border, plus a soft top
+          wash bridging CTA's cream into the footer's white — matches
+          the same seam-softening treatment used above LiveAuctions. */}
+      <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-[#5b21b6]/[0.03] rounded-full blur-[140px] pointer-events-none" aria-hidden="true" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
       {/* Constellation background */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {CONSTELLATION_DOTS.map((d, i) => (

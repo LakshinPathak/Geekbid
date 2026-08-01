@@ -92,7 +92,12 @@ export default function EscrowPerimeter() {
   const held = phase === "held";
 
   return (
-    <section id="trust" ref={section.ref} className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-[#fbfaf7] scroll-mt-20">
+    <section id="trust" ref={section.ref} className="relative py-16 sm:py-24 bg-[#fbfaf7] scroll-mt-20">
+      {/* Gradient hairline instead of a flat border — matches Hero's and
+          PriceDecayShowcase's top rule. No glow blob added here (unlike
+          LiveAuctions/Footer): this section is deliberately the calmest,
+          glow-free stretch on the page, fitting its "trust" theme. */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
       {/* 820px reads well as a focused, quiet column through laptop
           widths, but leaves ~550px of empty margin per side at 1920px+
           with nothing else in the section to fill it — widen only past
