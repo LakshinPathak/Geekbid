@@ -26,7 +26,7 @@ export default function LandingGate({ children }: { children: ReactNode }) {
     // "clip" is exempt from that visible/non-visible coupling and still
     // blocks the horizontal bleed from the hero's oversized mesh/glow
     // backgrounds, so the sticky header keeps working.
-    <div className="bg-[#fbfaf7] text-[#17171f] overflow-x-clip">
+    <div className="landing-scope bg-[#fbfaf7] text-[#17171f] overflow-x-clip">
       {children}
     </div>
   );

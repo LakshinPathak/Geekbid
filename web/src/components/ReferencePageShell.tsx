@@ -18,7 +18,7 @@ export default function ReferencePageShell({ children }: { children: ReactNode }
     // wider than the viewport, contained on the full landing page by
     // its overflow-x-clip wrapper. These standalone pages need the same
     // containment since they reuse those components directly.
-    <div className="min-h-screen bg-[#fbfaf7] overflow-x-clip">
+    <div className="landing-scope min-h-screen bg-[#fbfaf7] overflow-x-clip">
       <div className="max-w-[1152px] mx-auto px-5 sm:px-8 pt-10">
         <Link
           href="/"
@@ -27,7 +27,7 @@ export default function ReferencePageShell({ children }: { children: ReactNode }
           <ArrowLeft className="h-4 w-4" /> Back to home
         </Link>
         <div className="flex items-center gap-2.5 mt-6 mb-10 sm:mb-14">
-          <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em] font-sans" />
+          <Logo markClassName="h-7 w-7" textClassName="text-sm font-bold tracking-[0.03em]" />
         </div>
       </div>
       {children}

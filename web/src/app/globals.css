@@ -56,6 +56,25 @@
   --font-mono:  var(--font-plex-mono), 'Courier New', monospace;
 }
 
+/* ── Landing page type scope ──────────────────────────────────────
+   Applied once, to the outer wrapper of every landing/reference-page
+   surface (LandingGate, ReferencePageShell) — cascades Archivo to
+   every piece of text within by default (headings' own .landing-h2/
+   h3/display/card-title classes still set their own weight on top of
+   this), and redirects the shared .font-mono-il class (used ~20x
+   across landing for small mono labels/timestamps/tokens, but also
+   shared with /payments and /profile outside the landing surface) to
+   the landing-specific mono face — so numerals stay one consistent
+   font everywhere on the landing page, not two different monospace
+   faces depending on which component happened to render a given
+   number. Nothing outside these two wrapper points is affected. */
+.landing-scope {
+  font-family: var(--font-landing-display), var(--font-sans);
+}
+.landing-scope .font-mono-il {
+  font-family: var(--font-landing-mono), var(--font-mono);
+}
+
 /* ── Royal Dark Design Tokens ──────────────────────────────────── */
 :root {
   --radius: 16px;
@@ -1159,7 +1178,7 @@ textarea.glass-input { border-radius: 16px; }
    carries every numeric/price value"; Stats/Testimonials' big trust-
    strip numbers were the one place still rendering in the sans face. */
 .landing-num {
-  font-family: var(--font-mono);
+  font-family: var(--font-landing-mono), var(--font-mono);
 }
 
 /* ── Section header text-glow ──────────────────────────────────── */

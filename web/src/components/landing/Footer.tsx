@@ -41,7 +41,7 @@ export default function Footer() {
             <div className="group flex items-center gap-2.5 mb-4">
               <Logo
                 markClassName="h-8 w-8 transition-transform duration-300 ease-[cubic-bezier(0.2,0.78,0.2,1)] group-hover:scale-110"
-                textClassName="text-base font-bold tracking-[0.03em] font-sans"
+                textClassName="text-base font-bold tracking-[0.03em]"
               />
             </div>
             <p className="text-sm text-[#46424e] leading-relaxed">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Plus_Jakarta_Sans, Poppins } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans, Archivo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
@@ -23,14 +23,27 @@ const jakarta = Plus_Jakarta_Sans({
  weight: ["400", "500", "600", "700"],
 });
 
-// Landing-page-only display face — additive CSS var, never mapped into the
-// global --font-sans/--font-serif tokens, so no non-landing page is affected.
-// Consumed exclusively by the `.landing-*` heading classes in globals.css.
-const poppins = Poppins({
+// Landing-page-only type system — additive CSS vars, never mapped into the
+// global --font-sans/--font-mono tokens, so no non-landing page is affected.
+// Archivo (a grotesque with real character, not a generic rounded-friendly
+// SaaS default) carries both landing headings and landing body copy — one
+// family, weight does the differentiating work, per the landing page's own
+// "bold/urgent/competitive" brand voice rather than a timid display+body
+// pairing. JetBrains Mono replaces the app-wide IBM Plex Mono for landing's
+// ticking price/stat numerals specifically (payments/profile keep Plex Mono
+// via the shared --font-mono, untouched).
+const archivo = Archivo({
  subsets: ["latin"],
  variable: "--font-landing-display",
  display: "swap",
- weight: ["500", "600", "700"],
+ weight: ["400", "500", "600", "700"],
+});
+
+const landingMono = JetBrains_Mono({
+ subsets: ["latin"],
+ variable: "--font-landing-mono",
+ display: "swap",
+ weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -54,7 +67,7 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`${plexMono.variable} ${jakarta.variable} ${poppins.variable}`}
+ className={`${plexMono.variable} ${jakarta.variable} ${archivo.variable} ${landingMono.variable}`}
  style={{ background: '#fbfaf7' }}
  suppressHydrationWarning
  >

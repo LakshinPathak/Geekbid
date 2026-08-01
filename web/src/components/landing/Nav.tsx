@@ -66,7 +66,7 @@ export default function Nav() {
         <div className="group flex items-center gap-2.5">
           <Logo
             markClassName="h-7 w-7 transition-transform duration-[180ms] ease-out group-hover:translate-y-[2px]"
-            textClassName="text-sm font-bold tracking-[0.03em] font-sans"
+            textClassName="text-sm font-bold tracking-[0.03em]"
           />
         </div>
         <div className="hidden lg:flex items-center gap-1 landing-label text-[#46424e]">

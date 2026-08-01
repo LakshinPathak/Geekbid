@@ -180,7 +180,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-[#46424e] leading-[1.75] mb-6 max-w-lg font-sans mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
+          <p className="text-lg sm:text-xl text-[#46424e] leading-[1.75] mb-6 max-w-lg mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
             The reverse-auction pricing engine for freelance talent. Post a job, watch the price decay to true market rate, hire at your sweet spot — free to start, and paid plans that cut your platform fee to as low as 5%.
           </p>
 
@@ -282,7 +282,7 @@ export default function Hero() {
           onTouchEnd={resumeTickerSoon}
         >
           {TICKER_ITEMS.map((item, i) => (
-            <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#46424e] font-sans shrink-0">
+            <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#46424e] shrink-0">
               <span>{item.icon}</span>
               <span>{item.text}</span>
               {i % 6 !== 5 && <span className="text-[rgba(91,33,182,0.3)] ml-4">·</span>}
