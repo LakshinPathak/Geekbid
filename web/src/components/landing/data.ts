@@ -1,7 +1,8 @@
 import {
   TrendingDown, Shield, BarChart3, MessageSquare, Bell, CreditCard,
   Target, CheckCircle2, Lock,
-  Palette, Code2, PenLine, Megaphone, Clapperboard, BrainCircuit,
+  Palette, Code2, PenLine,
+  Rocket, HandCoins, MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -95,6 +96,8 @@ export interface CaseStep {
   time: string;
   elapsed: string;
   detail: string;
+  icon: LucideIcon;
+  price?: number;
 }
 
 export interface CaseStudy {
@@ -256,18 +259,12 @@ export const AUCTIONS: Auction[] = [
   { id: 1, title: "Landing page for fintech app", category: "Design", start: 1400, floor: 620, bidders: 3, secondsLeft: 5400 },
   { id: 2, title: "React dashboard rebuild", category: "Development", start: 2800, floor: 1450, bidders: 5, secondsLeft: 9200 },
   { id: 3, title: "20 blog posts on SaaS pricing", category: "Writing", start: 900, floor: 380, bidders: 7, secondsLeft: 3100 },
-  { id: 4, title: "Launch campaign for D2C skincare brand", category: "Marketing", start: 1800, floor: 820, bidders: 4, secondsLeft: 7300 },
-  { id: 5, title: "60-second explainer video, motion graphics", category: "Video & Animation", start: 2100, floor: 950, bidders: 2, secondsLeft: 11200 },
-  { id: 6, title: "Fine-tune a support-ticket classifier", category: "Data & AI", start: 3400, floor: 1600, bidders: 6, secondsLeft: 15800 },
 ];
 
 export const CATEGORIES: Category[] = [
   { name: "Design", count: 214, avgDrop: 46, timeToHire: "5h 40m", icon: Palette, trend: [58, 62, 54, 60, 50, 44, 38] },
   { name: "Development", count: 381, avgDrop: 52, timeToHire: "9h 10m", icon: Code2, trend: [70, 66, 68, 58, 52, 48, 40] },
   { name: "Writing", count: 156, avgDrop: 58, timeToHire: "3h 20m", icon: PenLine, trend: [64, 60, 50, 46, 40, 34, 28] },
-  { name: "Marketing", count: 129, avgDrop: 44, timeToHire: "6h 50m", icon: Megaphone, trend: [55, 58, 52, 50, 46, 42, 40] },
-  { name: "Video & Animation", count: 97, avgDrop: 39, timeToHire: "11h 30m", icon: Clapperboard, trend: [52, 50, 48, 50, 44, 42, 41] },
-  { name: "Data & AI", count: 143, avgDrop: 35, timeToHire: "14h 05m", icon: BrainCircuit, trend: [48, 50, 46, 44, 40, 38, 39] },
 ];
 
 /* Illustrative composite case, not a real customer — same treatment as
@@ -278,11 +275,11 @@ export const CASE_STUDY: CaseStudy = {
   ceiling: 3200,
   accepted: 1480,
   steps: [
-    { label: "Posted", time: "Day 1 · 9:02am", elapsed: "+0m", detail: "$3,200 ceiling, 48h decay window" },
-    { label: "First bid", time: "Day 1 · 11:40am", elapsed: "+2h 38m", detail: "marcus_k bids $2,650" },
-    { label: "Price milestone", time: "Day 1 · 6:15pm", elapsed: "+9h 13m", detail: "Price crosses $2,000 — 4 bidders now watching" },
-    { label: "Client question", time: "Day 2 · 8:50am", elapsed: "+23h 48m", detail: "Client asks about SOC 2 compliance in chat" },
-    { label: "Accepted", time: "Day 2 · 3:20pm", elapsed: "+30h 18m", detail: "Hired priya_ml at $1,480" },
+    { label: "Posted", time: "Day 1 · 9:02am", elapsed: "+0m", detail: "$3,200 ceiling, 48h decay window", icon: Rocket, price: 3200 },
+    { label: "First bid", time: "Day 1 · 11:40am", elapsed: "+2h 38m", detail: "marcus_k bids $2,650", icon: HandCoins, price: 2650 },
+    { label: "Price milestone", time: "Day 1 · 6:15pm", elapsed: "+9h 13m", detail: "Price crosses $2,000 — 4 bidders now watching", icon: TrendingDown, price: 2000 },
+    { label: "Client question", time: "Day 2 · 8:50am", elapsed: "+23h 48m", detail: "Client asks about SOC 2 compliance in chat", icon: MessageCircle },
+    { label: "Accepted", time: "Day 2 · 3:20pm", elapsed: "+30h 18m", detail: "Hired priya_ml at $1,480", icon: CheckCircle2, price: 1480 },
   ],
 };
 

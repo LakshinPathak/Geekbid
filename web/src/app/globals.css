@@ -1059,6 +1059,32 @@ textarea.glass-input { border-radius: 16px; }
   animation: connector-pulse 1.8s ease-in-out infinite;
 }
 
+/* ── EscrowPerimeter — station impact bounce + payout particle burst
+   ("more crazy" pass on what was deliberately the calmest animation on
+   the page): a station overshoots on arrival instead of just changing
+   border color, and the payout moment throws a small one-shot particle
+   burst instead of just a soft ring flash. ─────────────────────────── */
+@keyframes station-impact {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.landing-station-impact { animation: station-impact 0.5s cubic-bezier(0.2,0.78,0.2,1); }
+
+@keyframes escrow-particle-burst {
+  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(30px) scale(0); opacity: 0; }
+}
+.landing-escrow-particle {
+  animation: escrow-particle-burst 0.6s cubic-bezier(0.2,0.78,0.2,1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-station-impact,
+  .landing-escrow-particle {
+    animation: none !important;
+  }
+}
+
 /* One-shot travel envelope for the connector's leading dot — a single
    keyframe carries it appear -> ride the fill's leading edge -> vanish,
    since a plain CSS transition can only interpolate straight from one
@@ -1395,58 +1421,22 @@ textarea.glass-input { border-radius: 16px; }
   .landing-price-tick { animation: none; color: #c14d3a; }
 }
 
-/* ── Price-decay formula: dashed-line toggle + dark code-editor panel
-   (HowItWorks.tsx) — replaces the old plain-text formula line. Landing-
-   only, does not touch the shared .glass-panel class. ────────────── */
-.landing-formula-toggle {
-  width: 100%;
-  border: none;
-  background: repeating-linear-gradient(90deg, rgba(91,33,182,0.28) 0 8px, transparent 8px 16px);
-  height: 1px;
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-}
-.landing-formula-toggle-inner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fbfaf7;
-  padding: 12px 20px;
-  white-space: nowrap;
-}
-.landing-code-block {
-  background: #1b1523;
-  color: #e7e1f5;
-  border-radius: 16px;
-  padding: 28px 20px;
-  text-align: left;
-}
-@media (min-width: 640px) {
-  .landing-code-block { padding: 32px 36px; }
-}
-.landing-code-block .kw { color: #c9a6ff; }
-.landing-code-block .fn { color: #8fd3ff; }
-.landing-code-block .vr { color: #ffb4b4; }
-.landing-code-block .cm { color: #7a7288; font-style: italic; }
-
-/* ── Hero mini-mechanism explainer (◈ Why does the price fall? ◈) ──
-   Same landing-formula-toggle affordance as the HowItWorks toggles,
-   plus a one-shot travel dot that plays only the instant the details
-   element opens — CSS-only via the [open] attribute, no JS state. ── */
+/* ── Hero mini-mechanism explainer (Posted / Decaying / Locked in) ──
+   Shown directly (no click-to-reveal), so the travel dot now plays
+   once on mount instead of only on the [open] attribute firing — the
+   JSX sets its animation-delay to land right as the block's own
+   fade-in-up finishes. */
 @keyframes hero-mech-dot-travel {
   0%   { left: 0%; opacity: 0; }
   12%  { opacity: 1; }
   88%  { opacity: 1; }
   100% { left: 100%; opacity: 0; }
 }
-.landing-mech-dot { opacity: 0; }
-.landing-mech-toggle[open] .landing-mech-dot {
+.landing-mech-dot {
   animation: hero-mech-dot-travel 1.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
-  .landing-mech-toggle[open] .landing-mech-dot { animation: none; opacity: 0; }
+  .landing-mech-dot { animation: none; opacity: 0; }
 }
 
 /* ── How It Works step cards — extra breathing room layered on top of

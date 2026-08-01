@@ -101,15 +101,21 @@ export default function CaseTimeline() {
           </div>
 
           <div
-            className="relative pl-8"
+            className="relative pl-11"
             style={{ opacity: resetFading ? 0 : 1, transition: `opacity ${FADE_MS}ms ease` }}
           >
-            {/* Track (static) + progress rail (draws downward) */}
-            <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-[rgba(91,33,182,0.16)]" />
+            {/* Track (static) + progress rail (draws downward) — a
+                purple-to-terracotta gradient rather than flat purple,
+                the same price-decay color language as every other
+                progress bar on the page, since that's literally what
+                this timeline is: the case's price falling as it plays
+                out, not just a generic step tracker. */}
+            <div className="absolute left-[13px] top-1.5 bottom-1.5 w-px bg-[rgba(91,33,182,0.16)]" />
             <div
-              className="absolute left-[7px] top-1.5 w-px bg-[#5b21b6]"
+              className="absolute left-[13px] top-1.5 w-px"
               style={{
                 height: `calc((100% - 12px) * ${railPct / 100})`,
+                background: "linear-gradient(180deg, #5b21b6, #c14d3a)",
                 transition: reducedMotion ? "none" : `height ${DRAW_MS}ms linear`,
               }}
             />
@@ -117,31 +123,48 @@ export default function CaseTimeline() {
             <div className="flex flex-col gap-7">
               {CASE_STUDY.steps.map((step, i) => {
                 const lit = i < litCount;
+                const StepIcon = step.icon;
                 return (
                   <div key={step.label} className="relative flex gap-4">
                     <span
-                      className="absolute -left-8 top-0.5 h-[15px] w-[15px] rounded-full border-2 transition-colors duration-300"
+                      className="absolute -left-11 -top-1 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors duration-300"
                       style={{
                         backgroundColor: lit ? "#5b21b6" : "#fbfaf7",
                         borderColor: lit ? "#5b21b6" : "rgba(91,33,182,0.3)",
                       }}
-                    />
+                    >
+                      <StepIcon
+                        className="h-3 w-3 transition-colors duration-300"
+                        style={{ color: lit ? "#ffffff" : "rgba(91,33,182,0.4)" }}
+                      />
+                    </span>
                     <div
+                      className="flex-1"
                       style={{
                         opacity: lit ? 1 : 0.35,
                         transition: "opacity 0.4s ease",
                       }}
                     >
-                      <div className="flex items-baseline gap-2.5 flex-wrap">
-                        <span className="text-[13px] font-medium text-[#17171f]">
-                          {step.label}
-                        </span>
-                        <span className="font-mono-il text-[11px] text-[#46424e]">
-                          {step.time}
-                        </span>
-                        <span className="font-mono-il text-[11px] text-[#5b21b6]">
-                          {step.elapsed}
-                        </span>
+                      <div className="flex items-baseline justify-between gap-2.5 flex-wrap">
+                        <div className="flex items-baseline gap-2.5 flex-wrap">
+                          <span className="text-[13px] font-medium text-[#17171f]">
+                            {step.label}
+                          </span>
+                          <span className="font-mono-il text-[11px] text-[#46424e]">
+                            {step.time}
+                          </span>
+                          <span className="font-mono-il text-[11px] text-[#5b21b6]">
+                            {step.elapsed}
+                          </span>
+                        </div>
+                        {/* Watch the number fall: the price at this exact
+                            point in the case, not just stated once at the
+                            top of the card. */}
+                        {step.price !== undefined && (
+                          <span className="font-mono-il text-[13px] font-medium text-[#c14d3a]">
+                            ${step.price.toLocaleString()}
+                          </span>
+                        )}
                       </div>
                       <p className="text-[13px] text-[#46424e] mt-1">{step.detail}</p>
                     </div>

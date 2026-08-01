@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock, Percent } from "lucide-react";
 import { useInView, useMousePosition, usePointerFine, useReducedMotion } from "./hooks";
 
 const PAYOFF_LINES = ["Friday, 5:04pm.", "Three jobs hired.", "Zero emails sent."];
@@ -42,6 +42,40 @@ export default function CTA() {
         </div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.4)] to-transparent" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.2)] to-transparent" />
+      </div>
+
+      {/* Two closing stats sitting in the ring space, each reusing a
+          claim already established elsewhere on the page (Compare's
+          table) rather than inventing new numbers — reinforces the
+          decision right at the conversion moment instead of just
+          filling space for its own sake. */}
+      <div
+        className="hidden 2xl:flex absolute left-8 top-1/2 -translate-y-1/2 z-10 w-[196px] flex-col items-start gap-2.5 bg-white border border-[rgba(91,33,182,0.14)] rounded-2xl p-4 text-left shadow-[0_16px_36px_-20px_rgba(91,33,182,0.28)] transition-transform duration-300 hover:-translate-y-1"
+        style={{
+          opacity: payoff.inView ? 1 : 0,
+          transform: payoff.inView ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.7s ease 200ms, transform 0.7s ease 200ms",
+        }}
+      >
+        <span className="flex items-center justify-center h-9 w-9 rounded-full bg-[#5b21b6]/10 text-[#5b21b6] ring-1 ring-[rgba(91,33,182,0.16)]">
+          <Clock className="h-4 w-4" />
+        </span>
+        <p className="text-sm font-semibold text-[#17171f] leading-snug">Hours, not weeks</p>
+        <p className="text-xs text-[#46424e] leading-relaxed">Time to hire, start to finish — not the industry&apos;s 2-6 week average.</p>
+      </div>
+      <div
+        className="hidden 2xl:flex absolute right-8 top-1/2 -translate-y-1/2 z-10 w-[196px] flex-col items-start gap-2.5 bg-white border border-[rgba(91,33,182,0.14)] rounded-2xl p-4 text-left shadow-[0_16px_36px_-20px_rgba(91,33,182,0.28)] transition-transform duration-300 hover:-translate-y-1"
+        style={{
+          opacity: payoff.inView ? 1 : 0,
+          transform: payoff.inView ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.7s ease 320ms, transform 0.7s ease 320ms",
+        }}
+      >
+        <span className="flex items-center justify-center h-9 w-9 rounded-full bg-[#5b21b6]/10 text-[#5b21b6] ring-1 ring-[rgba(91,33,182,0.16)]">
+          <Percent className="h-4 w-4" />
+        </span>
+        <p className="text-sm font-semibold text-[#17171f] leading-snug">Fees as low as 5%</p>
+        <p className="text-xs text-[#46424e] leading-relaxed">Not the old way&apos;s 15-20%+ commission on every hire.</p>
       </div>
 
       <div className="relative z-10 pt-14 sm:pt-20 pb-14 sm:pb-20">

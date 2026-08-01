@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ShieldCheck, Lock } from "lucide-react";
 import { useInView, useReducedMotion, useCountUp } from "./hooks";
 
 type Phase = "idle" | "held" | "released";
@@ -117,6 +118,39 @@ export default function EscrowPerimeter() {
         className="absolute top-1/2 -right-[220px] -translate-y-1/2 h-[320px] w-[320px] rounded-full border border-[rgba(91,33,182,0.08)]"
         aria-hidden="true"
       />
+      {/* Two supporting trust claims sitting in the ring space itself —
+          only where there's genuinely enough room not to crowd the
+          centered 1100px column (2xl and up), and each says something
+          the headline/diagram doesn't already: what backs the "money
+          never leaves escrow" claim, and how it's actually secured. */}
+      <div
+        className="hidden 2xl:flex absolute left-8 top-1/2 -translate-y-1/2 w-[196px] flex-col items-start gap-2.5 bg-white border border-[rgba(91,33,182,0.14)] rounded-2xl p-4 text-left shadow-[0_16px_36px_-20px_rgba(91,33,182,0.28)] transition-transform duration-300 hover:-translate-y-1"
+        style={{
+          opacity: section.inView ? 1 : 0,
+          transform: section.inView ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.7s ease 200ms, transform 0.7s ease 200ms",
+        }}
+      >
+        <span className="flex items-center justify-center h-9 w-9 rounded-full bg-[#5b21b6]/10 text-[#5b21b6] ring-1 ring-[rgba(91,33,182,0.16)]">
+          <ShieldCheck className="h-4 w-4" />
+        </span>
+        <p className="text-sm font-semibold text-[#17171f] leading-snug">Every dollar escrow-backed</p>
+        <p className="text-xs text-[#46424e] leading-relaxed">Funds are held by GeekBid, not the freelancer — nothing releases without your sign-off.</p>
+      </div>
+      <div
+        className="hidden 2xl:flex absolute right-8 top-1/2 -translate-y-1/2 w-[196px] flex-col items-start gap-2.5 bg-white border border-[rgba(91,33,182,0.14)] rounded-2xl p-4 text-left shadow-[0_16px_36px_-20px_rgba(91,33,182,0.28)] transition-transform duration-300 hover:-translate-y-1"
+        style={{
+          opacity: section.inView ? 1 : 0,
+          transform: section.inView ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.7s ease 320ms, transform 0.7s ease 320ms",
+        }}
+      >
+        <span className="flex items-center justify-center h-9 w-9 rounded-full bg-[#5b21b6]/10 text-[#5b21b6] ring-1 ring-[rgba(91,33,182,0.16)]">
+          <Lock className="h-4 w-4" />
+        </span>
+        <p className="text-sm font-semibold text-[#17171f] leading-snug">Bank-grade encryption</p>
+        <p className="text-xs text-[#46424e] leading-relaxed">256-bit, end-to-end — the same standard payment processors use.</p>
+      </div>
       {/* Gradient hairline instead of a flat border — matches Hero's and
           PriceDecayShowcase's top rule. */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
@@ -195,14 +229,17 @@ export default function EscrowPerimeter() {
         >
           {/* Connecting rail — a trailing fill grows behind the token as
               it travels (same "energy filling a path" language as the
-              Hero demo card's decay bar), instead of a flat static line. */}
+              Hero demo card's decay bar), instead of a flat static line.
+              Thicker + glowing rather than a flat 1px line — a plainer
+              hairline read as too quiet against the more energetic token. */}
           <div className="absolute left-[10%] right-[10%] top-6 h-px bg-[rgba(91,33,182,0.18)]" />
           <div
-            className="absolute top-6 h-px landing-decay-bar-fill"
+            className="absolute top-6 h-[3px] -translate-y-1/2 rounded-full landing-decay-bar-fill"
             style={{
               left: "10%",
               width: `${tokenX - 10}%`,
               opacity: tokenFaded ? 0 : 1,
+              boxShadow: "0 0 10px 1px rgba(91,33,182,0.35)",
               transition: reducedMotion
                 ? "none"
                 : `width ${TRAVEL_MS}ms cubic-bezier(0.2,0.78,0.2,1), opacity ${FADE_MS}ms ease`,
@@ -211,21 +248,49 @@ export default function EscrowPerimeter() {
 
           {/* Travelling token — remounted (fresh key) once per cycle so
               the reset from payout back to payment is a hard cut behind
-              an opacity fade, never a right-to-left slide. */}
+              an opacity fade, never a right-to-left slide. A blurred
+              halo rides behind it (separate layer, so the pulse's own
+              transform never clobbers the token's left-position
+              transition) and brightens on arrival at each station. */}
           <div
             key={cycleKey}
-            className="absolute top-6 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-[#5b21b6] flex items-center justify-center z-10"
+            className="absolute top-6 left-0 h-6 w-6 -translate-x-1/2 -translate-y-1/2 z-10"
             style={{
               left: `${tokenX}%`,
               opacity: tokenFaded ? 0 : 1,
-              boxShadow: held ? "0 0 0 6px rgba(91,33,182,0.14)" : "0 0 0 0 rgba(91,33,182,0)",
-              transition: reducedMotion
-                ? "none"
-                : `left ${TRAVEL_MS}ms cubic-bezier(0.2,0.78,0.2,1), opacity ${FADE_MS}ms ease, box-shadow 0.4s ease`,
+              transition: reducedMotion ? "none" : `left ${TRAVEL_MS}ms cubic-bezier(0.2,0.78,0.2,1), opacity ${FADE_MS}ms ease`,
             }}
           >
-            <span className="font-mono-il text-[10px] text-white">$</span>
+            <div
+              className="absolute inset-0 -m-2 rounded-full"
+              style={{
+                boxShadow: held
+                  ? "0 0 0 10px rgba(91,33,182,0.16), 0 0 24px 6px rgba(91,33,182,0.45)"
+                  : "0 0 16px 3px rgba(91,33,182,0.35)",
+                transition: reducedMotion ? "none" : "box-shadow 0.4s ease",
+              }}
+            />
+            <div className="relative h-6 w-6 rounded-full bg-[#5b21b6] flex items-center justify-center">
+              <span className="font-mono-il text-[10px] text-white">$</span>
+            </div>
           </div>
+
+          {/* Payout burst — a one-shot ring of particles thrown from the
+              payout station the instant the token releases, gone before
+              the next cycle even starts (600ms, well inside the 900ms
+              hold at payout). Angles are fixed, not randomized, so the
+              burst is identical and deterministic every cycle. */}
+          {!reducedMotion && phase === "released" && !tokenFaded && (
+            <div className="absolute top-6 left-[90%]" aria-hidden="true">
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                <span
+                  key={`${cycleKey}-${angle}`}
+                  className="landing-escrow-particle absolute top-0 left-0 h-1.5 w-1.5 rounded-full bg-[#16a34a]"
+                  style={{ ["--angle" as string]: `${angle}deg` }}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="flex items-start justify-between">
             {STATIONS.map((s) => {
@@ -237,15 +302,17 @@ export default function EscrowPerimeter() {
                 <div key={s.key} className="flex flex-col items-center" style={{ width: "33%" }}>
                   <div className="h-6" />
                   <div
-                    className="relative mt-6 rounded-xl px-4 py-3 bg-white transition-all duration-500"
+                    className={`relative mt-6 rounded-xl px-4 py-3 bg-white transition-all duration-500 ${
+                      (stationHeld || justReleased) && !reducedMotion ? "landing-station-impact" : ""
+                    }`}
                     style={{
                       borderWidth: isEscrow ? "1.5px" : "1px",
                       borderStyle: "solid",
                       borderColor: "rgba(91,33,182,0.22)",
                       boxShadow: stationHeld
-                        ? "inset 0 0 0 1px rgba(91,33,182,0.12)"
+                        ? "inset 0 0 0 1px rgba(91,33,182,0.12), 0 0 20px 2px rgba(91,33,182,0.2)"
                         : justReleased
-                          ? "0 0 0 5px rgba(22,163,74,0.12)"
+                          ? "0 0 0 6px rgba(22,163,74,0.18), 0 0 24px 4px rgba(22,163,74,0.3)"
                           : "none",
                     }}
                   >

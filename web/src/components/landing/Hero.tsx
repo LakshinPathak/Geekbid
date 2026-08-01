@@ -213,38 +213,31 @@ export default function Hero() {
             ))}
           </div>
 
-          {/* Inline mechanism teaser — same low-commitment "expand for
-              proof" affordance as the formula/case-study toggles further
-              down the page, surfaced here so a skeptical first-time
-              visitor gets the gist without leaving the fold. */}
-          <details className="landing-mech-toggle group mt-8 max-w-md mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "950ms" }}>
-            <summary className="landing-formula-toggle list-none">
-              <span className="landing-formula-toggle-inner landing-label text-[#46424e] group-hover:text-[#5b21b6] transition-colors">
-                ◈ Why does the price fall? ◈
-              </span>
-            </summary>
-            <div className="mt-9 px-1">
-              <div className="relative h-3">
-                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-dashed border-[rgba(91,33,182,0.28)]" aria-hidden="true" />
-                <span className="landing-mech-dot absolute top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-[#5b21b6]" style={{ left: 0 }} aria-hidden="true" />
-                <div className="relative grid grid-cols-3">
-                  {MECH_STEPS.map((s) => (
-                    <div key={s.label} className="flex justify-center">
-                      <span className="h-3 w-3 rounded-full border-2 border-[#5b21b6] bg-[#fbfaf7]" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-3">
+          {/* Inline mechanism teaser — shown directly rather than gated
+              behind a click, same treatment as the formula/case-study
+              toggles further down the page that were also unwrapped to
+              show their content outright. */}
+          <div className="mt-8 max-w-md mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "950ms" }}>
+            <div className="relative h-3">
+              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-dashed border-[rgba(91,33,182,0.28)]" aria-hidden="true" />
+              <span className="landing-mech-dot absolute top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-[#5b21b6]" style={{ left: 0, animationDelay: "1650ms" }} aria-hidden="true" />
+              <div className="relative grid grid-cols-3">
                 {MECH_STEPS.map((s) => (
-                  <div key={s.label} className="text-center">
-                    <p className="landing-label text-[#5b21b6]">{s.label}</p>
-                    <p className="text-[11px] text-[#46424e] mt-1 leading-snug">{s.value}</p>
+                  <div key={s.label} className="flex justify-center">
+                    <span className="h-3 w-3 rounded-full border-2 border-[#5b21b6] bg-[#fbfaf7]" />
                   </div>
                 ))}
               </div>
             </div>
-          </details>
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {MECH_STEPS.map((s) => (
+                <div key={s.label} className="text-center">
+                  <p className="landing-label text-[#5b21b6]">{s.label}</p>
+                  <p className="text-[11px] text-[#46424e] mt-1 leading-snug">{s.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Right: Live Price Decay Demo */}

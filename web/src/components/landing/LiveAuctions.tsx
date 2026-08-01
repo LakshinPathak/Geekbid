@@ -65,7 +65,7 @@ function formatTime(sec: number): string {
   return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
 }
 
-function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number }) {
+function AuctionCard({ auction, delay, isHottest }: { auction: AuctionState; delay: number; isHottest: boolean }) {
   const pct = Math.max(
     4,
     Math.min(100, Math.round(((auction.current - auction.floor) / (auction.start - auction.floor)) * 100))
@@ -80,14 +80,23 @@ function AuctionCard({ auction, delay }: { auction: AuctionState; delay: number 
     // same destination "Browse all auctions" above already points to.
     <Link
       href="/feed"
-      className="block bg-[#fbfaf7] border border-[rgba(91,33,182,0.22)] rounded-2xl p-5 sm:p-6 hover:shadow-[0_16px_30px_-14px_rgba(91,33,182,0.2)] hover:border-[rgba(91,33,182,0.4)] transition-all duration-300"
+      className={`block bg-[#fbfaf7] border rounded-2xl p-5 sm:p-6 hover:shadow-[0_16px_30px_-14px_rgba(91,33,182,0.2)] hover:border-[rgba(91,33,182,0.4)] transition-all duration-300 ${
+        isHottest ? "border-[rgba(91,33,182,0.4)] shadow-[0_16px_32px_-18px_rgba(91,33,182,0.35)]" : "border-[rgba(91,33,182,0.22)]"
+      }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-center justify-between mb-3.5">
-        <span className="landing-label text-[#46424e] bg-[#f4f2ee] px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
-          {CatIcon && <CatIcon className="h-3 w-3" />}
-          {auction.category}
-        </span>
+        {isHottest ? (
+          <span className="landing-label text-white bg-[#5b21b6] px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
+            <Flame className="h-3 w-3" />
+            Most Bids · {auction.category}
+          </span>
+        ) : (
+          <span className="landing-label text-[#46424e] bg-[#f4f2ee] px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
+            {CatIcon && <CatIcon className="h-3 w-3" />}
+            {auction.category}
+          </span>
+        )}
         {closingSoon ? (
           <span className="text-[11px] font-medium text-[#c14d3a] inline-flex items-center gap-1">
             <Flame className="h-3 w-3" />
@@ -179,6 +188,13 @@ export default function LiveAuctions() {
     [auctions, activeCategory]
   );
   const activeCategoryData = CATEGORIES.find((c) => c.name === activeCategory);
+  // The card with the most live bidders gets called out — a distinction
+  // that shifts on its own as the simulated bidding plays out, instead
+  // of a static "featured" flag on one card forever.
+  const hottestId = useMemo(
+    () => (filtered.length ? filtered.reduce((a, b) => (b.bidders > a.bidders ? b : a)).id : null),
+    [filtered]
+  );
 
   return (
     <section
@@ -278,7 +294,10 @@ export default function LiveAuctions() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Exactly 3 cards now — a straight jump from 1 column to 3 (no
+            2-column middle step) so 3 items never leave an awkward
+            leftover single card in its own row at intermediate widths. */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {filtered.map((auction, i) => (
             <div
               key={auction.id}
@@ -288,14 +307,10 @@ export default function LiveAuctions() {
                 transition: `opacity 0.6s ease ${i * 0.08}s, transform 0.6s ease ${i * 0.08}s`,
               }}
             >
-              <AuctionCard auction={auction} delay={i * 80} />
+              <AuctionCard auction={auction} delay={i * 80} isHottest={auction.id === hottestId} />
             </div>
           ))}
         </div>
-
-        <p className="text-[10px] text-[#46424e]/60 mt-6">
-          Auctions and category stats shown are illustrative — sign up to browse real listings.
-        </p>
       </div>
     </section>
   );
