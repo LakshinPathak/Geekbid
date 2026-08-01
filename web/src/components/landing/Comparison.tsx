@@ -18,6 +18,7 @@ export default function Comparison() {
 
       <div id="compare" className="relative mx-auto max-w-6xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
+          <p className="landing-label text-[#5b21b6] mb-3">Compare</p>
           <h2 className="landing-header-glow landing-h2 text-3xl sm:text-5xl text-[#17171f]">
             Why <span className="text-[#5b21b6]">GeekBid</span>, not the old way
           </h2>
@@ -37,7 +38,7 @@ export default function Comparison() {
             {/* Header */}
             <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[rgba(91,33,182,0.22)]">
               <div className="p-4 sm:p-5 text-sm font-semibold text-[#46424e]" />
-              <div className="p-4 sm:p-5 text-center border-x border-[rgba(91,33,182,0.22)] bg-[rgba(91,33,182,0.06)]">
+              <div className="relative p-4 sm:p-5 text-center border-x border-[rgba(91,33,182,0.22)] bg-[rgba(91,33,182,0.06)] shadow-[0_8px_30px_-10px_rgba(91,33,182,0.4)]">
                 <div className="flex items-center justify-center gap-2">
                   <Zap className="h-4 w-4 text-[#5b21b6]" />
                   <span className="text-sm font-bold text-[#5b21b6]">GeekBid</span>

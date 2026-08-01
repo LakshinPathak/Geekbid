@@ -96,6 +96,17 @@
 .landing-scope .btn-ghost:hover {
   color: #17171f;
 }
+/* .glass-panel's border still uses the old #4b3f8f-family token
+   (rgba(75,63,143,...)) — a subtle but visible mismatch against every
+   other purple-tinted border on the landing page, which all moved to
+   #5b21b6 (rgba(91,33,182,...)). Shared with ~35 non-landing surfaces,
+   so scoped rather than edited globally. */
+.landing-scope .glass-panel {
+  border-color: rgba(91,33,182,0.22);
+}
+.landing-scope .glass-panel:hover {
+  border-color: rgba(91,33,182,0.35);
+}
 
 /* ── Royal Dark Design Tokens ──────────────────────────────────── */
 :root {
@@ -1188,7 +1199,7 @@ textarea.glass-input { border-radius: 16px; }
    letter-spacing values and 3 near-identical pixel sizes across the
    page for the exact same visual role. */
 .landing-label {
-  font-family: var(--font-sans);
+  font-family: var(--font-landing-display), var(--font-sans);
   font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.1em;

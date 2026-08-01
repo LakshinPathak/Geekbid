@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PLANS as PLAN_CONFIG } from "@/lib/plans";
 import { useSubscriptionCheckout } from "@/lib/useSubscriptionCheckout";
 import ReferencePageShell from "@/components/ReferencePageShell";
+import { useInView } from "@/components/landing/hooks";
 
 const DISPLAY_PLANS = [
   {
@@ -70,43 +71,67 @@ export default function PricingPage() {
   const { currentUser } = useApp();
   const currentPlan = currentUser?.plan ?? "free";
   const { subscription, processingPlan, startCheckout, cancelSubscription } = useSubscriptionCheckout();
+  const header = useInView(0.3);
+  const cards = useInView(0.15);
 
   return (
     <ReferencePageShell>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
-        <div className="text-center mb-12 animate-fade-in-up">
-          <h1 className="landing-h2 text-3xl sm:text-4xl text-[#17171f]">Simple, Transparent Pricing</h1>
-          <p className="text-[#46424e] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
-        </div>
+      <div className="relative">
+        {/* Ambient wash — same soft breathing glow Compare and FAQ use,
+            so all three reference pages share one visual signature
+            instead of Pricing being the flat one of the three. */}
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#5b21b6]/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
 
-        {subscription?.cancelAtPeriodEnd && (
-          <div className="max-w-lg mx-auto mb-8 text-center text-sm text-[#5b21b6] bg-[#5b21b6]/10 border border-[rgba(91,33,182,0.3)] rounded-2xl py-2.5 px-4">
-            Your {subscription.plan} plan is cancelled and will end at the close of the current billing period.
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
+          <div
+            ref={header.ref}
+            className="text-center mb-12"
+            style={{
+              opacity: header.inView ? 1 : 0,
+              transform: header.inView ? "translateY(0)" : "translateY(24px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
+            <p className="landing-label text-[#5b21b6] mb-3">Pricing</p>
+            <h1 className="landing-header-glow landing-h2 text-3xl sm:text-4xl text-[#17171f]">Simple, transparent pricing</h1>
+            <p className="landing-subhead text-[#46424e] text-sm sm:text-base mt-3">Choose the plan that fits your needs. Upgrade anytime.</p>
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {subscription?.cancelAtPeriodEnd && (
+            <div className="max-w-lg mx-auto mb-8 text-center text-sm text-[#5b21b6] bg-[#5b21b6]/10 border border-[rgba(91,33,182,0.3)] rounded-2xl py-2.5 px-4">
+              Your {subscription.plan} plan is cancelled and will end at the close of the current billing period.
+            </div>
+          )}
+
+          <div ref={cards.ref} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:items-start">
           {DISPLAY_PLANS.map((plan, idx) => {
             const isCurrent = currentPlan === plan.value;
             const isProcessing = processingPlan === plan.value;
             return (
               <div
                 key={plan.value}
-                className={`glass-panel p-6 flex flex-col animate-fade-in-up ${
-                  plan.highlight ? "border-[rgba(91,33,182,0.35)]/60" : ""
+                className={`glass-panel p-6 flex flex-col transition-[transform,box-shadow,opacity] duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(91,33,182,0.25)] ${
+                  plan.highlight ? "md:-translate-y-3 border-[rgba(91,33,182,0.35)]/60" : ""
                 }`}
                 style={{
-                  animationDelay: `${idx * 0.1}s`,
+                  opacity: cards.inView ? 1 : 0,
+                  transform: cards.inView
+                    ? plan.highlight ? "translateY(-12px)" : "translateY(0)"
+                    : "translateY(28px)",
+                  transitionDelay: cards.inView ? `${idx * 100}ms` : "0ms",
                   boxShadow: plan.highlight ? "0 0 60px rgba(91,33,182,0.12)" : undefined,
                 }}
               >
                 {plan.highlight && (
-                  <span className="landing-label bg-[#5b21b6] text-[#ffffff] px-3 py-1 rounded-full self-start mb-4">
-                    MOST POPULAR
+                  <span className="landing-label inline-flex items-center gap-1.5 bg-[#5b21b6] text-[#ffffff] px-3 py-1 rounded-full self-start mb-4">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />
+                    Most Popular
                   </span>
                 )}
-                <div className="flex items-center gap-2 mb-4">
-                  <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#5b21b6]" : "text-[#46424e]"}`} />
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className={`flex items-center justify-center h-9 w-9 rounded-full ${plan.highlight ? "bg-[#5b21b6] text-white" : "bg-[#f4f2ee] text-[#46424e]"}`}>
+                    <plan.icon className="h-4 w-4" />
+                  </span>
                   <h2 className="landing-card-title text-xl text-[#17171f]">{plan.name}</h2>
                 </div>
                 <div className="mb-6">
@@ -174,10 +199,11 @@ export default function PricingPage() {
           })}
         </div>
 
-        <div className="text-center mt-8">
-          <Link href="/feed" className="text-[#46424e] text-sm hover:text-[#5b21b6] transition-colors">
-            Back to Feed
-          </Link>
+          <div className="text-center mt-8">
+            <Link href="/feed" className="text-[#46424e] text-sm hover:text-[#5b21b6] transition-colors">
+              Back to Feed
+            </Link>
+          </div>
         </div>
       </div>
     </ReferencePageShell>
