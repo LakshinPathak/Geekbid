@@ -4,6 +4,7 @@ import { Check, Zap, Building2, Crown, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { PLANS as PLAN_CONFIG } from "@/lib/plans";
 import { useSubscriptionCheckout } from "@/lib/useSubscriptionCheckout";
+import ReferencePageShell from "@/components/ReferencePageShell";
 
 const DISPLAY_PLANS = [
   {
@@ -71,15 +72,15 @@ export default function PricingPage() {
   const { subscription, processingPlan, startCheckout, cancelSubscription } = useSubscriptionCheckout();
 
   return (
-    <div className="min-h-screen bg-[#fbfaf7] grid-bg">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <ReferencePageShell>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
         <div className="text-center mb-12 animate-fade-in-up">
-          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-gradient">Simple, Transparent Pricing</h1>
-          <p className="text-[#6f6a7d] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
+          <h1 className="landing-h2 text-3xl sm:text-4xl text-[#17171f]">Simple, Transparent Pricing</h1>
+          <p className="text-[#46424e] text-sm mt-2">Choose the plan that fits your needs. Upgrade anytime.</p>
         </div>
 
         {subscription?.cancelAtPeriodEnd && (
-          <div className="max-w-lg mx-auto mb-8 text-center text-sm text-[#4b3f8f] bg-[#4b3f8f]/10 border border-[rgba(75,63,143,0.3)] rounded-2xl py-2.5 px-4">
+          <div className="max-w-lg mx-auto mb-8 text-center text-sm text-[#5b21b6] bg-[#5b21b6]/10 border border-[rgba(91,33,182,0.3)] rounded-2xl py-2.5 px-4">
             Your {subscription.plan} plan is cancelled and will end at the close of the current billing period.
           </div>
         )}
@@ -92,34 +93,37 @@ export default function PricingPage() {
               <div
                 key={plan.value}
                 className={`glass-panel p-6 flex flex-col animate-fade-in-up ${
-                  plan.highlight ? "border-[rgba(75,63,143,0.35)]/60 glow-border" : ""
+                  plan.highlight ? "border-[rgba(91,33,182,0.35)]/60" : ""
                 }`}
-                style={{ animationDelay: `${idx * 0.1}s` }}
+                style={{
+                  animationDelay: `${idx * 0.1}s`,
+                  boxShadow: plan.highlight ? "0 0 60px rgba(91,33,182,0.12)" : undefined,
+                }}
               >
                 {plan.highlight && (
-                  <span className="bg-[#4b3f8f] text-[#ffffff] text-[11px] font-bold px-3 py-1 rounded-full self-start mb-4">
+                  <span className="landing-label bg-[#5b21b6] text-[#ffffff] px-3 py-1 rounded-full self-start mb-4">
                     MOST POPULAR
                   </span>
                 )}
                 <div className="flex items-center gap-2 mb-4">
-                  <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#4b3f8f]" : "text-[#6f6a7d]"}`} />
-                  <h2 className="font-heading text-xl font-bold text-[#3d3a45]">{plan.name}</h2>
+                  <plan.icon className={`h-5 w-5 ${plan.highlight ? "text-[#5b21b6]" : "text-[#46424e]"}`} />
+                  <h2 className="landing-card-title text-xl text-[#17171f]">{plan.name}</h2>
                 </div>
                 <div className="mb-6">
-                  <span className="font-heading text-4xl font-bold text-[#3d3a45]">{plan.price}</span>
-                  <span className="text-[#6f6a7d] text-sm ml-1">{plan.period}</span>
+                  <span className="landing-num text-4xl text-[#17171f]">{plan.price}</span>
+                  <span className="text-[#46424e] text-sm ml-1">{plan.period}</span>
                 </div>
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-[#6f6a7d]">
-                      <Check className="h-4 w-4 text-[#4b3f8f] shrink-0" /> {f}
+                    <li key={f} className="flex items-center gap-2 text-sm text-[#46424e]">
+                      <Check className="h-4 w-4 text-[#5b21b6] shrink-0" /> {f}
                     </li>
                   ))}
                 </ul>
 
                 {plan.value === "free" ? (
                   isCurrent ? (
-                    <button disabled className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#6f6a7d] cursor-not-allowed">
+                    <button disabled className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#46424e] cursor-not-allowed">
                       Current Plan
                     </button>
                   ) : (
@@ -133,7 +137,7 @@ export default function PricingPage() {
                     </button>
                   )
                 ) : isCurrent ? (
-                  <button disabled className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#6f6a7d] cursor-not-allowed">
+                  <button disabled className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#46424e] cursor-not-allowed">
                     Current Plan
                   </button>
                 ) : PLAN_ORDER[plan.value] < PLAN_ORDER[currentPlan] && !subscription ? (
@@ -146,7 +150,7 @@ export default function PricingPage() {
                   // subscription record (e.g. an admin plan override), where
                   // there's nothing for change_plan to act on and the button
                   // would otherwise fall through to a brand-new paid checkout.
-                  <button disabled title="Cancel to Free first, then re-subscribe to this plan" className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#6f6a7d] cursor-not-allowed">
+                  <button disabled title="Cancel to Free first, then re-subscribe to this plan" className="w-full py-3 rounded-full font-semibold text-sm bg-[#f4f2ee] text-[#46424e] cursor-not-allowed">
                     Downgrade unavailable
                   </button>
                 ) : (
@@ -171,11 +175,11 @@ export default function PricingPage() {
         </div>
 
         <div className="text-center mt-8">
-          <Link href="/feed" className="text-[#6f6a7d] text-sm hover:text-[#4b3f8f] transition-colors">
+          <Link href="/feed" className="text-[#46424e] text-sm hover:text-[#5b21b6] transition-colors">
             Back to Feed
           </Link>
         </div>
       </div>
-    </div>
+    </ReferencePageShell>
   );
 }

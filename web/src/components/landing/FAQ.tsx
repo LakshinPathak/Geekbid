@@ -14,7 +14,7 @@ export default function FAQ() {
     <section
       id="faq"
       ref={section.ref}
-      className="py-16 sm:py-24 border-t border-[rgba(91,33,182,0.22)] bg-white scroll-mt-20"
+      className="pb-16 sm:pb-24 scroll-mt-20"
     >
       {/* Narrow column keeps Q&A line-length readable through laptop
           widths; widen only past `2xl` so a 1920px+ viewport isn't 60%
