@@ -74,7 +74,12 @@ export async function handleDowngrade(
   });
 
   // 5. Send notification email
-  await sendPlanChangeEmail(userId, String(fromPlan), toPlan, reason).catch((err) =>
+  // `now` (this invocation's timestamp) doubles as the contextId so repeat
+  // downgrades with an identical (userId, fromPlan, toPlan, reason) tuple —
+  // e.g. the same user hits "grace_period_expired" again on a later
+  // subscription — get their own idempotency key instead of being deduped
+  // against a same-shaped downgrade from months earlier.
+  await sendPlanChangeEmail(userId, String(fromPlan), toPlan, reason, now).catch((err) =>
     console.error("[Plan Downgrade] Notification email failed:", err)
   );
 }

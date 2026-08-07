@@ -790,10 +790,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
  }
  }
 
- // Token missing/expired → reflect the logout locally.
+ // Token missing/expired → reflect the logout locally. Mirrors
+ // logout()'s data reset below — without it, a logout in another tab
+ // clears auth here but leaves this tab's users/jobs/bids/notifications/
+ // etc in state, so if a different user then logs in on this same tab
+ // they briefly see the previous user's stale data until each fetch*
+ // call resolves.
  if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
  setAuth({ isLoggedIn: false, accessToken: null, expiresAt: null });
  setCurrentUser(null);
+ setUsers([]);
+ setJobs([]);
+ setBids([]);
+ setNotifications([]);
+ setTransactions([]);
+ setDisputes([]);
+ setChatRooms([]);
+ setChatMessages([]);
+ setReviews([]);
+ setRecommendedJobs([]);
+ setMilestones([]);
+ setReferralStats(null);
+ setWatchedJobIds([]);
+ setInvites([]);
  };
 
  window.addEventListener("storage", onStorage);

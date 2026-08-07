@@ -372,8 +372,9 @@ export default function ProfilePage() {
  </div>
 
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Bio</label>
+ <label htmlFor="profile-bio" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Bio</label>
  <textarea
+ id="profile-bio"
  value={bio} onChange={e => setBio(e.target.value)} rows={3}
  className="w-full p-3 glass-input rounded-2xl text-sm resize-none"
  placeholder="Tell us about yourself..."
@@ -382,10 +383,11 @@ export default function ProfilePage() {
 
  {currentUser.role === "client" && (
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Company</label>
+ <label htmlFor="profile-company" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">Company</label>
  <div className="relative">
  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="profile-company"
  value={company} onChange={e => setCompany(e.target.value)}
  className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}
@@ -475,11 +477,12 @@ export default function ProfilePage() {
 
  {/* GitHub */}
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">GitHub Username</label>
+ <label htmlFor="profile-github" className="text-[#6f6a7d] text-xs font-medium mb-1.5 block">GitHub Username</label>
  <div className="flex gap-2">
  <div className="relative flex-1">
  <GitBranch className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="profile-github"
  value={githubUsername} onChange={e => { setGithubUsername(e.target.value); setGithubChallenge(null); }}
  className="w-full h-11 glass-input rounded-2xl text-sm"
  style={{ paddingLeft: '44px', paddingRight: '16px' }}

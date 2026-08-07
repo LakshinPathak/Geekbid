@@ -21,6 +21,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  const [respondingToOffer, setRespondingToOffer] = useState(false);
  const [accepting, setAccepting] = useState(false);
  const [acceptingBidId, setAcceptingBidId] = useState<string | null>(null);
+ const [milestoneActionId, setMilestoneActionId] = useState<string | null>(null);
  const [bidding, setBidding] = useState(false);
  const [counterPrice, setCounterPrice] = useState("");
  const [counterError, setCounterError] = useState("");
@@ -700,15 +701,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
  {ms.description && <p className="text-[#6f6a7d] text-xs mt-1">{ms.description}</p>}
  <div className="flex gap-2 mt-2">
  {isFreelancer && ms.status === "in_progress" && (
- <button onClick={async () => { const r = await updateMilestone(ms.id, "submit"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#4b3f8f] text-[#ffffff] border border-transparent px-3 py-1 rounded-full hover:bg-[#3d3373]/20 transition-colors">
- Submit
+ <button
+ onClick={async () => {
+ if (milestoneActionId) return;
+ setMilestoneActionId(ms.id);
+ const r = await updateMilestone(ms.id, "submit");
+ setMilestoneActionId(null);
+ r.ok ? toast.success(r.message) : toast.error(r.message);
+ }}
+ disabled={milestoneActionId !== null}
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] border border-transparent px-3 py-1 rounded-full hover:bg-[#3d3373]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+ {milestoneActionId === ms.id ? "Submitting…" : "Submit"}
  </button>
  )}
  {isClient && ms.status === "submitted" && (
- <button onClick={async () => { const r = await updateMilestone(ms.id, "approve"); r.ok ? toast.success(r.message) : toast.error(r.message); }}
- className="text-xs bg-[#4b3f8f] text-[#ffffff] font-semibold px-3 py-1 rounded-full hover:bg-[#3d3373] transition-colors">
- Approve &amp; Release
+ <button
+ onClick={async () => {
+ if (milestoneActionId) return;
+ setMilestoneActionId(ms.id);
+ const r = await updateMilestone(ms.id, "approve");
+ setMilestoneActionId(null);
+ r.ok ? toast.success(r.message) : toast.error(r.message);
+ }}
+ disabled={milestoneActionId !== null}
+ className="text-xs bg-[#4b3f8f] text-[#ffffff] font-semibold px-3 py-1 rounded-full hover:bg-[#3d3373] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+ {milestoneActionId === ms.id ? "Approving…" : "Approve & Release"}
  </button>
  )}
  </div>

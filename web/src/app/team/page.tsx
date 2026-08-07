@@ -33,6 +33,7 @@ export default function TeamPage() {
  const [creating, setCreating] = useState(false);
  const [accepting, setAccepting] = useState(false);
  const [removingId, setRemovingId] = useState<string | null>(null);
+ const [inviting, setInviting] = useState(false);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -108,7 +109,8 @@ export default function TeamPage() {
  };
 
  const inviteMember = async () => {
- if (!inviteEmail.trim()) return;
+ if (!inviteEmail.trim() || inviting) return;
+ setInviting(true);
  const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "PATCH",
@@ -116,6 +118,7 @@ export default function TeamPage() {
  body: JSON.stringify({ action: "invite", email: inviteEmail }),
  });
  const data = await res.json();
+ setInviting(false);
  if (data.error) { toast.error(data.error); return; }
  toast.success("Invite sent!");
  setInviteEmail("");
@@ -272,9 +275,9 @@ export default function TeamPage() {
  placeholder="colleague@company.com"
  className="glass-input flex-1 rounded-2xl"
  />
- <button onClick={inviteMember}
- className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm flex items-center gap-1">
- <Plus className="h-4 w-4" /> Invite
+ <button onClick={inviteMember} disabled={inviting || !inviteEmail.trim()}
+ className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm flex items-center gap-1 disabled:opacity-40">
+ <Plus className="h-4 w-4" /> {inviting ? "Inviting..." : "Invite"}
  </button>
  </div>
  {team.invites.length > 0 && (

@@ -266,8 +266,9 @@ export default function MyJobsPage() {
  </div>
 
  <div className="mb-4">
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Comment (optional)</label>
+ <label htmlFor="review-comment" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Comment (optional)</label>
  <textarea
+ id="review-comment"
  value={reviewComment}
  onChange={e => setReviewComment(e.target.value)}
  maxLength={1000}

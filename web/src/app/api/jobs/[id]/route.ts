@@ -348,6 +348,22 @@ export async function PATCH(
  { status: 400 }
  );
  }
+ // Invite-only jobs (the general "post + invite specific freelancers"
+ // feature, not just direct offers) must only be acceptable by a
+ // freelancer who was actually invited — GET /api/jobs and GET
+ // /api/jobs/[id] already hide these from anyone else, but that's a
+ // read-access check only. Without this, a freelancer who obtains the
+ // jobId out-of-band (e.g. a shared link) could accept a job they were
+ // never invited to, same gap as POST /api/bids.
+ if (job.visibility === "invite_only") {
+ const invite = await db.collection("invites").findOne({ jobId: id, freelancerId: auth.payload.userId });
+ if (!invite) {
+ return NextResponse.json(
+ { error: "This job is invite-only and you have not been invited to it" },
+ { status: 403 }
+ );
+ }
+ }
 
  // ── Server-side price computation — NEVER trust client price ──
  const now = new Date();

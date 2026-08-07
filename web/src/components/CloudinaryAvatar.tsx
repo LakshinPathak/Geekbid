@@ -67,6 +67,7 @@ export default function CloudinaryAvatar({
             quality="auto"
             format="auto"
             alt={avatarInitial}
+            onError={() => setFailedUrl(avatarUrl)}
             style={{ borderRadius: '50%', border: '0.5px solid rgba(75,63,143,0.22)', objectFit: 'cover' }}
           />
           {showOnlineIndicator && (

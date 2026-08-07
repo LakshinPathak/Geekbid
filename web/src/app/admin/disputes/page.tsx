@@ -234,8 +234,9 @@ export default function AdminDisputesPage() {
               </div>
 
               <div className="mb-4">
-                <label className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-1.5 block">Resolution Notes</label>
+                <label htmlFor="dispute-resolution-notes" className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-1.5 block">Resolution Notes</label>
                 <textarea
+                  id="dispute-resolution-notes"
                   value={resolution}
                   onChange={e => setResolution(e.target.value)}
                   placeholder="Describe your resolution decision..."

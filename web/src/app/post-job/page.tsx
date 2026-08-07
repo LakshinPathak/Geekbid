@@ -512,9 +512,10 @@ export default function PostJobPage() {
  {errors.title && <p className="text-[#c14d3a] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.title}</p>}
  </div>
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Category *</label>
+ <label htmlFor="job-category" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Category *</label>
  <div className="relative">
  <select
+ id="job-category"
  value={category}
  onChange={e => setCategory(e.target.value as JobCategory)}
  className="glass-input w-full appearance-none cursor-pointer pr-10"
@@ -529,8 +530,9 @@ export default function PostJobPage() {
  </div>
 
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Description</label>
+ <label htmlFor="job-description" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Description</label>
  <textarea
+ id="job-description"
  value={description}
  onChange={e => setDescription(e.target.value)}
  placeholder="Describe the scope, deliverables, and requirements..."
@@ -688,8 +690,9 @@ export default function PostJobPage() {
  {errors.startingPrice && <p className="text-[#c14d3a] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.startingPrice}</p>}
  </div>
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Minimum Price ($) *</label>
+ <label htmlFor="minimum-price" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Minimum Price ($) *</label>
  <input
+ id="minimum-price"
  type="number"
  value={minimumPrice}
  onChange={e => setMinimumPrice(Number(e.target.value))}
@@ -702,10 +705,11 @@ export default function PostJobPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
+ <label htmlFor="decay-rate" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Decay Rate ($/hour)</label>
  <div className="relative">
  <TrendingDown className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="decay-rate"
  type="number"
  value={decayRate}
  onChange={e => setDecayRate(Number(e.target.value))}
@@ -717,8 +721,9 @@ export default function PostJobPage() {
  {errors.decayRate && <p className="text-[#c14d3a] text-xs mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errors.decayRate}</p>}
  </div>
  <div>
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Deadline (hours)</label>
+ <label htmlFor="job-deadline" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Deadline (hours)</label>
  <input
+ id="job-deadline"
  type="number"
  value={deadline}
  onChange={e => setDeadline(Number(e.target.value))}

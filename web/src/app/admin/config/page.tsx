@@ -160,9 +160,10 @@ export default function AdminConfigPage() {
         </div>
 
         <div>
-          <label className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-2 block">Bid Decay Rate %</label>
+          <label htmlFor="default-decay-rate" className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-2 block">Bid Decay Rate %</label>
           <div className="relative max-w-[200px]">
             <input
+              id="default-decay-rate"
               type="number" min={0} max={50} step={0.5}
               value={config.defaultDecayRate}
               onChange={e => setConfig(c => ({ ...c, defaultDecayRate: parseFloat(e.target.value) || 0 }))}
