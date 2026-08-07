@@ -57,6 +57,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
+    // Invite-only/direct-offer jobs are hidden from everyone except the
+    // client, the offered/invited freelancer, or an admin (see the same
+    // check in api/jobs/[id]/route.ts) — without this, any authenticated
+    // freelancer could pull a private job's title, description, floor price,
+    // and competitor bids just by guessing/enumerating its jobId.
+    if (job.visibility === "invite_only") {
+      const isAdmin = auth.payload.role === "admin";
+      let authorized = isAdmin || auth.payload.userId === job.clientId || auth.payload.userId === job.offeredTo;
+      if (!authorized) {
+        const invite = await db.collection("invites").findOne({ jobId: job._id.toString(), freelancerId: auth.payload.userId });
+        authorized = !!invite;
+      }
+      if (!authorized) {
+        return NextResponse.json({ error: "Not authorized to view this job" }, { status: 403 });
+      }
+    }
+
     // Quota is only charged once we know the request will actually reach the
     // AI call — checking job existence first means a doomed-to-404 request
     // never burns a unit of the caller's monthly AI quota (same ordering

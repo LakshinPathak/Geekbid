@@ -56,14 +56,29 @@ export async function GET(req: NextRequest) {
         );
         const mappedStatus = mapRazorpayStatus(razorpaySub.status);
         if (mappedStatus && mappedStatus !== localSub.status) {
-          await db.collection("subscriptions").updateOne(
-            { _id: localSub._id },
+          // Optimistic-concurrency claim, not a plain updateOne: localSub's
+          // status came from the find() snapshot taken at the top of this
+          // request, which can be stale by the time each subscription's
+          // Razorpay round-trip finishes — e.g. a live subscription.cancelled
+          // webhook lands on this same subscription while this loop is still
+          // running. A plain unconditional updateOne would blindly re-apply
+          // (or clobber) that status and, worse, re-call handleDowngrade a
+          // second time. Only proceed if status still matches what we read.
+          const claimed = await db.collection("subscriptions").findOneAndUpdate(
+            { _id: localSub._id, status: localSub.status },
             { $set: { status: mappedStatus, updatedAt: new Date().toISOString() } }
           );
-          if (mappedStatus === "cancelled") {
-            await handleDowngrade(localSub.userId, localSub.plan, "free", "reconciliation_drift", "cron", db);
+          if (claimed) {
+            // "completed" (Razorpay's total_count billing cycles all ran) means
+            // billing has genuinely stopped, same as "cancelled" — without this
+            // branch a subscription that simply finishes its 12 cycles keeps
+            // the user on their paid plan/quota forever, since nothing else in
+            // this codebase ever downgrades a "completed" subscription.
+            if (mappedStatus === "cancelled" || mappedStatus === "completed") {
+              await handleDowngrade(localSub.userId, localSub.plan, "free", "reconciliation_drift", "cron", db);
+            }
+            corrected++;
           }
-          corrected++;
         }
       } catch (err) {
         console.error(`[Reconciliation] Failed to fetch subscription ${localSub.razorpaySubscriptionId}:`, err);

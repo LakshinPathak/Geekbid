@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, MessageSquare, Star, X, TrendingDown } from "lucide-react";
 import Link from "next/link";
 
@@ -47,17 +47,52 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  const [mounted, setMounted] = useState(false);
  const savings = Math.max(0, data.startingPrice - data.finalPrice);
  const savingsPct = data.startingPrice > 0 ? Math.round((savings / data.startingPrice) * 100) : 0;
+ const panelRef = useRef<HTMLDivElement>(null);
+ const closeButtonRef = useRef<HTMLButtonElement>(null);
 
  useEffect(() => {
  setMounted(true);
- const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+ }, []);
+
+ // Hand-rolled overlay (not the Radix ui/dialog.tsx primitives used
+ // elsewhere) — needs its own focus trap + dialog semantics so a
+ // keyboard user can't Tab out into the page behind it while it's open,
+ // matching what Radix gives the other modals for free. Also restores
+ // focus to whatever triggered the modal once it closes. Split into its
+ // own effect gated on `mounted` — the panel/close-button refs are null
+ // until the mounted=true render actually commits the dialog markup.
+ useEffect(() => {
+ if (!mounted) return;
+ const previouslyFocused = document.activeElement as HTMLElement | null;
+ closeButtonRef.current?.focus();
+
+ const handler = (e: KeyboardEvent) => {
+ if (e.key === "Escape") { onClose(); return; }
+ if (e.key !== "Tab") return;
+ const panel = panelRef.current;
+ if (!panel) return;
+ const focusable = panel.querySelectorAll<HTMLElement>(
+ 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+ );
+ if (focusable.length === 0) return;
+ const first = focusable[0];
+ const last = focusable[focusable.length - 1];
+ if (e.shiftKey && document.activeElement === first) {
+ e.preventDefault();
+ last.focus();
+ } else if (!e.shiftKey && document.activeElement === last) {
+ e.preventDefault();
+ first.focus();
+ }
+ };
  document.addEventListener("keydown", handler);
  document.body.style.overflow = "hidden";
  return () => {
  document.removeEventListener("keydown", handler);
  document.body.style.overflow = "";
+ previouslyFocused?.focus();
  };
- }, [onClose]);
+ }, [mounted, onClose]);
 
  if (!mounted) return null;
 
@@ -69,10 +104,18 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  ))}
 
  {/* Modal */}
- <div className="glass-panel-lg p-8 w-full max-w-lg relative animate-scale-in scanline">
+ <div
+ ref={panelRef}
+ role="dialog"
+ aria-modal="true"
+ aria-labelledby="victory-modal-title"
+ className="glass-panel-lg p-8 w-full max-w-lg relative animate-scale-in scanline"
+ >
  {/* Close */}
  <button
+ ref={closeButtonRef}
  onClick={onClose}
+ aria-label="Close"
  className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-xl text-[#6f6a7d] hover:text-[#3d3a45] hover:bg-[#f4f2ee] transition-colors border border-[rgba(75,63,143,0.22)]"
  >
  <X className="h-4 w-4" />
@@ -89,7 +132,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  >
  <CheckCircle2 className="h-10 w-10 text-[#4b3f8f]" />
  </div>
- <h2 className="text-2xl font-normal text-[#3d3a45] font-heading">Match Found!</h2>
+ <h2 id="victory-modal-title" className="text-2xl font-normal text-[#3d3a45] font-heading">Match Found!</h2>
  <p className="text-[#6f6a7d] text-sm mt-1">Your auction has a winner</p>
  </div>
 

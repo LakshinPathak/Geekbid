@@ -24,8 +24,15 @@ function extractSubscriptionId(payload: Record<string, unknown>): string | null 
 }
 
 async function handleActivated(subId: string, db: Db) {
+  // Same stale-event guard as handleCharged/handleHalted/handleCancelled — a
+  // retried/replayed subscription.activated event (e.g. the retry-webhooks
+  // cron sweeping an old 'failed' delivery, or Razorpay's own redelivery
+  // arriving after the user already cancelled) must not resurrect an
+  // already-cancelled subscription back to "active" and flip the user's
+  // plan back to paid. Filtering status out of the update itself (rather
+  // than a separate findOne-then-check) keeps the guard atomic.
   const sub = await db.collection("subscriptions").findOneAndUpdate(
-    { razorpaySubscriptionId: subId },
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "active", updatedAt: new Date().toISOString() } },
     { returnDocument: "after" }
   );
@@ -182,24 +189,30 @@ async function handlePaymentCaptured(subId: string | null, payload: Record<strin
 }
 
 async function handleHalted(subId: string, db: Db) {
-  const sub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!sub || sub.status === "cancelled") return;
-
-  await db.collection("subscriptions").updateOne(
-    { _id: sub._id },
+  // Atomic check-and-claim, not findOne-then-updateOne: subscription.halted
+  // and subscription.cancelled are distinct events (different eventIds), so
+  // the webhook route's per-event dedup claim doesn't stop them racing each
+  // other for the *same subscription* (e.g. one delivered live while the
+  // other is being swept by the retry-webhooks cron). A separate check then
+  // write left a window where both handlers could read status "active"
+  // before either wrote "cancelled" — double-running handleDowngrade
+  // (duplicate plan_change_log rows, duplicate downgrade emails). Filtering
+  // status out of the update itself makes only one of the racers win.
+  const sub = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "cancelled", updatedAt: new Date().toISOString() } }
   );
+  if (!sub) return;
   await handleDowngrade(sub.userId, sub.plan, "free", "subscription_halted", "webhook", db);
 }
 
 async function handleCancelled(subId: string, db: Db) {
-  const sub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!sub || sub.status === "cancelled") return;
-
-  await db.collection("subscriptions").updateOne(
-    { _id: sub._id },
+  // Same atomic claim as handleHalted above, for the same reason.
+  const sub = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "cancelled", updatedAt: new Date().toISOString() } }
   );
+  if (!sub) return;
   await handleDowngrade(sub.userId, sub.plan, "free", "cancellation", "webhook", db);
 }
 

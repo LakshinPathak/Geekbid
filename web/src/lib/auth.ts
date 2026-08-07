@@ -217,6 +217,16 @@ export async function registerUser(
  if (!compareSync(passwordStr, existing.password)) {
  return { error: "Email already registered" };
  }
+ // Unlike loginUser/googleLoginUser, this dual-role path never checked
+ // suspended/deleted status — a suspended or soft-deleted user who knew
+ // their own password could bypass the suspension entirely by "adding" a
+ // role they didn't already have, minting a fresh valid token pair here.
+ if (existing.deleted) {
+ return { error: "Email already registered" };
+ }
+ if (existing.suspended) {
+ return { error: "This account has been suspended. Contact support for assistance." };
+ }
 
  const existingRoles: string[] = existing.roles ?? [existing.role];
  if (existingRoles.includes(roleStr)) {

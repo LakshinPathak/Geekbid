@@ -32,6 +32,21 @@ export async function POST(req: NextRequest) {
  { status: 403 }
  );
  }
+ // lib/auth.ts's googleLoginUser enforces maintenanceMode (exempting only
+ // an existing account that's already admin) on the assumption that this
+ // email/password path already did the same — it never did, so turning on
+ // maintenance mode blocked logins and Google signups but not new
+ // email/password registrations or dual-role adds via this action.
+ if (config?.maintenanceMode) {
+ const emailStr = String(email ?? "").toLowerCase().trim();
+ const existingUser = emailStr ? await db.collection("users").findOne({ email: emailStr }) : null;
+ if (!existingUser || existingUser.role !== "admin") {
+ return NextResponse.json(
+ { error: "GeekBid is currently undergoing maintenance. Please check back shortly." },
+ { status: 503 }
+ );
+ }
+ }
 
  if (!name || !email || !password) {
  return NextResponse.json(
