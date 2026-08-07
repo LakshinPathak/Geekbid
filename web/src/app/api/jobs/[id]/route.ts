@@ -249,13 +249,15 @@ export async function PATCH(
  { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
  );
  }
- // Send summary emails
+ // Send summary emails — each recipient is emailed independently inside
+ // sendJobCompletedSummaryEmail, so one party missing an email address
+ // must not suppress the notification to the other party who has one.
  const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) }, { projection: { email: 1, fullName: 1, name: 1 } });
  const freelancer = job.acceptedBy ? await db.collection("users").findOne({ _id: new ObjectId(job.acceptedBy) }, { projection: { email: 1, fullName: 1, name: 1 } }) : null;
- if (client?.email && freelancer?.email) {
+ if (client?.email || freelancer?.email) {
  sendJobCompletedSummaryEmail(
- client.email, client.fullName ?? client.name ?? "Client",
- freelancer.email, freelancer.fullName ?? freelancer.name ?? "Freelancer",
+ client?.email ?? "", client?.fullName ?? client?.name ?? "Client",
+ freelancer?.email ?? "", freelancer?.fullName ?? freelancer?.name ?? "Freelancer",
  job.title ?? "Untitled Job", job.finalPrice ?? 0
  ).catch((err) => console.error("[Email Failed]", err));
  }

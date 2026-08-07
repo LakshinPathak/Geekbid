@@ -223,6 +223,15 @@ export async function PATCH(req: NextRequest) {
  ? await db.collection("jobs").findOne({ _id: ObjectId.createFromHexString(jobId) }, { projection: { platformFeePercent: 1 } })
  : null;
  const escrow = splitEscrow(grossAmount, feeJob?.platformFeePercent ?? DEFAULT_PLATFORM_FEE_PERCENT);
+ // Use escrow.gross (the cent-rounded value splitEscrow actually split),
+ // not the raw grossAmount float, as the stored amount — otherwise
+ // tx.grossAmount can carry sub-cent float noise (e.g. Number(amount)/100
+ // precision, or a client-supplied mock amount) that platformFee+netAmount
+ // don't share, silently breaking the gross === platformFee + netAmount
+ // invariant money.ts guarantees and that admin/disputes + milestones rely
+ // on. Matches jobs/[id]/route.ts and jobs/offer-response/route.ts, which
+ // already store escrow.gross.
+ const gross = escrow.gross;
  const platformFee = escrow.platformFee;
  const netAmount = escrow.netAmount;
 
@@ -238,7 +247,7 @@ export async function PATCH(req: NextRequest) {
  jobId: jobId || "",
  clientId: auth.payload.userId,
  freelancerId: "",
- grossAmount,
+ grossAmount: gross,
  platformFee,
  netAmount,
  escrowStatus: "held",
@@ -297,7 +306,7 @@ export async function PATCH(req: NextRequest) {
  if (payer?.email) {
  sendPaymentConfirmationEmail(
  payer.email, payer.fullName ?? "Client",
- grossAmount, currency,
+ gross, currency,
  jobDoc?.title ?? description ?? "GeekBid Project",
  txId, isMock
  ).catch((err) => console.error("[Email Failed] paymentConfirmation:", err));

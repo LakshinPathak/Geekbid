@@ -51,21 +51,26 @@ export default function AdminTransactionsPage() {
 
   async function doAction(txId: string, action: string, reason?: string) {
     setActionLoading(txId);
-    const res = await fetch("/api/admin/transactions", {
-      method: "PATCH",
-      headers: await getHeaders(),
-      body: JSON.stringify({ txId, action, reason }),
-    });
-    if (res.ok) {
-      toast.success(action === "release" ? "Escrow released!" : "Refund processed");
-      fetchTxs();
-      setRefundTarget(null);
-      setRefundReason("");
-    } else {
-      const d = await res.json();
-      toast.error(d.error ?? "Action failed");
+    try {
+      const res = await fetch("/api/admin/transactions", {
+        method: "PATCH",
+        headers: await getHeaders(),
+        body: JSON.stringify({ txId, action, reason }),
+      });
+      if (res.ok) {
+        toast.success(action === "release" ? "Escrow released!" : "Refund processed");
+        fetchTxs();
+        setRefundTarget(null);
+        setRefundReason("");
+      } else {
+        const d = await res.json();
+        toast.error(d.error ?? "Action failed");
+      }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(null);
     }
-    setActionLoading(null);
   }
 
   const exportCSV = () => {

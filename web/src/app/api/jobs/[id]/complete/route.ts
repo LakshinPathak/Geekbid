@@ -81,14 +81,17 @@ export async function PATCH(
  );
  }
 
- // Send summary emails to both parties
+ // Send summary emails to both parties — each recipient is emailed
+ // independently inside sendJobCompletedSummaryEmail, so one party missing
+ // an email address (e.g. an OAuth-only signup) must not suppress the
+ // notification to the other party who has a valid one.
  const client = await db.collection("users").findOne({ _id: new ObjectId(job.clientId) }).catch(() => null);
  if (job.acceptedBy) {
  const freelancer = await db.collection("users").findOne({ _id: new ObjectId(job.acceptedBy) }).catch(() => null);
- if (client?.email && freelancer?.email) {
+ if (client?.email || freelancer?.email) {
  await sendJobCompletedSummaryEmail(
- client.email, client.fullName ?? "Client",
- freelancer.email, freelancer.fullName ?? "Freelancer",
+ client?.email ?? "", client?.fullName ?? "Client",
+ freelancer?.email ?? "", freelancer?.fullName ?? "Freelancer",
  job.title, job.finalPrice ?? job.minimumPrice
  ).catch(console.error);
  }

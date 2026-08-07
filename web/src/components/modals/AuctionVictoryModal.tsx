@@ -49,6 +49,8 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  const savingsPct = data.startingPrice > 0 ? Math.round((savings / data.startingPrice) * 100) : 0;
  const panelRef = useRef<HTMLDivElement>(null);
  const closeButtonRef = useRef<HTMLButtonElement>(null);
+ const onCloseRef = useRef(onClose);
+ onCloseRef.current = onClose;
 
  useEffect(() => {
  setMounted(true);
@@ -61,13 +63,22 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  // focus to whatever triggered the modal once it closes. Split into its
  // own effect gated on `mounted` — the panel/close-button refs are null
  // until the mounted=true render actually commits the dialog markup.
+ //
+ // Deliberately depends on [mounted] only, not [onClose]: the sole
+ // caller (jobs/[id]/page.tsx) passes an inline arrow function that gets
+ // a new identity on every parent re-render. Depending on `onClose`
+ // directly would tear down and re-run this effect on every such
+ // re-render while the modal is open — restoring focus to the trigger
+ // element and then immediately stealing it back to the close button,
+ // producing a visible focus flicker. Reading the latest callback via a
+ // ref avoids that without going stale.
  useEffect(() => {
  if (!mounted) return;
  const previouslyFocused = document.activeElement as HTMLElement | null;
  closeButtonRef.current?.focus();
 
  const handler = (e: KeyboardEvent) => {
- if (e.key === "Escape") { onClose(); return; }
+ if (e.key === "Escape") { onCloseRef.current(); return; }
  if (e.key !== "Tab") return;
  const panel = panelRef.current;
  if (!panel) return;
@@ -92,7 +103,7 @@ export default function AuctionVictoryModal({ data, onClose }: Props) {
  document.body.style.overflow = "";
  previouslyFocused?.focus();
  };
- }, [mounted, onClose]);
+ }, [mounted]);
 
  if (!mounted) return null;
 

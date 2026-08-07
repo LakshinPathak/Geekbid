@@ -50,8 +50,19 @@ async function main() {
   try {
     // subscriptions — userId index is intentionally NON-unique (blueprint §6.2):
     // a user can have multiple subscription docs over time (cancel + resubscribe),
-    // each preserved for audit history.
-    await db.collection("subscriptions").createIndex({ userId: 1 });
+    // each preserved for audit history. Still useful for GET /api/subscriptions'
+    // `.find({userId}).sort({createdAt:-1}).limit(1)` lookup across ALL statuses
+    // (the partial-unique index below only covers live-status docs, so it can't
+    // serve that query for a user whose most recent subscription is cancelled).
+    //
+    // Explicitly named (not the {userId:1} default of "userId_1") so it can
+    // coexist regardless of run order with create-fix-indexes.mjs's ISSUE-19
+    // partial-unique constraint index on the same key pattern — both scripts
+    // are documented "safe to re-run", but two indexes on an identical key
+    // pattern racing for the same auto-generated name ("userId_1") throws
+    // IndexOptionsConflict (they have different unique/partialFilterExpression
+    // options) the moment one runs after the other.
+    await db.collection("subscriptions").createIndex({ userId: 1 }, { name: "userId_1_lookup" });
     await db.collection("subscriptions").createIndex(
       { razorpaySubscriptionId: 1 },
       { unique: true }

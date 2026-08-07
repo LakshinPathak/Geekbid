@@ -4,6 +4,7 @@ import { razorpayRequest, isRazorpayConfigured } from "@/lib/razorpay";
 import { handleDowngrade, enforceExpiredTeamSeatDeadlines } from "@/lib/plan-downgrade";
 import { constantTimeEqual } from "@/lib/sanitize";
 import { sendGracePeriodReminderEmail } from "@/lib/billing-emails";
+import { processWebhookEvent } from "@/lib/webhook-processing";
 
 function mapRazorpayStatus(rzpStatus: string): string | null {
   switch (rzpStatus) {
@@ -82,6 +83,68 @@ export async function GET(req: NextRequest) {
         }
       } catch (err) {
         console.error(`[Reconciliation] Failed to fetch subscription ${localSub.razorpaySubscriptionId}:`, err);
+      }
+    }
+
+    // Subscriptions stuck in "created" — the user started (and possibly
+    // completed) checkout, but the subscription.activated webhook that would
+    // normally flip local status to "active" and grant the plan never
+    // arrived (delivery lost, endpoint down, etc). These are invisible to
+    // the loop above, which only looks at active/past_due. Give normal
+    // checkouts room to finish first — a subscription is legitimately
+    // "created" for the seconds/minutes between POST /api/subscriptions and
+    // the user completing Razorpay Checkout — so only treat it as stuck once
+    // it's been sitting in "created" for a while.
+    const STALE_CREATED_MS = 2 * 3600000; // 2 hours
+    const staleCreatedCutoff = new Date(Date.now() - STALE_CREATED_MS).toISOString();
+    const staleCreatedSubs = (
+      await db.collection("subscriptions").find({
+        status: "created",
+        createdAt: { $lte: staleCreatedCutoff },
+      }).toArray()
+    ).filter(
+      (s) => typeof s.razorpaySubscriptionId === "string" && !s.razorpaySubscriptionId.startsWith("sub_mock_")
+    );
+
+    for (const localSub of staleCreatedSubs) {
+      try {
+        const razorpaySub = await razorpayRequest<{ status: string }>(
+          `/subscriptions/${localSub.razorpaySubscriptionId}`
+        );
+        if (razorpaySub.status === "active") {
+          // Replay the exact same activation logic the lost
+          // subscription.activated webhook would have run — status flip,
+          // users.plan update, welcome email — by feeding a synthetic event
+          // through the shared handler instead of duplicating that logic
+          // here. handleActivated's own findOneAndUpdate status guard keeps
+          // this race-safe even if the real webhook lands concurrently
+          // (whichever write lands second is a no-op on an already-active
+          // subscription), and the welcome email's idempotency key is keyed
+          // on the local subscription id, so a concurrent double-send can't
+          // happen either.
+          await processWebhookEvent(
+            {
+              event: "subscription.activated",
+              payload: { subscription: { entity: { id: localSub.razorpaySubscriptionId } } },
+            },
+            db
+          );
+          corrected++;
+        } else if (["cancelled", "expired", "completed"].includes(razorpaySub.status)) {
+          // Checkout was abandoned/expired on Razorpay's side and never will
+          // activate. No plan was ever granted for this subscription (it
+          // never left "created"), so there's nothing to downgrade — just
+          // close out the local record so it isn't re-checked every run.
+          await db.collection("subscriptions").updateOne(
+            { _id: localSub._id, status: "created" },
+            { $set: { status: "cancelled", updatedAt: new Date().toISOString() } }
+          );
+          corrected++;
+        }
+        // Any other Razorpay status (created/authenticated/pending) means
+        // checkout is still genuinely in progress — leave it for the next run.
+      } catch (err) {
+        console.error(`[Reconciliation] Failed to fetch stale created subscription ${localSub.razorpaySubscriptionId}:`, err);
       }
     }
   }
