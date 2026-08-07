@@ -149,23 +149,34 @@ export default function FeaturedBoostModal({ jobId, jobTitle, onClose, onFeature
         prefill: { name: currentUser?.fullName || "", email: currentUser?.email || "" },
         theme: { color: "#4b3f8f" },
         handler: async (response: Record<string, string>) => {
-          const verifyRes = await fetch("/api/payments", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: FEATURED_BOOST_PRICE_INR,
-              currency: FEATURED_BOOST_CURRENCY,
-              jobId,
-              description: `featured_boost:${jobId}`,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (verifyData.verified) await finishBoost(verifyData.transactionId);
-          else {
-            toast.error("Payment verification failed", { description: verifyData.error });
+          // This callback fires asynchronously from the Razorpay widget, well
+          // after handlePay's own try/catch has already returned — a thrown
+          // fetch (network failure) or unparseable response here was an
+          // unhandled rejection that never reset `processing`, permanently
+          // disabling the Pay button with no error shown.
+          try {
+            const verifyRes = await fetch("/api/payments", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: FEATURED_BOOST_PRICE_INR,
+                currency: FEATURED_BOOST_CURRENCY,
+                jobId,
+                description: `featured_boost:${jobId}`,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyData.verified) await finishBoost(verifyData.transactionId);
+            else {
+              toast.error("Payment verification failed", { description: verifyData.error });
+              setProcessing(false);
+            }
+          } catch (err) {
+            console.error("Boost payment verification error:", err);
+            toast.error("Payment verification failed", { description: "Connection error — please contact support if you were charged." });
             setProcessing(false);
           }
         },

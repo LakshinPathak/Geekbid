@@ -213,10 +213,10 @@ export default function PaymentsPage() {
  // user enters payment details — re-fetch a valid token here rather
  // than reusing the one captured when the modal opened, which may
  // have expired by the time this callback fires.
+ try {
  const freshToken = await getValidToken();
  if (!freshToken) {
  setPaymentResult({ success: false, message: "Please log in again" });
- setIsProcessing(false);
  return;
  }
  const verifyRes = await fetch("/api/payments", {
@@ -249,7 +249,15 @@ export default function PaymentsPage() {
  message: verifyData.error || "Verification failed",
  });
  }
+ } catch (err) {
+ console.error("Payment verification error:", err);
+ setPaymentResult({
+ success: false,
+ message: "Network error while verifying payment — check Transaction History before retrying",
+ });
+ } finally {
  setIsProcessing(false);
+ }
  },
  modal: {
  ondismiss: () => {

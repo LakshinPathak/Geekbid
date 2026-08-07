@@ -136,15 +136,43 @@ export async function storeRefreshToken(userId: string, token: string, sessionId
  );
 }
 
-async function validateStoredRefreshToken(userId: string, token: string, sessionId?: string): Promise<boolean> {
+// Atomically validates the presented refresh token against the stored one
+// AND rotates it to the new token in a single findOneAndUpdate, instead of
+// the separate validate-then-store steps refreshAccessToken used to do.
+//
+// Why that mattered: two refresh requests racing in with the *same* old
+// refresh token (routine in an SPA — e.g. several tabs, or several
+// in-flight API calls that all 401 near-simultaneously and each trigger
+// their own refresh) would both pass a separate read-only validate step
+// before either had written its rotation, so both would proceed to mint
+// and store a new token pair. The second write silently clobbered the
+// first (last-write-wins on the same {userId,sessionId} document), so one
+// caller walked away with a "successful" response holding a refresh token
+// that was never actually persisted — its next refresh attempt would look
+// exactly like token theft and revoke every session for that user.
+// Folding validate+rotate into one findOneAndUpdate makes only one of the
+// two racing requests able to consume the old token; the loser gets a
+// clean "already rotated" signal instead of a phantom success.
+async function rotateStoredRefreshToken(
+ userId: string,
+ oldToken: string,
+ newToken: string,
+ sessionId: string,
+ expiresAt: Date,
+ matchSessionId: boolean
+): Promise<boolean> {
  const db = await getDb();
- // sessionId is optional only to tolerate refresh tokens issued before this
- // field existed (still valid, up to their original 7-day expiry) — falls
- // back to the old userId-only lookup for those, same as before.
- const query: Record<string, unknown> = { userId, token, expiresAt: { $gt: new Date() } };
- if (sessionId) query.sessionId = sessionId;
- const stored = await db.collection("refresh_tokens").findOne(query);
- return !!stored;
+ // matchSessionId is false only for refresh tokens minted before the
+ // sessionId claim existed — falls back to the old userId+token-only
+ // lookup for those. Always $set sessionId going forward so the very next
+ // rotation for this row is on the new, precise key.
+ const filter: Record<string, unknown> = { userId, token: oldToken, expiresAt: { $gt: new Date() } };
+ if (matchSessionId) filter.sessionId = sessionId;
+ const result = await db.collection("refresh_tokens").findOneAndUpdate(
+ filter,
+ { $set: { token: newToken, sessionId, createdAt: new Date(), expiresAt } }
+ );
+ return !!result;
 }
 
 export async function revokeRefreshToken(userId: string) {
@@ -460,19 +488,7 @@ export async function refreshAccessToken(currentRefreshToken: string) {
  const payload = await verifyRefreshToken(currentRefreshToken);
  if (!payload) return { error: "Invalid or expired refresh token" };
 
- // 2. Validate against stored token (prevents reuse after rotation)
- const isValid = await validateStoredRefreshToken(
- payload.userId,
- currentRefreshToken,
- payload.sessionId
- );
- if (!isValid) {
- // Potential token theft — revoke all tokens for this user
- await revokeRefreshToken(payload.userId);
- return { error: "Refresh token revoked. Please login again." };
- }
-
- // 3. Verify user still exists and hasn't been disabled
+ // 2. Verify user still exists and hasn't been disabled
  const db = await getDb();
  const user = await db
  .collection("users")
@@ -490,13 +506,39 @@ export async function refreshAccessToken(currentRefreshToken: string) {
  return { error: "This account has been suspended. Contact support for assistance." };
  }
 
- // 4. Issue new token pair (rotation) — reuse the same sessionId so
+ // 3. Issue new token pair (rotation) — reuse the same sessionId so
  // rotating a device's token updates that device's own stored slot
  // instead of colliding with (or being collided into by) another device.
  const sessionId = payload.sessionId ?? crypto.randomBytes(16).toString("hex");
  const { accessToken, refreshToken: newRefreshToken } =
  await createTokenPair(user._id.toString(), user.role, user.email, sessionId);
- await storeRefreshToken(user._id.toString(), newRefreshToken, sessionId);
+
+ // 4. Atomically validate the presented token against the stored one AND
+ // rotate it to the new one in the same DB operation (prevents reuse after
+ // rotation). This used to be two separate steps — a read-only validate
+ // followed later by a write — which left a window where two refresh
+ // requests racing in with the same still-valid old token (routine in an
+ // SPA: multiple tabs, or several in-flight calls that 401 together and
+ // each trigger their own refresh) could both pass validation before
+ // either had rotated, so both would mint a token pair and the second
+ // store would silently clobber the first. Folding it into one
+ // findOneAndUpdate means only one racing request can consume the old
+ // token; the other cleanly fails here instead of handing out a refresh
+ // token that was never actually persisted.
+ const expiresAt = new Date(Date.now() + REFRESH_COOKIE_MAX_AGE * 1000);
+ const rotated = await rotateStoredRefreshToken(
+ user._id.toString(),
+ currentRefreshToken,
+ newRefreshToken,
+ sessionId,
+ expiresAt,
+ !!payload.sessionId
+ );
+ if (!rotated) {
+ // Potential token theft (or a losing race) — revoke all tokens for this user
+ await revokeRefreshToken(payload.userId);
+ return { error: "Refresh token revoked. Please login again." };
+ }
 
  return { accessToken, refreshToken: newRefreshToken, user: { ...user, _id: user._id.toString(), id: user._id.toString(), password: undefined } };
 }

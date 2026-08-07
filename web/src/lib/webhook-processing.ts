@@ -57,7 +57,7 @@ async function handleActivated(subId: string, db: Db) {
 async function handleCharged(subId: string, payload: Record<string, unknown>, db: Db) {
   const p = payload?.payload as Record<string, unknown> | undefined;
   const subEntity = (p?.subscription as { entity?: { current_start?: number; current_end?: number } } | undefined)?.entity;
-  const paymentEntity = (p?.payment as { entity?: { amount?: number } } | undefined)?.entity;
+  const paymentEntity = (p?.payment as { entity?: { id?: string; amount?: number } } | undefined)?.entity;
   const now = new Date().toISOString();
 
   const currentPeriodStart = subEntity?.current_start
@@ -127,7 +127,18 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
   );
 
   const amount = paymentEntity?.amount ? paymentEntity.amount / 100 : 0;
-  await sendPaymentReceiptEmail(existingSub.userId, appliedPlan, amount, currentPeriodEnd).catch((err) =>
+  // Pass the actual Razorpay payment id (not just periodEnd) so this dedupes
+  // correctly against handlePaymentCaptured's own receipt email below —
+  // Razorpay fires both subscription.charged and payment.captured for the
+  // same underlying charge (this isn't a rare edge case; it's the normal
+  // shape of a subscription renewal/recovery), and whichever handler runs
+  // second must recognize "same payment" rather than emailing again. Keying
+  // off periodEnd alone doesn't work here: this handler computes a fresh
+  // currentPeriodEnd from the webhook payload while handlePaymentCaptured
+  // reuses the subscription's pre-update (stale) currentPeriodEnd, so the
+  // two calls would otherwise mint different idempotency keys for the same
+  // payment and both would send.
+  await sendPaymentReceiptEmail(existingSub.userId, appliedPlan, amount, currentPeriodEnd, paymentEntity?.id).catch((err) =>
     console.error("[Payment Receipt Email Failed]", err)
   );
 
@@ -188,9 +199,14 @@ async function handlePaymentCaptured(subId: string | null, payload: Record<strin
   if (!sub) return;
 
   const p = payload?.payload as Record<string, unknown> | undefined;
-  const paymentEntity = (p?.payment as { entity?: { amount?: number } } | undefined)?.entity;
+  const paymentEntity = (p?.payment as { entity?: { id?: string; amount?: number } } | undefined)?.entity;
   const amount = paymentEntity?.amount ? paymentEntity.amount / 100 : 0;
-  await sendPaymentReceiptEmail(sub.userId, sub.plan, amount, sub.currentPeriodEnd).catch((err) =>
+  // See the matching comment in handleCharged: pass the real Razorpay
+  // payment id so the idempotency key matches whichever of the two handlers
+  // (this one, or subscription.charged) processes this same underlying
+  // payment first, instead of diverging on a stale vs. fresh periodEnd and
+  // sending a duplicate receipt.
+  await sendPaymentReceiptEmail(sub.userId, sub.plan, amount, sub.currentPeriodEnd, paymentEntity?.id).catch((err) =>
     console.error("[Payment Recovery Receipt Email Failed]", err)
   );
 }

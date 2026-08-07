@@ -62,6 +62,21 @@ async function main() {
     // pattern racing for the same auto-generated name ("userId_1") throws
     // IndexOptionsConflict (they have different unique/partialFilterExpression
     // options) the moment one runs after the other.
+    //
+    // On any deployment that already has this collection's original
+    // unnamed {userId:1} index (created by an earlier version of this very
+    // script, before it was given an explicit name), createIndex below has
+    // an identical key pattern AND identical options to that existing
+    // "userId_1" index — differing only in name — which Mongo rejects with
+    // IndexOptionsConflict rather than silently renaming it. Drop the old
+    // default-named index first so this script is idempotent on its own,
+    // without depending on create-fix-indexes.mjs having been run first.
+    try {
+      await db.collection("subscriptions").dropIndex("userId_1");
+      console.log("subscriptions old plain userId_1 index dropped");
+    } catch (err) {
+      if (err?.codeName !== "IndexNotFound") throw err;
+    }
     await db.collection("subscriptions").createIndex({ userId: 1 }, { name: "userId_1_lookup" });
     await db.collection("subscriptions").createIndex(
       { razorpaySubscriptionId: 1 },

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { authenticateRequest } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { getCurrentPrice } from "@/lib/utils";
+import type { Job } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
  try {
@@ -39,8 +41,14 @@ export async function GET(req: NextRequest) {
  else if (bidCount > 0 && deadlineHrs > 12) { health = "healthy"; healthColor = "green"; }
  else { health = "expiring"; healthColor = "yellow"; }
 
- const elapsed = (now - new Date(job.postedAt).getTime()) / 3600000;
- const currentPrice = Math.max(job.minimumPrice, job.startingPrice - job.decayRatePerHour * elapsed);
+ // Use the same adaptive-pricing engine every other route relies on
+ // (demand multiplier, bid boost, counter-bid pull) — the plain linear
+ // `startingPrice - decayRatePerHour * elapsed` formula this used to
+ // inline only matches jobs explicitly created with pricingMode:"fixed".
+ // Jobs default to pricingMode:"adaptive" (see POST /api/jobs), so for
+ // most jobs this was showing a currentPrice/savings figure that didn't
+ // match what freelancers actually see and bid against.
+ const currentPrice = getCurrentPrice(job as unknown as Job, new Date(now));
 
  const topBids = jobBids.slice(0, 3).map(b => ({
  bidPrice: b.bidPrice,

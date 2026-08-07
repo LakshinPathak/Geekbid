@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
-import { generateJSON, isAIAvailable } from "@/lib/ai";
+import { generateJSON, isAIEnabled } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
 
 const MAX_QUERY_LENGTH = 500;
 
 export async function POST(req: NextRequest) {
-  if (!isAIAvailable()) {
+  if (!(await isAIEnabled())) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
   }
 
