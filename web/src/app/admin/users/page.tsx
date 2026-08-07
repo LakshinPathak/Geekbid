@@ -65,19 +65,29 @@ export default function AdminUsersPage() {
 
   async function updateUser(id: string, patch: Record<string, unknown>) {
     setActionLoading(true);
-    const res = await fetch(`/api/admin/users/${id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(patch) });
-    if (res.ok) { toast.success("User updated"); fetchUsers(); setEditUser(null); }
-    else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
-    setActionLoading(false);
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(patch) });
+      if (res.ok) { toast.success("User updated"); fetchUsers(); setEditUser(null); }
+      else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function deleteUser() {
     if (!deleteTarget) return;
     setActionLoading(true);
-    const res = await fetch(`/api/admin/users/${deleteTarget.id}`, { method: "DELETE", headers: await getHeaders(), body: JSON.stringify({ reason: deleteReason }) });
-    if (res.ok) { toast.success("User removed"); fetchUsers(); setDeleteTarget(null); setDeleteReason(""); }
-    else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
-    setActionLoading(false);
+    try {
+      const res = await fetch(`/api/admin/users/${deleteTarget.id}`, { method: "DELETE", headers: await getHeaders(), body: JSON.stringify({ reason: deleteReason }) });
+      if (res.ok) { toast.success("User removed"); fetchUsers(); setDeleteTarget(null); setDeleteReason(""); }
+      else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function suspendUser() {
@@ -89,10 +99,15 @@ export default function AdminUsersPage() {
 
   async function createAdmin() {
     setActionLoading(true);
-    const res = await fetch("/api/admin/users", { method: "POST", headers: await getHeaders(), body: JSON.stringify(createForm) });
-    if (res.ok) { toast.success("Admin user created"); setShowCreateAdmin(false); setCreateForm({ name: "", email: "", password: "", adminKey: "" }); fetchUsers(); }
-    else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
-    setActionLoading(false);
+    try {
+      const res = await fetch("/api/admin/users", { method: "POST", headers: await getHeaders(), body: JSON.stringify(createForm) });
+      if (res.ok) { toast.success("Admin user created"); setShowCreateAdmin(false); setCreateForm({ name: "", email: "", password: "", adminKey: "" }); fetchUsers(); }
+      else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   return (

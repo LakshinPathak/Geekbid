@@ -59,22 +59,27 @@ export default function AdminDisputesPage() {
   async function resolveDispute() {
     if (!resolveTarget) return;
     setSubmitting(true);
-    const res = await fetch("/api/admin/disputes", {
-      method: "PATCH",
-      headers: await getHeaders(),
-      body: JSON.stringify({ disputeId: resolveTarget.id, status: "resolved", resolutionType, resolution }),
-    });
-    if (res.ok) {
-      toast.success("Dispute resolved");
-      fetchDisputes();
-      setResolveTarget(null);
-      setResolution("");
-      setResolutionType("dismiss");
-    } else {
-      const d = await res.json();
-      toast.error(d.error ?? "Failed to resolve");
+    try {
+      const res = await fetch("/api/admin/disputes", {
+        method: "PATCH",
+        headers: await getHeaders(),
+        body: JSON.stringify({ disputeId: resolveTarget.id, status: "resolved", resolutionType, resolution }),
+      });
+      if (res.ok) {
+        toast.success("Dispute resolved");
+        fetchDisputes();
+        setResolveTarget(null);
+        setResolution("");
+        setResolutionType("dismiss");
+      } else {
+        const d = await res.json();
+        toast.error(d.error ?? "Failed to resolve");
+      }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   function statusBadge(s: string) {

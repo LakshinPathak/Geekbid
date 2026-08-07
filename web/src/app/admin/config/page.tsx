@@ -77,15 +77,20 @@ export default function AdminConfigPage() {
 
   async function saveConfig() {
     setSaving(true);
-    const { planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled } = config;
-    const res = await fetch("/api/admin/config", {
-      method: "PATCH",
-      headers: await getHeaders(),
-      body: JSON.stringify({ planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled }),
-    });
-    if (res.ok) toast.success("Configuration saved");
-    else toast.error("Save failed");
-    setSaving(false);
+    try {
+      const { planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled } = config;
+      const res = await fetch("/api/admin/config", {
+        method: "PATCH",
+        headers: await getHeaders(),
+        body: JSON.stringify({ planFees, defaultDecayRate, maintenanceMode, registrationOpen, aiEnabled }),
+      });
+      if (res.ok) toast.success("Configuration saved");
+      else toast.error("Save failed");
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) {
