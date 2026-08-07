@@ -13,9 +13,26 @@ export async function GET(req: NextRequest) {
 
  const txns = await db.collection("transactions").find({ freelancerId: uid }).toArray();
 
- const totalEarned = txns.reduce((s, t) => s + (t.netAmount || 0), 0);
+ // A transaction's `netAmount` is fixed at escrow-creation time (what the
+ // freelancer *would* receive) — it never gets adjusted down if the money
+ // is later refunded to the client or split with them via a dispute. Only
+ // count what the freelancer actually ended up with:
+ //  - "released": the freelancer received the full netAmount.
+ //  - "split" (dispute resolved 50/50): only their half, splitFreelancerAmount.
+ //  - "held" / "disputed" / "refunded": not earned (still escrowed, frozen,
+ //    or returned to the client), so they contribute 0 here — "held" and
+ //    "disputed" show up in pendingEscrow below instead, and "refunded"
+ //    correctly counts toward neither.
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any -- txns are raw Mongo Documents (no shared schema type)
+ const realizedAmount = (t: any): number => {
+ if (t.escrowStatus === "released") return t.netAmount || 0;
+ if (t.escrowStatus === "split") return t.splitFreelancerAmount || 0;
+ return 0;
+ };
+
+ const totalEarned = txns.reduce((s, t) => s + realizedAmount(t), 0);
  const pendingEscrow = txns
- .filter(t => t.escrowStatus === "held" || t.escrowStatus === "pending")
+ .filter(t => t.escrowStatus === "held" || t.escrowStatus === "disputed")
  .reduce((s, t) => s + (t.netAmount || 0), 0);
 
  // Monthly trend (last 6 months)
@@ -33,7 +50,7 @@ export async function GET(req: NextRequest) {
  const ts = new Date(t.createdAt).getTime();
  return ts >= monthStart.getTime() && ts < monthEnd.getTime();
  })
- .reduce((s, t) => s + (t.netAmount || 0), 0);
+ .reduce((s, t) => s + realizedAmount(t), 0);
 
  monthlyTrend.push({
  month: monthStart.toISOString().slice(0, 7),

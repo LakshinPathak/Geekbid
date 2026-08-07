@@ -97,6 +97,15 @@ export function useSubscriptionCheckout() {
   }, []);
 
   const startCheckout = useCallback(async (targetPlan: 'plus' | 'premium') => {
+    // Re-entrancy guard: the callers disable their button via the
+    // `processingPlan` state, but that only takes effect once React commits
+    // the re-render — it doesn't stop a second invocation that lands in the
+    // same tick as the first (e.g. a fast double-click/double-tap, or a
+    // held Enter key repeating the click). Without this check, both calls
+    // race past this point and can each open their own Razorpay Checkout
+    // modal / each POST /api/subscriptions, since nothing below here reads
+    // React state to detect the other call already in flight.
+    if (processingPlan) return;
     setProcessingPlan(targetPlan);
     try {
       const token = await getValidToken();
@@ -200,7 +209,7 @@ export function useSubscriptionCheckout() {
       toast.error("An unexpected error occurred");
       setProcessingPlan(null);
     }
-  }, [subscription, getValidToken, scriptLoaded, currentUser, loadSubscription, refreshCurrentUser, verifyCheckout]);
+  }, [subscription, processingPlan, getValidToken, scriptLoaded, currentUser, loadSubscription, refreshCurrentUser, verifyCheckout]);
 
   const cancelSubscription = useCallback(async () => {
     setProcessingPlan("cancel");

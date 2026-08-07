@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
-import { generateText, isAIAvailable } from "@/lib/ai";
+import { generateText, isAIEnabled } from "@/lib/ai";
 import { checkAndConsumeAiQuota } from "@/lib/ai-plan-limit";
 import { checkRateLimit } from "@/lib/sanitize";
 
@@ -8,7 +8,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 const MAX_CONTEXT_LENGTH = 4000;
 
 export async function POST(req: NextRequest) {
-  if (!isAIAvailable()) {
+  if (!(await isAIEnabled())) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
   }
 

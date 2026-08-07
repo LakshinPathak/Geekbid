@@ -225,6 +225,21 @@ export async function PATCH(
  catch { job = await db.collection("jobs").findOne({ id }); }
  if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
   if (job.clientId !== auth.payload.userId) return NextResponse.json({ error: "You can only complete your own jobs" }, { status: 403 });
+ // A job whose escrow is under an open dispute must not be marked complete
+ // — without this, the atomic claim below only checks job.status and has no
+ // idea a dispute exists, so it would flip the job to "completed" while the
+ // escrow-release step's own CAS (escrowStatus:"held" only) silently no-ops,
+ // and this endpoint would still report success with the money frozen in
+ // dispute. Matches the same guard in api/jobs/[id]/complete/route.ts.
+ if (job.escrowTransactionId) {
+ const escrowTx = await db.collection("transactions").findOne({ _id: new ObjectId(job.escrowTransactionId) });
+ if (escrowTx?.escrowStatus === "disputed") {
+ return NextResponse.json(
+ { error: "This job's escrow is under an open dispute and cannot be marked complete until the dispute is resolved." },
+ { status: 409 }
+ );
+ }
+ }
  // Atomically claim completion — see api/jobs/[id]/complete/route.ts for
  // why a bare findOne+updateOne here let two concurrent requests both pass
  // the status check and both fire the summary emails below.
@@ -238,16 +253,36 @@ export async function PATCH(
  // the old one could release/refund that instead of the real job escrow.
  // Falls back to the tagged-purpose filter for any pre-migration rows that
  // predate escrowTransactionId.
+ let escrowReleaseMatched: number;
  if (job.escrowTransactionId) {
- await db.collection("transactions").updateOne(
+ const releaseResult = await db.collection("transactions").updateOne(
  { _id: new ObjectId(job.escrowTransactionId), escrowStatus: "held" },
  { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
  );
+ escrowReleaseMatched = releaseResult.matchedCount;
  } else {
- await db.collection("transactions").updateOne(
+ const releaseResult = await db.collection("transactions").updateOne(
  { jobId: id, purpose: "job_escrow", escrowStatus: "held" },
  { $set: { escrowStatus: "released", releasedAt: new Date().toISOString() } }
  );
+ escrowReleaseMatched = releaseResult.matchedCount;
+ }
+ // Narrow race: a dispute could have been raised in the gap between the
+ // pre-check above and the atomic completion claim. If the release above
+ // matched nothing and the escrow is now disputed, roll the job back to
+ // "accepted" instead of reporting success on a job whose money is stuck.
+ if (escrowReleaseMatched === 0 && job.escrowTransactionId) {
+ const escrowTxNow = await db.collection("transactions").findOne({ _id: new ObjectId(job.escrowTransactionId) });
+ if (escrowTxNow?.escrowStatus === "disputed") {
+ await db.collection("jobs").updateOne(
+ { _id: claimedJob._id, status: "completed" },
+ { $set: { status: "accepted" }, $unset: { completedAt: "" } }
+ );
+ return NextResponse.json(
+ { error: "This job's escrow is under an open dispute and cannot be marked complete until the dispute is resolved." },
+ { status: 409 }
+ );
+ }
  }
  // Send summary emails — each recipient is emailed independently inside
  // sendJobCompletedSummaryEmail, so one party missing an email address

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId, type Document, type WithId } from "mongodb";
-import { generateJSON, isAIAvailable } from "@/lib/ai";
+import { generateJSON, isAIEnabled } from "@/lib/ai";
 import { checkRateLimit } from "@/lib/sanitize";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
@@ -10,7 +10,7 @@ import { getCurrentPrice } from "@/lib/utils";
 import type { Job } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
-  if (!isAIAvailable()) {
+  if (!(await isAIEnabled())) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
   }
 
