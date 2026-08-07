@@ -1,0 +1,93 @@
+/**
+ * Input sanitization utilities — prevents NoSQL injection, ReDoS, and prototype pollution.
+ * Import from here before using ANY user-supplied value in a MongoDB query.
+ */
+
+import crypto from "crypto";
+
+/** Force input to plain string; rejects objects that could carry MongoDB operators. */
+export function sanitizeString(input: unknown): string {
+  if (typeof input !== "string") return "";
+  return input.trim();
+}
+
+/**
+ * Constant-time string comparison for secrets (admin keys, etc.) — a plain
+ * `===` leaks length/prefix-match information through response timing.
+ * Length is compared first (also constant-time-safe, since it doesn't
+ * depend on secret content) so mismatched lengths never touch timingSafeEqual,
+ * which throws on unequal-length buffers.
+ */
+export function constantTimeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/** Validate a 24-hex MongoDB ObjectId; returns null if invalid. */
+export function sanitizeObjectId(input: unknown): string | null {
+  const str = String(input ?? "");
+  return /^[a-f\d]{24}$/i.test(str) ? str : null;
+}
+
+/**
+ * Strip $ keys and __proto__ from an object to prevent NoSQL operator injection
+ * and prototype pollution. Call on req.body before spreading into a query.
+ */
+export function sanitizeQuery(input: unknown): Record<string, unknown> {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
+  const clean: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(input as Record<string, unknown>)) {
+    if (key.startsWith("$")) continue;
+    if (key === "__proto__" || key === "constructor" || key === "prototype") continue;
+    clean[key] = typeof val === "object" && val !== null ? String(val) : val;
+  }
+  return clean;
+}
+
+/** Coerce to a finite number, returning defaultVal if not finite or absent. */
+export function sanitizeNumber(input: unknown, defaultVal = 0): number {
+  if (input === null || input === undefined || input === "") return defaultVal;
+  const n = Number(input);
+  return Number.isFinite(n) ? n : defaultVal;
+}
+
+/** Clamp page and limit to safe ranges. */
+export function sanitizePagination(page: unknown, limit: unknown) {
+  return {
+    page: Math.max(1, sanitizeNumber(page, 1)),
+    limit: Math.min(100, Math.max(1, sanitizeNumber(limit, 20))),
+  };
+}
+
+/**
+ * Escape regex metacharacters so user search strings can't cause ReDoS
+ * or match unintended patterns when passed to MongoDB $regex.
+ */
+export function sanitizeSearchRegex(input: unknown): string {
+  const str = sanitizeString(input);
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Rate limiting moved to lib/rate-limit.ts (MongoDB-backed, shared across
+// instances) — re-exported here so existing call sites don't need to change
+// their import path, only add `await` since the check is now async.
+export { checkRateLimit } from "./rate-limit";
+
+/**
+ * Extract client IP from Next.js request for rate-limit keys.
+ *
+ * `x-forwarded-for` is a chain that proxies *append* to (RFC 7239 style) —
+ * on Vercel, the edge network appends the real connecting IP as the last
+ * entry rather than replacing a client-supplied header, so the first entry
+ * is attacker-controlled (send any `X-Forwarded-For: <random>` to get a
+ * fresh rate-limit key per request) while the last entry is the one Vercel
+ * itself set. Must take the LAST entry, not the first.
+ */
+export function getClientIp(req: Request): string {
+  const hdr = (req as unknown as { headers: Headers }).headers;
+  const xff = hdr.get("x-forwarded-for");
+  const lastHop = xff?.split(",").pop()?.trim();
+  return lastHop || hdr.get("x-real-ip") || "unknown";
+}

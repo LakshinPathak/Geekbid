@@ -1,0 +1,141 @@
+# ─────────────────────────────────────────────────
+# GeekBid — Docker Compose (Development)
+# Starts all services with hot reload + MongoDB local
+# ─────────────────────────────────────────────────
+# Usage:
+#   docker-compose up              → Start all services
+#   docker-compose up -d           → Start in background
+#   docker-compose down            → Stop all services
+#   docker-compose down -v         → Stop + delete volumes (wipes DB)
+# ─────────────────────────────────────────────────
+
+services:
+  # ── MongoDB (local development) ──────────────────
+  mongodb:
+    image: mongo:7
+    container_name: geekbid-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: geekbid
+    healthcheck:
+      test: mongosh --eval 'db.adminCommand("ping")' --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (all 7 microservices) ────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geekbid-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # Gateway
+      - "3001:3001"   # Auth
+      - "3003:3003"   # Jobs
+      - "3004:3004"   # Bidding
+      - "3005:3005"   # Payments
+      - "3006:3006"   # Notifications
+      - "3007:3007"   # Chat
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongodb:27017/geekbid
+      JWT_SECRET: ${JWT_SECRET:-geekbid-dev-secret-change-in-production}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+      GATEWAY_PORT: 3000
+      AUTH_PORT: 3001
+      JOB_PORT: 3003
+      BIDDING_PORT: 3004
+      PAYMENT_PORT: 3005
+      NOTIFICATION_PORT: 3006
+      CHAT_PORT: 3007
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, not localhost — see the note on the web service's
+      # healthcheck below for why this matters on Alpine images.
+      test: wget -q --spider http://127.0.0.1:3000/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Web App (Next.js) ───────────────────────────
+  # Port layout: backend gateway owns :3000, so web is exposed on :3002
+  # NEXTAUTH_URL must match the host port below (3002) so Google OAuth
+  # redirect_uri stays consistent regardless of who starts the server first.
+  # Google Cloud Console → Authorized redirect URIs must include:
+  #   http://localhost:3002/api/auth/google/callback  (Docker)
+  #   http://localhost:3000/api/auth/google/callback  (local npm run dev)
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      # Must cover every ARG web/Dockerfile declares, or those vars are
+      # empty during `next build` — NEXTAUTH_SECRET in particular throws at
+      # module-load time if missing, which fails the build outright.
+      args:
+        MONGODB_URI: mongodb://mongodb:27017/geekbid
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3002}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+        RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+        RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+        NEXT_PUBLIC_RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+        CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
+        CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-000000000000000}
+        CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-placeholder}
+        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-geekbid_unsigned}
+        GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder}
+        AI_MODEL: ${AI_MODEL:-gemini-2.0-flash}
+        ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key-change-me}
+        RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
+    container_name: geekbid-web
+    restart: unless-stopped
+    ports:
+      - "3002:3000"   # 3000 is taken by backend gateway; web is on 3002
+    environment:
+      # These are also needed at request time by server-side route handlers
+      # (not just baked into the build), so they're repeated here — a value
+      # only passed via `build.args` never reaches the running container.
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongodb:27017/geekbid
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fallback-secret-not-for-production}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3002}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_placeholder}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-000000000000000}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-placeholder}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-geekbid_unsigned}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-placeholder}
+      AI_MODEL: ${AI_MODEL:-gemini-2.0-flash}
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key-change-me}
+      RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, not localhost: the Next.js standalone server binds only
+      # the IPv4 wildcard (HOSTNAME=0.0.0.0 in the Dockerfile), but Alpine's
+      # musl resolver tries localhost's IPv6 (::1) record first — wget gets
+      # an immediate connection refused on IPv6 with no fallback to IPv4,
+      # so the container reports unhealthy even though the app is fine.
+      test: wget -q --spider http://127.0.0.1:3000/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local

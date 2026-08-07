@@ -1,0 +1,83 @@
+# Release Notes — {version}
+
+> Release Date: {date}
+> Type: {Epic — New Feature | Issue — Bug Fix}
+> GitHub Issue: #{issue_number}
+> Branch: {branch_name}
+> Sub-Tasks (if complex — see Step 4): {list of #{sub_issue_number} or "None"}
+
+---
+
+## Overview
+
+{One paragraph summary of what this release delivers.}
+
+---
+
+## Changes
+
+### {Component/Module 1}
+
+**What changed**: {description}
+
+**Why**: {rationale — not just what, but why this approach}
+
+**Technical Details**:
+- {detail 1}
+- {detail 2}
+
+### {Component/Module 2}
+
+**What changed**: {description}
+
+**Why**: {rationale}
+
+**Technical Details**:
+- {detail 1}
+- {detail 2}
+
+---
+
+## Architecture Decisions
+
+| Decision | Chosen Approach | Alternatives Considered | Rationale |
+|----------|-----------------|-------------------------|-----------|
+| {decision} | {approach} | {alternatives} | {why} |
+
+---
+
+## Dependencies
+
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+| {name} | {version} | {purpose} |
+
+---
+
+## Configuration Changes
+
+| File | Change | Description |
+|------|--------|-------------|
+| {file} | Added/Modified | {description} |
+
+---
+
+## Breaking Changes
+
+{List any breaking changes, or "None" if backward compatible.}
+
+---
+
+## Testing Summary
+
+| Metric | Value |
+|--------|-------|
+| Tests Run | {count} |
+| Pass Rate | {percent} |
+| Verdict | ✅ GO / ❌ NO-GO |
+
+---
+
+## Deployment Notes
+
+{Any special steps needed for deployment, or "Standard deployment — no special steps required."}

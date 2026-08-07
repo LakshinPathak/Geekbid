@@ -1,0 +1,160 @@
+import { NextRequest, NextResponse } from "next/server";
+import { registerUser, loginUser, setRefreshCookie } from "@/lib/auth";
+import { getDb } from "@/lib/mongodb";
+import { sendWelcomeEmail, sendReferralSignupEmail } from "@/lib/email";
+import { checkRateLimit, getClientIp, sanitizeString } from "@/lib/sanitize";
+
+export async function POST(req: NextRequest) {
+ try {
+ // Rate limit: 10 login/register attempts per IP per 15 minutes
+ const ip = getClientIp(req);
+ if (!(await checkRateLimit(`auth:${ip}`, 10, 15 * 60 * 1000))) {
+ return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+ }
+
+ const body = await req.json();
+ const action = sanitizeString(body.action);
+ const { name, email, password, role, referralCode } = body;
+
+ // ─── REGISTER ────────────────────────────────────────────
+ if (action === "register") {
+ // registrationOpen was defined, stored, and exposed as a toggle in the
+ // admin Config UI ("Allow new users to sign up") but never actually
+ // enforced anywhere — confirmed live via CRUD_TEST_FINAL.md Phase 22:
+ // turning it off had zero effect, registration still succeeded.
+ // Defaults to open when the flag is unset, matching the admin route's
+ // own default.
+ const db = await getDb();
+ const config = await db.collection("platform_config").findOne({ key: "platform_config" });
+ if (config?.registrationOpen === false) {
+ return NextResponse.json(
+ { error: "New registrations are currently closed. Please check back later." },
+ { status: 403 }
+ );
+ }
+
+ if (!name || !email || !password) {
+ return NextResponse.json(
+ { error: "Name, email, and password are required" },
+ { status: 400 }
+ );
+ }
+
+ const result = await registerUser(
+ name,
+ email,
+ password,
+ role ?? "freelancer"
+ );
+
+ if ("error" in result) {
+ return NextResponse.json(
+ { error: result.error },
+ { status: 400 }
+ );
+ }
+
+ const userId = (result.user as Record<string, unknown>)?.id as string | undefined;
+
+ // Fire-and-forget welcome email
+ sendWelcomeEmail(email, name, role ?? "freelancer", userId).catch(() => {});
+
+ // Track referral if code provided — coerce to a primitive string first
+ // (sanitizeString returns "" for anything that isn't already a string) so
+ // a crafted body like { "referralCode": { "$ne": null } } can never reach
+ // findOne() as a query operator and match an arbitrary referrer.
+ //
+ // Also skip entirely on a dual-role "add role" registration
+ // (result.roleAdded) or if this user already has a referredBy — the
+ // account is already credited from its original signup, and re-running
+ // this block on every additional role would insert a second "signed_up"
+ // referrals row and let the same referrer be credited again the next
+ // time this user completes a job.
+ const referralCodeStr = sanitizeString(referralCode);
+ const alreadyReferred = Boolean((result.user as Record<string, unknown> | undefined)?.referredBy);
+ if (referralCodeStr && result.user && !("roleAdded" in result && result.roleAdded) && !alreadyReferred) {
+ const db = await getDb();
+ const referrer = await db.collection("users").findOne({ referralCode: referralCodeStr });
+ if (referrer) {
+ const userId = (result.user as Record<string, unknown>).id as string;
+ await db.collection("referrals").insertOne({
+ referrerUserId: referrer._id.toString(),
+ referredUserId: userId,
+ referralCode: referralCodeStr,
+ status: "signed_up",
+ creditAmount: 0,
+ createdAt: new Date().toISOString(),
+ });
+ await db.collection("users").updateOne(
+ { _id: (await import("mongodb")).ObjectId.createFromHexString(userId) },
+ { $set: { referredBy: referralCodeStr } }
+ );
+ // Fire-and-forget referral notification to referrer
+ if (referrer.email) {
+ sendReferralSignupEmail(referrer.email, referrer.fullName ?? referrer.name ?? "User", name).catch(() => {});
+ }
+ }
+ }
+
+ const response = NextResponse.json({
+ accessToken: result.accessToken,
+ user: result.user,
+ expiresIn: 900,
+ });
+
+ return setRefreshCookie(response, result.refreshToken);
+ }
+
+ // ─── LOGIN ───────────────────────────────────────────────
+ if (action === "login") {
+ if (!email || !password) {
+ return NextResponse.json(
+ { error: "Email and password are required" },
+ { status: 400 }
+ );
+ }
+
+ const result = await loginUser(email, password);
+
+ if ("error" in result) {
+ return NextResponse.json(
+ { error: result.error },
+ { status: 401 }
+ );
+ }
+
+ // Maintenance Mode blocks all logins except admins — otherwise nobody
+ // could sign back in to turn it off from the admin panel.
+ const userRole = (result.user as Record<string, unknown>)?.role;
+ if (userRole !== "admin") {
+ const db = await getDb();
+ const config = await db.collection("platform_config").findOne({ key: "platform_config" });
+ if (config?.maintenanceMode) {
+ return NextResponse.json(
+ { error: "GeekBid is currently undergoing maintenance. Please check back shortly." },
+ { status: 503 }
+ );
+ }
+ }
+
+ const response = NextResponse.json({
+ accessToken: result.accessToken,
+ user: result.user,
+ expiresIn: 900,
+ });
+
+ return setRefreshCookie(response, result.refreshToken);
+ }
+
+ return NextResponse.json(
+ { error: "Invalid action. Use 'register' or 'login'" },
+ { status: 400 }
+ );
+ } catch (err) {
+ console.error("[Auth Error]", err);
+ return NextResponse.json(
+ { error: "Internal server error" },
+ { status: 500 }
+ );
+ }
+}

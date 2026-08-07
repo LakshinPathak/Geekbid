@@ -1,0 +1,140 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+import { authenticateRequest } from "@/lib/auth";
+import { ObjectId } from "mongodb";
+import { hashSync } from "bcryptjs";
+import crypto from "crypto";
+import { getPlanConfig } from "@/lib/plans";
+import { withPlanHeader } from "@/lib/middleware/plan-header";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+// GET /api/keys — list user's API keys (masked)
+export async function GET(req: NextRequest) {
+ try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
+ const db = await getDb();
+ const keys = await db
+ .collection("api_keys")
+ .find({ userId: auth.payload.userId, revokedAt: { $exists: false } })
+ .sort({ createdAt: -1 })
+ .toArray();
+
+ return NextResponse.json(
+ keys.map((k) => ({
+ _id: k._id.toString(),
+ id: k._id.toString(),
+ name: k.name,
+ prefix: k.prefix,
+ lastUsedAt: k.lastUsedAt,
+ createdAt: k.createdAt,
+ }))
+ );
+ } catch (err) {
+ console.error("[Keys GET Error]", err);
+ return NextResponse.json({ error: "Failed to fetch keys" }, { status: 500 });
+ }
+}
+
+// POST /api/keys — generate new API key
+export async function POST(req: NextRequest) {
+ try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
+ if (!(await checkRateLimit(`api-keys:${auth.payload.userId}`, 10, 15 * 60 * 1000))) {
+ return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+ }
+
+ const body = await req.json();
+ // Force string type — a non-string truthy `name` (e.g. a number or object)
+ // would otherwise throw on `.trim()` below before reaching the outer catch.
+ const name = String(body?.name ?? "").trim();
+
+ if (!name) return NextResponse.json({ error: "Key name required" }, { status: 400 });
+
+ const db = await getDb();
+ const keyUser = await db.collection("users").findOne({ _id: new ObjectId(auth.payload.userId) });
+ const keyConfig = getPlanConfig(keyUser?.plan);
+
+ if (!keyConfig.hasApiAccess) {
+ return NextResponse.json({ error: "API access requires a Plus or Premium plan." }, { status: 403 });
+ }
+
+ const activeKeyCount = await db.collection("api_keys").countDocuments({
+ userId: auth.payload.userId,
+ revokedAt: { $exists: false },
+ });
+ if (activeKeyCount >= keyConfig.limits.maxApiKeys) {
+ return NextResponse.json(
+ { error: `${keyConfig.name} plan limit: ${keyConfig.limits.maxApiKeys} active API keys. Revoke one or upgrade for more.` },
+ { status: 403 }
+ );
+ }
+
+ const rawKey = crypto.randomBytes(32).toString("hex");
+ const hashedKey = hashSync(rawKey, 10);
+ const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
+ const prefix = rawKey.slice(0, 8) + "...";
+
+ const doc = {
+ userId: auth.payload.userId,
+ key: hashedKey,
+ keyHash,
+ prefix,
+ name: name.trim().slice(0, 50),
+ createdAt: new Date().toISOString(),
+ };
+
+ const result = await db.collection("api_keys").insertOne(doc);
+
+ return withPlanHeader(
+ NextResponse.json({
+ id: result.insertedId.toString(),
+ name: doc.name,
+ key: rawKey,
+ prefix,
+ createdAt: doc.createdAt,
+ warning: "This is the only time you will see this key. Store it securely.",
+ }, { status: 201 }),
+ keyUser?.plan ?? "free"
+ );
+ } catch (err) {
+ console.error("[Keys POST Error]", err);
+ return NextResponse.json({ error: "Failed to generate key" }, { status: 500 });
+ }
+}
+
+// DELETE /api/keys — revoke an API key
+export async function DELETE(req: NextRequest) {
+ try {
+ const auth = await authenticateRequest(req);
+ if ("error" in auth) {
+ return NextResponse.json({ error: auth.error }, { status: auth.status });
+ }
+
+ const { searchParams } = new URL(req.url);
+ const keyId = searchParams.get("id");
+ if (!keyId) return NextResponse.json({ error: "Key id required" }, { status: 400 });
+
+ const db = await getDb();
+ const result = await db.collection("api_keys").updateOne(
+ { _id: new ObjectId(keyId), userId: auth.payload.userId },
+ { $set: { revokedAt: new Date().toISOString() } }
+ );
+
+ if (result.matchedCount === 0) {
+ return NextResponse.json({ error: "Key not found" }, { status: 404 });
+ }
+
+ return NextResponse.json({ ok: true });
+ } catch (err) {
+ console.error("[Keys DELETE Error]", err);
+ return NextResponse.json({ error: "Failed to revoke key" }, { status: 500 });
+ }
+}
