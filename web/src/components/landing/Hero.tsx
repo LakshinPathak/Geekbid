@@ -2,30 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Code } from "lucide-react";
+import { ArrowRight, Code, Lock, Zap, ShieldCheck, Sparkles, Flame, Palette, PenLine, Clapperboard } from "lucide-react";
 import PriceDecayDemo from "./PriceDecayDemo";
-import { usePointerFine, useMousePosition, useInView, useReducedMotion } from "./hooks";
-
-/* Fixed, hand-authored particle positions — deterministic (never
-   Math.random() during render) so there's no SSR/hydration mismatch. */
-const PARTICLES = [
-  { left: "6%", delay: "0s", duration: "7s", size: 3 },
-  { left: "14%", delay: "1.2s", duration: "8.5s", size: 2 },
-  { left: "23%", delay: "2.4s", duration: "6.5s", size: 4 },
-  { left: "34%", delay: "0.6s", duration: "9s", size: 2 },
-  { left: "45%", delay: "3.1s", duration: "7.5s", size: 3 },
-  { left: "58%", delay: "1.8s", duration: "8s", size: 2 },
-  { left: "67%", delay: "0.3s", duration: "6.8s", size: 3 },
-  { left: "76%", delay: "2.9s", duration: "9.5s", size: 2 },
-  { left: "84%", delay: "1.4s", duration: "7.2s", size: 4 },
-  { left: "92%", delay: "0.9s", duration: "8.2s", size: 2 },
-];
+import { useInView, useReducedMotion } from "./hooks";
 
 const TRUST_BADGES = [
-  { icon: "🔒", text: "Escrow Protected" },
-  { icon: "⚡", text: "< 4hr Match Time" },
-  { icon: "🛡️", text: "Dispute Resolution" },
-  { icon: "✨", text: "No Upfront Fees" },
+  { icon: Lock, text: "Escrow Protected" },
+  { icon: Zap, text: "< 4hr Match Time" },
+  { icon: ShieldCheck, text: "Dispute Resolution" },
+  { icon: Sparkles, text: "No Upfront Fees" },
 ];
 
 const HEADLINE_LINE_1 = "Hire freelancers";
@@ -47,24 +32,22 @@ const MECH_STEPS = [
    section (was its own full-width <section>; now a sub-block under the
    CTA/demo area so the page is one section shorter). */
 const TICKER_ITEMS = [
-  { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
-  { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
-  { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
-  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
-  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
-  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
-  { icon: "⚡", text: "AI Chatbot · $2,450 → accepted in 6h" },
-  { icon: "🔒", text: "Kubernetes Hardening · $1,100 · escrow released" },
-  { icon: "🔥", text: "DeFi Audit · $2,200 · 8 bids competing" },
-  { icon: "🎨", text: "Logo Design · $650 · 5 bids competing" },
-  { icon: "✍️", text: "Blog Content · $480 · matched in 3h 20m" },
-  { icon: "🎬", text: "Explainer Video · $1,500 · hired at $900" },
+  { icon: Zap, text: "AI Chatbot · $2,450 → accepted in 6h" },
+  { icon: Lock, text: "Kubernetes Hardening · $1,100 · escrow released" },
+  { icon: Flame, text: "DeFi Audit · $2,200 · 8 bids competing" },
+  { icon: Palette, text: "Logo Design · $650 · 5 bids competing" },
+  { icon: PenLine, text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: Clapperboard, text: "Explainer Video · $1,500 · hired at $900" },
+  { icon: Zap, text: "AI Chatbot · $2,450 → accepted in 6h" },
+  { icon: Lock, text: "Kubernetes Hardening · $1,100 · escrow released" },
+  { icon: Flame, text: "DeFi Audit · $2,200 · 8 bids competing" },
+  { icon: Palette, text: "Logo Design · $650 · 5 bids competing" },
+  { icon: PenLine, text: "Blog Content · $480 · matched in 3h 20m" },
+  { icon: Clapperboard, text: "Explainer Video · $1,500 · hired at $900" },
 ];
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isPointerFine = usePointerFine();
-  useMousePosition(sectionRef, { x: "--mx", y: "--my" }, isPointerFine);
   const reducedMotion = useReducedMotion();
   const ticker = useInView(0.4);
   // The marquee had no pause mechanism at all — add both mouse and touch,
@@ -104,42 +87,14 @@ export default function Hero() {
       ref={sectionRef}
       className="relative min-h-[85vh] flex items-center justify-center px-6 lg:px-8 pt-12 pb-12 overflow-hidden"
     >
-      {/* Animated gradient mesh + grain overlay (new) */}
-      <div className="landing-mesh-bg" aria-hidden="true" />
-      <div className="landing-grain-overlay" aria-hidden="true" />
-      <div className="landing-mouse-glow" aria-hidden="true" />
-
-      {/* Floating ambient particles (new — reuses existing animate-ember) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {PARTICLES.map((p, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-[#5b21b6] animate-ember"
-            style={{
-              left: p.left,
-              bottom: "10%",
-              width: p.size,
-              height: p.size,
-              animationDelay: p.delay,
-              animationDuration: p.duration,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Animated subtle dot-grid background */}
+      {/* Editorial redesign: no drifting mesh/glow/scanline/particles — a
+          quiet dot-grid texture and one crisp top hairline are the only
+          background treatment, letting the serif headline and the live
+          demo card carry the section. */}
       <div
         className="absolute inset-0 pointer-events-none animate-hero-grid"
         style={{ backgroundImage: "radial-gradient(circle, rgba(91,33,182,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
       />
-      {/* Scan-line — subtle CRT sweep */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="hero-scan-line" />
-      </div>
-      {/* Ambient glows with breathing animation */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-[#5b21b6]/[0.06] rounded-full blur-[160px] pointer-events-none animate-breathe" />
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-[#5b21b6]/[0.04] rounded-full blur-[130px] pointer-events-none animate-breathe" style={{ animationDelay: "2s", animationDuration: "12s" }} />
-      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#7c3aed]/[0.04] rounded-full blur-[110px] pointer-events-none animate-breathe" style={{ animationDelay: "4s", animationDuration: "8s" }} />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent pointer-events-none" />
 
       {/* Single flex child of the section (was implicitly true when the
@@ -207,7 +162,7 @@ export default function Hero() {
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 mt-6">
             {TRUST_BADGES.map((b, i) => (
               <div key={b.text} className="flex items-center gap-1.5 text-sm text-[#46424e] animate-fade-in-up" style={{ animationDelay: `${850 + i * 80}ms` }}>
-                <span>{b.icon}</span>
+                <b.icon className="h-4 w-4 text-[#5b21b6]" strokeWidth={1.75} aria-hidden="true" />
                 <span>{b.text}</span>
               </div>
             ))}
@@ -276,7 +231,7 @@ export default function Hero() {
         >
           {TICKER_ITEMS.map((item, i) => (
             <span key={i} className="inline-flex items-center gap-2 text-[11px] text-[#46424e] shrink-0">
-              <span>{item.icon}</span>
+              <item.icon className="h-3 w-3 text-[#5b21b6]" strokeWidth={1.75} aria-hidden="true" />
               <span>{item.text}</span>
               {i % 6 !== 5 && <span className="text-[rgba(91,33,182,0.3)] ml-4">·</span>}
             </span>

@@ -85,6 +85,7 @@
 .landing-scope .btn-primary {
   background: #5b21b6;
   font-family: var(--font-landing-display), var(--font-sans);
+  border-radius: 4px;
 }
 .landing-scope .btn-primary:hover {
   background: #4c1a99;
@@ -92,9 +93,16 @@
 .landing-scope .btn-ghost {
   color: #46424e;
   font-family: var(--font-landing-display), var(--font-sans);
+  border-radius: 4px;
 }
 .landing-scope .btn-ghost:hover {
   color: #17171f;
+}
+/* .btn-glass shares the same pill-shape problem (rounded-full baked into
+   the shared class) and shows up in landing wherever a secondary chip-style
+   action is needed — same 4px-corner treatment as primary/ghost above. */
+.landing-scope .btn-glass {
+  border-radius: 4px;
 }
 /* .glass-panel's border still uses the old #4b3f8f-family token
    (rgba(75,63,143,...)) — a subtle but visible mismatch against every
@@ -438,11 +446,8 @@ input[type="range"]::-moz-range-thumb {
 }
 .animate-marquee { animation: marquee 28s linear infinite; }
 
-@keyframes card-border-glow {
-  0%, 100% { border-color: rgba(75,63,143,0.22); box-shadow: 0 0 14px rgba(75,63,143,0.04); }
-  50%       { border-color: rgba(75,63,143,0.48); box-shadow: 0 0 28px rgba(75,63,143,0.10); }
-}
-.animate-card-border-glow { animation: card-border-glow 3s ease-in-out infinite; }
+/* .animate-card-border-glow retired with the Editorial redesign (glow
+   box-shadow pulse on the hero demo card) — no longer referenced. */
 
 @keyframes progress-shimmer {
   0%   { background-position: -200% center; }
@@ -470,17 +475,10 @@ input[type="range"]::-moz-range-thumb {
 }
 .animate-price-tick { animation: price-tick 0.3s ease-out both; }
 
-@keyframes scan-line {
-  0%   { transform: translateY(-1px); }
-  100% { transform: translateY(100vh); }
-}
+/* ── Hero CRT scanline — retired with the mesh/glow background (same
+   redesign pass, same "generated SaaS" tell). No-op. */
 .hero-scan-line {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 10%, rgba(75,63,143,0.08) 50%, transparent 90%);
-  animation: scan-line 12s linear infinite;
-  pointer-events: none;
+  display: none;
 }
 
 @keyframes hero-grid-in {
@@ -964,23 +962,14 @@ textarea.glass-input { border-radius: 16px; }
    ~356, orphaned — no class ever consumed it) ────────────────── */
 .animate-breathe { animation: breathe 10s ease-in-out infinite; }
 
-/* ── Ambient gradient mesh (hero + per-section backgrounds) ───── */
-@keyframes mesh-drift {
-  0%   { transform: translate(0, 0) scale(1); }
-  33%  { transform: translate(3%, -4%) scale(1.05); }
-  66%  { transform: translate(-3%, 3%) scale(0.98); }
-  100% { transform: translate(0, 0) scale(1); }
-}
+/* ── Ambient gradient mesh — retired for the Editorial direction (NEW_
+   THEME.md redesign, 2026-08): a drifting blurred-orb mesh behind the hero
+   is the single most common "generated SaaS template" tell, and it's gone
+   in favor of plain whitespace + typography carrying the hero. Class kept
+   as a no-op (still referenced in Hero.tsx) rather than touching the JSX
+   in three places. */
 .landing-mesh-bg {
-  position: absolute;
-  inset: -10%;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(167,139,250,0.08) 0%, transparent 45%),
-    radial-gradient(circle at 80% 20%, rgba(167,139,250,0.05) 0%, transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(91,33,182,0.04) 0%, transparent 45%);
-  animation: mesh-drift 22s ease-in-out infinite;
-  will-change: transform;
-  pointer-events: none;
+  display: none;
 }
 
 /* ── Grain/noise overlay (static, no animation) ───────────────── */
@@ -1001,34 +990,13 @@ textarea.glass-input { border-radius: 16px; }
 /* ── Word-by-word hero reveal (reuses existing fade-in-up per word) */
 .landing-word-reveal { display: inline-block; will-change: transform, opacity; }
 
-/* ── Price-tick-synced glow orb behind PriceDecayDemo (restarted via
-   the same `key`-remount trick .animate-price-tick already uses) ── */
-@keyframes glow-pulse-tick {
-  0%   { opacity: 0.35; transform: scale(0.96); }
-  40%  { opacity: 0.65; transform: scale(1.04); }
-  100% { opacity: 0.35; transform: scale(0.96); }
-}
-.landing-glow-orb {
-  position: absolute;
-  inset: -20%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(91,33,182,0.35) 0%, transparent 70%);
-  filter: blur(24px);
-  animation: glow-pulse-tick 0.9s ease-out;
-  pointer-events: none;
-  z-index: -1;
-}
+/* .landing-glow-orb retired with the Editorial redesign (blurred pulse
+   behind the hero demo card) — no longer referenced. */
 
-/* ── Mouse-follow radial highlight (hero) — desktop, fine-pointer only */
+/* ── Mouse-follow radial highlight — retired with the mesh background
+   above (same "generated SaaS" tell, same redesign pass). No-op. */
 .landing-mouse-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(91,33,182,0.08), transparent 70%);
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-@media (hover: none), (pointer: coarse) {
-  .landing-mouse-glow { display: none; }
+  display: none;
 }
 
 /* ── Section divider (SVG wave/diagonal) ──────────────────────── */
@@ -1185,14 +1153,17 @@ textarea.glass-input { border-radius: 16px; }
    these classes only fix family/weight/line-height/tracking. ──────── */
 
 /* Biggest tier — Hero H1 and the closing CTA H2 bookend the page with
-   matching display treatment. Landing-only display face (--font-landing-
-   display, loaded in layout.tsx as Poppins) gives these four heading tiers
-   their own character instead of reusing the app-wide --font-sans that
-   every other page's headings also use. */
+   matching display treatment. Landing-only serif face (--font-landing-
+   serif, loaded in layout.tsx as Fraunces) gives these four heading tiers
+   their own editorial character, deliberately distinct from the grotesk
+   (--font-landing-display, Work Sans) that carries body/labels/buttons —
+   the serif/grotesk contrast is what reads as a considered system rather
+   than the app-wide --font-sans every other page's headings also use. */
 .landing-display {
-  font-family: var(--font-landing-display), var(--font-sans);
+  font-family: var(--font-landing-serif), var(--font-serif);
   font-weight: 600;
-  line-height: 1.08;
+  font-style: normal;
+  line-height: 1.05;
   letter-spacing: -0.01em;
   /* Lighter than the shared h1/h2/h3 ink (#17171f) — that global rule
      reads much heavier at this class's bolder 600 weight, so this
@@ -1204,23 +1175,25 @@ textarea.glass-input { border-radius: 16px; }
 /* Section headlines — Comparison, Testimonials, PriceDecayShowcase,
    PricingSection all read as the same tier of "section intro". */
 .landing-h2 {
-  font-family: var(--font-landing-display), var(--font-sans);
+  font-family: var(--font-landing-serif), var(--font-serif);
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.12;
 }
 
 /* Sub-section headline nested one level inside a section that already
    has its own H2 (e.g. the 4-step explainer inside PriceDecayShowcase). */
 .landing-h3 {
-  font-family: var(--font-landing-display), var(--font-sans);
+  font-family: var(--font-landing-serif), var(--font-serif);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.22;
 }
 
 /* Card-level titles (feature/step cards, pricing tier names) — a
    distinct, slightly heavier tier from the display/section headlines
    above, used consistently instead of some cards getting font-normal
-   and others inheriting the global 500 by accident. */
+   and others inheriting the global 500 by accident. Grotesk (not serif)
+   at this size/density — serif set small in a tight card reads cramped;
+   the contrast tier lives at the h2/h3/display sizes above. */
 .landing-card-title {
   font-family: var(--font-landing-display), var(--font-sans);
   font-weight: 600;
@@ -1264,8 +1237,11 @@ textarea.glass-input { border-radius: 16px; }
   font-family: var(--font-landing-mono), var(--font-mono);
 }
 
-/* ── Section header text-glow ──────────────────────────────────── */
-.landing-header-glow { text-shadow: 0 0 28px rgba(91,33,182,0.35); }
+/* ── Section header text-glow — retired for the Editorial direction: a
+   glowing text-shadow behind headlines is a soft-SaaS tell; the serif
+   display face now carries the emphasis on its own. No-op (class still
+   referenced on 5 headline elements across landing). */
+.landing-header-glow { text-shadow: none; }
 
 /* ── Icon micro-animation on section reveal (one-shot) ────────── */
 @keyframes icon-pop {
@@ -1361,12 +1337,10 @@ textarea.glass-input { border-radius: 16px; }
   display: none;
 }
 
-/* ── Final CTA urgent pulsing glow ────────────────────────────── */
-@keyframes cta-urgent-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%      { opacity: 0.85; transform: scale(1.08); }
-}
-.landing-cta-glow { animation: cta-urgent-glow 3.2s ease-in-out infinite; }
+/* ── Final CTA glow blob — retired with the rest of the blurred-orb
+   background language. No-op (wrapper div removed from CTA.tsx; class
+   kept in case of stray references). */
+.landing-cta-glow { display: none; }
 
 /* ── Footer constellation pattern ─────────────────────────────── */
 @keyframes twinkle {

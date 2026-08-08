@@ -112,11 +112,7 @@ export default function PriceDecayDemo() {
 
   return (
     <div className="relative">
-      {/* Price-tick-synced glow orb — restarted every tick via the same
-          key-remount trick .landing-price-tick already uses below. */}
-      <div key={flashCount} className="landing-glow-orb" aria-hidden="true" />
-
-      <div className="card animate-card-border-glow relative">
+      <div className="card relative">
         {/* Header — terminal-style: pulsing "live" dot + label on the
             left, a mono reference tag on the right. */}
         <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[rgba(91,33,182,0.22)]">

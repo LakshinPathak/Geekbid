@@ -202,11 +202,8 @@ export default function LiveAuctions() {
       ref={section.ref}
       className="relative py-16 sm:py-24 bg-white scroll-mt-20 overflow-hidden"
     >
-      {/* Soft top wash — bridges the cream-to-white seam with a blob
-          instead of an instant color flip, and gives this section (the
-          plainest on the page — no ambient glow at all previously) a
-          touch of the same atmosphere as its neighbors. */}
-      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#5b21b6]/[0.035] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
+      {/* Crisp hairline marks the cream-to-white seam — no blurred wash,
+          per the Editorial redesign's "no glow" rule. */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
       <div className="relative mx-auto max-w-[1600px] px-5 sm:px-8">
         <div

@@ -16,10 +16,6 @@ export default function FAQ() {
       ref={section.ref}
       className="relative pb-16 sm:pb-24 scroll-mt-20"
     >
-      {/* Ambient wash — same soft breathing glow Compare and Pricing use,
-          so all three reference pages share one visual signature instead
-          of FAQ being the one plain list among them. */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#5b21b6]/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
       {/* 820px keeps Q&A line-length readable through laptop widths while
           matching the rest of the landing system's flat (non-breakpoint-
           gated) container widths. */}

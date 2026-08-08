@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Plus_Jakarta_Sans, Archivo, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans, Work_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,14 +25,24 @@ const jakarta = Plus_Jakarta_Sans({
 
 // Landing-page-only type system — additive CSS vars, never mapped into the
 // global --font-sans/--font-mono tokens, so no non-landing page is affected.
-// Archivo (a grotesque with real character, not a generic rounded-friendly
-// SaaS default) carries both landing headings and landing body copy — one
-// family, weight does the differentiating work, per the landing page's own
-// "bold/urgent/competitive" brand voice rather than a timid display+body
-// pairing. JetBrains Mono replaces the app-wide IBM Plex Mono for landing's
-// ticking price/stat numerals specifically (payments/profile keep Plex Mono
-// via the shared --font-mono, untouched).
-const archivo = Archivo({
+// Editorial pairing: Fraunces (a serif with real optical-size character, not
+// a generic rounded-friendly SaaS default) carries the four display/section
+// headline tiers, while Work Sans — a plain, quiet grotesk — carries body
+// copy, labels, and buttons. The contrast between the two families (not a
+// single face doing everything on weight alone) is the point: it reads as a
+// considered editorial system rather than a template. JetBrains Mono
+// replaces the app-wide IBM Plex Mono for landing's ticking price/stat
+// numerals specifically (payments/profile keep Plex Mono via the shared
+// --font-mono, untouched).
+const fraunces = Fraunces({
+ subsets: ["latin"],
+ variable: "--font-landing-serif",
+ display: "swap",
+ weight: ["400", "500", "600"],
+ style: ["normal", "italic"],
+});
+
+const workSans = Work_Sans({
  subsets: ["latin"],
  variable: "--font-landing-display",
  display: "swap",
@@ -67,7 +77,7 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`${plexMono.variable} ${jakarta.variable} ${archivo.variable} ${landingMono.variable}`}
+ className={`${plexMono.variable} ${jakarta.variable} ${workSans.variable} ${fraunces.variable} ${landingMono.variable}`}
  style={{ background: '#fbfaf7' }}
  suppressHydrationWarning
  >

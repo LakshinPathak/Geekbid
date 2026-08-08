@@ -1,38 +1,12 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 
-/* Fixed, hand-authored dot positions for the footer "constellation"
-   background — deterministic (no Math.random at render). */
-const CONSTELLATION_DOTS = [
-  { top: "10%", left: "8%", delay: "0s" },
-  { top: "25%", left: "22%", delay: "0.6s" },
-  { top: "15%", left: "40%", delay: "1.2s" },
-  { top: "35%", left: "58%", delay: "0.3s" },
-  { top: "20%", left: "72%", delay: "1.8s" },
-  { top: "40%", left: "88%", delay: "0.9s" },
-  { top: "60%", left: "15%", delay: "1.5s" },
-  { top: "70%", left: "45%", delay: "0.2s" },
-  { top: "55%", left: "80%", delay: "1.1s" },
-];
-
 export default function Footer() {
   return (
     <footer className="py-12 sm:py-16 bg-[#ffffff] relative overflow-hidden">
-      {/* Gradient hairline instead of a flat border, plus a soft top
-          wash bridging CTA's cream into the footer's white — matches
-          the same seam-softening treatment used above LiveAuctions. */}
-      <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-[#5b21b6]/[0.03] rounded-full blur-[140px] pointer-events-none" aria-hidden="true" />
+      {/* Crisp gradient hairline — no blurred wash beneath it, per the
+          Editorial redesign's "no glow" rule. */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(91,33,182,0.3)] to-transparent" aria-hidden="true" />
-      {/* Constellation background */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        {CONSTELLATION_DOTS.map((d, i) => (
-          <span
-            key={i}
-            className="landing-constellation-dot absolute h-1 w-1 rounded-full bg-[#5b21b6]"
-            style={{ top: d.top, left: d.left, animationDelay: d.delay }}
-          />
-        ))}
-      </div>
 
       <div className="relative mx-auto max-w-[1600px] px-5">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-12 mb-12 text-center sm:text-left">

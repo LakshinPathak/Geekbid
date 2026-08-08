@@ -13,9 +13,6 @@ export default function Comparison() {
 
   return (
     <div ref={comparisonSection.ref} className="relative">
-      {/* Per-section ambient tint (cool blue, distinct from the gold used elsewhere) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#5b21b6]/[0.04] rounded-full blur-[140px] pointer-events-none animate-breathe" aria-hidden="true" />
-
       <div id="compare" className="relative mx-auto max-w-6xl px-5 sm:px-8 scroll-mt-20">
         <div className="text-center mb-12" style={{ opacity: comparisonSection.inView ? 1 : 0, transform: comparisonSection.inView ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.7s ease 0ms, transform 0.7s ease 0ms" }}>
           <p className="landing-label text-[#5b21b6] mb-3">Compare</p>
