@@ -87,9 +87,19 @@ function getAdaptiveHoursToFloor(job: Job, now: Date): number {
 
 export function formatHoursToFloor(hours: number): string {
  if (hours <= 0) return 'At floor';
- if (hours < 1) return `${Math.ceil(hours * 60)}m`;
- const h = Math.floor(hours);
- const m = Math.round((hours - h) * 60);
+ if (hours < 1) {
+ // Same carry issue as below: for hours just under 1 (e.g. 0.999),
+ // ceil(hours * 60) rounds up to 60, which used to render as "60m"
+ // instead of rolling over into "1h".
+ const mins = Math.ceil(hours * 60);
+ return mins >= 60 ? '1h' : `${mins}m`;
+ }
+ let h = Math.floor(hours);
+ let m = Math.round((hours - h) * 60);
+ // Rounding the leftover minutes can carry up to 60 (e.g. 2.9995h ->
+ // h=2, m=round(59.97)=60), which used to render as "2h 60m" instead
+ // of rolling over into the next hour.
+ if (m === 60) { h += 1; m = 0; }
  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 

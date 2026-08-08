@@ -150,11 +150,25 @@ export async function POST(req: NextRequest) {
 
  // If passed, add to verified skills and boost GeekScore
  if (passed) {
+ // geekScore gates real things (direct-offer eligibility at >=500,
+ // smart-match ranking, TalentPool "canHire") — it must only be awarded
+ // the first time a skill is verified. $addToSet is a no-op on a skill
+ // the user already has, but $inc always fires regardless, so before this
+ // check a freelancer could retake the same assessment every 30 days
+ // (the cooldown above allows exactly that) and rack up +50 geekScore
+ // indefinitely without ever gaining a new skill. The 30-day cooldown CAS
+ // above already serializes submissions for this (userId, assessmentId)
+ // pair, so there's no concurrent-request race to worry about here.
+ const userBefore = await db.collection("users").findOne(
+ { _id: new ObjectId(auth.payload.userId) },
+ { projection: { verifiedSkills: 1 } }
+ );
+ const alreadyVerified = (userBefore?.verifiedSkills ?? []).includes(assessment.skill);
  await db.collection("users").updateOne(
  { _id: new ObjectId(auth.payload.userId) },
  {
  $addToSet: { verifiedSkills: assessment.skill },
- $inc: { geekScore: 50 },
+ ...(alreadyVerified ? {} : { $inc: { geekScore: 50 } }),
  }
  );
 

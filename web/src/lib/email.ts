@@ -666,7 +666,11 @@ export async function sendJobCompletedSummaryEmail(
  finalPrice: number
 ): Promise<void> {
  const key = `job_completed_summary:${jobTitle}:${clientEmail}`;
- // Email client
+ // Each recipient is emailed independently — the caller may only have a
+ // valid address for one party (e.g. an OAuth-only signup with no email on
+ // file), and that must not silently suppress the notification to the
+ // other party who does have one.
+ if (clientEmail) {
  await trackedSend({
  to: clientEmail,
  emailType: "job_completed_summary",
@@ -685,7 +689,9 @@ export async function sendJobCompletedSummaryEmail(
  ${ctaButton("Leave a Review →", `${APP_URL}/feed`)}
  `),
  });
+ }
  // Email freelancer
+ if (freelancerEmail) {
  await trackedSend({
  to: freelancerEmail,
  emailType: "job_completed_summary",
@@ -703,6 +709,7 @@ export async function sendJobCompletedSummaryEmail(
  ${ctaButton("View My Profile →", `${APP_URL}/profile`)}
  `),
  });
+ }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

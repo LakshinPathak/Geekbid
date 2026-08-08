@@ -25,9 +25,25 @@ export async function GET(req: NextRequest) {
     const config = getPlanConfig(user.plan);
     const limits = user.planLimits ?? {};
 
+    // Premium's invitesPerMonth is the JS value Infinity (lib/plans.ts) to
+    // mean "unlimited" — JSON has no representation for Infinity, so
+    // JSON.stringify silently turns it into `null` on the wire. Serializing
+    // `config` as-is would ship that as an undocumented accident (and any
+    // client doing `used < config.limits.invitesPerMonth` against a `null`
+    // would coerce it to 0 and read every user as already over their limit).
+    // Make the "unlimited" contract explicit instead: null on the wire,
+    // called out here rather than left to be discovered as a footgun.
+    const responseConfig = {
+      ...config,
+      limits: {
+        ...config.limits,
+        invitesPerMonth: config.limits.invitesPerMonth === Infinity ? null : config.limits.invitesPerMonth,
+      },
+    };
+
     return NextResponse.json({
       plan: user.plan ?? "free",
-      config,
+      config: responseConfig,
       usage: {
         jobsPostedThisMonth: limits.jobsPostedThisMonth ?? 0,
         bidsPlacedThisMonth: limits.bidsPlacedThisMonth ?? 0,

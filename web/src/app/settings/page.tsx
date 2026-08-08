@@ -20,6 +20,7 @@ export default function SettingsPage() {
  const [newKeyValue, setNewKeyValue] = useState("");
  const [creating, setCreating] = useState(false);
  const [copied, setCopied] = useState(false);
+ const [revokingId, setRevokingId] = useState<string | null>(null);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -36,6 +37,7 @@ export default function SettingsPage() {
  const createKey = async () => {
  if (creating || !newKeyName.trim()) return;
  setCreating(true);
+ try {
  const token = await getValidToken();
  const res = await fetch("/api/keys", {
  method: "POST",
@@ -43,12 +45,16 @@ export default function SettingsPage() {
  body: JSON.stringify({ name: newKeyName }),
  });
  const data = await res.json();
- setCreating(false);
  if (data.error) { toast.error(data.error); return; }
  setNewKeyValue(data.key);
  setNewKeyName("");
  toast.success("API key created! Copy it now — you won't see it again.");
  await loadKeys();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setCreating(false);
+ }
  };
 
  const handleCopy = () => {
@@ -59,6 +65,9 @@ export default function SettingsPage() {
  };
 
  const revokeKey = async (id: string) => {
+ if (revokingId) return;
+ setRevokingId(id);
+ try {
  const token = await getValidToken();
  const res = await fetch(`/api/keys?id=${id}`, {
  method: "DELETE",
@@ -68,6 +77,11 @@ export default function SettingsPage() {
  if (data.error) { toast.error(data.error); return; }
  toast.success("Key revoked");
  await loadKeys();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setRevokingId(null);
+ }
  };
 
  if (!mounted) return (
@@ -173,8 +187,8 @@ export default function SettingsPage() {
  )}
  </div>
  </div>
- <button onClick={() => revokeKey(k.id)}
- className="text-[#c14d3a]/60 hover:text-[#c14d3a] transition-colors p-2 rounded-full hover:bg-[rgba(193,77,58,0.08)]">
+ <button onClick={() => revokeKey(k.id)} disabled={revokingId === k.id}
+ className="text-[#c14d3a]/60 hover:text-[#c14d3a] transition-colors p-2 rounded-full hover:bg-[rgba(193,77,58,0.08)] disabled:opacity-40 disabled:cursor-not-allowed">
  <Trash2 className="h-4 w-4" />
  </button>
  </div>

@@ -22,6 +22,7 @@ export default function AdminJobsPage() {
   const [deleteReason, setDeleteReason] = useState("");
   const [editForm, setEditForm] = useState({ title: "", status: "", startingPrice: 0, minimumPrice: 0, decayRatePerHour: 0, featured: false });
   const [actionLoading, setActionLoading] = useState(false);
+  const [featuredLoadingId, setFeaturedLoadingId] = useState<string | null>(null);
 
   // Fetches a fresh header set (with a valid, non-expired token) on every
   // call instead of a plain object frozen with whatever auth.accessToken
@@ -64,25 +65,43 @@ export default function AdminJobsPage() {
   async function saveJob() {
     if (!editJob) return;
     setActionLoading(true);
-    const res = await fetch(`/api/admin/jobs/${editJob.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(editForm) });
-    if (res.ok) { toast.success("Job updated"); fetchJobs(); setEditJob(null); }
-    else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
-    setActionLoading(false);
+    try {
+      const res = await fetch(`/api/admin/jobs/${editJob.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify(editForm) });
+      if (res.ok) { toast.success("Job updated"); fetchJobs(); setEditJob(null); }
+      else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function toggleFeatured(job: Job) {
-    const res = await fetch(`/api/admin/jobs/${job.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify({ featured: !job.featured }) });
-    if (res.ok) { toast.success(job.featured ? "Unfeatured" : "Featured!"); fetchJobs(); }
-    else toast.error("Failed");
+    if (featuredLoadingId) return;
+    setFeaturedLoadingId(job.id);
+    try {
+      const res = await fetch(`/api/admin/jobs/${job.id}`, { method: "PATCH", headers: await getHeaders(), body: JSON.stringify({ featured: !job.featured }) });
+      if (res.ok) { toast.success(job.featured ? "Unfeatured" : "Featured!"); fetchJobs(); }
+      else toast.error("Failed");
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setFeaturedLoadingId(null);
+    }
   }
 
   async function deleteJob() {
     if (!deleteTarget) return;
     setActionLoading(true);
-    const res = await fetch(`/api/admin/jobs/${deleteTarget.id}`, { method: "DELETE", headers: await getHeaders(), body: JSON.stringify({ reason: deleteReason }) });
-    if (res.ok) { toast.success("Job removed"); fetchJobs(); setDeleteTarget(null); setDeleteReason(""); }
-    else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
-    setActionLoading(false);
+    try {
+      const res = await fetch(`/api/admin/jobs/${deleteTarget.id}`, { method: "DELETE", headers: await getHeaders(), body: JSON.stringify({ reason: deleteReason }) });
+      if (res.ok) { toast.success("Job removed"); fetchJobs(); setDeleteTarget(null); setDeleteReason(""); }
+      else { const d = await res.json(); toast.error(d.error ?? "Failed"); }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   return (
@@ -175,8 +194,9 @@ export default function AdminJobsPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2 justify-end">
                         <button onClick={() => toggleFeatured(job)}
+                          disabled={featuredLoadingId === job.id}
                           title={job.featured ? "Unfeature" : "Feature"}
-                          className={`p-1.5 rounded-xl transition-all ${job.featured ? "text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.08)]" : "text-[#6f6a7d] hover:text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.08)]"}`}>
+                          className={`p-1.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${job.featured ? "text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.08)]" : "text-[#6f6a7d] hover:text-[#4b3f8f] hover:bg-[rgba(75,63,143,0.08)]"}`}>
                           <Star className={`h-3.5 w-3.5 ${job.featured ? "fill-[#4b3f8f]" : ""}`} />
                         </button>
                         <button onClick={() => openEdit(job)}

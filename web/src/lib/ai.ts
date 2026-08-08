@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getDb } from "./mongodb";
 
 const MODEL_ID = process.env.AI_MODEL ?? "gemini-2.0-flash";
 
@@ -46,4 +47,27 @@ export async function generateJSON<T>(prompt: string, systemInstruction?: string
 
 export function isAIAvailable(): boolean {
   return !!process.env.GEMINI_API_KEY;
+}
+
+// Admin kill-switch: Platform Settings exposes an "AI Features" toggle
+// (platform_config.aiEnabled, PATCH /api/admin/config) labeled "Enable AI
+// Bid Strategist, Evaluator, Description Writer" — but every AI route was
+// only ever calling isAIAvailable(), which just checks that GEMINI_API_KEY
+// is set. Flipping the admin toggle off (e.g. during a cost spike or abuse)
+// silently did nothing; every AI endpoint kept working. This checks both.
+export async function isAIEnabled(): Promise<boolean> {
+  if (!isAIAvailable()) return false;
+  try {
+    const db = await getDb();
+    const config = await db.collection("platform_config").findOne({ key: "platform_config" });
+    // Unset/missing defaults to enabled, matching GET /api/admin/config's
+    // own `aiEnabled: true` default for a config document that doesn't
+    // exist yet or predates this field.
+    return config?.aiEnabled !== false;
+  } catch {
+    // Fail open on a DB hiccup — a transient Mongo error here shouldn't take
+    // down every AI feature; the routes' own rate limit/quota checks still
+    // bound cost right after this.
+    return true;
+  }
 }

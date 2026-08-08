@@ -30,15 +30,19 @@ export async function GET(req: NextRequest) {
       .limit(100)
       .toArray();
 
-    // Populate job titles
+    // Populate job titles. Only ever build the filter from validated
+    // ObjectIds — invite.jobId is always a valid ObjectId string in
+    // practice (createJobInvite validates it via idFilter before insert),
+    // but falling back to `{ _id: id }` with the raw, unvalidated value on
+    // parse failure would still be a NoSQL-injection-shaped filter if that
+    // invariant were ever violated, so invalid entries are dropped instead.
     const jobIds = [...new Set(invites.map(i => i.jobId))];
     const jobTitleMap: Record<string, string> = {};
-    if (jobIds.length > 0) {
-      const jobDocs = await db.collection("jobs").find({
-        $or: jobIds.map(id => {
-          try { return { _id: new ObjectId(id) }; } catch { return { _id: id }; }
-        }),
-      }).toArray();
+    const jobObjectIds = jobIds
+      .map((id) => { try { return new ObjectId(id); } catch { return null; } })
+      .filter((oid): oid is ObjectId => oid !== null);
+    if (jobObjectIds.length > 0) {
+      const jobDocs = await db.collection("jobs").find({ _id: { $in: jobObjectIds } }).toArray();
       jobDocs.forEach(j => { jobTitleMap[j._id.toString()] = j.title; });
     }
 

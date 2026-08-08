@@ -33,6 +33,7 @@ export default function TeamPage() {
  const [creating, setCreating] = useState(false);
  const [accepting, setAccepting] = useState(false);
  const [removingId, setRemovingId] = useState<string | null>(null);
+ const [inviting, setInviting] = useState(false);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -61,6 +62,7 @@ export default function TeamPage() {
  const acceptInvite = async () => {
  if (!pendingInvite) return;
  setAccepting(true);
+ try {
  const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "PATCH",
@@ -68,14 +70,19 @@ export default function TeamPage() {
  body: JSON.stringify({ action: "accept", teamId: pendingInvite.teamId }),
  });
  const data = await res.json();
- setAccepting(false);
  if (data.error) { toast.error(data.error); return; }
  toast.success("Joined team!");
  await loadTeam();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setAccepting(false);
+ }
  };
 
  const removeMember = async (memberId: string) => {
  setRemovingId(memberId);
+ try {
  const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "PATCH",
@@ -83,10 +90,14 @@ export default function TeamPage() {
  body: JSON.stringify({ action: "remove_member", memberId }),
  });
  const data = await res.json();
- setRemovingId(null);
  if (data.error) { toast.error(data.error); return; }
  toast.success("Member removed");
  await loadTeam();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setRemovingId(null);
+ }
  };
 
  useEffect(() => { if (mounted && currentUser) loadTeam(); }, [mounted, currentUser, loadTeam]);
@@ -94,6 +105,7 @@ export default function TeamPage() {
  const createTeam = async () => {
  if (!teamName.trim()) return;
  setCreating(true);
+ try {
  const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "POST",
@@ -101,14 +113,20 @@ export default function TeamPage() {
  body: JSON.stringify({ name: teamName }),
  });
  const data = await res.json();
- setCreating(false);
  if (data.error) { toast.error(data.error); return; }
  toast.success("Team created!");
  await loadTeam();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setCreating(false);
+ }
  };
 
  const inviteMember = async () => {
- if (!inviteEmail.trim()) return;
+ if (!inviteEmail.trim() || inviting) return;
+ setInviting(true);
+ try {
  const token = await getValidToken();
  const res = await fetch("/api/teams", {
  method: "PATCH",
@@ -120,6 +138,11 @@ export default function TeamPage() {
  toast.success("Invite sent!");
  setInviteEmail("");
  await loadTeam();
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setInviting(false);
+ }
  };
 
  if (!mounted || loading) return (
@@ -272,9 +295,9 @@ export default function TeamPage() {
  placeholder="colleague@company.com"
  className="glass-input flex-1 rounded-2xl"
  />
- <button onClick={inviteMember}
- className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm flex items-center gap-1">
- <Plus className="h-4 w-4" /> Invite
+ <button onClick={inviteMember} disabled={inviting || !inviteEmail.trim()}
+ className="btn-primary h-11 px-4 sm:px-6 rounded-2xl text-sm flex items-center gap-1 disabled:opacity-40">
+ <Plus className="h-4 w-4" /> {inviting ? "Inviting..." : "Invite"}
  </button>
  </div>
  {team.invites.length > 0 && (

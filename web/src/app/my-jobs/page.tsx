@@ -20,6 +20,7 @@ export default function MyJobsPage() {
  const [reviewComment, setReviewComment] = useState("");
  const [reviewSubmitting, setReviewSubmitting] = useState(false);
  const [boostModal, setBoostModal] = useState<{ jobId: string; jobTitle: string } | null>(null);
+ const [featureLoadingId, setFeatureLoadingId] = useState<string | null>(null);
 
  useEffect(() => {
  if (mounted && !currentUser) router.replace("/login");
@@ -198,7 +199,10 @@ export default function MyJobsPage() {
  <>
  <button
  onClick={async () => {
+ if (featureLoadingId) return;
+ setFeatureLoadingId(jid);
  const r = await toggleFeatured(jid, !job.featured);
+ setFeatureLoadingId(null);
  if (r.ok) { toast.success(r.message); return; }
  if (r.code === "BOOST_QUOTA_EXCEEDED") {
  setBoostModal({ jobId: jid, jobTitle: job.title });
@@ -206,11 +210,12 @@ export default function MyJobsPage() {
  }
  toast.error(r.message);
  }}
- className={`flex items-center gap-1 border text-xs font-medium px-3 py-2 rounded-full transition-all ${
+ disabled={featureLoadingId === jid}
+ className={`flex items-center gap-1 border text-xs font-medium px-3 py-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
  job.featured ? "border-[rgba(75,63,143,0.35)] text-[#4b3f8f] bg-[rgba(75,63,143,0.12)]" : "border-[rgba(75,63,143,0.22)] text-[#6f6a7d] hover:bg-[#f4f2ee] hover:text-[#3d3a45]"
  }`}
  >
- <Sparkles className="h-3 w-3" /> {job.featured ? "Featured" : "Feature"}
+ <Sparkles className="h-3 w-3" /> {featureLoadingId === jid ? "..." : job.featured ? "Featured" : "Feature"}
  </button>
  <Link href="/inbox">
  <button className="border border-[rgba(75,63,143,0.22)] text-[#6f6a7d] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-[#f4f2ee] hover:text-[#3d3a45] transition-all">
@@ -266,8 +271,9 @@ export default function MyJobsPage() {
  </div>
 
  <div className="mb-4">
- <label className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Comment (optional)</label>
+ <label htmlFor="review-comment" className="text-[#6f6a7d] text-xs font-medium block mb-1.5">Comment (optional)</label>
  <textarea
+ id="review-comment"
  value={reviewComment}
  onChange={e => setReviewComment(e.target.value)}
  maxLength={1000}

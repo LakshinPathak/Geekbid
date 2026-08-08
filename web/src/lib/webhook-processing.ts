@@ -24,8 +24,15 @@ function extractSubscriptionId(payload: Record<string, unknown>): string | null 
 }
 
 async function handleActivated(subId: string, db: Db) {
+  // Same stale-event guard as handleCharged/handleHalted/handleCancelled — a
+  // retried/replayed subscription.activated event (e.g. the retry-webhooks
+  // cron sweeping an old 'failed' delivery, or Razorpay's own redelivery
+  // arriving after the user already cancelled) must not resurrect an
+  // already-cancelled subscription back to "active" and flip the user's
+  // plan back to paid. Filtering status out of the update itself (rather
+  // than a separate findOne-then-check) keeps the guard atomic.
   const sub = await db.collection("subscriptions").findOneAndUpdate(
-    { razorpaySubscriptionId: subId },
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "active", updatedAt: new Date().toISOString() } },
     { returnDocument: "after" }
   );
@@ -50,7 +57,7 @@ async function handleActivated(subId: string, db: Db) {
 async function handleCharged(subId: string, payload: Record<string, unknown>, db: Db) {
   const p = payload?.payload as Record<string, unknown> | undefined;
   const subEntity = (p?.subscription as { entity?: { current_start?: number; current_end?: number } } | undefined)?.entity;
-  const paymentEntity = (p?.payment as { entity?: { amount?: number } } | undefined)?.entity;
+  const paymentEntity = (p?.payment as { entity?: { id?: string; amount?: number } } | undefined)?.entity;
   const now = new Date().toISOString();
 
   const currentPeriodStart = subEntity?.current_start
@@ -62,10 +69,6 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
 
   const existingSub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
   if (!existingSub) return;
-  // Same stale-event guard as handleHalted/handleCancelled — a retried/replayed
-  // subscription.charged event (e.g. the retry-webhooks cron sweeping an old
-  // 'failed' delivery) must not resurrect a subscription that's already been
-  // cancelled since this event was first attempted.
   if (existingSub.status === "cancelled") {
     console.log(`[Charged] Skipping stale event for already-cancelled subscription ${subId}`);
     return;
@@ -76,8 +79,15 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
   const appliedPlan = existingSub.pendingPlanChange ?? existingSub.plan;
   const planChanged = appliedPlan !== existingSub.plan;
 
-  await db.collection("subscriptions").updateOne(
-    { razorpaySubscriptionId: subId },
+  // Atomic check-and-claim, not a plain updateOne guarded only by the read
+  // above — the read and this write are two round-trips apart, so a
+  // subscription.cancelled/halted event for the same subscription racing in
+  // between (live delivery landing while this handler is mid-flight) would
+  // otherwise have its "cancelled" write silently clobbered back to "active"
+  // by this one, since a plain updateOne has no status precondition of its
+  // own. Filtering status out of the update itself closes that window.
+  const updated = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     {
       $set: {
         status: "active",
@@ -89,6 +99,10 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
       },
     }
   );
+  if (!updated) {
+    console.log(`[Charged] Skipping — subscription ${subId} was cancelled concurrently`);
+    return;
+  }
 
   await db.collection("users").updateOne(
     { _id: new ObjectId(existingSub.userId) },
@@ -113,7 +127,18 @@ async function handleCharged(subId: string, payload: Record<string, unknown>, db
   );
 
   const amount = paymentEntity?.amount ? paymentEntity.amount / 100 : 0;
-  await sendPaymentReceiptEmail(existingSub.userId, appliedPlan, amount, currentPeriodEnd).catch((err) =>
+  // Pass the actual Razorpay payment id (not just periodEnd) so this dedupes
+  // correctly against handlePaymentCaptured's own receipt email below —
+  // Razorpay fires both subscription.charged and payment.captured for the
+  // same underlying charge (this isn't a rare edge case; it's the normal
+  // shape of a subscription renewal/recovery), and whichever handler runs
+  // second must recognize "same payment" rather than emailing again. Keying
+  // off periodEnd alone doesn't work here: this handler computes a fresh
+  // currentPeriodEnd from the webhook payload while handlePaymentCaptured
+  // reuses the subscription's pre-update (stale) currentPeriodEnd, so the
+  // two calls would otherwise mint different idempotency keys for the same
+  // payment and both would send.
+  await sendPaymentReceiptEmail(existingSub.userId, appliedPlan, amount, currentPeriodEnd, paymentEntity?.id).catch((err) =>
     console.error("[Payment Receipt Email Failed]", err)
   );
 
@@ -135,22 +160,22 @@ async function handlePaymentFailed(subId: string | null, db: Db) {
   const now = new Date().toISOString();
   const gracePeriodEndsAt = new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 3600000).toISOString();
 
-  // Same stale-event guard as handleHalted/handleCancelled — a retried/
-  // replayed payment.failed event must not knock an already-cancelled
-  // subscription back into past_due.
-  const existingSub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!existingSub) return;
-  if (existingSub.status === "cancelled") {
-    console.log(`[Payment Failed] Skipping stale event for already-cancelled subscription ${subId}`);
-    return;
-  }
-
+  // Atomic check-and-claim — a retried/replayed payment.failed event (e.g.
+  // the retry-webhooks cron sweeping an old 'failed' delivery) must not
+  // knock an already-cancelled subscription back into past_due. A separate
+  // findOne-then-check followed by an unconditional findOneAndUpdate would
+  // leave a window where a concurrent cancellation lands in between and gets
+  // overwritten, since the write itself carried no status precondition —
+  // filtering status out of the update itself closes that.
   const sub = await db.collection("subscriptions").findOneAndUpdate(
-    { razorpaySubscriptionId: subId },
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "past_due", gracePeriodEndsAt, updatedAt: now } },
     { returnDocument: "after" }
   );
-  if (!sub) return;
+  if (!sub) {
+    console.log(`[Payment Failed] Skipping stale/missing subscription ${subId}`);
+    return;
+  }
 
   await sendPaymentFailedWarningEmail(sub.userId, sub.plan, gracePeriodEndsAt).catch((err) =>
     console.error("[Payment Failed Warning Email Failed]", err)
@@ -159,47 +184,58 @@ async function handlePaymentFailed(subId: string | null, db: Db) {
 
 async function handlePaymentCaptured(subId: string | null, payload: Record<string, unknown>, db: Db) {
   if (!subId) return;
-  const sub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!sub) return;
-
-  // Only past_due -> active is this handler's job (transition #5); a captured
-  // payment on an already-active subscription is handled by
-  // subscription.charged, not this event, so no-op here to avoid double
-  // quota resets.
-  if (sub.status !== "past_due") return;
-
-  await db.collection("subscriptions").updateOne(
-    { _id: sub._id },
+  // Atomic check-and-claim, not findOne-then-updateOne: only past_due ->
+  // active is this handler's job (transition #5) — a captured payment on an
+  // already-active subscription is handled by subscription.charged, not this
+  // event, so this must no-op rather than double-apply. A separate read then
+  // write (keyed only on _id) had no status precondition on the write
+  // itself, so a concurrent cancellation landing between the two could get
+  // silently overwritten back to "active". Filtering status into the update
+  // filter makes the claim atomic.
+  const sub = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: "past_due" },
     { $set: { status: "active", gracePeriodEndsAt: null, updatedAt: new Date().toISOString() } }
   );
+  if (!sub) return;
 
   const p = payload?.payload as Record<string, unknown> | undefined;
-  const paymentEntity = (p?.payment as { entity?: { amount?: number } } | undefined)?.entity;
+  const paymentEntity = (p?.payment as { entity?: { id?: string; amount?: number } } | undefined)?.entity;
   const amount = paymentEntity?.amount ? paymentEntity.amount / 100 : 0;
-  await sendPaymentReceiptEmail(sub.userId, sub.plan, amount, sub.currentPeriodEnd).catch((err) =>
+  // See the matching comment in handleCharged: pass the real Razorpay
+  // payment id so the idempotency key matches whichever of the two handlers
+  // (this one, or subscription.charged) processes this same underlying
+  // payment first, instead of diverging on a stale vs. fresh periodEnd and
+  // sending a duplicate receipt.
+  await sendPaymentReceiptEmail(sub.userId, sub.plan, amount, sub.currentPeriodEnd, paymentEntity?.id).catch((err) =>
     console.error("[Payment Recovery Receipt Email Failed]", err)
   );
 }
 
 async function handleHalted(subId: string, db: Db) {
-  const sub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!sub || sub.status === "cancelled") return;
-
-  await db.collection("subscriptions").updateOne(
-    { _id: sub._id },
+  // Atomic check-and-claim, not findOne-then-updateOne: subscription.halted
+  // and subscription.cancelled are distinct events (different eventIds), so
+  // the webhook route's per-event dedup claim doesn't stop them racing each
+  // other for the *same subscription* (e.g. one delivered live while the
+  // other is being swept by the retry-webhooks cron). A separate check then
+  // write left a window where both handlers could read status "active"
+  // before either wrote "cancelled" — double-running handleDowngrade
+  // (duplicate plan_change_log rows, duplicate downgrade emails). Filtering
+  // status out of the update itself makes only one of the racers win.
+  const sub = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "cancelled", updatedAt: new Date().toISOString() } }
   );
+  if (!sub) return;
   await handleDowngrade(sub.userId, sub.plan, "free", "subscription_halted", "webhook", db);
 }
 
 async function handleCancelled(subId: string, db: Db) {
-  const sub = await db.collection("subscriptions").findOne({ razorpaySubscriptionId: subId });
-  if (!sub || sub.status === "cancelled") return;
-
-  await db.collection("subscriptions").updateOne(
-    { _id: sub._id },
+  // Same atomic claim as handleHalted above, for the same reason.
+  const sub = await db.collection("subscriptions").findOneAndUpdate(
+    { razorpaySubscriptionId: subId, status: { $ne: "cancelled" } },
     { $set: { status: "cancelled", updatedAt: new Date().toISOString() } }
   );
+  if (!sub) return;
   await handleDowngrade(sub.userId, sub.plan, "free", "cancellation", "webhook", db);
 }
 

@@ -106,23 +106,34 @@ export async function sendGracePeriodReminderEmail(userId: string, plan: 'plus' 
 }
 
 // 6, 7, 8. Plan change notifications — matches blueprint §16.1's
-// sendPlanChangeEmail(userId, fromPlan, toPlan, reason) call signature exactly.
+// sendPlanChangeEmail(userId, fromPlan, toPlan, reason) call signature, plus
+// an optional contextId (added — see handleDowngrade in plan-downgrade.ts).
+// Without a contextId, the underlying idempotencyKey is keyed only on
+// (userId, fromPlan, toPlan, reason) with no per-event disambiguator — so a
+// user who repeats the exact same transition later (e.g. resubscribes to
+// 'plus' after a grace-period downgrade, then hits a grace-period downgrade
+// again on the new subscription) would have their second, genuinely new
+// notification silently swallowed as a "duplicate" of the first.
 export async function sendPlanChangeEmail(
   userId: string,
   fromPlan: string,
   toPlan: string,
-  reason: string
+  reason: string,
+  contextId: string = ""
 ) {
-  if (reason === "upgrade") return sendPlanUpgradedEmail(userId, fromPlan, toPlan);
-  if (reason === "cancellation") return sendPlanCancelledEmail(userId, fromPlan);
-  return sendPlanDowngradedEmail(userId, fromPlan, toPlan, reason);
+  if (reason === "upgrade") return sendPlanUpgradedEmail(userId, fromPlan, toPlan, contextId);
+  if (reason === "cancellation") return sendPlanCancelledEmail(userId, fromPlan, contextId);
+  return sendPlanDowngradedEmail(userId, fromPlan, toPlan, reason, contextId);
 }
 
 // contextId is an optional stable disambiguator (e.g. `${subscriptionId}:${periodStart}`)
 // for callers that have one available, so repeated/retried calls for the
 // same underlying event dedupe against trackedSend instead of always
-// generating a fresh key. Callers without extra context (e.g. sendPlanChangeEmail)
-// fall back to just userId:fromPlan:toPlan, which is still stable — no Date.now().
+// generating a fresh key. Callers without extra context fall back to just
+// userId:fromPlan:toPlan, which is still stable — no Date.now() — but note
+// that means two genuinely distinct events with the same (userId, fromPlan,
+// toPlan) tuple collide; handleDowngrade's call via sendPlanChangeEmail
+// avoids that by passing its own invocation timestamp as contextId.
 export async function sendPlanUpgradedEmail(userId: string, fromPlan: string, toPlan: string, contextId: string = "") {
   const contact = await getUserContact(userId);
   if (!contact) return;

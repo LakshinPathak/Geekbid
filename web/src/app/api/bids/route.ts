@@ -101,6 +101,18 @@ export async function POST(req: NextRequest) {
  if (targetJob.type === "direct_offer") {
  return NextResponse.json({ error: "This job is a direct offer and is not open for bidding" }, { status: 400 });
  }
+ // Invite-only jobs (the general "post + invite specific freelancers"
+ // feature, not just direct offers) must only be biddable by a freelancer
+ // who was actually invited — GET /api/jobs and GET /api/jobs/[id] already
+ // hide these from anyone else, but that's a read-access check only. Without
+ // this, a freelancer who obtains the jobId out-of-band (e.g. a shared link)
+ // could place a bid on a job they were never invited to.
+ if (targetJob.visibility === "invite_only") {
+ const invite = await db.collection("invites").findOne({ jobId, freelancerId: auth.payload.userId });
+ if (!invite) {
+ return NextResponse.json({ error: "This job is invite-only and you have not been invited to bid on it" }, { status: 403 });
+ }
+ }
 
  // Enforce the same floor/ceiling the frontend already checks — a bid
  // placed directly against the API (bypassing store.tsx) must not be able

@@ -59,22 +59,27 @@ export default function AdminDisputesPage() {
   async function resolveDispute() {
     if (!resolveTarget) return;
     setSubmitting(true);
-    const res = await fetch("/api/admin/disputes", {
-      method: "PATCH",
-      headers: await getHeaders(),
-      body: JSON.stringify({ disputeId: resolveTarget.id, status: "resolved", resolutionType, resolution }),
-    });
-    if (res.ok) {
-      toast.success("Dispute resolved");
-      fetchDisputes();
-      setResolveTarget(null);
-      setResolution("");
-      setResolutionType("dismiss");
-    } else {
-      const d = await res.json();
-      toast.error(d.error ?? "Failed to resolve");
+    try {
+      const res = await fetch("/api/admin/disputes", {
+        method: "PATCH",
+        headers: await getHeaders(),
+        body: JSON.stringify({ disputeId: resolveTarget.id, status: "resolved", resolutionType, resolution }),
+      });
+      if (res.ok) {
+        toast.success("Dispute resolved");
+        fetchDisputes();
+        setResolveTarget(null);
+        setResolution("");
+        setResolutionType("dismiss");
+      } else {
+        const d = await res.json();
+        toast.error(d.error ?? "Failed to resolve");
+      }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   function statusBadge(s: string) {
@@ -234,8 +239,9 @@ export default function AdminDisputesPage() {
               </div>
 
               <div className="mb-4">
-                <label className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-1.5 block">Resolution Notes</label>
+                <label htmlFor="dispute-resolution-notes" className="text-[11px] text-[#6f6a7d] uppercase tracking-wider mb-1.5 block">Resolution Notes</label>
                 <textarea
+                  id="dispute-resolution-notes"
                   value={resolution}
                   onChange={e => setResolution(e.target.value)}
                   placeholder="Describe your resolution decision..."

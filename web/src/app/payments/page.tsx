@@ -213,10 +213,10 @@ export default function PaymentsPage() {
  // user enters payment details — re-fetch a valid token here rather
  // than reusing the one captured when the modal opened, which may
  // have expired by the time this callback fires.
+ try {
  const freshToken = await getValidToken();
  if (!freshToken) {
  setPaymentResult({ success: false, message: "Please log in again" });
- setIsProcessing(false);
  return;
  }
  const verifyRes = await fetch("/api/payments", {
@@ -249,7 +249,15 @@ export default function PaymentsPage() {
  message: verifyData.error || "Verification failed",
  });
  }
+ } catch (err) {
+ console.error("Payment verification error:", err);
+ setPaymentResult({
+ success: false,
+ message: "Network error while verifying payment — check Transaction History before retrying",
+ });
+ } finally {
  setIsProcessing(false);
+ }
  },
  modal: {
  ondismiss: () => {
@@ -374,12 +382,13 @@ export default function PaymentsPage() {
 
  <div className="p-6 space-y-5">
  <div>
- <label className="block text-sm font-medium text-[#6f6a7d] mb-1.5">
+ <label htmlFor="payment-amount" className="block text-sm font-medium text-[#6f6a7d] mb-1.5">
  Amount ({config?.currency || "INR"})
  </label>
  <div className="relative">
  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6f6a7d]" />
  <input
+ id="payment-amount"
  type="number"
  min="1"
  step="0.01"
@@ -392,10 +401,11 @@ export default function PaymentsPage() {
  </div>
 
  <div>
- <label className="block text-sm font-medium text-[#6f6a7d] mb-1.5">
+ <label htmlFor="payment-description" className="block text-sm font-medium text-[#6f6a7d] mb-1.5">
  Description (optional)
  </label>
  <input
+ id="payment-description"
  type="text"
  value={description}
  onChange={(e) => setDescription(e.target.value)}

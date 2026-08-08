@@ -18,6 +18,11 @@ async function logAction(adminId: string, action: string, detail: string) {
   });
 }
 
+// "accepted" is excluded — it can't be set through this generic field editor
+// (see the check below) — and "all" is a GET-filter-only pseudo-value, never
+// a real job status.
+const SETTABLE_STATUSES = ["open", "completed", "cancelled", "removed"];
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -39,6 +44,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (update.status === "accepted") {
     return NextResponse.json(
       { error: "Cannot set status to 'accepted' directly — it requires an escrow transaction, chat room, and notifications that only the normal accept flow creates." },
+      { status: 400 }
+    );
+  }
+  // Allowlist, not just "not accepted" — every other route that reads a
+  // job's status (decay pricing, dashboards, /api/jobs listing) branches on
+  // one of a fixed set of values. An arbitrary string here would silently
+  // fall through all of those branches instead of erroring, leaving the job
+  // in limbo (not open, not removed, invisible to every status filter).
+  if ("status" in update && !SETTABLE_STATUSES.includes(update.status as string)) {
+    return NextResponse.json(
+      { error: `status must be one of: ${SETTABLE_STATUSES.join(", ")}` },
       { status: 400 }
     );
   }

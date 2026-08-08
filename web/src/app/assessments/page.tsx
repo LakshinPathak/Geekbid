@@ -25,6 +25,7 @@ export default function AssessmentsPage() {
  const [startedAt, setStartedAt] = useState("");
  const [submitting, setSubmitting] = useState(false);
  const [quizResult, setQuizResult] = useState<{ score: number; passed: boolean } | null>(null);
+ const [startingId, setStartingId] = useState<string | null>(null);
  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
  // Latches once the auto-submit-on-timeout has fired for the current quiz
  // attempt, independent of quizResult/submitting — those reset on a failed
@@ -39,6 +40,7 @@ export default function AssessmentsPage() {
  }, [mounted, currentUser, router]);
 
  const loadData = useCallback(async () => {
+ try {
  const token = currentUser ? await getValidToken() : null;
  const [aRes, rRes] = await Promise.all([
  fetch("/api/assessments"),
@@ -48,11 +50,18 @@ export default function AssessmentsPage() {
  ]);
  if (aRes.ok) setAssessments(await aRes.json());
  if (rRes?.ok) setResults(await rRes.json());
+ } catch (err) {
+ console.error("[loadData]", err);
+ toast.error("Failed to load assessments — please refresh");
+ }
  }, [currentUser, getValidToken]);
 
  useEffect(() => { if (mounted) loadData(); }, [mounted, loadData]);
 
  const startQuiz = async (id: string) => {
+ if (startingId) return;
+ setStartingId(id);
+ try {
  const res = await fetch(`/api/assessments?id=${id}`);
  if (!res.ok) { toast.error("Failed to load quiz"); return; }
  const data = await res.json();
@@ -74,6 +83,11 @@ export default function AssessmentsPage() {
  return prev - 1;
  });
  }, 1000);
+ } catch {
+ toast.error("Network error — please try again");
+ } finally {
+ setStartingId(null);
+ }
  };
 
  const submitQuiz = useCallback(async () => {
@@ -256,9 +270,9 @@ export default function AssessmentsPage() {
  </p>
  )}
  <button onClick={() => startQuiz(a.id)}
- disabled={!!myResult && new Date(myResult.completedAt).getTime() > Date.now() - 30 * 24 * 3600000}
+ disabled={!!startingId || (!!myResult && new Date(myResult.completedAt).getTime() > Date.now() - 30 * 24 * 3600000)}
  className="btn-primary w-full py-2.5 disabled:opacity-40 disabled:cursor-not-allowed">
- {passed ? "Retake" : myResult ? "Retry" : "Start Assessment"}
+ {startingId === a.id ? "Loading..." : passed ? "Retake" : myResult ? "Retry" : "Start Assessment"}
  </button>
  </div>
  );

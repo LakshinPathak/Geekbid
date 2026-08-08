@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId, type Document, type WithId } from "mongodb";
-import { generateJSON, isAIAvailable } from "@/lib/ai";
+import { generateJSON, isAIEnabled } from "@/lib/ai";
 import { checkRateLimit } from "@/lib/sanitize";
 import { getPlanConfig } from "@/lib/plans";
 import { withPlanHeader } from "@/lib/middleware/plan-header";
@@ -10,7 +10,7 @@ import { getCurrentPrice } from "@/lib/utils";
 import type { Job } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
-  if (!isAIAvailable()) {
+  if (!(await isAIEnabled())) {
     return NextResponse.json({ error: "AI not available" }, { status: 503 });
   }
 
@@ -55,6 +55,23 @@ export async function POST(req: NextRequest) {
     catch { job = await db.collection("jobs").findOne({ id: jobId }); }
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // Invite-only/direct-offer jobs are hidden from everyone except the
+    // client, the offered/invited freelancer, or an admin (see the same
+    // check in api/jobs/[id]/route.ts) — without this, any authenticated
+    // freelancer could pull a private job's title, description, floor price,
+    // and competitor bids just by guessing/enumerating its jobId.
+    if (job.visibility === "invite_only") {
+      const isAdmin = auth.payload.role === "admin";
+      let authorized = isAdmin || auth.payload.userId === job.clientId || auth.payload.userId === job.offeredTo;
+      if (!authorized) {
+        const invite = await db.collection("invites").findOne({ jobId: job._id.toString(), freelancerId: auth.payload.userId });
+        authorized = !!invite;
+      }
+      if (!authorized) {
+        return NextResponse.json({ error: "Not authorized to view this job" }, { status: 403 });
+      }
     }
 
     // Quota is only charged once we know the request will actually reach the

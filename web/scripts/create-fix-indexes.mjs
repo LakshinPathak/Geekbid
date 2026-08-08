@@ -81,8 +81,14 @@ async function main() {
     // completed history rows for the same user can still coexist.
     // Clean up any existing duplicate active/live rows per user before
     // running this, or index creation will fail.
-    // A plain non-unique userId_1 index pre-dates this fix and collides on
-    // name with the partial-unique one below — drop it first.
+    // A plain non-unique userId_1 index (the default auto-generated name for
+    // an unnamed {userId:1} index) pre-dates this fix and collides on that
+    // same name with the partial-unique index below — drop it first. This
+    // covers deployments from before create-phase4-indexes.mjs's own
+    // {userId:1} index was given its own explicit "userId_1_lookup" name;
+    // this index is explicitly named too, so re-running either script in
+    // either order afterward is genuinely idempotent instead of racing on
+    // an implicit default name.
     try {
       await db.collection("subscriptions").dropIndex("userId_1");
       console.log("subscriptions old plain userId_1 index dropped");
@@ -91,7 +97,11 @@ async function main() {
     }
     await db.collection("subscriptions").createIndex(
       { userId: 1 },
-      { unique: true, partialFilterExpression: { status: { $in: ["created", "active", "past_due"] } } }
+      {
+        name: "userId_1_live_unique",
+        unique: true,
+        partialFilterExpression: { status: { $in: ["created", "active", "past_due"] } },
+      }
     );
     console.log("subscriptions live-status index created");
 
